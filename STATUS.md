@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 13:11 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 13:39 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Owner feedback check: at 13:09 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware; Legira's real-client log still had the 09:31:50 CST last-modified time. No 0.39.3/0.39.4 live result is available.
-- Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.41.12 plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.41.10 corrects its focused fixture to copied client IDs and unlock levels; 0.41.11 adds log-line and zone-generation identity for offline location tracking; 0.41.12 rejects same-zone reentry during G2 and requires verified reachable camps before selecting a full-auto camp; 0.39.4 exposes unknown-HP reasons in the owner UI without changing input policy. Mode boundary, prior rotation planner reuse,
+- Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
+- Build: offline prototype 0.41.13 plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.41.10 corrects its focused fixture to copied client IDs and unlock levels; 0.41.11 adds log-line and zone-generation identity for offline location tracking; 0.41.12 rejects same-zone reentry during G2 and requires verified reachable camps before selecting a full-auto camp; 0.41.13 carries exact supply warnings into sticky offline state and loosens only a measured float32 portal-edge tolerance; 0.39.4 exposes unknown-HP reasons in the owner UI without changing input policy. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -467,6 +467,18 @@ Updated 2026-11-13 13:11 CST for coordinator task `829a00229b29`.
   minimum sampled clearance but an 89.19-degree slope flag and 55 standard
   locator mismatches. The filtered Crushbone arrival-to-Slaver route remains
   disconnected. Neither is accepted for live travel.
+  A retained 216-polygon GFay alternative passes all 214 copied-mesh ground
+  portal midpoint seams and 215 ground midpoint centerlines at 0.5-unit
+  sample spacing after a 0.0005-unit float32 detail-edge correction. Only its
+  first 37 lateral strip segments passed bounded checks; segment 37 hit a
+  work budget. The remaining strip, zone trigger and actual movement are
+  unverified, so no route is accepted into F11. The copied owner log's
+  no-room and food/drink warnings now stay in offline telemetry until a
+  verified supply observation. A planner snapshot carrying them pauses, and
+  recording-only dispatch refuses loot with unknown capacity or a later
+  warning. A live adapter does not connect these stages yet. Forty-eight
+  focused tests and the startup demo pass; no game
+  input or purchases were performed.
 - Current blocker: 0.39.4 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee
@@ -484,7 +496,9 @@ Updated 2026-11-13 13:11 CST for coordinator task `829a00229b29`.
   conservative clearance failure remain unresolved. No actual client
   acceptance is ready. The 0.39.4 assist/G0 preview is privately staged on
   Alienware outside the game install; full auto has no playable release yet.
-- Next step: collect the owner's 0.39.4 HP/F8/F9 observations and supervised
+- Next step: finish the 216-polygon GFay lateral strip audit and separate
+  zone-trigger check within bounded work budgets, without promoting F11.
+  Collect the owner's 0.39.4 HP/F8/F9 observations and supervised
   G0 movement-stop result without touching Legira. Build a bounded owner-run
   G2 straight-motion measurement program using the isolated pulse bridge,
   fresh client scene observer and bounded stop guards; the geometry

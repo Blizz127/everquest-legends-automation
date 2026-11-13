@@ -36,6 +36,11 @@ class WorldSnapshot:
     gm_present: bool = False
     under_attack: bool = False
     loot_available: bool = False
+    # A failed item fit is sticky until a verified inventory check. None means
+    # no verified capacity state; dispatch must not send loot in that case.
+    loot_space_warning: bool | None = None
+    food_status: str | None = None
+    drink_status: str | None = None
 
 
 class CampaignPlanner:
@@ -69,6 +74,10 @@ class CampaignPlanner:
             return Action(ActionKind.PAUSE, "being attacked with no verified current target")
         if state.under_attack:
             return None  # Only the combat rotation may act until combat ends.
+        if state.food_status in {"low", "out"} or state.drink_status in {"low", "out"}:
+            return Action(ActionKind.PAUSE, "food or drink warning; verify supplies before continuing")
+        if state.loot_space_warning is True:
+            return Action(ActionKind.PAUSE, "loot item did not fit; verify inventory capacity")
         if state.bag_fullness >= 0.9:
             return Action(ActionKind.VENDOR, "sell only after item/value review")
         if state.hp <= 0.5 or state.mana <= 0.25:

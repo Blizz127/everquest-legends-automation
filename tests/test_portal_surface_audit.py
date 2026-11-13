@@ -106,6 +106,10 @@ def test_detail_edge_projection_tolerates_quantization_only():
     micro_gap = TwoPolyMesh(target_shift=5e-6)
     result = audit_portal_seam(micro_gap, 0, 1, (10.0, 5.0))
     assert result.candidate and abs(result.target_height - 2.0) < 1e-8
+    # The copied GFay mesh has a 0.000324-unit ring/detail mismatch at one
+    # shared portal. Keep this float32-scale seam eligible for further audit.
+    gfay_sized_gap = TwoPolyMesh(target_shift=3.5e-4)
+    assert audit_portal_seam(gfay_sized_gap, 0, 1, (10.0, 5.0)).candidate
     wider_gap = TwoPolyMesh(target_shift=1e-3)
     assert audit_portal_seam(wider_gap, 0, 1, (10.0, 5.0)).reason == "unsupported_detail_surface"
 

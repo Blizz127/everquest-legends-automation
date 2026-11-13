@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.12 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.13 / owner preview 0.39.4
 
 ## Current availability
 
@@ -49,6 +49,17 @@ Version 0.41.12 makes the offline G2 pulse policy reject a zone generation
 change even when the displayed zone name stays the same. Its full-auto camp
 planner now requires a caller-supplied verified reachable-camp set and pauses
 if none qualifies. This does not accept a real route or enable F11.
+Version 0.41.13 reads exact no-room and food/drink warnings from the client
+log into sticky offline supply state. A fresh verified inventory check is
+required to clear them. A planner snapshot carrying a warning pauses for
+supplies, and recording-only dispatch refuses loot if capacity is unknown or
+a warning arrived after planning. No live adapter connects these stages. It also
+widens the copied-mesh detail-edge tolerance to 0.0005 world units after a
+measured GFay float32 portal mismatch. All 214 ground portal midpoint seams
+and 215 midpoint centerline segments of one saved GFay corridor pass offline;
+only the first 37 lateral strips passed the bounded check. The remaining
+strip, zone transition and live follower are unverified, so the route is not
+available to F11. No purchases or game input were added to this build.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

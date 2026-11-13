@@ -1,5 +1,46 @@
 # FINDINGS
 
+## GFay corridor edge quantization and owner supply signals — 2026-11-13 13:39 CST
+
+**VERIFIED offline, no game input:** The copied owner GFay mesh at
+`~/.local/share/eql-automation/navmesh/nov12-7e3cd28-store/gfaydark.npz`
+has SHA-256 `5f8e16c5bcd2221ba273f681750ca480349780524d23609c059a3e817df6abd9`.
+The saved 216-polygon candidate in
+`~/.local/share/eql-automation/nav-candidates/gfay-high-clearance-graph-20261113T1931Z.json`
+has SHA-256 `41b01005b619c37a1170bc657af2ef829031d584978fe28bae98953193d98477`.
+It starts from the owner's historical `/loc (-1807.35, 1786.14, 66.45)`
+and ends at the GFay side of the copied Crushbone trigger. The first rejected
+portal needed at most 0.000324 world units of inward detail-edge projection;
+heights across that seam matched within about 0.00013. Increasing the
+physical detail-edge tolerance from 0.0001 to 0.0005 units, still below
+0.001-unit missing-detail rejection, yielded 214/214 ground portal midpoint
+seam candidates. All 215 ground polygon midpoint centerlines passed a
+0.5-unit-spaced detail-surface audit, with maximum sampled local grade 0.906
+and queried clearance reaching the 4-unit cap. Sampled 1.2-unit lateral strips
+passed segments 0–36; segment 37 exhausted a 10-second work budget without
+an observed geometry rejection. The remaining strip, zone transition,
+dynamic obstacles, follower error, current position and actual movement are
+**NOT RUN**. The corridor is not an accepted F11 route. The polygon-wide
+maximum slope is 83.764 degrees, which does not describe the checked midline.
+The hash-bound centerline result is stored outside git at
+`~/.local/share/eql-automation/nav-candidates/gfay-high-clearance-midline-audit-20261113T1938Z.json`
+(SHA-256 `dca4f8a095b7c45834c93c7772256b84e892c2b379bf4d326b052f6a4f7f6215`).
+
+**VERIFIED copied owner log:** The read-only log at
+`~/.local/share/eql-automation/owner-traces/eqlog-Legira-20261113.txt`
+(SHA-256 `d622b3c12567f903d411860d3de1a0be28e4e8b38be7bbdc2bebfdd62c60f04e`)
+records at 09:27:57 an item that did not fit and at 09:28:14 no food and
+drink. It later records a belt looted and sold, so the failed item does not
+prove all bag slots full. The same exact messages are parsed by the pinned
+November rotation tool. The offline `RunState` now retains these warnings
+across unrelated log lines and clears them only through an explicit verified
+inventory/consumable observation. A `WorldSnapshot` carrying the warning
+causes full-auto planning to pause; the recording-only dispatcher rejects
+LOOT with unknown capacity or a newer warning. No live adapter connects
+these two stages yet. Parsing the copied owner log reported level 7, a loot fit warning,
+and both food and drink out. Forty-eight focused tests and the simulator
+startup check passed. These checks send no game input and buy nothing.
+
 ## Offline G2 reentry guard and camp reachability filter — 2026-11-13 13:11 CST
 
 **VERIFIED offline, no game input:** G2 scenes now require the copied log

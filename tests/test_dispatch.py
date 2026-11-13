@@ -57,6 +57,22 @@ def test_dispatch_refuses_unknown_stale_or_changed_scene_and_unsafe_loot():
     assert sink.accepted == []
 
 
+def test_loot_requires_verified_capacity_and_rejects_new_no_room_warning():
+    dispatch, control, sink = setup()
+    control.switch(Mode.FULL_AUTO)
+    action = Action(ActionKind.LOOT, "owned synthetic corpse")
+    base = replace(observed(), state=replace(
+        observed().state, loot_available=True, loot_space_warning=False))
+    assert dispatch.plan(action, replace(base, state=replace(
+        base.state, loot_space_warning=None)), 10.0) is None
+    plan = dispatch.plan(action, base, 10.0)
+    assert plan is not None
+    new_warning = replace(base, observed_at=10.1, state=replace(
+        base.state, loot_space_warning=True))
+    assert not dispatch.dispatch(plan, new_warning, 10.1)
+    assert sink.accepted == []
+
+
 def test_assist_dispatch_permits_only_fresh_rotation_intents():
     dispatch, control, sink = setup()
     control.switch(Mode.ASSIST)

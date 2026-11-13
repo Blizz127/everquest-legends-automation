@@ -30,7 +30,7 @@ class PortalSeamCheck:
     real_client_accepted: bool = False
 
 
-_DETAIL_EDGE_TOLERANCE = 1e-4  # WLD units; covers float-quantized portal edges.
+_DETAIL_EDGE_TOLERANCE = 5e-4  # WLD units; copied GFay float32 edges differ by 0.000324.
 _DETAIL_HEIGHT_AGREEMENT = 0.01  # Conflicting overlapping surfaces stay unknown.
 
 
@@ -68,8 +68,8 @@ def _supported_detail_height(mesh, poly: int, x: float, y: float) -> float | Non
 
     ``NavMesh.height`` also interpolates polygon corners, or extrapolates a
     nearby detail triangle, when none covers the query. A portal edge can be
-    displaced by a few micro-units through float conversion, so this routine
-    projects at most 1e-4 world units onto a detail edge. Wider extrapolation
+    displaced by less than a milliworld unit through float conversion, so this
+    routine projects at most 5e-4 world units onto a detail edge. Wider extrapolation
     and corner interpolation remain insufficient for a local slope check.
     """
     try:

@@ -96,6 +96,7 @@ class SyntheticEnvironment:
                              disconnected=self.disconnected,
                              target_present=self.target_hp > 0,
                              camp=self.camp, loot_available=self.loot_available,
+                             loot_space_warning=False,
                              verified_reachable_camps=frozenset(camp.name for camp in self.camps))
 
     def dispatch_observation(self, observed_at: float) -> DispatchObservation:

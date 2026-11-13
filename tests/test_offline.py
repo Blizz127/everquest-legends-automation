@@ -107,6 +107,28 @@ def test_log_created_after_reader_start_keeps_first_event(tmp_path: Path):
     assert state.level == 2
 
 
+def test_owner_supply_warnings_stick_until_verified_inventory_check():
+    state = RunState()
+    state.observe_log("[Fri Nov 13 09:27:57 2026] You cannot loot this item no room in your inventory.")
+    state.observe_log("[Fri Nov 13 09:27:57 2026] You are out of food and drink.")
+    assert (state.loot_space_warning, state.food_status, state.drink_status) == (
+        True, "out", "out")
+    state.observe_log("[later] You have entered Greater Faydark.")
+    state.observe_log("[later] You have looted a belt.")
+    state.observe_log("[later] You are low on food and drink.")
+    state.observe_log("[later] Another player says, 'You are out of food and drink.'")
+    assert (state.loot_space_warning, state.food_status, state.drink_status) == (
+        True, "out", "out")
+    with pytest.raises(ValueError, match="verified supply"):
+        state.observe_supply_check(verified=False, loot_item_fits=True)
+    state.observe_supply_check(verified=True, loot_item_fits=True,
+                               food_count=2, drink_count=2)
+    assert (state.loot_space_warning, state.food_status, state.drink_status) == (
+        False, "sufficient", "sufficient")
+    state.invalidate_log_session()
+    assert state.loot_space_warning is None
+
+
 def test_new_log_without_fresh_character_opt_in_skips_first_bytes(tmp_path: Path):
     log = tmp_path / "new.log"
     state = RunState()
@@ -279,6 +301,9 @@ def test_campaign_pauses_on_unknown_or_unsafe_state_and_loots_only_when_safe():
     assert planner.decide(WorldSnapshot(**{**base, "under_attack": True,
                                           "target_present": False})).kind == ActionKind.PAUSE
     assert planner.decide(WorldSnapshot(**{**base, "loot_available": True})).kind == ActionKind.LOOT
+    assert planner.decide(WorldSnapshot(**{**base, "loot_available": True,
+                                          "loot_space_warning": True})).kind == ActionKind.PAUSE
+    assert planner.decide(WorldSnapshot(**{**base, "food_status": "out"})).kind == ActionKind.PAUSE
     assert planner.decide(WorldSnapshot(**{**base, "loot_available": True,
                                           "under_attack": True})) is None
     assert planner.decide(WorldSnapshot(**{**base, "bag_fullness": 1.0,

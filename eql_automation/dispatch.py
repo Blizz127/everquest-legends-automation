@@ -73,7 +73,10 @@ class DryRunDispatcher:
         if (action.kind == ActionKind.LOGIN and not state.disconnected or
                 action.kind == ActionKind.RECOVER and not state.dead or
                 action.kind == ActionKind.LOOT and
-                (not state.loot_available or state.under_attack) or
+                (not state.loot_available or state.under_attack or
+                 state.loot_space_warning is not False or
+                 state.food_status in {"low", "out"} or
+                 state.drink_status in {"low", "out"}) or
                 action.kind in {ActionKind.MOVE, ActionKind.ZONE,
                                 ActionKind.CAMP, ActionKind.VENDOR,
                                 ActionKind.REST} and state.under_attack or

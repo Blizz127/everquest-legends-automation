@@ -21,6 +21,26 @@ from .prior_rotation_core import level_from_message, message_body
 
 DEATH = re.compile(r"^(?:You have been slain |You died|You die[.!])")
 ZONE = re.compile(r"^(?:LOADING, PLEASE WAIT|You have entered )")
+# Exact client messages also recognized by the pinned November inventory tool.
+# One failed loot item does not prove that every bag slot is full.
+LOOT_NO_ROOM = frozenset({
+    "You cannot loot this item no room in your inventory.",
+    "You cannot loot this entire stack of items, no room in your inventory.",
+})
+FOOD_DRINK_WARNINGS = {
+    "You are thirsty.": (None, "low"),
+    "You and your mount are thirsty.": (None, "low"),
+    "You are hungry.": ("low", None),
+    "You and your mount are hungry.": ("low", None),
+    "You are out of food.": ("out", None),
+    "You are low on food.": ("low", None),
+    "You are out of drink.": (None, "out"),
+    "You are out of food and drink.": ("out", "out"),
+    "You are out of drink and low on food.": ("low", "out"),
+    "You are low on drink.": (None, "low"),
+    "You are out of food and low on drink.": ("out", "low"),
+    "You are low on food and drink.": ("low", "low"),
+}
 
 
 @dataclass
@@ -36,6 +56,9 @@ class RunState:
     level_progress_level: int | None = None
     level_progress_fraction: float | None = None
     level_progress_samples: deque[tuple[float, float]] = field(default_factory=deque)
+    loot_space_warning: bool | None = None
+    food_status: str | None = None
+    drink_status: str | None = None
 
     def observe_log(self, line: str) -> None:
         level = level_from_message(line)
@@ -50,6 +73,35 @@ class RunState:
             self.deaths += 1
         if ZONE.match(body):
             self.zone = body
+        if body in LOOT_NO_ROOM:
+            self.loot_space_warning = True
+        food, drink = FOOD_DRINK_WARNINGS.get(body, (None, None))
+        for kind, warning in (("food", food), ("drink", drink)):
+            if warning is not None:
+                previous = getattr(self, f"{kind}_status")
+                if warning == "out" or previous != "out":
+                    setattr(self, f"{kind}_status", warning)
+
+    def observe_supply_check(self, *, verified: bool,
+                             loot_item_fits: bool | None = None,
+                             food_count: int | None = None,
+                             drink_count: int | None = None) -> None:
+        """Accept an explicit, fresh inventory observation; log events cannot clear warnings."""
+        if verified is not True or (loot_item_fits is None and
+                                    food_count is None and drink_count is None):
+            raise ValueError("A verified supply observation is required")
+        if loot_item_fits is not None and not isinstance(loot_item_fits, bool):
+            raise ValueError("Loot fit must be boolean")
+        for count in (food_count, drink_count):
+            if count is not None and (not isinstance(count, int) or
+                                      isinstance(count, bool) or count < 0):
+                raise ValueError("Supply count must be a nonnegative integer")
+        if loot_item_fits is not None:
+            self.loot_space_warning = not loot_item_fits
+        if food_count is not None:
+            self.food_status = "sufficient" if food_count > 0 else "out"
+        if drink_count is not None:
+            self.drink_status = "sufficient" if drink_count > 0 else "out"
 
     def invalidate_log_session(self) -> None:
         """Unknown continuity cannot retain level, XP, camp, or death count."""
@@ -62,6 +114,9 @@ class RunState:
         self.zone = None
         self.camp = None
         self.deaths = None
+        self.loot_space_warning = None
+        self.food_status = None
+        self.drink_status = None
         self.blocker = "Client log reset or backlog; run identity is unverified"
         self.next_step = "Reconfirm the fresh character and current client state"
 
@@ -174,6 +229,9 @@ def render_status(state: RunState) -> str:
         f"- Deaths: {state.deaths if state.deaths is not None else 'n/a'}\n"
         f"- Camp: {state.camp or 'none'}\n"
         f"- Zone: {state.zone or 'unknown'}\n"
+        f"- Loot space warning: {state.loot_space_warning if state.loot_space_warning is not None else 'unknown'}\n"
+        f"- Food status: {state.food_status or 'unknown'}\n"
+        f"- Drink status: {state.drink_status or 'unknown'}\n"
         f"- Current blocker: {state.blocker}\n"
         f"- Next step: {state.next_step}\n"
     )
