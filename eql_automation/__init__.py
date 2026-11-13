@@ -3,4 +3,4 @@
 No module in this package connects to or sends input to the game.
 """
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"

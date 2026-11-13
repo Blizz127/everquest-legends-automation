@@ -1,5 +1,29 @@
 # FINDINGS
 
+## Full retail text-map snapshot — 2026-11-13 02:01 CST
+
+**VERIFIED read-only transfer:** The Alienware's top-level `maps/` contains
+224 `.txt` files totaling 78,918,163 bytes. The paired `.txt:crc` sidecars
+were excluded. A rate-limited `rsync` also copied text maps in three nested
+`Solo_Leveling`/backup directories (923 text files, 306,720,534 bytes total),
+but the importer deliberately selected **only the 224 top-level client maps**;
+no nested custom/backup map was imported. No remote file was modified.
+
+**VERIFIED local import:** snapshot
+`~/.local/share/eql-automation/map-store/snapshots/e0aa3e31762d31fd4c1e/`
+holds 224 compressed geometry files (about 13 MB total), 1,057,974 drawing
+lines, 1,445 labels, 0 unrecognized records, 701 zone names and 198
+Paladin/Cleric spell records. All 50 prior rotation profiles passed validation.
+`map-store/current.json` points to this snapshot. Import uses a temporary
+directory and atomically promotes a complete snapshot, so a failed parse
+cannot replace the active one. **Navigability remains unverified:** map lines
+are rendered geometry, and labels only indicate candidate places. No client
+map line has been treated as a traversable route.
+
+**VERIFIED code checks:** 19 focused tests passed, including duplicate/nonfinite
+point rejection and snapshot promotion after a source change. No private server
+endpoint has been found; no character or service was contacted.
+
 ## Private-target clarification and retail data check — 2026-11-13 01:39 CST
 
 **USER-STATED:** The intended automation target is a private EverQuest Legends

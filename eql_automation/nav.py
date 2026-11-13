@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from heapq import heappop, heappush
-from math import dist
+from math import dist, isfinite
 from pathlib import Path
 import json
 
@@ -42,6 +42,10 @@ class NavGraph:
     def add_point(self, name: str, point: Point) -> None:
         if not name:
             raise ValueError("Point name is empty")
+        if name in self.points:
+            raise ValueError("Point name already exists")
+        if not all(isfinite(value) for value in (point.x, point.y, point.z)):
+            raise ValueError("Point coordinates must be finite")
         self.points[name] = point
         self.edges.setdefault(name, [])
 
@@ -49,7 +53,7 @@ class NavGraph:
                 water: bool = False) -> None:
         if left not in self.points or right not in self.points:
             raise KeyError("Both endpoints must exist")
-        if left == right or aggro < 0:
+        if left == right or not isfinite(aggro) or aggro < 0:
             raise ValueError("Invalid edge")
         length = dist(vars(self.points[left]).values(), vars(self.points[right]).values())
         if length <= 0:
@@ -62,6 +66,8 @@ class NavGraph:
               risk_weight: float = 10.0) -> list[str]:
         if start not in self.points or goal not in self.points:
             raise KeyError("Unknown route endpoint")
+        if not isfinite(max_aggro) or max_aggro < 0 or not isfinite(risk_weight) or risk_weight < 0:
+            raise ValueError("Risk constraints must be finite and nonnegative")
         blocked = blocked or set()
         best = {start: 0.0}
         previous: dict[str, str] = {}
@@ -112,6 +118,9 @@ class NavGraph:
         for key, values in graph.edges.items():
             if key not in graph.points or any(edge.target not in graph.points for edge in values):
                 raise ValueError("Graph has an unknown endpoint")
+            if any(not isfinite(edge.length) or edge.length <= 0 or
+                   not isfinite(edge.aggro) or edge.aggro < 0 for edge in values):
+                raise ValueError("Graph has an invalid edge weight")
         return graph
 
 

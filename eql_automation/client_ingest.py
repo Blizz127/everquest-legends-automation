@@ -13,6 +13,7 @@ import gzip
 import json
 import math
 import re
+import tempfile
 
 from .nav import MAP_STORE, Point
 from .prior_rotation_core import Catalog
@@ -75,7 +76,8 @@ def parse_map(text: str) -> MapDocument:
         record = raw.strip()
         if not record:
             continue
-        prefix, _, body = record.partition(" ")
+        parts = record.split(None, 1)
+        prefix, body = parts[0], parts[1] if len(parts) > 1 else ""
         try:
             if prefix == "L":
                 fields = body.split(",")
@@ -95,7 +97,7 @@ def parse_map(text: str) -> MapDocument:
                 labels.append(MapLabel(point, _rgb(fields[3:6]), size,
                                        fields[7].strip()))
             else:
-                skipped += 1
+                raise ValueError(f"Unknown record type {prefix!r}")
         except ValueError as exc:
             raise ValueError(f"Invalid map record at line {number}: {exc}") from exc
     return MapDocument(lines, labels, skipped)
@@ -151,7 +153,7 @@ def parse_zone_names(text: str) -> list[dict]:
 
 
 def import_retail_copy(source: Path, store: Path = MAP_STORE) -> dict:
-    """Import an already copied source directory; never modify its files."""
+    """Import top-level client maps into one atomic, versioned snapshot."""
 
     maps = sorted((source / "maps").glob("*.txt"))
     if not maps:
@@ -160,62 +162,77 @@ def import_retail_copy(source: Path, store: Path = MAP_STORE) -> dict:
     zone_path = source / "Resources/ZoneNames.txt"
     if not spell_path.is_file() or not zone_path.is_file():
         raise FileNotFoundError("Copied spell catalog or zone-name file missing")
-    store.mkdir(parents=True, exist_ok=True)
-    imported_maps = []
     for source_path in maps:
         if not re.fullmatch(r"[A-Za-z0-9_-]+", source_path.stem):
             raise ValueError("Unsafe map file name")
-        document = parse_map(source_path.read_text(encoding="latin-1"))
-        output = store / "geometry" / f"{source_path.stem}.json.gz"
-        save_map(document, output)
-        imported_maps.append({
-            "name": source_path.stem,
-            "source_sha256": sha256_file(source_path),
-            "geometry_store": str(output),
-            "line_count": len(document.lines),
-            "label_count": len(document.labels),
-            "skipped_records": document.skipped_records,
-            "bounds": document.bounds(),
-            "navigability_verified": False,
-        })
-    zones = parse_zone_names(zone_path.read_text(encoding="latin-1"))
-    catalog = Catalog.load(source)
-    zone_output = store / "zone-names.json"
-    zone_temporary = zone_output.with_suffix(".tmp")
-    zone_temporary.write_text(json.dumps(zones, separators=(",", ":")) + "\n")
-    zone_temporary.replace(zone_output)
-    spell_output = store / "paladin-cleric-spells.json.gz"
-    spell_temporary = spell_output.with_name(spell_output.name + ".tmp")
-    with gzip.open(spell_temporary, "wt", encoding="utf-8") as stream:
-        json.dump({"format": "prior-paladin-cleric-catalog-v1",
-                   "source_sha256": sha256_file(spell_path),
-                   "spells": [asdict(spell) for spell in catalog.spells.values()]},
-                  stream, separators=(",", ":"))
-    spell_temporary.replace(spell_output)
-    profiles_valid = True
-    for level in range(1, 51):
-        profile = catalog.profile(level)
-        ids = [spell.id for spell in profile.values()]
-        if len(ids) != len(set(ids)) or any(spell.level > level for spell in profile.values()):
-            profiles_valid = False
-            break
-    summary = {
-        "source_kind": "copied-retail-client-text",
-        "source_dir": str(source),
-        "maps": imported_maps,
-        "zone_names_sha256": sha256_file(zone_path),
-        "zone_name_count": len(zones),
-        "zone_names_store": str(zone_output),
-        "spell_catalog_sha256": sha256_file(spell_path),
-        "paladin_cleric_spell_count": len(catalog.spells),
-        "paladin_cleric_spell_store": str(spell_output),
-        "prior_rotation_profiles_1_to_50_valid": profiles_valid,
-        "navigability_verified": False,
-        "private_server_identified": False,
-    }
-    output = store / "import-summary.json"
-    temporary = output.with_suffix(".tmp")
-    temporary.write_text(json.dumps(summary, indent=2) + "\n")
-    temporary.replace(output)
-    summary["summary_path"] = str(output)
+    hashes = {str(path.relative_to(source)): sha256_file(path)
+              for path in [*maps, zone_path, spell_path]}
+    digest = sha256(json.dumps({"schema": 2, "hashes": hashes},
+                               sort_keys=True).encode()).hexdigest()[:20]
+    snapshot_root = store / "snapshots"
+    snapshot_root.mkdir(parents=True, exist_ok=True)
+    snapshot = snapshot_root / digest
+    summary_path = snapshot / "summary.json"
+    if summary_path.is_file():
+        summary = json.loads(summary_path.read_text())
+    else:
+        with tempfile.TemporaryDirectory(prefix=".staging-", dir=snapshot_root) as temp:
+            staging = Path(temp)
+            imported_maps = []
+            for source_path in maps:
+                document = parse_map(source_path.read_text(encoding="latin-1"))
+                relative = Path("geometry") / f"{source_path.stem}.json.gz"
+                save_map(document, staging / relative)
+                imported_maps.append({
+                    "name": source_path.stem,
+                    "source_sha256": hashes[str(source_path.relative_to(source))],
+                    "geometry_store": str(snapshot / relative),
+                    "line_count": len(document.lines),
+                    "label_count": len(document.labels),
+                    "skipped_records": document.skipped_records,
+                    "bounds": document.bounds(),
+                    "navigability_verified": False,
+                })
+            zones = parse_zone_names(zone_path.read_text(encoding="latin-1"))
+            catalog = Catalog.load(source)
+            zone_relative = Path("zone-names.json")
+            (staging / zone_relative).write_text(
+                json.dumps(zones, separators=(",", ":")) + "\n")
+            spell_relative = Path("paladin-cleric-spells.json.gz")
+            with gzip.open(staging / spell_relative, "wt", encoding="utf-8") as stream:
+                json.dump({"format": "prior-paladin-cleric-catalog-v1",
+                           "source_sha256": hashes[str(spell_path.relative_to(source))],
+                           "spells": [asdict(spell) for spell in catalog.spells.values()]},
+                          stream, separators=(",", ":"))
+            profiles_valid = True
+            for level in range(1, 51):
+                profile = catalog.profile(level)
+                ids = [spell.id for spell in profile.values()]
+                if (len(ids) != len(set(ids)) or
+                        any(spell.level > level for spell in profile.values())):
+                    profiles_valid = False
+                    break
+            summary = {
+                "source_kind": "copied-retail-client-text",
+                "source_dir": str(source),
+                "snapshot_id": digest,
+                "maps": imported_maps,
+                "zone_names_sha256": hashes[str(zone_path.relative_to(source))],
+                "zone_name_count": len(zones),
+                "zone_names_store": str(snapshot / zone_relative),
+                "spell_catalog_sha256": hashes[str(spell_path.relative_to(source))],
+                "paladin_cleric_spell_count": len(catalog.spells),
+                "paladin_cleric_spell_store": str(snapshot / spell_relative),
+                "prior_rotation_profiles_1_to_50_valid": profiles_valid,
+                "navigability_verified": False,
+                "private_server_identified": False,
+                "summary_path": str(summary_path),
+            }
+            (staging / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+            staging.replace(snapshot)
+    current = store / "current.json"
+    current_temporary = store / "current.json.tmp"
+    current_temporary.write_text(json.dumps({"snapshot_id": digest,
+                                             "summary_path": str(summary_path)}) + "\n")
+    current_temporary.replace(current)
     return summary

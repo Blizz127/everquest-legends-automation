@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.5.0
+# EverQuest Legends automation — current build 0.6.0
 
 ## Current availability
 
@@ -61,6 +61,13 @@ Map drawing lines are **not** automatically treated as walkable routes;
 navigation still needs observed traversable paths. The retail sample copy is
 at `~/.local/share/eql-automation/client-data/retail-sample/` and is kept out
 of git.
+
+The complete top-level retail map copy is at
+`~/.local/share/eql-automation/client-data/retail-full/`. Run the same import
+command with that directory to build a snapshot of all 224 client maps. The
+active snapshot is named in `~/.local/share/eql-automation/map-store/current.json`.
+Nested `Solo_Leveling` custom/backup maps are ignored. A failed import leaves
+the active snapshot in place.
 
 | Simulated mode | Actions permitted by the planner |
 | --- | --- |

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from heapq import heappop, heappush
+from math import isfinite
 
 from .nav import NavGraph, RouteNotFound
 
@@ -49,7 +50,8 @@ class WorldNav:
             raise KeyError("Both zone graphs must exist")
         if transition.exit_node not in source.points or transition.entry_node not in target.points:
             raise KeyError("Zone line endpoint is absent from its graph")
-        if transition.cost <= 0 or transition.risk < 0:
+        if (not isfinite(transition.cost) or transition.cost <= 0 or
+                not isfinite(transition.risk) or transition.risk < 0):
             raise ValueError("Invalid zone line cost or risk")
         if not 1 <= transition.min_level <= transition.max_level <= 50:
             raise ValueError("Invalid level range")
@@ -62,10 +64,16 @@ class WorldNav:
               risk_weight: float = 10.0) -> list[RouteStep]:
         if not 1 <= level <= 50:
             raise ValueError("Level must be 1–50")
+        if not isfinite(max_aggro) or max_aggro < 0 or not isfinite(risk_weight) or risk_weight < 0:
+            raise ValueError("Risk constraints must be finite and nonnegative")
         for zone, node in ((start_zone, start_node), (goal_zone, goal_node)):
             if zone not in self.zones or node not in self.zones[zone].points:
                 raise KeyError(f"Unknown route endpoint: {zone}:{node}")
         start, goal = (start_zone, start_node), (goal_zone, goal_node)
+        transitions_by_source: dict[tuple[str, str], list[ZoneTransition]] = {}
+        for transition in self.transitions:
+            transitions_by_source.setdefault((transition.source_zone,
+                                               transition.exit_node), []).append(transition)
         blocked_edges = blocked_edges or set()
         best = {start: 0.0}
         previous: dict[tuple[str, str], tuple[tuple[str, str], RouteStep]] = {}
@@ -92,9 +100,7 @@ class WorldNav:
                     best[next_state] = next_cost
                     previous[next_state] = (state, RouteStep("move", zone, node, zone, edge.target))
                     heappush(todo, (next_cost, next_state))
-            for transition in self.transitions:
-                if (transition.source_zone, transition.exit_node) != state:
-                    continue
+            for transition in transitions_by_source.get(state, []):
                 if not transition.min_level <= level <= transition.max_level:
                     continue
                 if transition.risk > max_aggro:

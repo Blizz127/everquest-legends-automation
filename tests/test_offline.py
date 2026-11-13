@@ -1,4 +1,5 @@
 from pathlib import Path
+from math import nan
 
 import pytest
 
@@ -49,6 +50,21 @@ def test_route_avoids_water_and_replans_around_blocked_edge(tmp_path: Path):
                        blocked={frozenset(("start", "safe"))}) == ["start", "water", "camp"]
     saved = graph.save("synthetic", tmp_path)
     assert NavGraph.load(saved).route("start", "camp") == ["start", "safe", "camp"]
+
+
+def test_navigation_rejects_duplicate_or_nonfinite_geometry():
+    graph = NavGraph()
+    graph.add_point("start", Point(0, 0))
+    with pytest.raises(ValueError, match="already exists"):
+        graph.add_point("start", Point(100, 0))
+    with pytest.raises(ValueError, match="finite"):
+        graph.add_point("bad", Point(nan, 0))
+    graph.add_point("end", Point(1, 0))
+    with pytest.raises(ValueError, match="Invalid edge"):
+        graph.connect("start", "end", aggro=nan)
+    graph.connect("start", "end")
+    with pytest.raises(ValueError, match="Risk constraints"):
+        graph.route("start", "end", risk_weight=nan)
 
 
 def test_progress_monitor_flags_stall():
