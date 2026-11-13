@@ -1,13 +1,13 @@
 # Level 1–20 route work
 
-Updated 2026-11-13 16:44 CST. This is the prioritized route and acceptance
+Updated 2026-11-13 17:07 CST. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
 | Levels | Planned camp | Route needed | Current evidence |
 | --- | --- | --- | --- |
-| 1–5 | Butcherblock Kaladim gate yards | South Kaladim → Butcherblock, then local camp | The prior Alienware guide cites Legira's `/con` log for the low-level mobs. A retained current-helper Butcherblock mesh now loads with source hashes checked; the camp position, source arrival and movement remain unverified. |
+| 1–5 | Butcherblock Kaladim gate yards | South Kaladim → Butcherblock, then local camp | The copied helper's default 54-unit roam ring proposes four points, all with >6 units height change. A 12-unit ring proposes three local points that passed copied strip and BSP checks; the camp position, source arrival, actual mobs and movement remain unverified. |
 | 5–8 | Crushbone Slaver Caves (west) | Butcherblock → GFay → Crushbone → safe spot | Copied GFay ground approaches toward Butcherblock and Crushbone pass separate offline strip checks. Crushbone arrival and its Slaver route are unaccepted; two copied-mesh crossings fail the current grade-1.2 turn audit. |
 | 6–10 | GFay orc camps, alternate for Legira | Current GFay position → guide marker, then observed pull area | The existing guide lists this outdoor camp and the owner's log confirms relevant `/con` mobs. A copied dry path from the G0 test position avoids water and two steep polygons; its 155 ground segments passed sampled turns, walking-width strips, whole-route and static BSP checks. The actual camp, current position and live movement are unverified. |
 | 8–13 | Crushbone Trainer Hill | Slaver Caves → Trainer Hill | The prior guide lists this range; no camp route, con sample or real movement has been accepted. |
@@ -94,8 +94,15 @@ one 420-second selector pass completed its portal search but had no time for
 the mandatory final whole-route audit. Its sampled candidate remains
 unaccepted. A second bounded run was externally timed out under heavy devbox
 load before recording a result. A new select-only phase can retain unverified
-portal points for a separate full-strip pass once load permits; neither phase
-has accepted this Butcher route.
+portal points for a separate full-strip pass once load permits; neither of
+those two early runs accepted the Butcher route.
+The later 249-polygon detour did complete its select-only phase after 320
+turns and 355 unique strip checks. A separate hash-bound full-strip audit
+passed all 249 copied polygons. This is static geometry evidence only; the
+selected route still needs verified zone arrival and a live follower trial
+before F11 can use it. A later copied-client BSP scan passed all 249 ground
+and ground+1 segments with no labelled, unknown or unsupported intervals. It
+remains static evidence, not an F11 route.
 
 The same-zone GFay orc-camp fallback uses the existing guide's approximate
 marker. The first dry route from the G0 test position had two polygons over

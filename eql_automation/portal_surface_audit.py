@@ -18,6 +18,10 @@ class PortalSurfaceCheck:
     min_clearance: float | None = None
     max_local_grade: float | None = None
     real_client_accepted: bool = False
+    # Present only after every centerline point passed. The strip audit uses
+    # these exact heights for its lateral grade check on the same immutable
+    # copied mesh, avoiding a second detail-triangle walk at each center.
+    sampled_heights: tuple[float, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -217,6 +221,7 @@ def audit_portal_surface(mesh, poly: int, entry_xy: tuple[float, float],
     lowest = math.inf
     highest_grade = 0.0
     previous_z = None
+    sampled_heights = []
     step_distance = distance / steps
     # A wall-distance sample can overstate the minimum between two samples by
     # at most half their planar separation, provided the same wall set applies.
@@ -246,5 +251,7 @@ def audit_portal_surface(mesh, poly: int, entry_xy: tuple[float, float],
                 return PortalSurfaceCheck(False, "local_grade_too_steep", index + 1,
                                           lowest, highest_grade)
         previous_z = z
+        sampled_heights.append(z)
     return PortalSurfaceCheck(True, "centerline_geometry_candidate_only",
-                              steps + 1, lowest, highest_grade)
+                              steps + 1, lowest, highest_grade,
+                              sampled_heights=tuple(sampled_heights))

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.35 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.36 / owner preview 0.39.4
 
 ## Current availability
 
@@ -207,6 +207,16 @@ offline selector. A synthetic connected-choice case now finds a route only
 when an earlier portal can be revisited. The copied Unrest corridor still
 fails its selector after bounded retries, and its BSP hazards remain
 unresolved. This release does not change the Alienware assist preview.
+Version 0.41.36 adds pinned, read-only low-level camp-ring inspection and a
+separate copied-client BSP check for a previously selected full-strip route.
+The Butcherblock camp→GFay 249-polygon sequence now passes separate offline
+whole-strip and copied-client BSP audits; live traversal is a distinct gate.
+A smaller
+12-unit Kaladim-yard ring has three local copied strip/BSP candidates. The
+guide marker, mobs and live movement remain unverified, so F11 stays disabled.
+The lateral-strip implementation reuses already checked centerline heights;
+12 saved GFay segments returned the same decisions and sample counts as the
+prior code. These additions do not change owner-run assist controls.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

@@ -96,8 +96,9 @@ def audit_segment_strip(mesh, poly: int, start_xy: tuple[float, float],
     if not math.isfinite(distance) or distance <= 1e-6:
         return LateralStripCheck(False, "degenerate_segment")
     steps = math.ceil(distance / sample_spacing)
-    # Each point is checked once along the centerline and again as the
-    # center plus two lateral points in the strip pass.
+    # Each point is checked once along the centerline and again for polygon
+    # containment in the strip pass; the already checked height is reused.
+    # The two lateral positions are separately sampled.
     if 4 * (steps + 1) > max_samples:
         return LateralStripCheck(False, "strip_sample_budget_exceeded")
     nx, ny = -dy / distance, dx / distance
@@ -111,6 +112,8 @@ def audit_segment_strip(mesh, poly: int, start_xy: tuple[float, float],
     if not center.candidate:
         return LateralStripCheck(False, "centerline_" + center.reason,
                                  center.samples)
+    if len(center.sampled_heights) != steps + 1:
+        return LateralStripCheck(False, "centerline_profile_unavailable", center.samples)
     side_clearance_floor = edge_clearance + distance / steps / 2
     samples = center.samples
     for index in range(steps + 1):
@@ -121,9 +124,7 @@ def audit_segment_strip(mesh, poly: int, start_xy: tuple[float, float],
         samples += 1
         if not _contains_with_physical_tolerance(mesh, poly, x, y):
             return LateralStripCheck(False, "center_left_polygon", samples, index)
-        center_z = _supported_detail_height(mesh, poly, x, y)
-        if center_z is None:
-            return LateralStripCheck(False, "center_surface_unknown", samples, index)
+        center_z = center.sampled_heights[index]
         for side in (-1, 1):
             sx, sy = x + side * half_width * nx, y + side * half_width * ny
             reason, side_z = _ground_height(mesh, sx, sy, center_z,

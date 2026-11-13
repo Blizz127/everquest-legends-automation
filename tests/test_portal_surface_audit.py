@@ -31,6 +31,7 @@ def test_flat_centerline_can_be_candidate_inside_steep_flagged_polygon():
     assert result.samples == 17
     assert result.max_local_grade == 0.0
     assert result.min_clearance == 4.0  # Bounded query does not measure beyond 4.
+    assert result.sampled_heights == (2.0,) * 17
 
 
 def test_local_grade_and_middle_clearance_reject_independently():

@@ -42,6 +42,20 @@ def test_flat_strip_is_only_one_segment_candidate():
     assert result.samples == 68  # 17 centerline + 17 center + 34 lateral.
 
 
+def test_strip_reuses_checked_center_heights_without_skipping_lateral_surfaces(monkeypatch):
+    original = strip._supported_detail_height
+    seen = []
+
+    def checked_height(mesh, poly, x, y):
+        seen.append((x, y))
+        assert abs(y - 5.0) > 1e-9  # The centerline module checked these.
+        return original(mesh, poly, x, y)
+
+    monkeypatch.setattr(strip, "_supported_detail_height", checked_height)
+    result = audit_segment_strip(StripMesh(), 0, (1.0, 5.0), (9.0, 5.0))
+    assert result.candidate and len(seen) == 34
+
+
 def test_lateral_grade_rejects_a_centerline_that_looks_flat():
     result = audit_segment_strip(StripMesh(slope=1.1),
                                  0, (1.0, 5.0), (9.0, 5.0))

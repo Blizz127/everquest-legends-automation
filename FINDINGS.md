@@ -1,5 +1,69 @@
 # FINDINGS
 
+## Low-level copied camp rings and staged Butcher route — 2026-11-13 17:07 CST
+
+**VERIFIED offline, no game input:** A 249-ground-polygon Butcherblock
+Kaladim-yard→GFay detour selected a complete portal sequence in a bounded
+153.29-second select-only run: 320 turn checks, 355 unique strip checks.
+Selection artifact SHA-256
+`5c7babe22742d9d1c9ae4d293e2f0a9f52ace21bd8687702260f1cedbd70fad8`.
+The independent, hash-bound whole-strip recheck passed all 249 segments in
+90.57 seconds; artifact SHA-256
+`52d9ef886c7df92b6908c94a83439e32edd74757555c27b8fda87c9f6d415592`.
+The full copied-client BSP scan then passed 249 segments at detail ground and
+ground+1: 560 spans, zero labelled, unknown or unsupported spans. Its private
+artifact SHA-256 is
+`bace97b411ee5ce5f54f9b38b534b93aacfdc542991500fc57d7a011e6ef3e90`.
+The hash-pinned minimal detail view's area, face offsets and face slices
+matched the owner's full helper loader on all 249 selected polygons in a
+separate read-only comparison. Two earlier full-loader BSP runs timed out
+without output under heavy devbox load; the reduced view completed the full
+route. These results clear sampled static strip and BSP geometry only.
+Dynamic collision, actual camp/zone arrival and client movement remain
+separate gates.
+
+**VERIFIED copied helper ring diagnostics:** The default 54-unit GFay orc
+ring returned six graph-reachable points, two with >6 units anchor-height
+change; artifact SHA-256
+`23977ff5f55329364c4e39bdc5390bff54a5b6a4ad320d8f0986bf3c8581fd18`.
+A 12-unit GFay ring returned six points with height changes within about
+2 units; pinned-source artifact SHA-256
+`3dbcae10be19ee142b10e691dc0a54a25bca1a120e747241b75b57cc94babd27`.
+The default 54-unit Butcher yard ring returned four points, all with >6 units
+height change; artifact SHA-256
+`9a2b603a2a38082ac370587cdf672cc7020323869024de2ca7bb60cd6443079e`.
+A 12-unit, 12-angle Butcher ring returned 12 graph-reachable points, five
+within the same 6-unit diagnostic band; artifact SHA-256
+`12c8575ed3f9075ba1518549b44bf2cb0549ccfae7a36fdad9ae29839399cf78`.
+Three of those short points (returned indices 2, 7 and 8) lie in one copied
+polygon each and passed one-segment lateral strips and client BSP scans at
+ground and ground+1; artifact SHA-256
+`65fb89f85ded580778f6c56882a8c462fc8b664b3cc525dced8e51a67b9e5458`.
+The guide markers are approximate; none of these points has live mob, aggro,
+dynamic obstacle or movement acceptance. The 6-unit height band is a
+diagnostic threshold, not a proven client climb limit. F11 remains disabled.
+
+**VERIFIED focused source check:** The lateral strip now reuses detail heights
+already checked by its centerline auditor. Thirty-nine focused portal,
+strip and selector tests passed; 12 saved GFay strip decisions and sample
+counts matched the previous implementation. That loaded-machine comparison
+did not establish a speed gain. The separate new BSP CLI validates route,
+selection, full-strip, archive and mesh hashes before writing only an offline
+diagnostic outside git. It uses only the copied polygon areas and detail
+faces needed by the BSP check, avoiding the full helper's wall/grid build.
+
+**VERIFIED installed manual only, live stop not tested:** The Alienware
+`everquest_manual.txt` SHA-256
+`d106f7f7d97093b1ae343ef24f8741ce64c3631981bf17995ca059927caf9290`
+describes `/attack` as a toggle, and `eqmanual_supplement.txt` SHA-256
+`789cf9c54fdf523be8a865ac020cb97efaf51844b8ad33e3fe0fde2549f74ca0`
+describes the Attack action as a toggle. The installed `eqstr_us.txt`
+SHA-256 `0dd0117a23092cb195d0e62d6b03a49bf1aaf8dbfb843dd629e38ca950732fde`
+contains exact ON/OFF messages. The owner trace links two rejected replies
+to attempts to send `/attack off`, without proving the exact delivered text.
+Bare `/attack` and a fresh ON→OFF acknowledgment must be tested by the owner
+before any full-auto native-melee stop; never retry an unknown toggle.
+
 ## Read-only G2 UI capture and Unrest water check — 2026-11-13 16:44 CST
 
 **VERIFIED static client layout, no game input:** The owner preview 0.39.4

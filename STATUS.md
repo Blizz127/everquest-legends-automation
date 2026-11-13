@@ -1,8 +1,20 @@
 # STATUS
 
-Updated 2026-11-13 16:46 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:07 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
+- Low-level route progress: a bounded select-only run saved the 249-ground-
+  polygon Butcherblock camp→GFay portal sequence; a separate hash-bound
+  whole-strip audit passed all 249 copied segments. A separate copied-client
+  BSP scan passed all 249 ground and ground+1 segments with 560 spans and no
+  labelled, unknown or unsupported spans. Client traversal remains unverified.
+  The default Butcher camp roam ring has four
+  >6-unit height changes; a smaller 12-unit ring offers three one-polygon
+  points that passed copied lateral strip and BSP checks. A smaller GFay orc
+  ring keeps all six proposed points within about 2 units of its copied
+  anchor, but its local strips/BSP and live camp are not yet accepted. The
+  guide markers are not client-certified positions. Current level remains
+  last observed 7; XP/hour and deaths remain unavailable, and F11 is off.
 - Private publish: source-only project 0.41.35 commit `1bd3c39` is staged
   under Alienware `~/.local/share/eql-automation/owner-tools/0.41.35`,
   outside the game install. Local/remote archive SHA-256 matched
@@ -187,8 +199,8 @@ Updated 2026-11-13 16:46 CST for coordinator task `829a00229b29`.
   Remote offline navigation startup and backtrack CLI help passed with no
   game input. It supersedes 0.41.32 as the current source build; owner assist
   preview 0.39.4 and disabled F11 are unchanged.
-- Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
-- Build: local source 0.41.35 (bounded earlier-portal repair, hash-pinned Cauldron and Unrest diagnostics, and private read-only UI crop capture) plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Earlier source releases and historical build details are recorded above. Mode boundary, prior rotation planner reuse,
+- Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: not observed; Greater Faydark is the last reported zone. GFay orc camps are the nearest level-7 route candidate, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
+- Build: local source 0.41.36 (pinned low-level camp-ring and copied-client BSP diagnostics, plus the earlier UI capture) and isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Earlier source releases and historical build details are recorded above. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -714,8 +726,9 @@ Updated 2026-11-13 16:46 CST for coordinator task `829a00229b29`.
   sensitivity bake passed all 13 sampled turns at 3248→3247, but 658→623
   remained zero of 13; the finer variants emitted 20–21 Recast warnings.
   No real-client route or level gain is accepted.
-- Current blocker: 0.39.4 owner-supervised F8/F9 HP and attack-free rotation
-  feedback is pending. Strict current ASSIST still lacks a unique target and
+- Current blocker: the owner-observed F8 rotation fired, but HP remained null
+  and `/attack off` was rejected. A new owner-run UI crop has not arrived.
+  Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee
   stop, G2 speed/scene/follower acceptance after the passed G0 short stop check,
   validated runtime mesh-store binding,
@@ -733,12 +746,13 @@ Updated 2026-11-13 16:46 CST for coordinator task `829a00229b29`.
   conservative clearance failure remain unresolved. No actual client
   acceptance is ready. The 0.39.4 assist/G0 preview is privately staged on
   Alienware outside the game install; full auto has no playable release yet.
-- Next step: prioritize a playable level 1–20 leg. Resolve the Butcherblock
-  polygon-37736 turn rejection against copied source geometry; evaluate the
-  retained mesh's 1,180 warnings before accepting terrain. Build the
+- Next step: prioritize a playable level 1–20 leg. The later Butcherblock
+  249-polygon detour passes offline strip and BSP checks; evaluate the
+  retained mesh's 1,180 warnings and live terrain before accepting movement. Build the
   owner-run G2 measurement with independently verified current position,
   speed and scene guards, using the passed G0 short stop result as one input.
-  Collect owner-run 0.39.4 F8/F9 HP feedback. When he next crosses
+  First obtain the pending read-only owner UI capture to calibrate HP and
+  independent scene indicators. When he next crosses
   GFay→Crushbone manually, obtain a
   fresh `/location` on each side and compare the destination observation to
   the copied mesh without calling it a verified spawn. Keep F11 off until
