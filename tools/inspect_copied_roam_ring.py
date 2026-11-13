@@ -17,6 +17,13 @@ from tempfile import NamedTemporaryFile
 
 
 DATA_ROOT = Path.home() / ".local/share/eql-automation"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+from eql_automation.bsp_probe import BspPointLookup  # noqa: E402
+from eql_automation.ground_bsp_route import audit_ground_bsp_route  # noqa: E402
+from eql_automation.lateral_strip_audit import audit_segment_strip  # noqa: E402
+from eql_automation.pfs_archive import PFSArchive  # noqa: E402
+from eql_automation.wld_inventory import WLDInventory  # noqa: E402
 HELPER_HASHES = {
     "eqnav/__init__.py": "717e253506fa07148160efd0679373ae0d430611d9146b73bc9feca02f5258b0",
     "eqnav/mesh.py": "89682ac2f6ee6ad4fc4e4530d946e4d7d883d860573a958d45f7cd7a074fef85",
@@ -35,6 +42,10 @@ ZONE_HASHES = {
         "64f3b3d8673a61424268172b3b9c6989921c77e49d5b0f4d55fa034f2d8ef792",
     ),
 }
+ARCHIVE_HASHES = {
+    "gfaydark": "ea95f51a2d4645410223d24cc7da9eb0e7095310c6e9f8756e8c51d67df13d9f",
+    "butcher": "af504e71d3f3497b5eef037d86475ba96985b261d96f6469915e058e05308839",
+}
 
 
 def digest(path: Path) -> str:
@@ -45,10 +56,33 @@ def digest(path: Path) -> str:
     return value.hexdigest()
 
 
+def endpoint_drifts(points, start_xyz, goal_xyz) -> dict[str, float]:
+    if (not isinstance(points, (tuple, list)) or len(points) < 2 or
+            any(not isinstance(point, (tuple, list)) or len(point) != 3 or
+                any(not isinstance(axis, (int, float)) or isinstance(axis, bool) or
+                    not math.isfinite(axis) for axis in point)
+                for point in (points[0], points[-1], start_xyz, goal_xyz))):
+        raise ValueError("copied path endpoints are not finite XYZ")
+    return {
+        "start_xy_drift": math.hypot(points[0][0] - start_xyz[0],
+                                     points[0][1] - start_xyz[1]),
+        "goal_xy_drift": math.hypot(points[-1][0] - goal_xyz[0],
+                                    points[-1][1] - goal_xyz[1]),
+        "start_z_drift": abs(points[0][2] - start_xyz[2]),
+        "goal_z_drift": abs(points[-1][2] - goal_xyz[2]),
+    }
+
+
+def endpoints_match_ring(drifts: dict[str, float]) -> bool:
+    return (all(math.isfinite(value) for value in drifts.values()) and
+            drifts["start_xy_drift"] <= 0.001 and drifts["goal_xy_drift"] <= 0.001 and
+            drifts["start_z_drift"] <= 0.01 and drifts["goal_z_drift"] <= 0.01)
+
+
 def inspect(camp_id: str, *, helper_root: Path, mesh_store: Path,
             output: Path, diagnostic_height_change: float = 6.0,
             candidate_leash: float | None = None,
-            count: int = 6) -> dict:
+            count: int = 6, audit_local: bool = False) -> dict:
     helper_root = helper_root.expanduser().resolve()
     mesh_store = mesh_store.expanduser().resolve()
     output = output.expanduser().resolve()
@@ -115,10 +149,24 @@ def inspect(camp_id: str, *, helper_root: Path, mesh_store: Path,
             any(digest(helper_root / name) != expected
                 for name, expected in HELPER_HASHES.items())):
         raise ValueError("copied mesh or helper changed during ring inspection")
+    lookup = None
+    archive_path = None
+    archive_hash = None
+    if audit_local:
+        archive_root = DATA_ROOT / "client-data/retail-full/assets"
+        archive_path = archive_root / f"{camp.zone}.s3d"
+        if (not archive_path.is_file() or archive_path.is_symlink() or
+                not archive_path.resolve().is_relative_to(archive_root.resolve())):
+            raise ValueError("copied client zone archive is missing")
+        archive_hash = digest(archive_path)
+        if archive_hash != ARCHIVE_HASHES[camp.zone]:
+            raise ValueError("copied client zone archive provenance changed")
+        lookup = BspPointLookup(WLDInventory(
+            PFSArchive(archive_path).read_member(f"{camp.zone}.wld")))
     rows = []
     for index, point in enumerate(spots):
         height_change = float(point[2] - anchor[2])
-        rows.append({
+        row = {
             "returned_index": index,
             "location_yxz": [float(value) for value in point],
             "horizontal_distance": math.hypot(point[0] - anchor[0],
@@ -126,7 +174,57 @@ def inspect(camp_id: str, *, helper_root: Path, mesh_store: Path,
             "height_change": height_change,
             "large_height_change_needs_review": abs(height_change) > diagnostic_height_change,
             "strip_bsp_dynamic_and_client_movement_verified": False,
-        })
+        }
+        if audit_local:
+            from eqnav.mesh import NavMeshError
+            start_xyz, goal_xyz = world._in(anchor), world._in(point)
+            try:
+                path = world._mesh(camp.zone).find_path(
+                    start_xyz, goal_xyz, water_cost=None, max_expansions=30000)
+            except NavMeshError as error:
+                row["local_static_audit"] = {"candidate": False,
+                                             "reason": "copied_graph_path_unavailable",
+                                             "detail": str(error)[:120]}
+            else:
+                drifts = endpoint_drifts(path.points, start_xyz, goal_xyz)
+                info = {"candidate": False, "mesh_polygons": list(map(int, path.polys)),
+                        "path_length": float(path.length),
+                        **drifts}
+                if not endpoints_match_ring(drifts):
+                    info["reason"] = "copied_path_snapped_from_ring_point"
+                elif len(path.polys) != 1 or len(path.points) != 2:
+                    info["reason"] = "portal_sequence_required"
+                elif int(world._mesh(camp.zone).area[path.polys[0]]) != 63:
+                    info["reason"] = "non_ground_copied_path"
+                else:
+                    poly = int(path.polys[0])
+                    first = (float(path.points[0][0]), float(path.points[0][1]))
+                    last = (float(path.points[1][0]), float(path.points[1][1]))
+                    strip = audit_segment_strip(world._mesh(camp.zone), poly,
+                                                first, last, sample_spacing=1.0,
+                                                max_samples=512, max_seconds=20.0)
+                    bsp = audit_ground_bsp_route(world._mesh(camp.zone), lookup,
+                                                 (poly,), (first, last),
+                                                 max_segments=1)
+                    info.update({"candidate": strip.candidate and bsp.candidate,
+                                 "reason": "copied_static_local_candidate_only" if
+                                 strip.candidate and bsp.candidate else
+                                 "copied_strip_or_bsp_rejected",
+                                 "strip_reason": strip.reason,
+                                 "strip_samples": strip.samples,
+                                 "bsp_reason": bsp.reason,
+                                 "bsp_spans": bsp.bsp_spans,
+                                 "bsp_labelled": len(bsp.labelled),
+                                 "bsp_unknown": len(bsp.unknown),
+                                 "bsp_unsupported_height": len(bsp.unsupported_height)})
+                row["local_static_audit"] = info
+        rows.append(row)
+    if audit_local and digest(archive_path) != archive_hash:
+        raise ValueError("copied client zone archive changed during local audit")
+    if (digest(mesh_path) != mesh_hash or digest(manifest_path) != manifest_hash or
+            any(digest(helper_root / name) != expected
+                for name, expected in HELPER_HASHES.items())):
+        raise ValueError("copied mesh or helper changed during local audit")
     record = {
         "format": "eql-copied-roam-ring-v1",
         "camp_id": camp.id,
@@ -140,6 +238,8 @@ def inspect(camp_id: str, *, helper_root: Path, mesh_store: Path,
         "helper_source_sha256": HELPER_HASHES,
         "mesh_sha256": mesh_hash,
         "manifest_sha256": manifest_hash,
+        "client_archive_sha256": archive_hash,
+        "local_strip_bsp_audit_requested": audit_local,
         "roam_points": rows,
         "offline_only": True,
         "route_accepted": False,
@@ -163,6 +263,8 @@ def inspect(camp_id: str, *, helper_root: Path, mesh_store: Path,
             "camp_id": camp.id, "points": len(rows),
             "large_height_changes": sum(row["large_height_change_needs_review"]
                                         for row in rows),
+            "local_static_candidates": sum(row.get("local_static_audit", {}).get("candidate") is True
+                                           for row in rows),
             "offline_only": True, "route_accepted": False}
 
 
@@ -177,13 +279,15 @@ def main() -> None:
     parser.add_argument("--candidate-leash", type=float,
                         help="offline ring radius control, at most the guide leash")
     parser.add_argument("--count", type=int, default=6)
+    parser.add_argument("--audit-local", action="store_true",
+                        help="also audit one-polygon camp spokes against strips and copied BSP")
     args = parser.parse_args()
     try:
         print(json.dumps(inspect(args.camp_id, helper_root=args.helper_root,
                                  mesh_store=args.mesh_store, output=args.output,
                                  diagnostic_height_change=args.diagnostic_height_change,
                                  candidate_leash=args.candidate_leash,
-                                 count=args.count)))
+                                 count=args.count, audit_local=args.audit_local)))
     except (OSError, ValueError, TypeError, ImportError) as error:
         parser.exit(1, f"Copied ring inspection refused: {error}\n")
 

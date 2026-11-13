@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-13 17:09 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:16 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Low-level route progress: a bounded select-only run saved the 249-ground-
@@ -8,11 +8,12 @@ Updated 2026-11-13 17:09 CST for coordinator task `829a00229b29`.
   whole-strip audit passed all 249 copied segments. A separate copied-client
   BSP scan passed all 249 ground and ground+1 segments with 560 spans and no
   labelled, unknown or unsupported spans. Client traversal remains unverified.
-  The default Butcher camp roam ring has four
-  >6-unit height changes; a smaller 12-unit ring offers three one-polygon
-  points that passed copied lateral strip and BSP checks. A smaller GFay orc
-  ring keeps all six proposed points within about 2 units of its copied
-  anchor, but its local strips/BSP and live camp are not yet accepted. The
+  The default Butcher camp roam ring has four >6-unit height changes; a
+  smaller 12-unit ring offers 12 one-polygon points that passed copied
+  lateral strip and BSP checks, though seven exceed that height band. A
+  smaller GFay orc ring keeps all six proposed points within about 2 units
+  of its copied anchor; five one-polygon spokes passed strip/BSP checks and
+  the sixth still needs a portal choice. Their live camps remain unaccepted. The
   guide markers are not client-certified positions. Current level remains
   last observed 7; XP/hour and deaths remain unavailable, and F11 is off.
 - Private publish: source-only project 0.41.36 commit `aa95022` is staged

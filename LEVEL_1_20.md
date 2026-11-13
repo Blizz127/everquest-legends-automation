@@ -1,15 +1,15 @@
 # Level 1–20 route work
 
-Updated 2026-11-13 17:07 CST. This is the prioritized route and acceptance
+Updated 2026-11-13 17:16 CST. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
 | Levels | Planned camp | Route needed | Current evidence |
 | --- | --- | --- | --- |
-| 1–5 | Butcherblock Kaladim gate yards | South Kaladim → Butcherblock, then local camp | The copied helper's default 54-unit roam ring proposes four points, all with >6 units height change. A 12-unit ring proposes three local points that passed copied strip and BSP checks; the camp position, source arrival, actual mobs and movement remain unverified. |
+| 1–5 | Butcherblock Kaladim gate yards | South Kaladim → Butcherblock, then local camp | The copied helper's default 54-unit roam ring proposes four points, all with >6 units height change. A 12-unit ring proposes 12 one-polygon points that passed copied strip and BSP checks; seven still have >6 units height change. The camp position, source arrival, actual mobs and movement remain unverified. |
 | 5–8 | Crushbone Slaver Caves (west) | Butcherblock → GFay → Crushbone → safe spot | Copied GFay ground approaches toward Butcherblock and Crushbone pass separate offline strip checks. Crushbone arrival and its Slaver route are unaccepted; two copied-mesh crossings fail the current grade-1.2 turn audit. |
-| 6–10 | GFay orc camps, alternate for Legira | Current GFay position → guide marker, then observed pull area | The existing guide lists this outdoor camp and the owner's log confirms relevant `/con` mobs. A copied dry path from the G0 test position avoids water and two steep polygons; its 155 ground segments passed sampled turns, walking-width strips, whole-route and static BSP checks. The actual camp, current position and live movement are unverified. |
+| 6–10 | GFay orc camps, alternate for Legira | Current GFay position → guide marker, then observed pull area | The existing guide lists this outdoor camp and the owner's log confirms relevant `/con` mobs. A copied dry path from the G0 test position avoids water and two steep polygons; its 155 ground segments passed sampled turns, walking-width strips, whole-route and static BSP checks. Five of six 12-unit local spokes pass copied strip/BSP checks; the sixth needs a portal choice. The actual camp, current position and live movement are unverified. |
 | 8–13 | Crushbone Trainer Hill | Slaver Caves → Trainer Hill | The prior guide lists this range; no camp route, con sample or real movement has been accepted. |
 | 12–16 | Crushbone Slaver Pits, alternate to delay the Unrest trip | Trainer Hill → Slaver Pits | The prior guide lists this level band but warns of protected slave/NPC targets and a stronger named mob. Actual target selection, pull safety and live XP remain unverified. |
 | 13–17 | Unrest yard | Crushbone → GFay → Butcherblock → Dagnor's Cauldron → Unrest | Owner-helper Cauldron and Unrest meshes match the copied archive hashes. A dry Cauldron graph corridor has 364 polygons but steep/narrow sections. The Unrest entrance-to-yard corridor fails its sampled selector near the entrance; copied BSP also marks water and unknown spans. No walkable leg or arrival is accepted. |

@@ -1,5 +1,26 @@
 # FINDINGS
 
+## Copied low-level camp spokes — 2026-11-13 17:16 CST
+
+**VERIFIED offline, no game input:** The pinned 12-unit GFay orc-camp ring
+has six copied graph points. Five direct spokes stay in ground polygon 18960,
+match their requested endpoints in XYZ and pass sampled lateral strips plus
+the copied-client BSP at ground and ground+1. The sixth crosses polygons
+18960→18959 and remains unselected. Private reviewed artifact SHA-256
+`4941f6517d3aec4a0b236779774db89a08d8942c51a748a4699624d6934936eb`.
+The pinned 12-unit, 12-angle Butcher Kaladim-yard ring has 12 direct spokes
+in polygon 21947; each matches its requested XYZ endpoints and passes the
+same copied strip and BSP checks. Seven spokes change anchor height by more
+than the six-unit diagnostic band, from about −10.12 to +9.19 units. Their
+sampled local grade passed the current diagnostic limit, but no client climb
+or camp safety has been observed. Private artifact SHA-256
+`b1971335c3591d2600139d480c26edc3dd49e3e3e79f4f357a7a1b7f9d7086b2`.
+The new offline tool checks both XY and Z snap drift before a local candidate
+can pass, rehashes helper/mesh/archive inputs after the run and keeps the
+copied guide marker unverified. Actual mobs, dynamic obstacles, aggro,
+incoming attacks, player presence and live movement remain unverified. F11
+stays disabled.
+
 ## Low-level copied camp rings and staged Butcher route — 2026-11-13 17:07 CST
 
 **VERIFIED offline, no game input:** A 249-ground-polygon Butcherblock
