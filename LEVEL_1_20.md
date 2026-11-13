@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-13 15:35 CST. This is the prioritized route and acceptance
+Updated 2026-11-13 16:44 CST. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -11,8 +11,11 @@ use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 | 5–8 | Crushbone Slaver Caves (west) | Butcherblock → GFay → Crushbone → safe spot | Copied GFay ground approaches toward Butcherblock and Crushbone pass separate offline strip checks. Crushbone arrival and its Slaver route are unaccepted; two copied-mesh crossings fail the current grade-1.2 turn audit. |
 | 6–10 | GFay orc camps, alternate for Legira | Current GFay position → guide marker, then observed pull area | The existing guide lists this outdoor camp and the owner's log confirms relevant `/con` mobs. A copied dry path from the G0 test position avoids water and two steep polygons; its 155 ground segments passed sampled turns, walking-width strips, whole-route and static BSP checks. The actual camp, current position and live movement are unverified. |
 | 8–13 | Crushbone Trainer Hill | Slaver Caves → Trainer Hill | The prior guide lists this range; no camp route, con sample or real movement has been accepted. |
+| 12–16 | Crushbone Slaver Pits, alternate to delay the Unrest trip | Trainer Hill → Slaver Pits | The prior guide lists this level band but warns of protected slave/NPC targets and a stronger named mob. Actual target selection, pull safety and live XP remain unverified. |
 | 13–17 | Unrest yard | Crushbone → GFay → Butcherblock → Dagnor's Cauldron → Unrest | Owner-helper Cauldron and Unrest meshes match the copied archive hashes. A dry Cauldron graph corridor has 364 polygons but steep/narrow sections. The Unrest entrance-to-yard corridor fails its sampled selector near the entrance; copied BSP also marks water and unknown spans. No walkable leg or arrival is accepted. |
+| 14–18 | Crushbone North Wall, danger-limited alternate | Slaver Pits → North Wall | The guide rates this camp poor for automation because a Royal Guard may attack unseen. The bot must reject it until current target identity, danger and XP can be measured. |
 | 17–20 | Unrest first floor, subject to observed difficulty and XP | Yard → first floor | A 59-polygon dry graph path exists, but its copied polygon-wide slope reaches 89.01° and minimum center clearance is 1.57 units. Dynamic doors, pull safety and live XP remain unverified; the prior guide marks this indoor camp poor for automation. |
+| 17–20 | Crushbone Throne Room, danger-limited alternate | North Wall → Throne Room | The guide rates this camp poor because of clustered legionnaires/oracles and an invisible Royal Guard. It is a planning fallback only; no safe route or camp has been accepted. |
 
 The level bands are **candidate priorities from the existing Alienware
 `leveling_guide.json`**, SHA-256
@@ -22,6 +25,10 @@ owner-reported level 7 in GFay, the immediate candidate is GFay → Crushbone
 Slaver Caves, with same-zone GFay orc camps as a fallback candidate. Starting a fresh character at level 1 would instead begin at
 the Butcherblock camp if its spawn and safe route are observed. Camp changes
 must use measured XP, con, crowd and danger rather than the table alone.
+The Crushbone alternatives let the planner compare same-zone options before
+committing to the unresolved Cauldron→Unrest crossing; they do not authorize
+F11 or a pull. The helper's protected-target rules must still exclude
+noncombat NPCs and stronger named mobs.
 
 The copied client's zone-label maps independently name GFay → Butcherblock,
 GFay → Crushbone, Butcherblock → Dagnor's Cauldron and Dagnor's Cauldron →
@@ -42,6 +49,9 @@ The retained owner-helper meshes for both zones now load from the private
 store with matching source and mesh hashes. Their dry graph connectivity does
 not clear steep/narrow geometry, copied BSP water/unknown spans, dynamic doors
 or actual client traversal. The exact diagnostic artifacts are in FINDINGS.md.
+The copied Unrest BSP labels the entrance corridor as water at foot height in
+several sampled sections. A dry crossing at one edge of polygon 3083 has no
+proved dry continuation toward the yard. This leg remains a planning candidate.
 
 ## What unlocks the first playable leg
 

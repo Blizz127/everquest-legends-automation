@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.33 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.34 / owner preview 0.39.4
 
 ## Current availability
 
@@ -296,6 +296,32 @@ That is a same-session alignment observation, not a current G2 start permit.
 F11 travel/grinding remains disabled. The
 copied GFay and Crushbone mesh paths are connected offline but include narrow
 clearance and steep polygons, so they are not accepted movement routes.
+
+## Read-only UI observation for the next movement gate
+
+Project 0.41.34 includes an optional owner-run screenshot crop tool. It reads
+one focused EverQuest window without sending any input, saves only the player,
+target and chat window crops under
+`~/.local/share/eql-automation/g2-ui-observations/`, and marks every G2 safety
+flag **unknown**. The saved client UI layout places Legira's HP gauge at
+`(1966, 693, 330, 17)` on the 2560×1600 layout; the old HP calibration
+`[1963,661,2301,712]` starts above that gauge and is too tall. These file
+coordinates need a live screenshot before they can be used for calibration.
+To collect an idle observation when needed, close any helper, stand still in
+the game, run the command below from a terminal, and return focus to EverQuest
+within five seconds:
+
+```bash
+cd ~/.local/share/eql-automation/owner-tools/0.41.34/source
+python3 tools/capture_owner_ui.py --label idle
+```
+
+The tool prints its private output directory. It requires the reviewed 0.39.4
+preview files and exactly one focused game process. It does not turn on F11 or
+prove chat, target, melee or combat state. Leave any screenshot files private;
+their chat crop may contain messages. Paired owner-controlled visible states
+are needed before the UI indicators can become safety checks. No extra owner
+test is required until we request those pairs.
 
 After the check, the owner can send `~/eql-g0-trace.jsonl` or summarize it
 without printing the `/location` coordinates from the trace:

@@ -1,5 +1,31 @@
 # FINDINGS
 
+## Read-only G2 UI capture and Unrest water check — 2026-11-13 16:44 CST
+
+**VERIFIED static client layout, no game input:** The owner preview 0.39.4
+`UiLayout.load` against the Alienware's installed Legira UI INI resolves
+`Player_HP` to `(1966,693,330,17)` at 2560×1600, while the previously saved
+HP crop `[1963,661,2301,712]` starts 32 pixels higher and spans 51 pixels.
+That mismatch plausibly explains `hp=null`; a live crop and HP reading have
+not confirmed it. The same layout places `Player_Mana` at
+`(1966,713,330,17)`, `PW_CombatStateAnim` at `(2289,665,16,33)`,
+`TargetWindow` at `(1668,1256,375,279)` and `MainChat` at
+`(91,1269,657,280)`. The client XML defines chat input, attack indicators
+and combat state widgets, but the saved INI/XML does not reveal live focus,
+target, melee state or incoming attacks. Project 0.41.34 adds an owner-run,
+read-only focused-window crop tool pinned to the staged preview's source
+hashes. Its help/import smoke passed; no live screenshot has been captured by
+this release and no G2 safety flag is accepted.
+
+**VERIFIED copied-source BSP diagnostics, not client movement:** The Unrest
+entrance route's second funnel segment is water-labelled from mesh ground
+through +1.5 height and clears at +1.75. The WLD's `missing BSP child` is
+unclassified, not evidence of dry terrain. Polygon 3083 is a dry-graph cut;
+a local upper-edge crossing is dry and passes a copied-mesh strip, but sampled
+continuation sections toward the yard are water-labelled at ground height.
+There is no accepted dry continuation, actual water behavior or Unrest route.
+F11 remains disabled.
+
 ## Bounded earlier-portal repair — 2026-11-13 16:37 CST
 
 **VERIFIED offline, no game input:** Version 0.41.33 lets the copied-ground
