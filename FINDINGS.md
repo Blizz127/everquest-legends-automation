@@ -1,5 +1,80 @@
 # FINDINGS
 
+## Owner-run G0 and retained Butcherblock mesh — 2026-11-13 15:27 CST
+
+**VERIFIED owner-run observation:** Blizz launched isolated assist preview
+0.39.4 in measurement mode on his Alienware and confirmed he saw the
+character stop after its short forward pulse. The helper trace
+`~/eql-g0-trace.jsonl` SHA-256
+`ec233e53ab37ef0245d78f98529ea264055c9c75b5a916f4d36a8c6171e3d7b1`
+has one `ap_stop_check_result` with `outcome=observed_stop`, all four
+preflight/post-release location fixes, 0.1508157-second hold, 4.6407004
+units displacement, and 0.0 XY/Z drift between post-release fixes. One
+earlier focus attempt did not start; the successful attempt then ran. This
+clears the G0 stop observation only. One pulse does not establish a verified
+speed upper bound, live log-to-WLD alignment, G2 scene guards, follower
+error or any route. The lead sent no client input.
+
+**VERIFIED retained current-tool artifact:** The Alienware's existing
+`~/.local/share/eql-automation/navmesh/nov12-7e3cd28-store/butcher.npz`
+was copied read-only to the same private devbox store path; both copies have
+SHA-256 `4e450cdbca7ab6cc44a7973eca11929d7b920db49f6c51ad00a6337b5ee58bde`.
+Its manifest SHA-256 is
+`64f3b3d8673a61424268172b3b9c6989921c77e49d5b0f4d55fa034f2d8ef792`
+and its report SHA-256 is
+`1ee7d3bfd81ff4e10af638082b9e5c7b46b2b64de99c3f5ca1367915574c82af`.
+The manifest's three source archive hashes match the copied client archives:
+`butcher.s3d` `af504e71d3f3497b5eef037d86475ba96985b261d96f6469915e058e05308839`,
+`butcher_obj.s3d` `ad4c886395c9af7f3de17be1c1a24785e295f892097b8e5785eec670a089c047`,
+and `butcher_2_obj.s3d`
+`cb5cabede79b53f9b884c15712ec07225f5ca81e1093be36f7d3d12b8ea03ece`.
+The manifest reports 56,785 nav polygons and **1,180 Recast warnings not yet
+classified**. This is a different mesh and hash from the November 6
+historical Butcherblock proof; it does not retroactively verify that proof.
+
+**VERIFIED offline dry route, no game input:** From the prior guide's
+approximate Kaladim gate-yard camp coordinate `(2700,-650,9.8)` to the
+copied mesh's GFay trigger, a water-forbidden query found 255 polygons.
+Penalizing seven steep or narrow polygons across three bounded retries
+produced a 239-polygon alternative with 236 ground polygons, maximum copied
+polygon slope 74.24 degrees and minimum polygon-center clearance 3.0 units.
+The initial dry-query artifact SHA-256 is
+`7e7077c7b8c8c5e7a4bacc3ea2f6c5e07f3ec2a10a56043b23a076abe127d1df`;
+its private path is
+`~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-dry-20261113T2123Z.json`.
+The final repair artifact SHA-256 is
+`57b037d85ef9d5723e0c6179951fbc3a90f5d677b8bcd8060b88aef2e31000d8`.
+It is under
+`~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-repair2-20261113T2125Z.json`.
+Strict detail heights and copied BSP tracing over the 236 ground segments at
+ground and ground+1 height returned 530 spans with no labelled or unknown
+ones; the private BSP artifact SHA-256 is
+`f6591ed1ab789ca0ea1e7d2342a9abc93eae375b17eeb295ec8d7c9ed928c5d3`.
+Its path is
+`~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-bsp-20261113T2127Z.json`.
+This checks static labels along a midpoint corridor; the lateral strip,
+zone trigger, current character position, dynamic hazards and actual motion
+are unverified. The guide camp coordinate is approximate. F11 stays off.
+
+**VERIFIED bounded selector rejection:** The 236-ground-polygon repaired
+corridor reached directed edge 37736→37733 at path index 67, then returned
+`no_sampled_turn_disk_candidate` after 92 turn checks and zero strip checks.
+The private selector artifact
+`~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-selector-20261113T2127Z.json`
+has SHA-256 `f90684524bda5906343e102e421ecfd70de35441758af92dd93c6c44122d28c9`.
+At the midpoint the copied nav detail drops about 0.628 units over a
+0.6-unit radial sample, narrowly above the diagnostic grade-1.0 limit.
+This conservative rejection does not prove the client cannot traverse the
+edge. Source material and alternate corridor review are still open.
+
+**VERIFIED code smoke:** The new `ground_bsp_route` helper rejects missing
+detail, non-ground areas, labelled or unknown BSP spans, and incomplete BSP
+partitions. Six focused tests pass. Replaying the GFay→Butcherblock selected
+ground corridor through it yielded 114 static BSP spans, no labels or unknowns,
+and a candidate-only result; its outside-git artifact SHA-256 is
+`f7f21ce0fd86a0da77d67dc0c2979e8b8aa7a0ac9fdd0c784d3364c0354e8833`.
+No helper result accepts client movement.
+
 ## GFay to Butcherblock ground approach — 2026-11-13 15:15 CST
 
 **VERIFIED copied-data offline, no game input:** The copied GFay map label for

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.25 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.26 / owner preview 0.39.4
 
 ## Current availability
 
@@ -150,6 +150,16 @@ and ground+1 height. It ends before the zone trigger, and the start came from
 a historical Legira log line. It is not a current or playable route. The
 owner trace summarizer now reports the G0 hold, displacement and post-release
 drift without printing character coordinates. F11 remains disabled.
+Version 0.41.26 adds a bounded, reusable offline BSP scan for selected ground
+corridors. It rejects missing detail heights, non-ground polygons, labelled
+water/zone spans, unknown or incomplete BSP intervals. The current helper's
+retained Butcherblock mesh was copied read-only into the private data store;
+its source archive hashes match the copied client. A dry Kaladim-yard → GFay
+path can avoid seven steep/narrow polygons and its ground prefix has no
+copied BSP labels or unknown intervals at two heights. Its lateral selector
+currently stops at polygon 37736 before a complete route; the mesh also has
+1,180 unclassified Recast warnings. This is not a playable path. F11 remains
+disabled.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -229,8 +239,11 @@ seconds. The source requests one 0.15-second forward pulse, then checks four
 if movement persists. G0 passes only when the helper reports **observed stop
 after release**, the trace contains `ap_stop_check_result` with
 `outcome=observed_stop`, and Blizz sees the character stop. A dry-run or log
-line alone does not pass G0. The 2026-11-06 continued-walking report remains
-unresolved until this check passes. F11 travel/grinding remains disabled. The
+line alone does not pass G0. On 2026-11-13, Blizz confirmed he saw the
+character stop and the 0.39.4 trace showed `observed_stop` after a 0.151-second
+hold, 4.64-unit displacement and zero measured post-release drift. This
+passed the short G0 check; speed, G2 and route following remain unverified.
+F11 travel/grinding remains disabled. The
 copied GFay and Crushbone mesh paths are connected offline but include narrow
 clearance and steep polygons, so they are not accepted movement routes.
 

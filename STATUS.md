@@ -1,11 +1,18 @@
 # STATUS
 
-Updated 2026-11-13 15:19 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 15:28 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
-- Owner feedback check: at 14:54 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` was found on Alienware. Legira's real-client log was last checked at 14:24 CST and then still had mtime 09:31:50 CST. No 0.39.3/0.39.4 live result is available.
-- Owner agreed to run the supervised 0.39.4 G0 movement-stop check; its result
-  has not yet arrived; both expected trace paths were absent at 15:19 CST.
+- Owner feedback check: at 14:54 CST, neither expected trace was present on
+  Alienware. The G0 trace appeared later and is summarized below. Legira's
+  game log was last checked at 14:24 CST and then had mtime 09:31:50 CST;
+  no newer level or XP observation has been read.
+- Owner-run 0.39.4 G0 **passed the short stop observation**: trace SHA-256
+  `ec233e53ab37ef0245d78f98529ea264055c9c75b5a916f4d36a8c6171e3d7b1`
+  records a 0.1508-second hold, 4.6407-unit displacement and zero
+  post-release XY/Z drift across four location fixes; Blizz confirmed he saw
+  the character stop. The first focus attempt did not start; the second
+  succeeded. G2 speed, scene and route gates remain unverified.
   No new character level, XP or death observation was
   received. The new [1–20 route record](LEVEL_1_20.md) prioritizes
   Butcherblock → Crushbone → Unrest by observed level, with all route legs
@@ -17,6 +24,15 @@ Updated 2026-11-13 15:19 CST for coordinator task `829a00229b29`.
   and stops before the zone trigger; no game movement or transition is proven.
   Artifacts/hashes are in FINDINGS.md. A bounded full Butcherblock bake timed
   out at 120 seconds under heavy devbox pressure and produced no mesh.
+- VERIFIED copied artifact: the current Alienware helper's retained
+  Butcherblock mesh SHA-256
+  `4e450cdbca7ab6cc44a7973eca11929d7b920db49f6c51ad00a6337b5ee58bde`
+  was copied read-only into the private devbox store; its manifest source
+  hashes match copied client archives. A 239-polygon dry camp→GFay route
+  avoids seven steep/narrow polygons; its 236 ground segments have no copied
+  BSP labelled/unknown spans at two heights. The lateral selector stops at
+  polygon 37736 after 92 turn checks with no sampled turn candidate. The
+  mesh reports 1,180 Recast warnings; no client route is accepted.
 - Private publish: source-only project 0.41.23 commit `26870d8` was staged
   under Alienware `~/.local/share/eql-automation/owner-tools/0.41.23`
   outside the game install. The local and remote archive SHA-256 matched:
@@ -564,7 +580,8 @@ Updated 2026-11-13 15:19 CST for coordinator task `829a00229b29`.
 - Current blocker: 0.39.4 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee
-  stop, G0/G2 movement-stop/follower acceptance, validated runtime mesh-store binding,
+  stop, G2 speed/scene/follower acceptance after the passed G0 short stop check,
+  validated runtime mesh-store binding,
   integration of the offline reachable-camp patch and a level-11 camp; real-client acceptance also lacks the intended
   private endpoint/client configuration. Owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
@@ -573,24 +590,28 @@ Updated 2026-11-13 15:19 CST for coordinator task `829a00229b29`.
   directory checks found no private EQEmu/EQL candidate; this does not rule
   out another machine or path. Daybreak rules prohibit unattended play and unauthorized
   servers; no Daybreak-authorized live test route is documented. The historical
-  Butcherblock navmesh/recipe is absent from the approved retained store, and
-  the reported GFay vertical mismatch on its historical route and
+  Butcherblock navmesh/recipe with the historical serialized hash is absent
+  from the approved retained store; a distinct current-helper mesh is copied
+  and under review. The reported GFay vertical mismatch on its historical route and
   conservative clearance failure remain unresolved. No actual client
   acceptance is ready. The 0.39.4 assist/G0 preview is privately staged on
   Alienware outside the game install; full auto has no playable release yet.
-- Next step: collect Blizz's owner-run 0.39.4 F8/F9 HP and supervised G0
-  stop observations. When he next crosses GFay→Crushbone manually, obtain a
+- Next step: prioritize a playable level 1–20 leg. Resolve the Butcherblock
+  polygon-37736 turn rejection against copied source geometry; evaluate the
+  retained mesh's 1,180 warnings before accepting terrain. Build the
+  owner-run G2 measurement with independently verified current position,
+  speed and scene guards, using the passed G0 short stop result as one input.
+  Collect owner-run 0.39.4 F8/F9 HP feedback. When he next crosses
+  GFay→Crushbone manually, obtain a
   fresh `/location` on each side and compare the destination observation to
   the copied mesh without calling it a verified spawn. Keep F11 off until
-  G0/G2, current-position observation, transition and follower evidence pass.
-  Collect the owner's 0.39.4 HP/F8/F9 observations and supervised
-  G0 movement-stop result without touching Legira. Build a bounded owner-run
-  G2 straight-motion measurement program using the isolated pulse bridge,
-  fresh client scene observer and bounded stop guards; the geometry
+  G2, current-position observation, transition and follower evidence pass.
+  A bounded owner-run G2 straight-motion measurement must use the isolated
+  pulse bridge, fresh client scene observer and stop guards; the geometry
   preflight alone does not permit it.
   Build an observed autoattack state/stop acknowledgment gate for
   full auto, then bind the copied mesh store in a separate owner-run route
-  trial after G0/G2 checks and resolve the narrow GFay/Crushbone corridors.
+  trial after G2 checks and resolve the narrow GFay/Crushbone corridors.
   For Crushbone, the 0.41.5 centerline fails the lateral strip at poly3146;
   a local portal shift moves the first failure to poly3248. Evaluate the
   176-polygon bypass only after measured follower error establishes a real
