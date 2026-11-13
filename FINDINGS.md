@@ -1,5 +1,36 @@
 # FINDINGS
 
+## Client log position format and read-only tail — 2026-11-13 07:18 CST
+
+**VERIFIED read-only client evidence:** The Alienware retail client has a
+historical owner-character log at `<game root>/Logs/eqlog_Legira_freeport.txt`,
+SHA-256 `ab782e0d9fec079d2e6d6d74b8c6206c5da96d3811af87f20103c8dfcd99be73`
+when inspected. It contains timestamped `Your Location is <number>,
+<number>, <number>` messages, `LOADING, PLEASE WAIT...`, and `You have entered
+<display name>.` messages. A historical line from that real file parsed with
+the new exact-format parser. The log was read only; no character was launched
+or commanded. The printed triple's WLD axis order and capture latency remain
+unverified.
+
+**VERIFIED copied client data:** The copied `Resources/ZoneNames.txt`, SHA-256
+`840b61b01deb4dfb8f49cf13e007364a629ce380c165aad5bb37adba6e52cd39`,
+yielded 504 unique display-name-to-ID mappings and 74 ambiguous names.
+Exact names in the historical log resolve to Clan Crushbone ID 58, The Greater
+Faydark ID 54, Northern Felwithe ID 61, and Southern Felwithe ID 62. These
+IDs do not establish walkable routes or coordinate alignment.
+
+**VERIFIED offline:** `LocationLogReader` now requires an expected character
+and server filename, skips preexisting log bytes, binds raw location triples
+only after an unambiguous entered-zone line, and invalidates them during
+loading or on log reset. Its dedicated tail drops replacement/truncation
+history, changed continuity anchors, excessive backlog, and oversized partial
+lines. A regression in the log's local timestamp clears the zone and requires
+a later entered-zone line. A later loading/zone event in the same poll drops
+earlier position fixes; malformed position or transition lines also invalidate
+them. Twelve focused tests cover these conditions. The reader does not send `/loc`, feed
+`WorldNavigator`, or treat a poll timestamp as verified capture freshness.
+No fresh test character or real client run has occurred.
+
 ## Synthetic camp travel waits for navigator observations — 2026-11-13 07:11 CST
 
 **VERIFIED synthetic only:** The closed-loop `--synthetic-1-50` campaign now

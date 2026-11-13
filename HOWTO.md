@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.31.0
+# EverQuest Legends automation — current build 0.32.0
 
 ## Current availability
 
@@ -117,6 +117,17 @@ action. A missing or stale observation also latches OFF.
 route changing to a safe alternate. The pure navigation controller waits for
 an observed start position, uses only explicitly verified graph edges, and
 pauses on uncertain movement or zoning. It does not press movement keys.
+
+The read-only `LocationLogReader` library can tail a specified fresh test
+character log and a copied client `Resources/ZoneNames.txt`. It skips existing
+log history, resolves only exact unambiguous zone display names, clears the
+position during loading, and records later `Your Location is ...` lines as
+**raw, unaligned coordinates**. File replacement, truncation, excessive
+backlog, malformed lines, and older log timestamps cannot bootstrap a position.
+This is a library seam, not a running observer or a navigation input. It does
+not request `/loc`, convert log axes to WLD axes, verify log-to-client latency,
+or move the character. The installed client currently has no verified private
+target; do not use its owner-character log for a bot run.
 
 `--inspect-target` reads a copied `eqhost.txt` and reports its host, port,
 hash, and whether it is a Daybreak official domain. It does not connect.

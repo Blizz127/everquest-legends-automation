@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 07:11 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 07:19 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.31.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.32.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -141,6 +141,10 @@ Updated 2026-11-13 07:11 CST for coordinator task `829a00229b29`.
   fabricates immediate arrival; no real position or movement is verified.
   Pending zone transitions dispatch once, observation errors latch OFF, and
   dispatch/navigation timestamps share a monotonic synthetic clock.
+  A new read-only location log reader parses the real client's exact `/loc`
+  output shape and zone-entry messages, but keeps coordinates raw and
+  unaligned. It skips existing history and drops positions across loading,
+  unknown zones, log resets and timestamp regressions. It sends no input.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -245,6 +249,15 @@ Updated 2026-11-13 07:11 CST for coordinator task `829a00229b29`.
   rejected in focused tests, as are stale start/arrival observations and
   callback errors. Waiting on a zone issues one action. No client input was
   sent. Trace: `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T131106Z/`.
+  The historical Alienware log contained exact timestamped location, loading,
+  and entered-zone lines; one real historical location line parsed read-only.
+  Its SHA-256 was `ab782e0d9fec079d2e6d6d74b8c6206c5da96d3811af87f20103c8dfcd99be73`.
+  Copied client zone names resolved 504 unique names and 74 ambiguous ones;
+  the four reviewed zone names matched IDs 58, 54, 61 and 62. Twelve focused
+  location-log tests passed. No coordinate transform or live freshness check
+  has been verified. The full 41-test focused set passed and synthetic 1–50
+  reran to only fabricated level 50 with 1,446 events at
+  `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T131858Z/`.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -266,7 +279,8 @@ Updated 2026-11-13 07:11 CST for coordinator task `829a00229b29`.
   needs a real active-skin crop and same-frame label confirmation. BSP
   candidates require observed traversal; Crushbone camps
   still require client evidence; select later camps from observed level and
-  safety. Build a
-  read-only runtime UI observer on an isolated client view. ASSIST keeps
+  safety. Verify raw `/loc` axis order and log freshness before any position
+  can feed `WorldNavigator`; build a read-only runtime UI observer on an
+  isolated client view. ASSIST keeps
   movement manual. The October assist tool's live preparation/combat remain
   unverified.
