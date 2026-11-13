@@ -177,6 +177,11 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
 
     # Layered shortest-path search. A failed polygon expands only its two
     # bounding portals, then retries under the same global work budgets.
+    # The same entry/exit pair recurs in each repair round. Its bounded
+    # geometry result is deterministic for this mesh and these limits, so
+    # count and perform that sample work once. Time-limit results abort and
+    # are never cached.
+    strip_cache = {}
     best_path: tuple[PortalChoice, ...] | None = None
     for repair_round in range(max_strip_repair_rounds + 1):
         states: dict[PortalChoice, tuple[float, tuple[PortalChoice, ...]]] = {
@@ -188,25 +193,35 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
             next_states = {}
             for entry, (cost, path) in states.items():
                 for exit_choice in exits:
-                    if strips >= max_strip_checks or samples >= max_total_samples or \
-                            time.monotonic() - started >= max_seconds:
+                    if (samples >= max_total_samples or
+                            time.monotonic() - started >= max_seconds):
                         return PortalSelection(False, "selection_work_budget_exceeded",
                                                turn_checks=turns, strip_checks=strips,
                                                failed_polygon=poly)
-                    remaining = max_seconds - (time.monotonic() - started)
-                    strips += 1
-                    result = audit_segment_strip(
-                        mesh, poly, entry.xy, exit_choice.xy,
-                        sample_spacing=sample_spacing, half_width=half_width,
-                        maximum_cross_grade=maximum_grade,
-                        max_samples=min(max_segment_samples,
-                                        max_total_samples - samples),
-                        max_seconds=min(remaining, max_segment_seconds))
-                    samples += result.samples
-                    if samples > max_total_samples or result.reason == "strip_time_budget_exceeded":
-                        return PortalSelection(False, "selection_work_budget_exceeded",
-                                               turn_checks=turns, strip_checks=strips,
-                                               failed_polygon=poly)
+                    key = (index, entry, exit_choice)
+                    if key in strip_cache:
+                        result = strip_cache[key]
+                    else:
+                        if strips >= max_strip_checks:
+                            return PortalSelection(False, "selection_work_budget_exceeded",
+                                                   turn_checks=turns, strip_checks=strips,
+                                                   failed_polygon=poly)
+                        remaining = max_seconds - (time.monotonic() - started)
+                        strips += 1
+                        result = audit_segment_strip(
+                            mesh, poly, entry.xy, exit_choice.xy,
+                            sample_spacing=sample_spacing, half_width=half_width,
+                            maximum_cross_grade=maximum_grade,
+                            max_samples=min(max_segment_samples,
+                                            max_total_samples - samples),
+                            max_seconds=min(remaining, max_segment_seconds))
+                        samples += result.samples
+                        if (samples > max_total_samples or
+                                result.reason == "strip_time_budget_exceeded"):
+                            return PortalSelection(False, "selection_work_budget_exceeded",
+                                                   turn_checks=turns, strip_checks=strips,
+                                                   failed_polygon=poly)
+                        strip_cache[key] = result
                     if not result.candidate:
                         continue
                     total = cost + math.dist(entry.xy, exit_choice.xy)

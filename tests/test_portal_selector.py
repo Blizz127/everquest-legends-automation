@@ -1,3 +1,5 @@
+from collections import Counter
+
 from eql_automation.lateral_strip_audit import LateralStripCheck
 from eql_automation.portal_selector import select_ground_portals
 from eql_automation.strip_route_audit import StripRouteCheck
@@ -145,8 +147,10 @@ def test_strip_failure_expands_midpoint_safe_portal_under_bound(monkeypatch):
 
 def test_middle_polygon_can_repair_either_adjacent_portal(monkeypatch):
     real_strip = selector.audit_segment_strip
+    calls = Counter()
 
     def reject_midpoint_pair(mesh, poly, start, end, **kwargs):
+        calls[(poly, start, end)] += 1
         if poly == 1 and start[1] == end[1] == 5.0:
             return LateralStripCheck(False, "synthetic_midpoint_obstacle")
         return real_strip(mesh, poly, start, end, **kwargs)
@@ -157,6 +161,7 @@ def test_middle_polygon_can_repair_either_adjacent_portal(monkeypatch):
                                    alternates=(0.55,))
     assert result.candidate and result.fractions in ((0.5, 0.55), (0.55, 0.5))
     assert result.turn_checks >= 3 and result.strip_checks > 3
+    assert result.strip_checks == sum(calls.values()) == len(calls)
     assert not result.route_accepted and not result.real_client_accepted
 
 

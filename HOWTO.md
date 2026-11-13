@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.26 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.27 / owner preview 0.39.4
 
 ## Current availability
 
@@ -160,6 +160,11 @@ copied BSP labels or unknown intervals at two heights. Its lateral selector
 currently stops at polygon 37736 before a complete route; the mesh also has
 1,180 unclassified Recast warnings. This is not a playable path. F11 remains
 disabled.
+Version 0.41.27 caches repeated offline strip checks during bounded portal
+repair. It counts only newly sampled work, keeps the global time/sample
+limits, and still rechecks the final selected route. A different Butcherblock
+dry corridor avoids the first rejected turn, but its whole-route lateral
+result remains under review. This version does not change owner-run input.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -243,6 +248,9 @@ line alone does not pass G0. On 2026-11-13, Blizz confirmed he saw the
 character stop and the 0.39.4 trace showed `observed_stop` after a 0.151-second
 hold, 4.64-unit displacement and zero measured post-release drift. This
 passed the short G0 check; speed, G2 and route following remain unverified.
+The four G0 log positions also matched area-63 ground in the copied GFay mesh
+at exact XY, with a roughly 2.07-unit character-to-ground height offset.
+That is a same-session alignment observation, not a current G2 start permit.
 F11 travel/grinding remains disabled. The
 copied GFay and Crushbone mesh paths are connected offline but include narrow
 clearance and steep polygons, so they are not accepted movement routes.

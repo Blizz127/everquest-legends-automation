@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-13 15:28 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 15:38 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Owner feedback check: at 14:54 CST, neither expected trace was present on
@@ -13,6 +13,11 @@ Updated 2026-11-13 15:28 CST for coordinator task `829a00229b29`.
   post-release XY/Z drift across four location fixes; Blizz confirmed he saw
   the character stop. The first focus attempt did not start; the second
   succeeded. G2 speed, scene and route gates remain unverified.
+  A read-only later snapshot of that trace is stored privately at SHA-256
+  `f5d07cd4d424bad8b0f494a85cbf389823ee2c3445e497165a20aad9aca1ecc8`.
+  Its four fresh GFay fixes locate on area-63 copied mesh at exact XY, with
+  2.065–2.085-unit raw-character-Z to ground offsets. This is local alignment
+  evidence, not a fresh G2 start or speed upper bound.
   No new character level, XP or death observation was
   received. The new [1–20 route record](LEVEL_1_20.md) prioritizes
   Butcherblock → Crushbone → Unrest by observed level, with all route legs
@@ -33,6 +38,15 @@ Updated 2026-11-13 15:28 CST for coordinator task `829a00229b29`.
   BSP labelled/unknown spans at two heights. The lateral selector stops at
   polygon 37736 after 92 turn checks with no sampled turn candidate. The
   mesh reports 1,180 Recast warnings; no client route is accepted.
+- VERIFIED offline: penalizing that failed directed turn and the seven prior
+  steep/narrow polygons found a different 237-polygon Butcher camp→GFay
+  dry path with no ground center slope above 75 degrees or center clearance
+  below 3 units. Its first uncached lateral selector run exhausted the
+  180-second global work limit at polygon 38947 after 240 turns/358 strips,
+  before a route result. The selector now caches identical strip checks;
+  a same-window run reached polygon 14525 (index 155/234) after only 182
+  unique strips and then exhausted the 180-second limit. A 360-second
+  bounded rerun is underway. No F11 route is accepted.
 - Private publish: source-only project 0.41.23 commit `26870d8` was staged
   under Alienware `~/.local/share/eql-automation/owner-tools/0.41.23`
   outside the game install. The local and remote archive SHA-256 matched:
@@ -53,7 +67,7 @@ Updated 2026-11-13 15:28 CST for coordinator task `829a00229b29`.
   passed; neither sent game input. The owner preview remains 0.39.4 and F11
   remains disabled.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
-- Build: local source 0.41.25 (G0 trace metrics and 1–20 route record) plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Source-only 0.41.20 and its owner-run watcher are staged separately on Alienware outside the game install; 0.41.21 route-selector staging failed twice because SSH closed the connection and is superseded by 0.41.22. The 0.41.22 source-only archive from commit `0a5ab05` is ready locally at SHA-256 `7d2b8fe8d726820f1f3ad393d3fb62e8a89398dfaddbd848ac2854ad91765d98`; Alienware staging was attempted but its SSH connection timed out. The 0.41.22 geometry work has no owner-run input command. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.41.10 corrects its focused fixture to copied client IDs and unlock levels; 0.41.11 adds log-line and zone-generation identity for offline location tracking; 0.41.12 rejects same-zone reentry during G2 and requires verified reachable camps before selecting a full-auto camp; 0.41.13 carries exact supply warnings into sticky offline state and loosens only a measured float32 portal-edge tolerance; 0.41.14 adds explicit bounded long-strip budgets and a conservative turn-disk diagnostic; 0.41.15 adds a bounded offline automatic portal selector; 0.41.16 adds a read-only zone-transition log observer; 0.41.17 adds a read-only fresh location-to-G2 scene adapter; 0.41.18 binds the sampled G2 radius to fresh position provenance and the pulse speed bound; 0.41.19 adds an optional read-only owner-run destination watcher; 0.41.20 retains an optional preloading fix; 0.41.21 adds bounded alternate portal search after a failed strip; 0.41.22 separates local surface uncertainty from global work exhaustion and propagates an offline grade limit, still no bot input; 0.39.4 exposes unknown-HP reasons in the owner UI without changing input policy. Mode boundary, prior rotation planner reuse,
+- Build: local source 0.41.27 (G0 trace metrics, 1–20 route record, copied-ground BSP audit and selector strip cache) plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Source-only 0.41.20 and its owner-run watcher are staged separately on Alienware outside the game install; 0.41.21 route-selector staging failed twice because SSH closed the connection and is superseded by 0.41.22. The 0.41.22 source-only archive from commit `0a5ab05` is ready locally at SHA-256 `7d2b8fe8d726820f1f3ad393d3fb62e8a89398dfaddbd848ac2854ad91765d98`; Alienware staging was attempted but its SSH connection timed out. The 0.41.22 geometry work has no owner-run input command. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.41.10 corrects its focused fixture to copied client IDs and unlock levels; 0.41.11 adds log-line and zone-generation identity for offline location tracking; 0.41.12 rejects same-zone reentry during G2 and requires verified reachable camps before selecting a full-auto camp; 0.41.13 carries exact supply warnings into sticky offline state and loosens only a measured float32 portal-edge tolerance; 0.41.14 adds explicit bounded long-strip budgets and a conservative turn-disk diagnostic; 0.41.15 adds a bounded offline automatic portal selector; 0.41.16 adds a read-only zone-transition log observer; 0.41.17 adds a read-only fresh location-to-G2 scene adapter; 0.41.18 binds the sampled G2 radius to fresh position provenance and the pulse speed bound; 0.41.19 adds an optional read-only owner-run destination watcher; 0.41.20 retains an optional preloading fix; 0.41.21 adds bounded alternate portal search after a failed strip; 0.41.22 separates local surface uncertainty from global work exhaustion and propagates an offline grade limit, still no bot input; 0.39.4 exposes unknown-HP reasons in the owner UI without changing input policy. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -230,8 +244,9 @@ Updated 2026-11-13 15:28 CST for coordinator task `829a00229b29`.
   startup on its hash guard and its staged directory was renamed with a
   source-mismatch suffix; no input was sent. The current legacy helper's
   `--dry-run --level 4` passed. HOWTO now documents only its supervised
-  F8/F9 owner test. F11/F12 are excluded because movement gates are unrun
-  and a prior continued-walking report remains unresolved.
+  F8/F9 owner test. F11/F12 are excluded because movement gates were unrun
+  and a prior continued-walking report remained unresolved at that time.
+  The later 0.39.4 G0 short stop passed; full route gates remain open.
   The November helper's `Targeted` and `/consider` lines lack a unique entity
   ID, and its source documents auto-retargets without a `Targeted` line.
   Its sender infers chat ownership rather than observing the game draft.
@@ -253,7 +268,8 @@ Updated 2026-11-13 15:28 CST for coordinator task `829a00229b29`.
   The 0.39.2 preview adds a measurement-only G0 stop check: only `/stand`,
   `/location` and the existing bounded forward pulse are available there;
   F11 travel and F12 remain disabled. Its offscreen GUI and no-device smoke
-  passed, but no owner G0 result has been observed. A separate offline
+  passed; no owner G0 result had been observed then. The later 0.39.4 G0
+  result is recorded at the top of this file. A separate offline
   November source patch now filters camps by dry-mesh reachability and
   recorded-route eligibility, then preserves a clear halt when no reachable
   camp exists. A copied-mesh audit from Legira's last position selects

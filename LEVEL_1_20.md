@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-13 15:28 CST. This is the prioritized route and acceptance
+Updated 2026-11-13 15:35 CST. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -56,5 +56,16 @@ The copied Butcherblock camp → GFay dry query now has a 239-polygon
 alternative after steering around seven steep/narrow polygons. Its 236 ground
 segments have no copied BSP labelled or unknown intervals at two heights.
 The bounded lateral selector stops at polygon 37736 after 92 turn checks,
-before any strip check; it found no sampled turn crossing there. That edge is
-under source-geometry review. The result is **not** an F11 route.
+before any strip check. A second 237-polygon dry corridor avoids that edge
+and has no polygon-center slope above 75 degrees or clearance below 3 units.
+Its uncached selector ran out of its 180-second work window at polygon 38947
+after 240 turns and 358 strips; this is a work limit, not a geometry pass.
+Caching identical strips cut that to 182 unique strip checks and advanced
+to polygon 14525 (index 155 of 234) in the same 180-second window. A larger,
+still bounded recheck is underway. None of these results is an F11 route.
+
+At the G0 test spot in GFay, all four fresh `/location` XY points landed on
+copied ground with zero XY snap distance and consistent 2.065–2.085-unit
+character-to-mesh height offsets. This supports the coordinate transform at
+that spot. A new fix and independent scene checks are still needed before
+any G2 motion test.

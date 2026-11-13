@@ -15,6 +15,32 @@ clears the G0 stop observation only. One pulse does not establish a verified
 speed upper bound, live log-to-WLD alignment, G2 scene guards, follower
 error or any route. The lead sent no client input.
 
+**OBSERVED same-session log/mesh comparison:** The owner game log records a
+fresh `You have entered The Greater Faydark.` at 15:17:07 CST, followed by
+four G0 `/location` replies at 15:22:47–15:22:50. A read-only snapshot of
+the appended G0 trace is under
+`~/.local/share/eql-automation/owner-traces/g0-20261113T2122Z-f5d07cd4.jsonl`,
+SHA-256 `f5d07cd4d424bad8b0f494a85cbf389823ee2c3445e497165a20aad9aca1ecc8`;
+it retains the same single G0 result as the earlier trace hash. All four
+fresh log XY points located directly on area-63 ground in the hash-matched
+copied GFay mesh, with 0 XY snap distance and raw-character-Z minus mesh-Z
+offsets 2.06549–2.08488 units. The private diagnostic
+`~/.local/share/eql-automation/nav-candidates/g0-gfay-mesh-alignment-20261113T2132Z.json`
+has SHA-256 `083b8effbef8966877d01e21f68b666c814a81bd706156999a1d8fcf64b3d06e`.
+This supports the copied coordinate convention at the measured spot; it is
+not a fresh G2 start or independently certified speed upper bound.
+
+**VERIFIED offline fresh-start strip, incomplete turn:** The G0 final XY
+remained in GFay ground polygon 32475, the same start polygon as the earlier
+selected GFay→Crushbone ground corridor. Replacing only that corridor's
+historical first point with the G0 final point passed 388 first-strip sample
+locations. The separate first-portal turn recheck exhausted a 5-second work
+limit after 44 samples on this loaded devbox. The rest of the corridor was
+unchanged from its earlier offline candidate, but no new whole-route recheck
+or current-position route acceptance follows. The private artifact
+`~/.local/share/eql-automation/nav-candidates/g0-gfay-crushbone-first-strip-20261113T2133Z.json`
+has SHA-256 `f2b82c64ac131c29d7f55ea89b66a2ff51efb45a4d57747424f8be372654359b`.
+
 **VERIFIED retained current-tool artifact:** The Alienware's existing
 `~/.local/share/eql-automation/navmesh/nov12-7e3cd28-store/butcher.npz`
 was copied read-only to the same private devbox store path; both copies have
@@ -65,7 +91,31 @@ has SHA-256 `f90684524bda5906343e102e421ecfd70de35441758af92dd93c6c44122d28c9`.
 At the midpoint the copied nav detail drops about 0.628 units over a
 0.6-unit radial sample, narrowly above the diagnostic grade-1.0 limit.
 This conservative rejection does not prove the client cannot traverse the
-edge. Source material and alternate corridor review are still open.
+edge. Source material remains unresolved; the alternate below avoids it.
+
+**VERIFIED copied-mesh alternate:** With that edge's two polygons and the
+seven prior steep/narrow polygons penalized, a water-forbidden dry query
+returned 237 polygons, 234 on ground. It excludes both rejected-edge
+polygons. No ground polygon has slope above 75 degrees or center clearance
+below 3.0 units; observed maxima/minima are 74.09 degrees and 3.7858
+units. The outside-git artifact
+`~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-bypass-20261113T2130Z.json`
+has SHA-256 `b1da160d7b517cd9d1a54a8243504ad0eabc9fa3085d08d1e3f4cd60fd544afd`.
+Its portal turns, lateral strips and client movement still need checks.
+
+**VERIFIED offline selector work accounting:** On that same 234-ground-polygon
+bypass, the pre-cache selector spent 180.108 seconds, 240 turns and 358 strip
+checks, then exhausted its global time budget at polygon 38947 (route index
+66). The private artifact SHA-256 is
+`44c4d9277ce85f8599b4b829e77d8a9bb67a18ebe57c90225d48b36189377794`.
+With repeated `(polygon, entry, exit)` strip checks cached, the same
+180-second bound spent 240 turns and 182 **unique** strip checks and reached
+polygon 14525 (index 155) before another global time limit. Its artifact
+`~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-bypass-cache-selector-20261113T2135Z.json`
+has SHA-256 `e72b0ec0ab35aca62c4d04eaf24a2899949d88353f6ae2847e48c611595e57c4`.
+The cache preserves the global sample/time caps and the final whole-route
+audit. Neither timed-out run is a geometry pass; a longer bounded recheck is
+underway. The copied mesh's 1,180 warnings remain unclassified.
 
 **VERIFIED code smoke:** The new `ground_bsp_route` helper rejects missing
 detail, non-ground areas, labelled or unknown BSP spans, and incomplete BSP
