@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.1 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.41.2 / owner preview 0.39.3
 
 ## Current availability
 
@@ -22,7 +22,9 @@ separate-process same-device release timer tested only with a pipe. Version
 Version 0.40.9 added a recording-only short-pulse budget; 0.41.0 added a
 revocable permit and recorded a slope-filtered GFay route failure. Version
 0.41.1 adds a pipe-tested G2 input bridge using the helper's existing virtual
-keyboard descriptor. These changes are not in the owner preview or accepted
+keyboard descriptor. Version 0.41.2 adds an offline portal-local true-surface
+and seam audit; its Crushbone bottleneck check still rejects the crossing.
+These changes are not in the owner preview or accepted
 for real-client movement.
 F11 remains disabled.
 The owner launch steps below are still for 0.39.3.

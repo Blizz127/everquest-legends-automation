@@ -1,5 +1,36 @@
 # FINDINGS
 
+## Portal-local true-surface and seam audit — 2026-11-13 11:30 CST
+
+**VERIFIED offline, no game input:** `eql_automation/portal_surface_audit.py`
+now samples a single polygon's centerline against actual copied Recast detail
+triangles, allowed area, local grade and wall clearance. It refuses the
+`NavMesh.height()` corner-interpolation/extrapolation fallback when a point
+has no containing detail triangle. A separate seam check requires the
+crossing to lie on a real shared portal, have supported detail heights on both
+sides, satisfy a bounded step height, and clear the wall-distance budget.
+Eight focused synthetic checks passed. A positive result is only a local
+geometry candidate: no travel strip, full route, dynamic obstruction, water,
+zone transition, follower error or real-client movement has been accepted.
+
+**VERIFIED copied-mesh query:** The November `crushbone.npz` remains SHA-256
+`bee5a1893ab0e2ffd9c83d0d64a1d7392993b21661f59095b0e2e304b0588793`.
+At polygon 4322, a line between the midpoints of portals to 4197 and 4320
+fails immediately at 1.800-unit clearance, below the 3.25-unit sampled floor.
+A bounded 5×5 portal-parameter grid produced five local centerline candidates,
+all entering the 4197 portal at parameter 0.1 and leaving the 4320 portal at
+0.25, 0.4, 0.5, 0.6 or 0.75. Rechecking the 0.1→0.5 line gave seven detail
+samples, capped minimum clearance 4.0 units and maximum sampled rise/run
+0.474. Its entry seam agrees at height -6.523 on both polygons. Its exit seam
+fails because polygon 4320 has no containing detail triangle there; a sampled
+survey found that gap across the interior of the shared portal. Thus this is
+not an accepted Crushbone passage, and F11 stays disabled. The historical
+Crushbone starting point is also not verified as the actual GFay arrival.
+The module was staged outside the Alienware client at
+`~/.local/share/eql-automation/nav-work/0.41.2/eql_automation/portal_surface_audit.py`;
+devbox and Alienware module SHA-256 match
+`1735dfebc8148c5c8efd1a21b6d68baa37085c3bc0f8302d9bb24676277d3448`.
+
 ## Isolated G2 input bridge and portal-local route lead — 2026-11-13 11:23 CST
 
 **VERIFIED pipe-only:** `eql_automation/g2_input_bridge.py` binds one G2

@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 11:23 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 11:30 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Owner feedback check: at 11:16 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware, and Legira's log still had not changed since 09:31:50 CST. No 0.39.3 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.41.1 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.41.2 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -425,6 +425,12 @@ Updated 2026-11-13 11:23 CST for coordinator task `829a00229b29`.
   Copied-mesh review suggests bounded portal-local surface/slope sampling
   before rebaking GFay or Crushbone; centroid/polygon-wide metrics may be
   overconservative, but no candidate passes current route guards.
+  An offline true-detail-surface and shared-portal seam audit now rejects
+  unsupported height fallback. Eight focused checks pass. On the copied
+  Crushbone mesh, polygon 4322's direct portal midpoint fails clearance at
+  1.800 units; an offset centerline passes local sampling but fails the exit
+  seam because polygon 4320 has no supporting detail triangle. No route is
+  accepted for live movement.
   A bounded copied-mesh search found a wider GFay candidate with 3.47-unit
   minimum sampled clearance but an 89.19-degree slope flag and 55 standard
   locator mismatches. The filtered Crushbone arrival-to-Slaver route remains
@@ -454,6 +460,9 @@ Updated 2026-11-13 11:23 CST for coordinator task `829a00229b29`.
   Build an observed autoattack state/stop acknowledgment gate for
   full auto, then bind the copied mesh store in a separate owner-run route
   trial after G0/G2 checks and resolve the narrow GFay/Crushbone corridors.
+  For Crushbone's 4322→4320 portal, inspect the missing detail-triangle
+  coverage against copied source terrain and rebake only a bounded region if
+  the mesh artifact is incomplete; the offset centerline alone is insufficient.
   Integrate the already tested reachable-camp
   fallback for level 9; resolve the level-11 camp using measured XP and route safety.
   Validate a unique selection signal and chat-open/draft signal on an isolated
