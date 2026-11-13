@@ -1,5 +1,18 @@
 # FINDINGS
 
+## Native melee stop acknowledgment model — 2026-11-13 10:10 CST
+
+**VERIFIED offline:** A recording-only `NativeMeleeStopGate` now accepts only
+exact `Auto attack is on.` / `Auto attack is off.` system-message bodies. It
+starts unknown, reserves at most one toggle intent only when its client
+command has separately been verified, and requires a later OFF message to
+confirm stop. An unknown state, log gap, timeout, wrong acknowledgment or
+clock rollback requires manual review; it never retries a toggle. Four
+focused safety checks passed. This module is not connected to the live
+helper, sends no input, and cannot prove that `/attack` or `/attack off` was
+accepted in Blizz's actual client. The owner-supervised command check and
+G0/G2 movement checks remain required before full auto.
+
 ## Read-only GFay→Crushbone route audit — 2026-11-13 10:07 CST
 
 **VERIFIED copied-store provenance:** The 69-MB November mesh store was copied

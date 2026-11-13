@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 10:08 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 10:10 CST for coordinator task `829a00229b29`.
 
 - Real-client level: 7 for Legira in Greater Faydark, **owner-reported**; no lead-controlled login or automated level gain verified.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.40.2 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.40.3 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -375,6 +375,9 @@ Updated 2026-11-13 10:08 CST for coordinator task `829a00229b29`.
   the Crushbone→Slaver corridor contains a polygon with 0.2-unit clearance.
   These are offline candidates only. A read-only trace summarizer reproduced
   the owner trace SHA and 13 unknown / 5 known HP gauge samples.
+  A recording-only native melee stop gate requires exact ON/OFF log messages,
+  a separately verified toggle, one attempt and a later OFF acknowledgment;
+  four focused safety checks passed. It is not connected to the live helper.
 - Current blocker: 0.39.3 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee

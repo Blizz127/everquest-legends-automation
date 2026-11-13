@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.40.2 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.40.3 / owner preview 0.39.3
 
 ## Current availability
 
@@ -525,6 +525,7 @@ python3 -m pytest -q tests/test_screen_observer.py
 python3 -m pytest -q tests/test_target_log.py
 python3 -m pytest -q tests/test_owner_nov12_adapter.py tests/test_owner_nov12_entry.py
 python3 -m pytest -q tests/test_nav_evidence.py
+python3 -m pytest -q tests/test_melee_stop.py
 python3 tools/summarize_owner_nov12_trace.py /path/to/copied/owner-trace.jsonl
 python3 -m compileall -q eql_automation
 ```
