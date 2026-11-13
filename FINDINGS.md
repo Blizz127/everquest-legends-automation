@@ -1,19 +1,25 @@
 # FINDINGS
 
-## Hybrid rotation and owner HP diagnostic — 2026-11-13 12:31 CST
+## Hybrid rotation and owner HP diagnostic — 2026-11-13 12:34 CST
 
 **VERIFIED copied client data:** The retained `spells_us.txt` at
 `~/.local/share/eql-automation/client-data/retail-full/spells_us.txt`
 (SHA-256 `8db5548696635075f982a20a8afae13b57346637f5edae3c8d93432c848524de`)
-lists Furor at Cleric level 5 and Yaulp at Cleric level 1 / Paladin level 9.
+lists Furor ID 560 at Cleric level 5 / Paladin level 8,
+Light Healing ID 17 at Cleric level 4 / Paladin level 10,
+and Yaulp ID 210 at Cleric level 1 / Paladin level 9.
 The copied owner log records Legira casting Furor during the level-7 owner
 test; the owner also reported Yaulp firing. The single-class offline profile
 would omit both from a level-7 Paladin selection. `Catalog.profile()` now
 accepts an explicit Cleric+Paladin class set, checks the spell's unlock level
 in each active class, and filters to the verified known spellbook. The strict
 `AssistAdvisor` requires that same class set in a fresh observation before
-proposing a cast. Eleven focused spell/assist tests passed. This offline
-advisor is not connected to live input.
+proposing a cast. Eleven focused spell/assist tests passed. A direct
+profile query using the copied catalog and known IDs `{14,17,200,210,560}`
+selected Strike/Minor Healing for Paladin alone and
+Furor/Yaulp/Light Healing for Paladin+Cleric at level 7. The synthetic fixture
+now uses those copied client IDs and unlock levels. This offline advisor is
+not connected to live input.
 
 **VERIFIED no-device owner preview:** Isolated preview 0.39.4 was built from
 the pinned November source and staged under Alienware
