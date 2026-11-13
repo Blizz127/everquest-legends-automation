@@ -19,6 +19,9 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
+Source tools 0.41.36 are privately staged on Alienware under
+`~/.local/share/eql-automation/owner-tools/0.41.36/source`; they do not
+replace the owner-run 0.39.4 assist preview.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
 separate-process same-device release timer tested only with a pipe. Version

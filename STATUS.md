@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-13 17:07 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:09 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Low-level route progress: a bounded select-only run saved the 249-ground-
@@ -15,14 +15,15 @@ Updated 2026-11-13 17:07 CST for coordinator task `829a00229b29`.
   anchor, but its local strips/BSP and live camp are not yet accepted. The
   guide markers are not client-certified positions. Current level remains
   last observed 7; XP/hour and deaths remain unavailable, and F11 is off.
-- Private publish: source-only project 0.41.35 commit `1bd3c39` is staged
-  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.35`,
+- Private publish: source-only project 0.41.36 commit `aa95022` is staged
+  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.36`,
   outside the game install. Local/remote archive SHA-256 matched
-  `d29bf7951bc281c168c540508791bd4d4b7a14e3e32231dfe572394ced981b6c`.
-  Remote offline navigation startup, UI-capture CLI help and syntax checks
-  passed; no live screenshot, character input or movement was run. This
-  supersedes the staged 0.41.34 source archive. Owner preview remains 0.39.4
-  and F11 remains disabled.
+  `a0b8d1b951e951e163760be5f272732788b77b6972784b268312de64dd35faac`.
+  Remote offline navigation startup and both new diagnostic CLI help checks
+  passed; local BSP detail-view tests and full 249-segment audit passed.
+  No live screenshot, character input or movement was run. This supersedes
+  the staged 0.41.35 source archive. Owner preview remains 0.39.4 and F11
+  remains disabled.
 - Read-only UI progress: the installed Legira layout puts the HP gauge at
   `(1966,693,330,17)` at 2560×1600; the saved HP crop starts 32 pixels too
   high and spans 51 pixels. This is a likely calibration cause, not a live HP
