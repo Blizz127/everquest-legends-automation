@@ -16,9 +16,12 @@ class Mesh:
     def __init__(self, *, snap=0.0):
         self.calls = 0
         self.snap = snap
+        self.first_located = None
 
     def locate(self, point, *, radius):
         self.calls += 1
+        if self.first_located is None:
+            self.first_located = point
         return 0, (point[0] + self.snap, point[1], point[2])
 
     def raycast(self, start, goal, *, water, zone_lines):
@@ -82,9 +85,11 @@ def test_pulse_radius_and_explicit_sample_budget_must_fit():
 
 def test_synthetic_18_unit_disk_is_sampled_only_and_large_snap_refuses():
     scene, fix, aligned = evidence()
-    result = check(Mesh(), scene, fix, aligned)
+    mesh = Mesh()
+    result = check(mesh, scene, fix, aligned)
     assert result.candidate and result.sampled_radius == 18
     assert result.samples == 36 * 19
+    assert mesh.first_located == (20.0, 10.0, 30.0)  # raw WLD XY → helper mesh XY
     assert not result.real_client_accepted and not result.budget_authorized
     assert check(Mesh(snap=0.25), scene, fix, aligned).reason == "start_snapped_away_from_verified_point"
     assert check(Mesh(snap=0.0002), scene, fix, aligned,

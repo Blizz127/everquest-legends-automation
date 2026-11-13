@@ -1,8 +1,14 @@
 # STATUS
 
-Updated 2026-11-13 17:54 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:55 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
+- Future G2 start-area preflight now converts the calibrated raw-WLD point
+  to the retained helper navmesh's swapped XY frame before querying ground.
+  A focused asymmetric frame test and all four G2-start tests passed. The
+  preflight has no production caller; G2/F11 remain disabled. Its owner-run
+  UI capture has not arrived, and live HP/current-position/scene/speed gates
+  remain open.
 - Corrected copied BSP frame: retained helper navmesh XY is the reverse of
   raw client WLD XY. Helper-mesh BSP route/ring artifacts through 0.41.39
   used the wrong frame and are superseded. Fixed 0.41.40 scans, with a

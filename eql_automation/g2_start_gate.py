@@ -26,6 +26,8 @@ class AlignedWldFix:
     A future independent verifier must create this after checking the
     transform against the real client. Merely scoring historical terrain or
     finding a nearby mesh polygon does not satisfy ``live_alignment_verified``.
+    ``ground_wld_xyz`` uses raw client WLD axes, while the retained helper
+    navmesh uses (WLD Y, WLD X, Z).
     """
 
     raw_fix: RawLocationFix
@@ -82,11 +84,15 @@ def check_g2_start(mesh, scene: G2Scene, fix: RawLocationFix, *,
                      scene.target_absent, scene.combat_clear,
                      scene.no_transition, scene.no_incoming_attack))):
         return G2StartCheck(False, "missing_live_alignment_or_fresh_scene")
-    point = aligned_fix.ground_wld_xyz
-    if (not isinstance(point, tuple) or len(point) != 3 or
+    raw_wld_point = aligned_fix.ground_wld_xyz
+    if (not isinstance(raw_wld_point, tuple) or len(raw_wld_point) != 3 or
             any(not isinstance(value, (int, float)) or isinstance(value, bool) or
-                not math.isfinite(value) for value in point)):
+                    not math.isfinite(value) for value in raw_wld_point)):
         return G2StartCheck(False, "invalid_aligned_ground_point")
+    # The owner's retained eqnav helper builds navmeshes with reversed XY
+    # relative to the client's raw WLD. Keep this conversion at the boundary
+    # so the radial check and its snap-distance comparison use one frame.
+    mesh_point = (raw_wld_point[1], raw_wld_point[0], raw_wld_point[2])
     if (not isinstance(speed_upper_bound, (int, float)) or
             isinstance(speed_upper_bound, bool) or
             not math.isfinite(speed_upper_bound) or
@@ -106,7 +112,7 @@ def check_g2_start(mesh, scene: G2Scene, fix: RawLocationFix, *,
             directions * (math.ceil(radius / sample_spacing) + 1) > max_samples):
         return G2StartCheck(False, "radial_sample_budget_insufficient")
     try:
-        radial = check_radial_area(mesh, point, radius=radius,
+        radial = check_radial_area(mesh, mesh_point, radius=radius,
                                    directions=directions,
                                    sample_spacing=sample_spacing,
                                    max_samples=max_samples)
@@ -119,7 +125,7 @@ def check_g2_start(mesh, scene: G2Scene, fix: RawLocationFix, *,
                 for value in radial.center)):
         return G2StartCheck(False, "start_snapped_away_from_verified_point",
                             samples=radial.samples)
-    snap_distance = math.dist(radial.center, point)
+    snap_distance = math.dist(radial.center, mesh_point)
     if snap_distance > 0.0005:
         return G2StartCheck(False, "start_snapped_away_from_verified_point",
                             samples=radial.samples)

@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Future G2 start-area mesh frame correction — 2026-11-13 17:55 CST
+
+**VERIFIED source and focused test, no game input:** The future
+`check_g2_start` preflight held a calibrated point in raw client WLD XYZ but
+queried the retained helper navmesh with that point directly. The helper
+navmesh uses `(WLD Y, WLD X, Z)`, so an asymmetric point could check the wrong
+ground. Version 0.41.41 swaps XY at this boundary and compares the snapped
+point in the same helper frame. An asymmetric `(10,20,30)` raw-WLD test now
+requires the first mesh query to be `(20,10,30)`; four focused tests passed.
+There is no production caller for `check_g2_start` yet. This fix does not
+enable G2, validate a live position, or authorize F11.
+
 ## Helper-mesh BSP frame correction — 2026-11-13 17:44 CST
 
 **VERIFIED source and copied-data control:** The retained owner helper stores
