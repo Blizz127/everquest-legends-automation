@@ -29,9 +29,15 @@ the mandatory final whole-route audit. It returned
 artifact
 `~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-complex-bypass-selector-20261113T2158Z.json`
 has SHA-256 `dc15a6989b6a04ec253c88a28de99fadfbf8058394e0d291a90108aa0e0cbbc2`.
-A bounded diagnostic rerun is underway with source rehash and explicit
-unverified-point retention if the final pass again runs out of work. F11
-remains disabled.
+A bounded diagnostic rerun with source rehash and unverified-point retention
+was stopped by its external 460-second timeout (exit 124) before it wrote an
+artifact. No result or selected points were retained from that attempt. At
+22:14 UTC the devbox reported load averages 243.89, 242.58 and 226.32; a
+further heavy rerun is deferred under this measured pressure. The offline
+selector now offers a fail-closed `--select-only` phase so a later portal
+search can save unverified points before a separate whole-route strip pass.
+This code change has a focused synthetic test; no Butcher result from it has
+run. F11 remains disabled.
 
 ## G2 owner-preview input gate — 2026-11-13 15:53 CST
 

@@ -71,7 +71,10 @@ at that polygon during an individual turn check under the loaded devbox. A
 new 249-ground-polygon dry detour avoids it and the prior penalized polygons;
 one 420-second selector pass completed its portal search but had no time for
 the mandatory final whole-route audit. Its sampled candidate remains
-unaccepted; a diagnostic rerun is underway to separate that final audit.
+unaccepted. A second bounded run was externally timed out under heavy devbox
+load before recording a result. A new select-only phase can retain unverified
+portal points for a separate full-strip pass once load permits; neither phase
+has accepted this Butcher route.
 
 The same-zone GFay orc-camp fallback uses the existing guide's approximate
 marker. The first dry route from the G0 test position had two polygons over

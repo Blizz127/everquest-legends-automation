@@ -60,6 +60,21 @@ def test_flat_ground_corridor_selects_midpoint_but_never_accepts_live_route():
     assert not result.route_accepted and not result.real_client_accepted
 
 
+def test_select_only_retains_unverified_points_without_running_final_audit(monkeypatch):
+    def forbidden_final_audit(*args, **kwargs):
+        raise AssertionError("select-only must not run the final audit")
+
+    monkeypatch.setattr(selector, "audit_route_strips", forbidden_final_audit)
+    result = select_ground_portals(FlatMesh(), (0, 1), (1.0, 5.0),
+                                   (19.0, 5.0), final_recheck=False)
+    assert not result.candidate
+    assert result.reason == "portal_sequence_selected_final_audit_required"
+    assert result.points == () and result.fractions == ()
+    assert len(result.unverified_points) == 3
+    assert result.unverified_fractions == (0.5,)
+    assert not result.route_accepted and not result.real_client_accepted
+
+
 def test_turn_time_limit_is_configurable_but_still_bounded(monkeypatch):
     real = selector.audit_turn_disk
     limits = []

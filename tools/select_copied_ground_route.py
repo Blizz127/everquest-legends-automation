@@ -64,6 +64,8 @@ def main() -> None:
     parser.add_argument("--max-segment-seconds", type=float, default=20.0)
     parser.add_argument("--half-width", type=float, default=1.2)
     parser.add_argument("--maximum-grade", type=float, default=1.0)
+    parser.add_argument("--select-only", action="store_true",
+                        help="Save unverified portal points for a separate full-strip recheck")
     args = parser.parse_args()
     try:
         source = private_file(args.source, "nav-candidates", limit=10 * 1024 * 1024)
@@ -123,7 +125,8 @@ def main() -> None:
             max_seconds=args.max_seconds,
             max_turn_seconds=args.max_turn_seconds,
             max_segment_seconds=args.max_segment_seconds,
-            half_width=args.half_width, maximum_grade=args.maximum_grade)
+            half_width=args.half_width, maximum_grade=args.maximum_grade,
+            final_recheck=not args.select_only)
         if (digest(source) != source_hash or digest(endpoints) != endpoints_hash or
                 digest(mesh_path) != mesh_hash or
                 digest(manifest_path) != manifest_hash):
@@ -137,7 +140,8 @@ def main() -> None:
                        "max_turn_seconds": args.max_turn_seconds,
                        "max_segment_seconds": args.max_segment_seconds,
                        "half_width": args.half_width,
-                       "maximum_grade": args.maximum_grade},
+                       "maximum_grade": args.maximum_grade,
+                       "final_recheck": not args.select_only},
             "elapsed_seconds": round(time.monotonic() - began, 3),
             "candidate": result.candidate, "reason": result.reason,
             "failed_polygon": result.failed_polygon,

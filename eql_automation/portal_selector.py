@@ -58,7 +58,8 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
                           maximum_grade: float = 1.0,
                           max_segment_samples: int = 2048,
                           max_segment_seconds: float = 10.0,
-                          max_turn_seconds: float = 3.0) -> PortalSelection:
+                          max_turn_seconds: float = 3.0,
+                          final_recheck: bool = True) -> PortalSelection:
     """Find a sampled strip-connected portal sequence, then recheck it whole.
 
     Midpoints that pass the conservative disk start as a single candidate.
@@ -87,6 +88,7 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
             not isinstance(max_strip_repair_rounds, int) or
             isinstance(max_strip_repair_rounds, bool) or
             not 0 <= max_strip_repair_rounds <= 16 or
+            not isinstance(final_recheck, bool) or
             any(not isinstance(n, (int, float)) or isinstance(n, bool) or
                 not math.isfinite(n) or n <= 0
                 for n in (max_seconds, sample_spacing, half_width, maximum_grade,
@@ -271,6 +273,11 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
                                turn_checks=turns, strip_checks=strips)
     points = (start_xy,) + tuple(choice.xy for choice in best_path)
     fractions = tuple(choice.fraction for choice in best_path[:-1])
+    if not final_recheck:
+        return PortalSelection(
+            False, "portal_sequence_selected_final_audit_required",
+            turn_checks=turns, strip_checks=strips,
+            unverified_points=points, unverified_fractions=fractions)
     remaining = max_seconds - (time.monotonic() - started)
     remaining_samples = max_total_samples - samples
     if remaining <= 0 or remaining_samples < 1:

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.29 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.30 / owner preview 0.39.4
 
 ## Current availability
 
@@ -181,6 +181,13 @@ a separate, hash-bound full-strip recheck. Failed routes remain unavailable
 to F11. The 155-polygon GFay orc-camp approach passed copied static
 geometry and BSP checks, but its live position, camp and movement have not
 been accepted. Owner-run input and F11 availability are unchanged.
+Version 0.41.30 adds an explicit offline `--select-only` phase. It records
+portal choices as **unverified** diagnostic points without spending its
+remaining budget on the final strip. A separate hash-bound tool must recheck
+the entire strip before even an offline geometry candidate is reported. The
+loaded devbox stopped a Butcherblock rerun at its external timeout before it
+wrote evidence, so that route is still unaccepted. This release does not
+change the owner's assist controls.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

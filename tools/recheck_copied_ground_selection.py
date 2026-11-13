@@ -57,6 +57,9 @@ def main() -> None:
                 selection.get("format") != "eql-copied-ground-selector-v1" or
                 selection.get("zone") != args.zone or
                 selection.get("source_sha256") != source_hash or
+                route.get("offline_only") is not True or
+                route.get("route_accepted") is not False or
+                route.get("real_client_accepted") is not False or
                 selection.get("candidate") is not False or
                 selection.get("route_accepted") is not False or
                 selection.get("real_client_accepted") is not False or
@@ -64,21 +67,34 @@ def main() -> None:
             raise ValueError("selection is not a bound, unverified portal result")
         raw_polys = route.get("polygons", route.get("path_polygons"))
         points_raw = selection.get("unverified_points")
+        fractions_raw = selection.get("unverified_fractions")
         if (not isinstance(raw_polys, list) or not raw_polys or
                 any(not isinstance(p, int) or isinstance(p, bool) or p < 0
                     for p in raw_polys) or
                 not isinstance(points_raw, list) or
                 len(points_raw) != len(raw_polys) + 1 or
+                not isinstance(fractions_raw, list) or
+                len(fractions_raw) != len(raw_polys) - 1 or
+                any(not isinstance(f, (int, float)) or isinstance(f, bool) or
+                    not math.isfinite(f) or not 0 < f < 1 for f in fractions_raw) or
                 not isinstance(selection.get("turn_checks"), int) or
+                isinstance(selection.get("turn_checks"), bool) or
                 selection["turn_checks"] < len(raw_polys) - 1 or
                 not isinstance(selection.get("strip_checks"), int) or
+                isinstance(selection.get("strip_checks"), bool) or
                 selection["strip_checks"] < len(raw_polys)):
             raise ValueError("selection has no complete unverified portal sequence")
         points = tuple(xy(point) for point in points_raw)
+        start = route.get("start_wld_xyz")
+        goal = route.get("snapped_goal_wld_xyz")
+        if start is None or goal is None or points[0] != xy(start) or points[-1] != xy(goal):
+            raise ValueError("unverified points do not bind route endpoints")
         limits = selection.get("limits")
         if (not isinstance(limits, dict) or
                 not isinstance(limits.get("half_width"), (int, float)) or
+                isinstance(limits.get("half_width"), bool) or
                 not isinstance(limits.get("maximum_grade"), (int, float)) or
+                isinstance(limits.get("maximum_grade"), bool) or
                 not math.isfinite(limits["half_width"]) or
                 not math.isfinite(limits["maximum_grade"]) or
                 limits["half_width"] <= 0 or limits["maximum_grade"] <= 0):
