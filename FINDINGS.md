@@ -1,5 +1,35 @@
 # FINDINGS
 
+## Detail-edge quantization correction — 2026-11-13 11:33 CST
+
+**VERIFIED offline correction to 0.41.2:** The prior `unsupported_detail_surface`
+result at the Crushbone 4322→4320 portal was caused by a too-strict
+barycentric tolerance, not proof of missing terrain. Copied polygon 4320's
+detail edge lies within 0.0000049 WLD units of the portal. The new checker
+projects only up to 0.0001 WLD units onto a detail edge; a synthetic
+0.001-unit gap still rejects. Nine focused tests pass. On the same hash-matched
+copied mesh, the 4322 local centerline from portal 4197 parameter 0.1 to
+portal 4320 parameter 0.5 and both seams now return **geometry candidate
+only**: seven local samples, capped minimum clearance 4.0 units, maximum
+sampled rise/run 0.474, and exit heights -5.323203037/-5.323203021. The
+direct portal-midpoint line still fails at 1.800-unit clearance.
+
+**OBSERVED alternate local lead:** The 4322 line from 4197 parameter 0.3 to
+4321 parameter 0.75, its two seams, and the next 4321 line to 4319 parameter
+0.5 and seams also pass these local checks. This is not a complete corridor
+or accepted route. The retained, project-generated Crushbone WLD-XYZ OBJ
+`~/.local/share/eql-automation/nav-candidates/crushbone-solid-candidate-806b40d87e1810bc.obj`
+(SHA-256 `806b40d87e1810bc1bba549fc4468fd585e7402a1e812a1be0a8d67ae7793e3d`)
+contains source terrain at the 4322→4320 portal after swapping nav and OBJ
+XY. Its sampled source Z differs from baked detail Z by about 0.60–0.64 units;
+the origin and real-client collision implications remain unverified. No
+follower error, current player position, water/door/aggro state, zone arrival
+or actual movement is verified. F11 remains disabled. The corrected module
+is staged outside the client at
+`~/.local/share/eql-automation/nav-work/0.41.3/eql_automation/portal_surface_audit.py`.
+Devbox and Alienware module SHA-256 match
+`e1559f5cb88eb34eb9a504d6e26b9c9183532fe78cbbad3aa6121df276d47ba0`.
+
 ## Portal-local true-surface and seam audit — 2026-11-13 11:30 CST
 
 **VERIFIED offline, no game input:** `eql_automation/portal_surface_audit.py`
@@ -21,10 +51,10 @@ A bounded 5×5 portal-parameter grid produced five local centerline candidates,
 all entering the 4197 portal at parameter 0.1 and leaving the 4320 portal at
 0.25, 0.4, 0.5, 0.6 or 0.75. Rechecking the 0.1→0.5 line gave seven detail
 samples, capped minimum clearance 4.0 units and maximum sampled rise/run
-0.474. Its entry seam agrees at height -6.523 on both polygons. Its exit seam
-fails because polygon 4320 has no containing detail triangle there; a sampled
-survey found that gap across the interior of the shared portal. Thus this is
-not an accepted Crushbone passage, and F11 stays disabled. The historical
+0.474. Its entry seam agrees at height -6.523 on both polygons. The first
+checker rejected its exit seam as unsupported; the 11:33 CST correction above
+shows this was a quantization-tolerance false rejection. This still is not an
+accepted Crushbone passage, and F11 stays disabled. The historical
 Crushbone starting point is also not verified as the actual GFay arrival.
 The module was staged outside the Alienware client at
 `~/.local/share/eql-automation/nav-work/0.41.2/eql_automation/portal_surface_audit.py`;

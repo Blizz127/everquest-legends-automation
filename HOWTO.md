@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.2 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.41.3 / owner preview 0.39.3
 
 ## Current availability
 
@@ -23,7 +23,9 @@ Version 0.40.9 added a recording-only short-pulse budget; 0.41.0 added a
 revocable permit and recorded a slope-filtered GFay route failure. Version
 0.41.1 adds a pipe-tested G2 input bridge using the helper's existing virtual
 keyboard descriptor. Version 0.41.2 adds an offline portal-local true-surface
-and seam audit; its Crushbone bottleneck check still rejects the crossing.
+and seam audit. Version 0.41.3 corrects a false seam rejection caused by tiny
+mesh edge quantization. A few local Crushbone lines now pass the offline
+check, while the full route remains unverified.
 These changes are not in the owner preview or accepted
 for real-client movement.
 F11 remains disabled.

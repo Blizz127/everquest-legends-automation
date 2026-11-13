@@ -30,12 +30,17 @@ class PortalSeamCheck:
     real_client_accepted: bool = False
 
 
+_DETAIL_EDGE_TOLERANCE = 1e-4  # WLD units; covers float-quantized portal edges.
+
+
 def _supported_detail_height(mesh, poly: int, x: float, y: float) -> float | None:
-    """Return a height only where a copied Recast detail triangle contains XY.
+    """Return a height on a Recast detail triangle, allowing tiny edge gaps.
 
     ``NavMesh.height`` also interpolates polygon corners, or extrapolates a
-    nearby detail triangle, when none covers the query. Neither fallback is
-    sufficient evidence for a local slope check.
+    nearby detail triangle, when none covers the query. A portal edge can be
+    displaced by a few micro-units through float conversion, so this routine
+    projects at most 1e-4 world units onto a detail edge. Wider extrapolation
+    and corner interpolation remain insufficient for a local slope check.
     """
     try:
         first = int(mesh._detail_start[poly])
@@ -43,6 +48,8 @@ def _supported_detail_height(mesh, poly: int, x: float, y: float) -> float | Non
         triangles = mesh._detail[first:last]
     except (AttributeError, IndexError, KeyError, TypeError):
         return None
+    nearest_gap = math.inf
+    nearest_z = None
     for triangle in triangles:
         a, b, c = triangle
         e1x, e1y = float(b[0] - a[0]), float(b[1] - a[1])
@@ -53,11 +60,24 @@ def _supported_detail_height(mesh, poly: int, x: float, y: float) -> float | Non
         px, py = x - float(a[0]), y - float(a[1])
         u = (px * e2y - py * e2x) / det
         v = (e1x * py - e1y * px) / det
-        if min(u, v, 1.0 - u - v) < -1e-6:
-            continue
-        z = float(a[2]) + u * float(b[2] - a[2]) + v * float(c[2] - a[2])
-        if math.isfinite(z):
-            return z
+        if min(u, v, 1.0 - u - v) >= -1e-12:
+            z = float(a[2]) + u * float(b[2] - a[2]) + v * float(c[2] - a[2])
+            if math.isfinite(z):
+                return z
+        for start, end in ((a, b), (b, c), (c, a)):
+            dx, dy = float(end[0] - start[0]), float(end[1] - start[1])
+            length2 = dx * dx + dy * dy
+            if not math.isfinite(length2) or length2 <= 1e-12:
+                continue
+            t = max(0.0, min(1.0,
+                             ((x - start[0]) * dx + (y - start[1]) * dy) / length2))
+            gap = math.hypot(x - (start[0] + t * dx),
+                             y - (start[1] + t * dy))
+            if gap < nearest_gap:
+                nearest_gap = gap
+                nearest_z = float(start[2] + t * (end[2] - start[2]))
+    if nearest_gap <= _DETAIL_EDGE_TOLERANCE and math.isfinite(nearest_z):
+        return nearest_z
     return None
 
 

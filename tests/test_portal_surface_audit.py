@@ -70,10 +70,12 @@ def test_clearance_between_samples_uses_half_spacing_margin():
 
 
 class TwoPolyMesh(Mesh):
-    def __init__(self, *, target_z=2.0):
+    def __init__(self, *, target_z=2.0, target_shift=0.0):
         super().__init__()
-        right = [(10.0, 0.0, target_z), (20.0, 0.0, target_z),
-                 (20.0, 10.0, target_z), (10.0, 10.0, target_z)]
+        right = [(10.0 + target_shift, 0.0, target_z),
+                 (20.0 + target_shift, 0.0, target_z),
+                 (20.0 + target_shift, 10.0, target_z),
+                 (10.0 + target_shift, 10.0, target_z)]
         self._detail += [[right[0], right[1], right[2]],
                          [right[0], right[2], right[3]]]
         self._detail_start = [0, 2, 4]
@@ -96,3 +98,11 @@ def test_seam_rejects_height_discontinuity_and_closed_area():
     assert audit_portal_seam(mesh, 0, 1, (10.0, 5.0)).reason == "height_step_too_large"
     mesh.area[1] = 1
     assert audit_portal_seam(mesh, 0, 1, (10.0, 5.0)).reason == "forbidden_area"
+
+
+def test_detail_edge_projection_tolerates_quantization_only():
+    micro_gap = TwoPolyMesh(target_shift=5e-6)
+    result = audit_portal_seam(micro_gap, 0, 1, (10.0, 5.0))
+    assert result.candidate and abs(result.target_height - 2.0) < 1e-8
+    wider_gap = TwoPolyMesh(target_shift=1e-3)
+    assert audit_portal_seam(wider_gap, 0, 1, (10.0, 5.0)).reason == "unsupported_detail_surface"
