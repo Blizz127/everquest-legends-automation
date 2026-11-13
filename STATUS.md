@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 07:19 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 07:42 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.32.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.33.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -145,6 +145,9 @@ Updated 2026-11-13 07:19 CST for coordinator task `829a00229b29`.
   output shape and zone-entry messages, but keeps coordinates raw and
   unaligned. It skips existing history and drops positions across loading,
   unknown zones, log resets and timestamp regressions. It sends no input.
+  A bounded historical alignment audit now scores the raw `/loc` triples
+  against copied WLD terrain under all eight XY sign/axis candidates. It
+  never accepts a transform or route.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -258,6 +261,15 @@ Updated 2026-11-13 07:19 CST for coordinator task `829a00229b29`.
   has been verified. The full 41-test focused set passed and synthetic 1–50
   reran to only fabricated level 50 with 1,446 events at
   `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T131858Z/`.
+  Historical Greater Faydark: 56 raw lines held 48 distinct positions;
+  direct log XY covered 48/48 copied-terrain positions with 47/48 vertical
+  offsets within 0.5 of median 2.5638; the next candidate scored 13/48.
+  Four Crushbone points tied two transforms.
+  The filtered system-line and audit JSON hashes are in FINDINGS.md. This is
+  copied-geometry evidence only, not live coordinate calibration. Five
+  alignment tests and both copied-data CLI audits passed; the combined focused
+  set passed 46 tests. Synthetic 1–50 reran to fabricated level 50 with 1,446
+  events at `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T134150Z/`.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -279,8 +291,9 @@ Updated 2026-11-13 07:19 CST for coordinator task `829a00229b29`.
   needs a real active-skin crop and same-frame label confirmation. BSP
   candidates require observed traversal; Crushbone camps
   still require client evidence; select later camps from observed level and
-  safety. Verify raw `/loc` axis order and log freshness before any position
-  can feed `WorldNavigator`; build a read-only runtime UI observer on an
+  safety. Verify the historical log-to-WLD candidate against a fresh test
+  character on the intended private client, including height and log delay,
+  before any position can feed `WorldNavigator`; build a read-only runtime UI observer on an
   isolated client view. ASSIST keeps
   movement manual. The October assist tool's live preparation/combat remain
   unverified.

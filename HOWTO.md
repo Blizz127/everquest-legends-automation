@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.32.0
+# EverQuest Legends automation — current build 0.33.0
 
 ## Current availability
 
@@ -128,6 +128,22 @@ This is a library seam, not a running observer or a navigation input. It does
 not request `/loc`, convert log axes to WLD axes, verify log-to-client latency,
 or move the character. The installed client currently has no verified private
 target; do not use its owner-character log for a bot run.
+
+For a **read-only historical geometry audit**, a filtered file containing only
+the owner's own timestamped zone, loading and `/loc` system lines can be kept
+under `~/.local/share/eql-automation/client-data/` and scored with:
+
+```bash
+python3 tools/audit_location_alignment.py gfaydark 'The Greater Faydark' ~/.local/share/eql-automation/client-data/retail-full/log-evidence/historical-system-location-lines.txt
+```
+
+The tool compares eight sign/axis candidates against copied flag-zero WLD
+terrain, prints source hashes and per-candidate coverage/vertical-offset
+scores, and always reports `accepted_log_to_wld_transform: null`. The current
+historical Greater Faydark sample favors direct `(x,y)` at 47 of 48 distinct
+positions (56 raw log lines);
+Crushbone's flat sample is ambiguous. No live coordinate calibration,
+clearance, walkability, or movement follows from these scores.
 
 `--inspect-target` reads a copied `eqhost.txt` and reports its host, port,
 hash, and whether it is a Daybreak official domain. It does not connect.

@@ -1,5 +1,39 @@
 # FINDINGS
 
+## Historical /loc-to-WLD candidate audit — 2026-11-13 07:41 CST
+
+**VERIFIED read-only/offline:** A filtered copy of only 122 system location,
+loading and entered-zone lines from the historical Alienware log resides
+outside git at
+`~/.local/share/eql-automation/client-data/retail-full/log-evidence/historical-system-location-lines.txt`,
+SHA-256 `ba772066f5c24f4f01bcd55afcd7cddd7eb454b27d1116e47200dc1aa2aaeb01`.
+It contains 66 location, 22 loading and 34 entered-zone lines; no chat lines
+were retained. The owner log remains unchanged. The new bounded
+`audit_location_alignment.py` compares exact-zone historical triples to
+flag-zero copied WLD terrain for all eight XY sign/axis transforms. It keeps
+the printed Z coordinate raw and scores consistency of the vertical offset.
+
+Greater Faydark used 56 historical `/loc` lines, 48 distinct raw positions,
+raw Z −6.98 to 67.8, and 72,694 copied flag-zero terrain triangles. The
+scorer removes eight repeated positions. Direct log `(x,y)` to WLD `(x,y)`
+covered all 48 distinct positions and had 47 offsets within 0.5 units of
+median 2.5638; the next candidate `(-y,-x)` had 13 coherent offsets. One direct-mapping
+outlier at 2026-11-05 19:17:37 had offset 35.6939. Its untracked audit JSON
+has SHA-256 `8e7e8c1afde97f09d84d96b2d9dea2a28a88211ee36c5275eb19a06faaec77e9`.
+Four Crushbone points on broad flat terrain tied direct `(x,y)` and
+`(-y,-x)` at 4/4 coherent offsets of 2.56; its JSON SHA-256 is
+`7bf6288ae2fcef405574220f62196a74fe455b4ddfd1d50a947f6bf70af1faa2`.
+The result strongly favors direct logged XY in historical Greater Faydark,
+but the tool reports `accepted_log_to_wld_transform=null`,
+`live_alignment_verified=false`, and `navigation_edge_accepted=false`.
+Five focused alignment tests and both copied-data CLI audits passed; the
+combined location/navigation/dispatch focused set passed 46 tests. The
+synthetic 1–50 rerun reached only fabricated level 50 with 1,446 trace events.
+It does not establish a private-client position source, current character
+height, collision clearance, walkability, or actual movement. The implied
+log-to-map candidate is `(-log_y,-log_x)` given the separately observed
+client map-to-WLD `(-map_y,-map_x)` transform; that also remains provisional.
+
 ## Client log position format and read-only tail — 2026-11-13 07:18 CST
 
 **VERIFIED read-only client evidence:** The Alienware retail client has a
