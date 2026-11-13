@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.30.0
+# EverQuest Legends automation — current build 0.31.0
 
 ## Current availability
 
@@ -104,8 +104,14 @@ binds the original mode permit and an immutable world snapshot. A newer
 matching synthetic observation is required before the sink records the action;
 OFF, ASSIST movement limits, changed target/zone/state, stale or unknown
 readings, and GM presence can cancel it. This validates the dispatch seam
-offline. The fabricated route still applies movement and zone steps instantly;
-it does not yet exercise observed waypoint arrival in this closed-loop run.
+offline. Each fabricated camp trip now feeds a start position, waypoint
+arrival, and zone-entry observation through `WorldNavigator`. The camp is
+assigned only after the navigator confirms arrival. A stalled waypoint or
+incorrect zone entry stops the synthetic route with OFF latched. The default
+observation adapter fabricates immediate arrival at each destination; this
+does not verify real movement, zoning, or a client position reader.
+Repeated observations of one pending transition do not issue another ZONE
+action. A missing or stale observation also latches OFF.
 
 `--demo-navigation` shows a synthetic blocked edge being quarantined and a
 route changing to a safe alternate. The pure navigation controller waits for

@@ -1,5 +1,30 @@
 # FINDINGS
 
+## Synthetic camp travel waits for navigator observations — 2026-11-13 07:11 CST
+
+**VERIFIED synthetic only:** The closed-loop `--synthetic-1-50` campaign now
+passes each camp trip through `WorldNavigator` using explicitly listed
+synthetic move edges and zone transitions. A fabricated start position must
+match the current node. The simulated environment records a MOVE or ZONE
+action through `DryRunDispatcher`, then supplies a separate arrival
+observation. Zone/node and camp state advance only after the navigator
+confirms the waypoint or zone entry. A stalled waypoint or wrong zone-entry
+position pauses navigation, latches OFF, and leaves the camp unset. A pending
+zone transition issues one ZONE action while later observations wait for
+entry. Dispatch and navigation observations use one monotonic synthetic
+clock; stale observations and adapter exceptions latch OFF. The start position
+is supplied by an overridable observation adapter rather than copied directly
+into the navigator.
+
+`python3 -m pytest -q tests/test_offline.py tests/test_navigator.py
+tests/test_dispatch.py` passed 29 focused tests. `--synthetic-1-50` reached
+only fabricated level 50 with 1,446 trace events, including 12 route-step
+events marked `arrival_observed=true`; no game/account input was sent.
+Trace: `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T131106Z/`.
+The default observation adapter returns each requested destination immediately
+as fabricated data. **Limit:** no real client position observer, movement key
+sender, private endpoint, or actual navigation acceptance exists.
+
 ## Recording-only runtime dispatch seam — 2026-11-13 07:06 CST
 
 **VERIFIED synthetic only:** `DryRunDispatcher` now binds each planned action
@@ -16,9 +41,9 @@ so unknown observations can still stop the run immediately.
 `python3 -m pytest -q tests/test_dispatch.py tests/test_offline.py` passed 18
 focused tests. `--synthetic-1-50` still reached only fabricated level 50 with
 1,439 trace events and `real_client_level_verified=false`; no game input was
-sent. **Limit:** its movement loop still applies `WorldNav.route()` steps
-instantaneously without `WorldNavigator` observing start/waypoint/zone arrival.
-The dispatcher checks per synthetic action, not per emitted key; there is no
+sent. The later synthetic camp-travel change above replaced the immediate
+`WorldNav.route()` step application. The dispatcher checks per synthetic action,
+not per emitted key; there is no
 client sender, hotkey hook, real login or real XP observation.
 
 ## Offline current-level XP observation — 2026-11-13 07:03 CST

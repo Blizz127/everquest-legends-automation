@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from datetime import datetime, timezone
+from math import isfinite
 from pathlib import Path
 import json
 
@@ -15,6 +16,7 @@ from .control import ControlPlane
 from .dispatch import DispatchObservation, DryRunDispatcher
 from .modes import Action, ActionKind, Mode, action_from_prior_rotation
 from .nav import NavGraph, Point
+from .navigator import NavigationDirective, NavigationObservation, WorldNavigator
 from .prior_rotation_core import Rotation, Spell
 from .sim import SimSink
 from .spells import SpellPlanner, SpellSpec
@@ -32,7 +34,7 @@ class SyntheticEnvironment:
         self.control.switch(Mode.FULL_AUTO)
         self.sink = SimSink(self.controller)
         self.dispatcher = DryRunDispatcher(self.control, self.sink.submit)
-        self.dispatch_sequence = 0
+        self.clock_at = 0.0
         self.world = WorldNav()
         self.camps = []
         self.spell_specs = []
@@ -100,13 +102,13 @@ class SyntheticEnvironment:
                                    self.node, self.target_token, True, False)
 
     def accept(self, action: Action, tick: int) -> None:
-        self.dispatch_sequence += 1
-        at = float(tick) + self.dispatch_sequence * 0.00001
+        at = max(float(tick), self.clock_at) + 0.001
         plan = self.dispatcher.plan(action, self.dispatch_observation(at), at)
         if (plan is None or not self.dispatcher.dispatch(
                 plan, self.dispatch_observation(at + 0.000001),
                 at + 0.000001)):
             raise RuntimeError(f"Synthetic dispatch denied {action.kind.value}")
+        self.clock_at = at + 0.000001
         self.counts[action.kind.value] += 1
 
     def inject_scripted_faults(self, tick: int) -> None:
@@ -151,18 +153,88 @@ class SyntheticEnvironment:
                         synthetic_spell_id=task.spell_id)
         return True
 
+    def observe_route_start(self, zone: str, point: Point,
+                            now: float) -> NavigationObservation:
+        """Fabricated start; a future adapter must supply measured position."""
+        return NavigationObservation(zone, point, now)
+
+    def observe_route_arrival(self, directive: NavigationDirective,
+                              now: float) -> NavigationObservation:
+        """Fabricated arrival; a future adapter must supply measured position."""
+        assert directive.zone is not None and directive.point is not None
+        return NavigationObservation(directive.zone, directive.point, now)
+
+    def confirm_route_observation(self, navigator: WorldNavigator,
+                                  observation: NavigationObservation,
+                                  requested_at: float) -> NavigationDirective:
+        if (not isinstance(observation, NavigationObservation) or
+                not isinstance(observation.now, (int, float)) or
+                isinstance(observation.now, bool) or
+                not isfinite(observation.now) or
+                observation.now < requested_at):
+            raise RuntimeError("Synthetic route observation is missing or stale")
+        directive = navigator.observe(observation)
+        self.clock_at = max(self.clock_at, observation.now)
+        return directive
+
     def move_to_camp(self, tick: int, name: str) -> None:
         index = int(name.rsplit("_", 1)[1])
         destination = f"synthetic_zone_{index}"
-        route = self.world.route(self.zone, self.node, destination, "camp",
-                                 level=self.level)
-        for step in route:
-            kind = ActionKind.ZONE if step.kind == "zone" else ActionKind.MOVE
-            self.accept(Action(kind, f"synthetic {step.from_zone}:{step.from_node} to "
-                                     f"{step.to_zone}:{step.to_node}"), tick)
-            self.zone, self.node = step.to_zone, step.to_node
-            self.record(tick, "route_step", kind=step.kind,
-                        synthetic_zone=self.zone, synthetic_node=self.node)
+        verified_moves = {
+            (zone, source, edge.target)
+            for zone, graph in self.world.zones.items()
+            for source, edges in graph.edges.items() for edge in edges}
+        verified_zones = {
+            (item.source_zone, item.exit_node, item.destination_zone, item.entry_node)
+            for item in self.world.transitions}
+        navigator = WorldNavigator(
+            self.world, start_zone=self.zone, start_node=self.node,
+            goal_zone=destination, goal_node="camp", level=self.level,
+            verified_moves=verified_moves, verified_zones=verified_zones,
+            stall_timeout=0.3, zone_timeout=1.0, arrival_radius=0.25,
+            min_progress=0.1)
+        try:
+            start = self.world.zones[self.zone].points[self.node]
+            at = max(float(tick), self.clock_at) + 0.001
+            observation = self.observe_route_start(self.zone, start, at)
+            directive = self.confirm_route_observation(navigator, observation, at)
+            if directive.kind != "PAUSE":
+                self.record(tick, "navigation_start_observed",
+                            synthetic_zone=self.zone, synthetic_node=self.node)
+            issued_step = None
+            for _ in range(64):
+                if directive.kind == "ARRIVED":
+                    break
+                if directive.kind == "PAUSE":
+                    raise RuntimeError(f"Synthetic navigation paused: {directive.reason}")
+                if directive.kind not in {"MOVE_TOWARD", "WAIT_FOR_ZONE"}:
+                    raise RuntimeError(f"Synthetic navigation cannot handle {directive.kind}")
+                previous = (navigator.confirmed_zone, navigator.confirmed_node)
+                kind = (ActionKind.MOVE if directive.kind == "MOVE_TOWARD"
+                        else ActionKind.ZONE)
+                step_key = (directive.kind, previous, directive.zone,
+                            directive.node, navigator.replans)
+                if step_key != issued_step:
+                    self.accept(Action(kind, f"synthetic {self.zone}:{self.node} to "
+                                             f"{directive.zone}:{directive.node}"), tick)
+                    issued_step = step_key
+                at = max(float(tick), self.clock_at) + 0.1
+                observation = self.observe_route_arrival(directive, at)
+                directive = self.confirm_route_observation(navigator, observation, at)
+                confirmed = (navigator.confirmed_zone, navigator.confirmed_node)
+                if confirmed != previous:
+                    issued_step = None
+                    self.zone, self.node = confirmed
+                    self.record(tick, "route_step", kind=kind.value,
+                                synthetic_zone=self.zone, synthetic_node=self.node,
+                                arrival_observed=True)
+            else:
+                raise RuntimeError("Synthetic navigation step limit reached")
+            if navigator.status != "ARRIVED":
+                raise RuntimeError("Synthetic camp arrival was not observed")
+        except Exception:
+            self.control.emergency_stop("Synthetic navigation failed")
+            raise
         self.camp = name
         self.metrics.camp = name
         self.metrics.zone = destination

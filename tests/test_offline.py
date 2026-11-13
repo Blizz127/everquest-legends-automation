@@ -5,6 +5,7 @@ import pytest
 
 from eql_automation.modes import Action, ActionKind, Mode, ModeController, action_from_prior_rotation
 from eql_automation.nav import NavGraph, Point, ProgressMonitor, RouteNotFound
+from eql_automation.navigator import NavigationObservation
 from eql_automation.sim import run_demo, synthetic_graph
 from eql_automation.spells import SpellPlanner, SpellSpec
 from eql_automation.campaign import Camp, CampaignPlanner, WorldSnapshot
@@ -254,3 +255,86 @@ def test_synthetic_gm_pause_latches_off():
         env.apply_intent(1, decision)
     assert env.controller.mode == Mode.OFF
     assert not env.sink.submit(Action(ActionKind.CAST, "/cast 3"))
+
+
+def test_synthetic_camp_waits_for_observed_waypoint_and_zone_arrival():
+    env = SyntheticEnvironment()
+    env.observe_route_arrival = lambda _directive, now: NavigationObservation(
+        "synthetic_zone_1", Point(0, 0), now)
+    with pytest.raises(RuntimeError, match="navigation paused"):
+        env.move_to_camp(1, "synthetic_camp_1")
+    assert env.camp is None and (env.zone, env.node) == ("synthetic_zone_1", "entry")
+    assert env.controller.mode == Mode.OFF
+
+    env = SyntheticEnvironment()
+    env.zone, env.node, env.level = "synthetic_zone_1", "camp", 11
+    def wrong_zone_entry(directive, now):
+        if directive.kind == "WAIT_FOR_ZONE":
+            return NavigationObservation("synthetic_zone_2", Point(999, 999), now)
+        return NavigationObservation(directive.zone, directive.point, now)
+    env.observe_route_arrival = wrong_zone_entry
+    with pytest.raises(RuntimeError, match="navigation paused"):
+        env.move_to_camp(1, "synthetic_camp_2")
+    assert env.camp is None and (env.zone, env.node) == ("synthetic_zone_1", "camp")
+    assert env.controller.mode == Mode.OFF
+
+
+def test_synthetic_camp_requires_start_adapter_observation():
+    env = SyntheticEnvironment()
+    env.observe_route_start = lambda zone, point, now: NavigationObservation(
+        zone, Point(999, 999), now)
+    with pytest.raises(RuntimeError, match="navigation paused"):
+        env.move_to_camp(1, "synthetic_camp_1")
+    assert env.camp is None and env.counts["move"] == 0
+    assert env.controller.mode == Mode.OFF
+
+    env = SyntheticEnvironment()
+    env.observe_route_start = lambda zone, point, now: NavigationObservation(
+        zone, point, now - 0.01)
+    with pytest.raises(RuntimeError, match="missing or stale"):
+        env.move_to_camp(1, "synthetic_camp_1")
+    assert env.camp is None and env.counts["move"] == 0
+    assert env.controller.mode == Mode.OFF
+
+
+def test_synthetic_zone_transition_issues_once_while_waiting():
+    env = SyntheticEnvironment()
+    env.zone, env.node, env.level = "synthetic_zone_1", "camp", 11
+    observed_times = []
+    original_plan = env.dispatcher.plan
+    def tracked_plan(action, observation, now):
+        observed_times.append(now)
+        return original_plan(action, observation, now)
+    env.dispatcher.plan = tracked_plan
+    polls = 0
+    def delayed_zone(directive, now):
+        nonlocal polls
+        observed_times.append(now)
+        if directive.kind == "WAIT_FOR_ZONE" and polls < 3:
+            polls += 1
+            return NavigationObservation("synthetic_zone_1", Point(10, 0), now)
+        return NavigationObservation(directive.zone, directive.point, now)
+    env.observe_route_arrival = delayed_zone
+    env.move_to_camp(1, "synthetic_camp_2")
+    assert env.camp == "synthetic_camp_2"
+    assert env.counts["zone"] == 1
+    assert observed_times == sorted(observed_times)
+
+
+def test_synthetic_navigation_callback_failure_latches_off():
+    env = SyntheticEnvironment()
+    def lost_sensor(_directive, _now):
+        raise RuntimeError("sensor lost")
+    env.observe_route_arrival = lost_sensor
+    with pytest.raises(RuntimeError, match="sensor lost"):
+        env.move_to_camp(1, "synthetic_camp_1")
+    assert env.camp is None and env.controller.mode == Mode.OFF
+
+
+def test_synthetic_navigation_rejects_stale_arrival_observation():
+    env = SyntheticEnvironment()
+    env.observe_route_arrival = lambda directive, now: NavigationObservation(
+        directive.zone, directive.point, now - 0.01)
+    with pytest.raises(RuntimeError, match="missing or stale"):
+        env.move_to_camp(1, "synthetic_camp_1")
+    assert env.camp is None and env.controller.mode == Mode.OFF
