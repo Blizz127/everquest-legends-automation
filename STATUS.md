@@ -31,11 +31,14 @@ Updated 2026-11-13 17:56 CST for coordinator task `829a00229b29`.
 - Level-7 Crushbone route blocker: the finer copied 0.25-detail mesh has an
   80-ground-polygon graph alternative avoiding suspect edge 658↔623, but
   its width-1.2/grade-1.2 selector rejects portal 3244→3242 after 41 turns
-  and before full-strip checks. A larger candidate budget gave the same
-  result. A read-only directed-cut check shows that excluding both
+  and before full-strip checks. A bounded junction probe found fraction 0.20
+  passes the seam and adjacent travel strips, but fails the conservative
+  all-direction turn disk near a raised rock. A diagnostic bypass reached
+  another failed turn at polygon 4316; it did not yield an accepted route.
+  A larger candidate budget gave the original failure. A read-only directed-cut check shows that excluding both
   3244→3242 and 658→623 disconnects arrival from the Slaver goal; either
-  edge alone leaves graph connectivity. Next: isolate their copied
-  source/detail geometry and prioritize the same-zone GFay camp; no F11
+  edge alone leaves graph connectivity. Next: audit directed walking footprints
+  through both cuts and prioritize the same-zone GFay camp; no F11
   route is ready. Current XP/hour remains
   unavailable, so the GFay orc camp remains a planning fallback only.
 - Fresh level-1 source progress: South and North Kaladim zone/object archives

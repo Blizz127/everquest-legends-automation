@@ -1,5 +1,21 @@
 # FINDINGS
 
+## Crushbone directed junction probe — 2026-11-13 17:56 CST
+
+**VERIFIED copied-mesh diagnostic by read-only probe, no game input:** On the
+retained detail-0.25 Crushbone mesh SHA-256 `ba544e96700b51777d81c522c3dd6eba27c4d4a1af387852bf70729086158e56`,
+the 80-polygon alternate route artifact SHA-256
+`5762a13cf23d5b3a957d7e896662ff114700a1711c3d42cbe644f1a4eb15d9ad`
+crosses portal 3244→3242. At portal fraction 0.20, its seam and the two
+adjacent width-1.2/grade-1.2 travel strips pass separately, while the
+360-degree turn disk fails with `angular_grade_too_steep` at radius 0.6.
+This supports a bounded directed-turn investigation, not a safety waiver:
+the copied source has raised rock close to the crossing. A diagnostic
+selector bypass of only that junction then fails another turn at polygon
+4316 after 83 turn checks and zero accepted strips. Neither junction nor
+the Slaver route is accepted for movement; prioritize the same-zone GFay
+orc-camp route while investigating both directed footprints.
+
 ## Future G2 start-area mesh frame correction — 2026-11-13 17:55 CST
 
 **VERIFIED source and focused test, no game input:** The future
