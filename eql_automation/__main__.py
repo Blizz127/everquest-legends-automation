@@ -6,7 +6,8 @@ import json
 from pathlib import Path
 from dataclasses import asdict
 
-from .modes import Action, ActionKind, Mode, ModeController
+from .control import ControlPlane
+from .modes import Action, ActionKind
 from .sim import SimSink, run_demo, run_navigation_demo, synthetic_graph
 from .synthetic_run import default_output_dir, run_synthetic_1_50
 from .client_ingest import import_retail_copy
@@ -17,33 +18,55 @@ from .zone_candidates import build_zone_candidates
 
 
 def shell() -> None:
-    controller = ModeController()
-    sink = SimSink(controller)
-    print("OFFLINE SIMULATOR — mode off. Commands: mode off|assist|full, action KIND, route, status, quit")
+    control = ControlPlane()
+    sink = SimSink(control.controller)
+    print("OFFLINE SIMULATOR — no game input. Commands: mode off|assist|full, "
+          "key F7|F8|F9, action KIND, queue KIND, drain, stop, safety REASON, "
+          "reset safety, route, status, quit")
+    print(control.indicator.text)
     while True:
         try:
-            raw = input("eql-sim> ").strip().lower()
+            raw = input("eql-sim> ").strip()
         except (EOFError, KeyboardInterrupt):
             print("\nStopped.")
             return
-        if raw in {"quit", "exit"}:
+        normalized = raw.lower()
+        if normalized in {"quit", "exit"}:
             return
-        if raw.startswith("mode "):
+        if normalized.startswith("mode ") or normalized in {"stop", "reset safety"}:
             try:
-                permit = controller.switch(Mode(raw.split(maxsplit=1)[1]))
-                print(f"MODE {permit.mode.value.upper()} — generation {permit.generation}")
-            except ValueError:
-                print("Use mode off, mode assist, or mode full")
-        elif raw.startswith("action "):
+                print(control.handle_command(raw).text)
+            except (RuntimeError, ValueError) as exc:
+                print(exc)
+        elif normalized.startswith("key "):
             try:
-                kind = ActionKind(raw.split(maxsplit=1)[1])
-                print("ALLOWED (simulation only)" if sink.submit(Action(kind, "synthetic")) else "DENIED")
+                print(control.handle_hotkey(raw.split(maxsplit=1)[1]).text)
+            except (RuntimeError, ValueError) as exc:
+                print(exc)
+        elif normalized.startswith("safety "):
+            try:
+                print(control.emergency_stop(raw.split(maxsplit=1)[1]).text)
+            except ValueError as exc:
+                print(exc)
+        elif normalized.startswith("action ") or normalized.startswith("queue "):
+            try:
+                kind = ActionKind(normalized.split(maxsplit=1)[1])
+                action = Action(kind, "synthetic")
+                if normalized.startswith("queue "):
+                    print("QUEUED (simulation only)" if control.queue(action) else "DENIED")
+                else:
+                    print("ALLOWED (simulation only)" if sink.submit(action) else "DENIED")
             except ValueError:
                 print("Unknown action kind")
-        elif raw == "route":
+        elif normalized == "drain":
+            result = control.drain()
+            sent = sum(sink.submit(item.action, item.permit) for item in result.ready)
+            print(f"DRAINED {sent} simulated actions; {result.dropped + len(result.ready) - sent} dropped")
+        elif normalized == "route":
             print(" -> ".join(synthetic_graph().route("start", "camp")))
-        elif raw == "status":
-            print(f"MODE {controller.mode.value.upper()} — {len(sink.accepted)} accepted, {len(sink.rejected)} denied")
+        elif normalized == "status":
+            print(f"{control.indicator.text} — {len(sink.accepted)} accepted, "
+                  f"{len(sink.rejected)} denied")
         elif raw:
             print("Unknown command")
 

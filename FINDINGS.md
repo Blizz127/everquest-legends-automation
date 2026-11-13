@@ -1,5 +1,20 @@
 # FINDINGS
 
+## Offline mode control — 2026-11-13 03:50 CST
+
+**VERIFIED synthetic only:** A running CLI now accepts `mode full|assist|off`
+and simulated `key F7|F8|F9` events, reports mode/generation/reason on screen,
+and cancels queued intents when the mode changes. Already drained intents keep
+their original permit so a sender can reject them after a switch. `safety
+REASON` latches OFF until explicit reset. ASSIST denies movement, target,
+autoattack, loot, vendor, camp, zone, login, recovery, scribe and memorize
+intents. A focused CLI smoke queued MOVE in FULL, switched to ASSIST and
+dropped it, then queued HEAL in ASSIST, switched OFF and dropped it. 31 focused
+tests passed. **No keyboard grab, game overlay, input sender or live client
+test exists.** The October tool already uses F8 and F9 and its prepare/combat
+path changes spell gems and autoattack, so it cannot be reused unchanged for
+strict ASSIST. The target remains unverified private; no character progress.
+
 ## Offline navigation controller — 2026-11-13 03:21 CST
 
 **VERIFIED synthetic only:** A `WorldNavigator` now requires an observed start

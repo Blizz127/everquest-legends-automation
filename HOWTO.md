@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.9.0
+# EverQuest Legends automation — current build 0.10.0
 
 ## Current availability
 
@@ -37,17 +37,32 @@ running while you switch simulated modes:
 mode assist
 action cast
 action move
+queue heal
+drain
 mode full
 route
-mode off
+key F8
+key F9
 status
 quit
 ```
 
 `mode assist`, `mode full`, and `mode off` take effect in the running simulator
-without a restart. Each switch prints `MODE ...` on screen. `mode off` cancels
-the previous action permit immediately; `quit` stops the shell. These are
-terminal commands, not in-game commands or hotkeys.
+without a restart. `stop` is another way to select OFF. Simulated `key F7`
+selects FULL, `key F8` selects ASSIST, and `key F9` selects OFF. Each switch
+prints an on-screen indicator with mode, generation, and transition reason.
+`queue KIND` holds a synthetic action until `drain`; switching modes cancels
+queued or already drained intents through their original permits.
+`action KIND` checks an intent immediately. `safety REASON` latches OFF and requires
+`reset safety` while OFF before reactivation. `quit` stops the shell. These are
+**terminal commands and simulated key events**, not in-game commands, grabbed
+hotkeys, or a live overlay. No keys reach the EverQuest Legends client.
+
+The older October rotation tool uses F8 for its own fight toggle and F9 for
+stop. Do not run both listeners. A real in-game key mapping requires verified
+game bindings, a single keyboard owner, a focus-gated grab, release of held
+keys on OFF, and a sender that rechecks the mode permit before each key. None
+of that live input path has been verified in this build.
 
 `--synthetic-1-50` runs a closed-loop **fabricated** world. It exercises the
 planner and stops at synthetic level 50 or fails if progress stalls. The output
@@ -119,17 +134,20 @@ No live pause hotkey or in-game indicator is available yet.
 The prior October Paladin/Cleric prototype remains at
 `/home/blizz/Projects/everquest-legends-rotation/`. Its historical controls
 were F6 prepare, F8 assist toggle, F9 stop, and F10 heal. They have not been
-live-verified and are **not** controls for this build. Do not run its installer:
+live-verified and are **not** controls for this build. Its prepare action also
+changes spell gems, and its combat action can toggle autoattack, so that code
+cannot be used unchanged for strict ASSIST. Do not run its installer:
 it writes character INIs in the protected Alienware prefix.
 
 ## Verification
 
 ```bash
 python3 -m pytest -q tests/test_offline.py
+python3 -m pytest -q tests/test_control.py
 python3 -m compileall -q eql_automation
 ```
 
-The **real-client** level 50 run, map ingestion, in-game mode switching,
+The **real-client** level 50 run, in-game mode switching,
 automated spell acquisition, camps, death recovery, and relogin are not
 implemented or verified. `FINDINGS.md` records the exact client/server
 evidence and blocker.

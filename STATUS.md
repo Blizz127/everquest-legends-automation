@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 03:21 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 03:50 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.9.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.10.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -20,9 +20,13 @@ Updated 2026-11-13 03:21 CST for coordinator task `829a00229b29`.
   Zone-name cross-reference builds a review list, never walkable edges.
   Pure WorldNavigator now requires verified traversal edges and start/arrival
   observations, replans from confirmed nodes after stalls, and pauses on
-  uncertain mid-edge/zone conditions.
-- Verification: `python3 -m pytest -q tests/test_navigator.py tests/test_zone_candidates.py tests/test_poi_index.py tests/test_client_ingest.py tests/test_target.py tests/test_offline.py`
-  — 29 passed; complete retail import found 224 maps, 1,057,974 drawing
+  uncertain mid-edge/zone conditions. The offline shell now switches modes by
+  command or simulated F7/F8/F9 events, prints mode/generation/reason, and
+  cancels queued or already drained intents after a mode change. The F8/F9
+  mapping is not wired to the game; the October tool already uses those keys.
+- Verification: `python3 -m pytest -q tests/test_control.py tests/test_offline.py`
+  — 31 passed; CLI queue/switch/drain smoke dropped 2 stale synthetic actions;
+  complete retail import found 224 maps, 1,057,974 drawing
   lines, 1,445 labels, 701 zone names and 198 Paladin/Cleric spells;
   all 1–50 spell profiles valid. Active snapshot:
   `~/.local/share/eql-automation/map-store/snapshots/e0aa3e31762d31fd4c1e/`.
@@ -40,7 +44,8 @@ Updated 2026-11-13 03:21 CST for coordinator task `829a00229b29`.
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
   be sent to that host. Daybreak rules prohibit unattended play and unauthorized
-  servers; no Daybreak-authorized live test route is documented.
+  servers; no Daybreak-authorized live test route is documented. No private
+  launcher/server publication destination is configured; this build is local.
 - Next step: obtain the intended private endpoint or separate client config,
   then verify target identity before any live test. Candidate zone lines need
   real traversal evidence before they can become graph edges. Continue offline
