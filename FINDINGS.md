@@ -1,5 +1,42 @@
 # FINDINGS
 
+## Fixed-corridor Crushbone audit — 2026-11-13 11:40 CST
+
+**VERIFIED offline, no game input:** The source-only
+`eql_automation/portal_corridor_audit.py` now applies the local detail-surface
+and shared-portal checks to a specified polygon sequence with sample-count,
+polygon-count and elapsed-time bounds. A portal boundary mismatch of
+0.000061 WLD units at 3272→4108 exposed an unnormalized cross-product slack
+in the copied mesh's `contains()` method. The local audit now checks a
+physical 0.0001-unit distance from each polygon edge; a synthetic
+0.001-unit gap still rejects. Review also changed seam endpoint tolerance to
+physical distance and rejects conflicting overlapping detail heights.
+Sixteen focused portal/corridor tests pass. The offline modules staged under
+`~/.local/share/eql-automation/nav-work/0.41.4/eql_automation/` match devbox
+SHA-256 `2a9adce2878f9c7bfcfe81f7ecbb1e7867e252e97f7f5badf966885363c1d949`
+for `portal_surface_audit.py` and
+`9d24df4cfce7af4fb282b25a8cbba7852dd84b69611c3be3eef56b57129f9814`
+for `portal_corridor_audit.py`.
+
+**VERIFIED hash-matched copied-mesh query:** The historical Crushbone
+arrival-to-Slaver query snaps to polygons 2249→3805 and its existing mesh
+path has 80 polygons, 1,049.819 units and 21 funnel points. It goes through
+4197→4322→4321→4319; polygon 4320 is a side branch, so the earlier
+4322→4320 local candidate is not on this route. The historical raw arrival
+Z=2.56 snaps to mesh Z=0.163, and the guide goal Z=-14.678 snaps to mesh
+Z=-16.878; these offsets have not been reconciled with real-client position.
+With five sampled fractions per portal, the bounded audit made 940 segment
+checks and stopped at polygon 4322 after processing 47 polygons. The
+upstream chain reached 4322 at incoming 4197-portal fractions 0.3 and 0.9;
+the only sampled 4322→4321 exit passed the seam check at fraction 0.75, but
+neither local connecting segment met clearance. A separately sampled 4322
+segment can pass when entered at its own portal fraction 0.3; that entry was
+not reachable from the earlier sampled corridor. This is a **grid-limited
+negative result** for one fixed 80-polygon path, not proof no safe route
+exists. The full travel strip, source-to-bake height alignment, dynamic
+collision, zone arrival, measured follower error and actual game movement
+remain unverified. F11 stays disabled.
+
 ## Detail-edge quantization correction — 2026-11-13 11:33 CST
 
 **VERIFIED offline correction to 0.41.2:** The prior `unsupported_detail_surface`

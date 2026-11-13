@@ -13,6 +13,7 @@ class Mesh:
         self._detail_start = [0, 2]
         self._detail = [[vertices[0], vertices[1], vertices[2]],
                         [vertices[0], vertices[2], vertices[3]]]
+        self.polys = {0: vertices}
 
     def contains(self, poly, x, y, *, slack):
         return -slack <= x <= 10 + slack and -slack <= y <= 10 + slack
@@ -80,6 +81,7 @@ class TwoPolyMesh(Mesh):
                          [right[0], right[2], right[3]]]
         self._detail_start = [0, 2, 4]
         self.area = {0: 63, 1: 63}
+        self.polys[1] = right
         self.links = [[(1, (10.0, 10.0, 2.0), (10.0, 0.0, 2.0))], []]
 
 
@@ -106,3 +108,35 @@ def test_detail_edge_projection_tolerates_quantization_only():
     assert result.candidate and abs(result.target_height - 2.0) < 1e-8
     wider_gap = TwoPolyMesh(target_shift=1e-3)
     assert audit_portal_seam(wider_gap, 0, 1, (10.0, 5.0)).reason == "unsupported_detail_surface"
+
+
+def test_long_polygon_edge_uses_physical_distance_tolerance():
+    mesh = Mesh()
+    corners = [(0.0, 0.0, 2.0), (50.0, 0.0, 2.0),
+               (50.0, 10.0, 2.0), (0.0, 10.0, 2.0)]
+    mesh.polys[0] = corners
+    mesh._detail = [[corners[0], corners[1], corners[2]],
+                    [corners[0], corners[2], corners[3]]]
+    assert not mesh.contains(0, 25.0, 10.0 + 6e-5, slack=1e-3)
+    tiny_gap = audit_portal_surface(mesh, 0, (25.0, 9.0),
+                                    (25.0, 10.0 + 6e-5))
+    assert tiny_gap.candidate and not tiny_gap.real_client_accepted
+    wide_gap = audit_portal_surface(mesh, 0, (25.0, 9.0),
+                                    (25.0, 10.0 + 1e-3))
+    assert not wide_gap.candidate and wide_gap.reason == "sample_left_polygon"
+
+
+def test_portal_endpoint_tolerance_is_world_distance():
+    mesh = TwoPolyMesh()
+    mesh.links[0] = [(1, (10.0, 0.0, 2.0), (10.0, 1000.0, 2.0))]
+    result = audit_portal_seam(mesh, 0, 1, (10.0, 1000.001))
+    assert not result.candidate and result.reason == "crossing_outside_shared_portal"
+
+
+def test_conflicting_overlapping_detail_heights_remain_unknown():
+    mesh = Mesh()
+    raised = [(x, y, z + 1.0) for x, y, z in mesh._detail[0]]
+    mesh._detail.append(raised)
+    mesh._detail_start = [0, 3]
+    result = audit_portal_surface(mesh, 0, (1.0, 5.0), (9.0, 5.0))
+    assert not result.candidate and result.reason == "unsupported_detail_surface"

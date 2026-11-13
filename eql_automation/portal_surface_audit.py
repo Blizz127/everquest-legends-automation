@@ -31,6 +31,36 @@ class PortalSeamCheck:
 
 
 _DETAIL_EDGE_TOLERANCE = 1e-4  # WLD units; covers float-quantized portal edges.
+_DETAIL_HEIGHT_AGREEMENT = 0.01  # Conflicting overlapping surfaces stay unknown.
+
+
+def _contains_with_physical_tolerance(mesh, poly: int, x: float, y: float) -> bool:
+    """Check a CCW Recast ring with a distance, not raw cross-product, slack.
+
+    ``NavMesh.contains`` applies its slack to an unnormalized cross product.
+    On a long edge, a tiny float-quantized portal displacement can therefore
+    fail despite being closer than the detail-edge tolerance above.
+    """
+    try:
+        ring = mesh.polys[poly]
+    except (AttributeError, IndexError, KeyError, TypeError):
+        return False
+    if len(ring) < 3:
+        return False
+    nonzero_edges = 0
+    for index, start in enumerate(ring):
+        end = ring[(index + 1) % len(ring)]
+        dx, dy = float(end[0] - start[0]), float(end[1] - start[1])
+        length = math.hypot(dx, dy)
+        if not math.isfinite(length):
+            return False
+        if length <= 1e-12:
+            continue
+        nonzero_edges += 1
+        signed_distance = (dx * (y - start[1]) - dy * (x - start[0])) / length
+        if signed_distance < -_DETAIL_EDGE_TOLERANCE:
+            return False
+    return nonzero_edges >= 3
 
 
 def _supported_detail_height(mesh, poly: int, x: float, y: float) -> float | None:
@@ -48,8 +78,7 @@ def _supported_detail_height(mesh, poly: int, x: float, y: float) -> float | Non
         triangles = mesh._detail[first:last]
     except (AttributeError, IndexError, KeyError, TypeError):
         return None
-    nearest_gap = math.inf
-    nearest_z = None
+    supported = []
     for triangle in triangles:
         a, b, c = triangle
         e1x, e1y = float(b[0] - a[0]), float(b[1] - a[1])
@@ -63,7 +92,10 @@ def _supported_detail_height(mesh, poly: int, x: float, y: float) -> float | Non
         if min(u, v, 1.0 - u - v) >= -1e-12:
             z = float(a[2]) + u * float(b[2] - a[2]) + v * float(c[2] - a[2])
             if math.isfinite(z):
-                return z
+                supported.append((0.0, z))
+            continue
+        nearest_gap = math.inf
+        nearest_z = None
         for start, end in ((a, b), (b, c), (c, a)):
             dx, dy = float(end[0] - start[0]), float(end[1] - start[1])
             length2 = dx * dx + dy * dy
@@ -76,9 +108,14 @@ def _supported_detail_height(mesh, poly: int, x: float, y: float) -> float | Non
             if gap < nearest_gap:
                 nearest_gap = gap
                 nearest_z = float(start[2] + t * (end[2] - start[2]))
-    if nearest_gap <= _DETAIL_EDGE_TOLERANCE and math.isfinite(nearest_z):
-        return nearest_z
-    return None
+        if nearest_gap <= _DETAIL_EDGE_TOLERANCE and math.isfinite(nearest_z):
+            supported.append((nearest_gap, nearest_z))
+    if not supported:
+        return None
+    heights = [z for _, z in supported]
+    if max(heights) - min(heights) > _DETAIL_HEIGHT_AGREEMENT:
+        return None
+    return min(supported)[1]
 
 
 def audit_portal_seam(mesh, source_poly: int, target_poly: int,
@@ -96,7 +133,8 @@ def audit_portal_seam(mesh, source_poly: int, target_poly: int,
             not isinstance(crossing_xy, tuple) or len(crossing_xy) != 2 or
             any(not isinstance(v, (int, float)) or not math.isfinite(v)
                 for v in crossing_xy) or
-            any(not isinstance(v, (int, float)) or not math.isfinite(v) or v <= 0
+            any(not isinstance(v, (int, float)) or isinstance(v, bool) or
+                not math.isfinite(v) or v <= 0
                 for v in (maximum_step, required_clearance))):
         return PortalSeamCheck(False, "invalid_seam_limits")
     try:
@@ -117,7 +155,8 @@ def audit_portal_seam(mesh, source_poly: int, target_poly: int,
             continue
         along = ((x - left[0]) * dx + (y - left[1]) * dy) / length2
         gap = abs((x - left[0]) * dy - (y - left[1]) * dx) / math.sqrt(length2)
-        if -1e-5 <= along <= 1 + 1e-5 and gap <= 1e-4:
+        endpoint_margin = _DETAIL_EDGE_TOLERANCE / math.sqrt(length2)
+        if -endpoint_margin <= along <= 1 + endpoint_margin and gap <= _DETAIL_EDGE_TOLERANCE:
             on_portal = True
             break
     if not on_portal:
@@ -159,7 +198,8 @@ def audit_portal_surface(mesh, poly: int, entry_xy: tuple[float, float],
             len(entry_xy) != 2 or len(exit_xy) != 2 or
             any(not isinstance(v, (int, float)) or not math.isfinite(v)
                 for v in (*entry_xy, *exit_xy)) or
-            any(not isinstance(v, (int, float)) or not math.isfinite(v) or v <= 0
+            any(not isinstance(v, (int, float)) or isinstance(v, bool) or
+                not math.isfinite(v) or v <= 0
                 for v in (required_clearance, maximum_grade, sample_spacing)) or
             not isinstance(max_samples, int) or isinstance(max_samples, bool) or max_samples < 2):
         return PortalSurfaceCheck(False, "invalid_audit_limits")
@@ -187,7 +227,7 @@ def audit_portal_surface(mesh, poly: int, entry_xy: tuple[float, float],
         fraction = index / steps
         x = entry_xy[0] + (exit_xy[0] - entry_xy[0]) * fraction
         y = entry_xy[1] + (exit_xy[1] - entry_xy[1]) * fraction
-        if not mesh.contains(poly, x, y, slack=1e-3):
+        if not _contains_with_physical_tolerance(mesh, poly, x, y):
             return PortalSurfaceCheck(False, "sample_left_polygon", index)
         z = _supported_detail_height(mesh, poly, x, y)
         if z is None:

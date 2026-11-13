@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.3 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.41.4 / owner preview 0.39.3
 
 ## Current availability
 
@@ -25,7 +25,9 @@ revocable permit and recorded a slope-filtered GFay route failure. Version
 keyboard descriptor. Version 0.41.2 adds an offline portal-local true-surface
 and seam audit. Version 0.41.3 corrects a false seam rejection caused by tiny
 mesh edge quantization. A few local Crushbone lines now pass the offline
-check, while the full route remains unverified.
+check. Version 0.41.4 adds a bounded audit of the historical 80-polygon
+Crushbone corridor; the sampled chain stops at a clearance bottleneck.
+The full route remains unverified.
 These changes are not in the owner preview or accepted
 for real-client movement.
 F11 remains disabled.
