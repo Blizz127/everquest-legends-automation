@@ -1,5 +1,26 @@
 # FINDINGS
 
+## Recording-only runtime dispatch seam — 2026-11-13 07:06 CST
+
+**VERIFIED synthetic only:** `DryRunDispatcher` now binds each planned action
+to its original mode permit, immutable `WorldSnapshot`, target-selection
+token, zone and node. Before the recording sink accepts it, a newer focused
+observation must match, with chat closed, finite HP/mana/bag state, no GM, and
+action-specific conditions such as a present target for a cast and an
+available corpse for loot. OFF invalidates the old permit; ASSIST denies
+movement, zone, target and other nonrotation actions through `ControlPlane`.
+The synthetic 1–50 run now uses this dispatcher for every accepted action and
+for its final mode-safety probes. Emergency PAUSE uses `ControlPlane` directly
+so unknown observations can still stop the run immediately.
+
+`python3 -m pytest -q tests/test_dispatch.py tests/test_offline.py` passed 18
+focused tests. `--synthetic-1-50` still reached only fabricated level 50 with
+1,439 trace events and `real_client_level_verified=false`; no game input was
+sent. **Limit:** its movement loop still applies `WorldNav.route()` steps
+instantaneously without `WorldNavigator` observing start/waypoint/zone arrival.
+The dispatcher checks per synthetic action, not per emitted key; there is no
+client sender, hotkey hook, real login or real XP observation.
+
 ## Offline current-level XP observation — 2026-11-13 07:03 CST
 
 **VERIFIED copied client UI:** `uifiles/default/EQUI_PlayerWindow.xml`,

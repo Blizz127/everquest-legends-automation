@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 07:04 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 07:07 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.29.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.30.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -131,6 +131,11 @@ Updated 2026-11-13 07:04 CST for coordinator task `829a00229b29`.
   tracker can report percentage points/hour within one confirmed level;
   raw XP/hour remains n/a without an absolute cumulative XP source. Neither
   live crop nor runtime label/normal-XP allocation has been verified.
+  The synthetic 1–50 harness now passes every action through a recording-only
+  dispatcher that rechecks the original mode permit, a newer matching world
+  snapshot, focus, target token and safety conditions before accepting it.
+  OFF and ASSIST limits are exercised through that dispatcher. Synthetic
+  movement/zone steps still apply instantly without observed arrival.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -225,6 +230,9 @@ Updated 2026-11-13 07:04 CST for coordinator task `829a00229b29`.
   `python3 -m pytest -q tests/test_screen_observer.py tests/test_offline.py`
   — 20 passed; `--demo-gauges` returned synthetic HP 0.5, mana 1.0,
   current-level XP fraction 0.25, raw XP unknown. Compile and diff checks passed.
+  `python3 -m pytest -q tests/test_dispatch.py tests/test_offline.py` — 18
+  passed; synthetic 1–50 rerun reached only fabricated level 50 and 1,439
+  trace events, with `real_client_level_verified=false`.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -246,7 +254,8 @@ Updated 2026-11-13 07:04 CST for coordinator task `829a00229b29`.
   needs a real active-skin crop and same-frame label confirmation. BSP
   candidates require observed traversal; Crushbone camps
   still require client evidence; select later camps from observed level and
-  safety. Build a
+  safety. Make the closed-loop synthetic route wait for `WorldNavigator`
+  observations rather than applying steps instantly. Build a
   read-only runtime UI observer on an isolated client view. ASSIST keeps
   movement manual. The October assist tool's live preparation/combat remain
   unverified.

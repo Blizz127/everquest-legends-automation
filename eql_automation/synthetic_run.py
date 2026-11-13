@@ -11,7 +11,9 @@ from pathlib import Path
 import json
 
 from .campaign import Camp, CampaignPlanner, WorldSnapshot
-from .modes import Action, ActionKind, Mode, ModeController, action_from_prior_rotation
+from .control import ControlPlane
+from .dispatch import DispatchObservation, DryRunDispatcher
+from .modes import Action, ActionKind, Mode, action_from_prior_rotation
 from .nav import NavGraph, Point
 from .prior_rotation_core import Rotation, Spell
 from .sim import SimSink
@@ -25,9 +27,12 @@ RUN_STORE = Path.home() / ".local/share/eql-automation/runs"
 
 class SyntheticEnvironment:
     def __init__(self) -> None:
-        self.controller = ModeController()
-        self.controller.switch(Mode.FULL_AUTO)
+        self.control = ControlPlane()
+        self.controller = self.control.controller
+        self.control.switch(Mode.FULL_AUTO)
         self.sink = SimSink(self.controller)
+        self.dispatcher = DryRunDispatcher(self.control, self.sink.submit)
+        self.dispatch_sequence = 0
         self.world = WorldNav()
         self.camps = []
         self.spell_specs = []
@@ -65,6 +70,8 @@ class SyntheticEnvironment:
         self.node = "entry"
         self.camp: str | None = None
         self.target_hp = 0
+        self.target_token: str | None = None
+        self.target_epoch = 0
         self.loot_available = False
         self.dead = False
         self.disconnected = False
@@ -88,9 +95,18 @@ class SyntheticEnvironment:
                              target_present=self.target_hp > 0,
                              camp=self.camp, loot_available=self.loot_available)
 
-    def accept(self, action: Action) -> None:
-        if not self.sink.submit(action):
-            raise RuntimeError(f"Synthetic full mode denied {action.kind.value}")
+    def dispatch_observation(self, observed_at: float) -> DispatchObservation:
+        return DispatchObservation(observed_at, self.snapshot(), self.zone,
+                                   self.node, self.target_token, True, False)
+
+    def accept(self, action: Action, tick: int) -> None:
+        self.dispatch_sequence += 1
+        at = float(tick) + self.dispatch_sequence * 0.00001
+        plan = self.dispatcher.plan(action, self.dispatch_observation(at), at)
+        if (plan is None or not self.dispatcher.dispatch(
+                plan, self.dispatch_observation(at + 0.000001),
+                at + 0.000001)):
+            raise RuntimeError(f"Synthetic dispatch denied {action.kind.value}")
         self.counts[action.kind.value] += 1
 
     def inject_scripted_faults(self, tick: int) -> None:
@@ -98,6 +114,7 @@ class SyntheticEnvironment:
             self.death_injected = True
             self.dead = True
             self.target_hp = 0
+            self.target_token = None
             self.loot_available = False
             self.metrics.observe_log("[synthetic] You have been slain by a synthetic opponent.\n")
             self.record(tick, "scripted_death")
@@ -121,7 +138,7 @@ class SyntheticEnvironment:
                 raise RuntimeError(f"Synthetic spell unavailable: {task.spell_name}")
             kind = {"buy": ActionKind.VENDOR, "scribe": ActionKind.SCRIBE,
                     "memorize": ActionKind.MEMORIZE}[task.operation]
-            self.accept(Action(kind, f"synthetic {task.operation} {task.spell_id}"))
+            self.accept(Action(kind, f"synthetic {task.operation} {task.spell_id}"), tick)
             if task.operation == "buy":
                 self.owned_scrolls.add(task.spell_id)
             elif task.operation == "scribe":
@@ -142,7 +159,7 @@ class SyntheticEnvironment:
         for step in route:
             kind = ActionKind.ZONE if step.kind == "zone" else ActionKind.MOVE
             self.accept(Action(kind, f"synthetic {step.from_zone}:{step.from_node} to "
-                                     f"{step.to_zone}:{step.to_node}"))
+                                     f"{step.to_zone}:{step.to_node}"), tick)
             self.zone, self.node = step.to_zone, step.to_node
             self.record(tick, "route_step", kind=step.kind,
                         synthetic_zone=self.zone, synthetic_node=self.node)
@@ -151,12 +168,17 @@ class SyntheticEnvironment:
         self.metrics.zone = destination
 
     def apply_intent(self, tick: int, action: Action) -> None:
-        self.accept(action)
         kind = action.kind
+        if kind == ActionKind.PAUSE:
+            self.control.emergency_stop(action.detail)
+            raise RuntimeError("Synthetic safety pause latched OFF")
+        self.accept(action, tick)
         if kind == ActionKind.CAMP:
             self.move_to_camp(tick, action.detail)
         elif kind == ActionKind.TARGET:
             self.target_hp = 2
+            self.target_epoch += 1
+            self.target_token = f"synthetic-selection-{self.target_epoch}"
         elif kind == ActionKind.LOOT:
             self.loot_available = False
             self.bag_fullness = min(1.0, self.bag_fullness + 0.2)
@@ -170,12 +192,10 @@ class SyntheticEnvironment:
             self.hp = self.mana = 1.0
             self.camp = None
             self.zone, self.node = "synthetic_zone_1", "entry"
+            self.target_token = None
         elif kind == ActionKind.LOGIN:
             self.disconnected = False
             self.camp = None
-        elif kind == ActionKind.PAUSE:
-            self.controller.switch(Mode.OFF)
-            raise RuntimeError("Synthetic safety pause latched OFF")
         else:
             raise RuntimeError(f"Unhandled synthetic intent {kind}")
         self.record(tick, "intent", kind=kind.value, detail=action.detail)
@@ -186,7 +206,7 @@ class SyntheticEnvironment:
         if choice is None:
             return False
         action = action_from_prior_rotation(choice.role, choice.command)
-        self.accept(action)
+        self.accept(action, tick)
         self.rotation.committed(choice, float(tick))
         self.target_hp -= 1
         if action.kind == ActionKind.CAST:
@@ -194,6 +214,7 @@ class SyntheticEnvironment:
         self.record(tick, "combat_rotation", role=choice.role, kind=action.kind.value)
         if self.target_hp <= 0:
             self.target_hp = 0
+            self.target_token = None
             self.loot_available = True
             self.hp = max(0.1, self.hp - 0.2)
             self.xp += 20
@@ -246,17 +267,27 @@ def run_synthetic_1_50(output_dir: Path | None = None,
     missing = [name for name in required if env.counts[name] == 0]
     if missing:
         raise AssertionError(f"Synthetic path skipped capabilities: {missing}")
-    assist = env.controller.switch(Mode.ASSIST)
+    env.target_hp = 2
+    env.target_epoch += 1
+    env.target_token = f"synthetic-selection-{env.target_epoch}"
+    env.control.switch(Mode.ASSIST)
+    observed_at = float(tick) + 1
+    observed = env.dispatch_observation(observed_at)
     forbidden_in_assist = (ActionKind.MOVE, ActionKind.ZONE, ActionKind.TARGET,
                            ActionKind.LOOT, ActionKind.VENDOR, ActionKind.CAMP,
                            ActionKind.REST, ActionKind.LOGIN, ActionKind.RECOVER,
                            ActionKind.SCRIBE, ActionKind.MEMORIZE)
     assist_denied_nonrotation = all(
-        not env.sink.submit(Action(kind, "synthetic mode probe"), assist)
+        env.dispatcher.plan(Action(kind, "synthetic mode probe"),
+                            observed, observed_at) is None
         for kind in forbidden_in_assist)
-    assist_cast_allowed = env.sink.submit(Action(ActionKind.CAST, "/cast 3"), assist)
-    env.controller.switch(Mode.OFF)
-    off_cancels_assist = not env.sink.submit(Action(ActionKind.CAST, "/cast 3"), assist)
+    assist_plan = env.dispatcher.plan(
+        Action(ActionKind.CAST, "/cast 3"), observed, observed_at)
+    assist_cast_allowed = (assist_plan is not None and env.dispatcher.dispatch(
+        assist_plan, env.dispatch_observation(observed_at + 0.1), observed_at + 0.1))
+    env.control.switch(Mode.OFF)
+    off_cancels_assist = (assist_plan is not None and not env.dispatcher.dispatch(
+        assist_plan, env.dispatch_observation(observed_at + 0.2), observed_at + 0.2))
     if not (assist_denied_nonrotation and assist_cast_allowed and off_cancels_assist):
         raise AssertionError("Synthetic assist/off mode safety check failed")
     result = {

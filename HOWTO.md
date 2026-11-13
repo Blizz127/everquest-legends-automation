@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.29.0
+# EverQuest Legends automation — current build 0.30.0
 
 ## Current availability
 
@@ -99,6 +99,13 @@ Trace, summary and a synthetic status file go under
 `~/.local/share/eql-automation/runs/synthetic-1-50-<UTC timestamp>/`.
 Use `--output DIRECTORY` to choose a different trace directory. These files
 are test evidence only; they do not show an EverQuest Legends character at 50.
+Every synthetic action now passes through a recording-only dispatcher that
+binds the original mode permit and an immutable world snapshot. A newer
+matching synthetic observation is required before the sink records the action;
+OFF, ASSIST movement limits, changed target/zone/state, stale or unknown
+readings, and GM presence can cancel it. This validates the dispatch seam
+offline. The fabricated route still applies movement and zone steps instantly;
+it does not yet exercise observed waypoint arrival in this closed-loop run.
 
 `--demo-navigation` shows a synthetic blocked edge being quarantined and a
 route changing to a safe alternate. The pure navigation controller waits for
@@ -354,6 +361,7 @@ it writes character INIs in the protected Alienware prefix.
 
 ```bash
 python3 -m pytest -q tests/test_offline.py
+python3 -m pytest -q tests/test_dispatch.py
 python3 -m pytest -q tests/test_control.py
 python3 -m pytest -q tests/test_spell_catalog.py tests/test_assist.py
 python3 -m pytest -q tests/test_ui_schema.py
