@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-13 17:20 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:22 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Low-level route progress: a bounded select-only run saved the 249-ground-
@@ -16,15 +16,15 @@ Updated 2026-11-13 17:20 CST for coordinator task `829a00229b29`.
   the sixth still needs a portal choice. Their live camps remain unaccepted. The
   guide markers are not client-certified positions. Current level remains
   last observed 7; XP/hour and deaths remain unavailable, and F11 is off.
-- Private publish: source-only project 0.41.37 commit `91d1201` is staged
-  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.37`,
+- Private publish: source-only project 0.41.38 commit `0bc71fd` is staged
+  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.38`,
   outside the game install. Local/remote archive SHA-256 matched
-  `795c420bb812f44286227c5e55928aace24a8c56ef3051ba9ee3497298376893`.
-  Remote offline navigation startup, local ring CLI help and read-only UI
-  capture CLI help passed; local GFay and Butcher short spokes passed copied
-  strip/BSP diagnostics. No live screenshot, character input or movement
-  was run. This supersedes the staged 0.41.36 source archive. Owner preview
-  remains 0.39.4 and F11 remains disabled.
+  `91a0b9d2d7eff5c80e2816b4fd12f3c5bf0e1ae28f5b29c7de3b1105343c88e4`.
+  Remote offline navigation startup and capture/analyzer CLI help passed.
+  An end-to-end synthetic red HP crop returned fraction 1.0 with healing and
+  G2 still false; its temporary synthetic capture was removed. No live
+  screenshot, character input or movement was run. This supersedes the staged
+  0.41.37 source archive. Owner preview remains 0.39.4; F11 remains disabled.
 - Read-only UI progress: the installed Legira layout puts the HP gauge at
   `(1966,693,330,17)` at 2560×1600; the saved HP crop starts 32 pixels too
   high and spans 51 pixels. The 0.39.4 reader explicitly rejects its height
@@ -205,7 +205,7 @@ Updated 2026-11-13 17:20 CST for coordinator task `829a00229b29`.
   game input. It supersedes 0.41.32 as the current source build; owner assist
   preview 0.39.4 and disabled F11 are unchanged.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: not observed; Greater Faydark is the last reported zone. GFay orc camps are the nearest level-7 route candidate, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
-- Build: local source 0.41.37 (pinned low-level camp-ring local strip/BSP diagnostics, plus the earlier UI capture) and isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Earlier source releases and historical build details are recorded above. Mode boundary, prior rotation planner reuse,
+- Build: local source 0.41.38 (pinned low-level camp-ring diagnostics and private HP capture analysis, plus the earlier UI capture) and isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Earlier source releases and historical build details are recorded above. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects

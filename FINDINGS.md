@@ -14,10 +14,13 @@ Project 0.41.38 adds a read-only analyzer for the private owner-created
 `PlayerWindow__Player_HP.png` crop. It checks the exact capture metadata,
 source/crop hashes, rectangle and current client layout; then uses the
 hash-pinned 0.39.4 red-bar reader. Its report never enables healing or G2.
-Five focused metadata/traversal checks passed locally. A separate synthetic
+Three focused metadata/hash/traversal checks passed locally. A separate synthetic
 check on Alienware's installed Python and pinned reader returned 1.0 for a
 full 330×17 red band, 0.5 for a half band and unknown for a tiny, blue or
-ambiguous band. No actual owner UI capture has arrived, so a live HP reading,
+ambiguous band. The staged end-to-end analyzer also accepted a temporary
+synthetic 330×17 full-red crop as an **unverified** 1.0 fraction, with healing
+and G2 still false; that temporary synthetic capture was removed. No actual
+owner UI capture has arrived, so a live HP reading,
 full-health calibration and smart heal are unverified.
 
 ## Copied low-level camp spokes — 2026-11-13 17:16 CST
