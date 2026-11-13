@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.7.0
+# EverQuest Legends automation — current build 0.8.0
 
 ## Current availability
 
@@ -25,6 +25,8 @@ python3 -m eql_automation --inspect-target --source /path/to/copied/eqhost.txt
 python3 -m eql_automation --ingest-retail-copy --source /path/to/copied/client-text
 python3 -m eql_automation --index-pois
 python3 -m eql_automation --query-pois Merchant --map fieldofbone --limit 5
+python3 -m eql_automation --index-zone-candidates
+python3 -m eql_automation --query-zone-candidates East_Cabilis --map fieldofbone
 ```
 
 The demo prints a synthetic route and mode-permission results. The shell stays
@@ -78,6 +80,12 @@ Results include coordinates and an **unverified text hint** such as
 not evidence that the location is reachable, a zone line functions, or a
 merchant stocks a spell. The index is stored outside git under
 `~/.local/share/eql-automation/map-store/indices/`.
+
+`--index-zone-candidates` compares map labels with client zone display names;
+`--query-zone-candidates TEXT` searches that review list. Exact text and
+reordered-word matches are distinguished. Matches are **unverified** and do
+not add a transition to the navigation graph. A missing match does not prove
+that no zone line exists.
 
 | Simulated mode | Actions permitted by the planner |
 | --- | --- |

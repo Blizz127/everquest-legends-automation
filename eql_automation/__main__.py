@@ -13,6 +13,7 @@ from .client_ingest import import_retail_copy
 from .target import inspect_eqhost
 from .poi_index import build_poi_index, current_summary
 from .nav import MAP_STORE
+from .zone_candidates import build_zone_candidates
 
 
 def shell() -> None:
@@ -62,6 +63,10 @@ def main() -> None:
                        help="index unverified labels from the active map snapshot")
     group.add_argument("--query-pois", metavar="TEXT",
                        help="search unverified labels in the active map snapshot")
+    group.add_argument("--index-zone-candidates", action="store_true",
+                       help="cross-reference map labels with client zone names as unverified candidates")
+    group.add_argument("--query-zone-candidates", metavar="TEXT",
+                       help="search unverified zone-line candidates")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
@@ -97,6 +102,23 @@ def main() -> None:
                               "query": args.query_pois,
                               "results": [asdict(poi) for poi in index.search(
                                   args.query_pois, map_name=args.map_name,
+                                  limit=args.limit)]}, indent=2))
+    elif args.index_zone_candidates or args.query_zone_candidates is not None:
+        store = args.output or MAP_STORE
+        summary = args.source or current_summary(store)
+        index, path = build_zone_candidates(summary, store)
+        if args.index_zone_candidates:
+            print(json.dumps({"snapshot_id": index.snapshot_id,
+                              "candidate_count": len(index.candidates),
+                              "match_counts": index.counts(),
+                              "index_path": str(path),
+                              "transitions_verified": False}, indent=2))
+        else:
+            print(json.dumps({"snapshot_id": index.snapshot_id,
+                              "query": args.query_zone_candidates,
+                              "results": [asdict(item) for item in index.search(
+                                  args.query_zone_candidates,
+                                  source_map=args.map_name,
                                   limit=args.limit)]}, indent=2))
     else:
         shell()

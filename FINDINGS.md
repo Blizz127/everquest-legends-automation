@@ -1,5 +1,21 @@
 # FINDINGS
 
+## Zone-line review candidates — 2026-11-13 02:53 CST
+
+**VERIFIED offline:** Cross-referencing the 1,445 map labels with the client's
+701 zone names produced 351 unverified transition review candidates:
+224 `to_` labels exactly match a client zone display name, 4 match after
+reordering the same words, 48 unprefixed labels exactly match, and 75 `to_`
+labels do not match a zone display name. For example, `to_East_Cabilis`
+matches client zone ID 106, `Cabilis East`, by word order only. This is a
+name association, **not** a working zone line or a destination map-stem
+mapping. No transition was inserted into the navigable `WorldNav` graph.
+
+A targeted read-only search of the Devbox Coordinator workspace and prior
+rotation project found no separate private endpoint or login configuration.
+The intended private server remains unidentified. 23 focused tests passed;
+no client/server or character action occurred.
+
 ## Searchable map labels — 2026-11-13 02:25 CST
 
 **VERIFIED offline:** The active 224-map snapshot has 1,445 labels. An untracked
