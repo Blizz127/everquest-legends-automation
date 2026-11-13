@@ -1,5 +1,30 @@
 # FINDINGS
 
+## Read-only G2 location scene boundary — 2026-11-13 14:15 CST
+
+**VERIFIED offline, no game input, project 0.41.17:**
+`G2ReadOnlySceneObserver` converts exactly one new client `/location` log line
+into a short-lived `G2Scene` only when an exact zone ID and display name,
+stable log epoch and zone generation, local log timestamp within two seconds,
+0.50-second monotonic fix age, and separately supplied 0.10-second focus,
+owner-key, chat, target and combat safety checks all pass. Batched lines are
+rejected until a later single line. A same-zone reentry invalidates the old
+fix. Thirty-three focused tests across the observer, log reader, G2 budget and
+input bridge passed; they used only temporary files and fake scenes.
+
+**OBSERVED integration gates:** `LocationLogReader` skips existing log bytes,
+so starting G2 while already standing in GFay has no trusted zone until a new
+zone-entry message is seen. The log does not echo `/location` request IDs;
+fix sequence identifies a line, not its issuing command. `G2Scene.at` must be
+the current observation time while fix age is checked separately, because
+hold reporting occurs before the next fix. The default 8-unit radial geometry
+check is insufficient for the budget's minimum 12-unit first-pulse radius at
+its 60-unit/s speed upper bound; a larger radial check also needs an explicit
+sample budget. Raw log coordinates have no accepted WLD transform. No owner
+G0 result, speed bound, independent live scene observer, real key release or
+dynamic-obstacle check exists. This adapter is not in owner preview 0.39.4,
+does not send game input and does not enable G2 or F11.
+
 ## Read-only zone transition evidence boundary — 2026-11-13 14:10 CST
 
 **VERIFIED copied client data:** The GFay manifest

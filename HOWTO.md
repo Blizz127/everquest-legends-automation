@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.16 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.17 / owner preview 0.39.4
 
 ## Current availability
 
@@ -81,6 +81,13 @@ zone line himself. The after reading is not certified as an exact spawn
 point, and the log alone does not prove a walk rather than a teleport or
 relogin. No client input or F11 route was added; the owner-run preview remains
 0.39.4.
+Version 0.41.17 adds a read-only location-to-G2 scene observer. It accepts one
+fresh location line in an exact observed zone, requires a matching local log
+timestamp and separate current focus, key, chat, target and combat checks,
+and rejects batched lines or a same-zone reentry until new evidence arrives.
+It needs a new zone-entry message after launch because existing log history is
+skipped. The required independent checks and owner-confirmed G0/speed bound
+are not yet supplied by the owner preview; G2 and F11 remain unavailable.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -322,6 +329,16 @@ This is a library seam, not a running observer or a navigation input. It does
 not request `/loc`, convert log axes to WLD axes, verify log-to-client latency,
 or move the character. The installed client currently has no verified private
 target; do not use its owner-character log for a bot run.
+
+The separate `G2ReadOnlySceneObserver` can turn a **single** newly logged
+`/location` line into a short-lived measurement scene only when the expected
+zone ID/name, zone generation, local timestamp and independently supplied
+focus, owner-key, chat, target and combat observations all agree. It treats
+multiple location lines in one poll as ambiguous. The client does not echo a
+`/location` request ID, so the scene cannot prove which command produced the
+line. Existing log history cannot establish the starting zone. This library
+does not run in preview 0.39.4, send input, prove a log-to-mesh coordinate
+transform or authorize G2 movement. No new owner launch step is available.
 
 The separate `ClientLogReader` for level/death status now uses the same
 non-replaying file-tail protection. An existing log is skipped at startup;
