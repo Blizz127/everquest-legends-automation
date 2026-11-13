@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-13 17:27 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:31 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Fresh level-1 source progress: South and North Kaladim zone/object archives
@@ -29,15 +29,17 @@ Updated 2026-11-13 17:27 CST for coordinator task `829a00229b29`.
   the sixth still needs a portal choice. Their live camps remain unaccepted. The
   guide markers are not client-certified positions. Current level remains
   last observed 7; XP/hour and deaths remain unavailable, and F11 is off.
-- Private publish: source-only project 0.41.38 commit `0bc71fd` is staged
-  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.38`,
+- Private publish: source-only project 0.41.39 commit `94ecd9f` is staged
+  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.39`,
   outside the game install. Local/remote archive SHA-256 matched
-  `91a0b9d2d7eff5c80e2816b4fd12f3c5bf0e1ae28f5b29c7de3b1105343c88e4`.
-  Remote offline navigation startup and capture/analyzer CLI help passed.
-  An end-to-end synthetic red HP crop returned fraction 1.0 with healing and
-  G2 still false; its temporary synthetic capture was removed. No live
-  screenshot, character input or movement was run. This supersedes the staged
-  0.41.37 source archive. Owner preview remains 0.39.4; F11 remains disabled.
+  `225f877bd59ccf2eadf6c14199eaa0191a251b44688125fec50ac6c0dc2a1195`.
+  Remote offline navigation startup and project/HP-analyzer CLI help passed.
+  This release adds the hash-pinned copied Kaladim tools and local exit-tile
+  diagnostic; it supersedes source 0.41.38. The earlier source 0.41.38
+  synthetic red HP crop returned unverified fraction 1.0 with healing and
+  G2 still false; its temporary capture was removed. No live screenshot,
+  character input or movement was run for 0.41.39. Owner preview remains
+  0.39.4; F11 remains disabled.
 - Read-only UI progress: the installed Legira layout puts the HP gauge at
   `(1966,693,330,17)` at 2560×1600; the saved HP crop starts 32 pixels too
   high and spans 51 pixels. The 0.39.4 reader explicitly rejects its height
