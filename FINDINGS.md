@@ -1,5 +1,27 @@
 # FINDINGS
 
+## G2 start-area provenance and radius gate — 2026-11-13 14:20 CST
+
+**VERIFIED offline, no game input, project 0.41.18:** `check_g2_start()`
+requires one `AlignedWldFix` bound by object identity to a fresh raw log fix,
+matching scene line/epoch/zone generation, current safety flags, exact copied
+zone ID/display name and zone short name, and a declared copied-mesh SHA-256.
+The caller must supply a live
+calibration record; none exists for Legira or a fresh test character. Raw log
+coordinates cannot be passed directly. At the budget's minimum 60-unit/s
+upper speed bound and 0.20-second maximum hold, an 8-unit radius fails before
+the mesh is queried. An 18-unit, 36-direction, 1-unit-spaced disk requires
+684 samples; a 512-sample limit fails, while an explicit 1,024-sample limit
+produced only a synthetic sampled candidate. The result always has
+`real_client_accepted=false` and `budget_authorized=false`. Twelve focused
+start-gate, radial and scene tests passed. Zone mapping and mesh provenance are
+caller-supplied contracts, not independently checked files in this function. The
+underlying radial sampler may snap points or miss gaps between rays. This gate
+rejects a start snap above 0.0005 units and subtracts any remaining snap from
+the usable radius before comparing it to the pulse bound. Dynamic
+obstacles and a true client-aligned ground point remain unverified.
+
+
 ## Read-only G2 location scene boundary — 2026-11-13 14:15 CST
 
 **VERIFIED offline, no game input, project 0.41.17:**

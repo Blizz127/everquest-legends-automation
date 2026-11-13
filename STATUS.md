@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 14:15 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 14:20 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Owner feedback check: at 14:12 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` was found on Alienware. The last successful log mtime check at 13:09 CST showed Legira's real-client log still at 09:31:50 CST. No 0.39.3/0.39.4 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
-- Build: offline prototype 0.41.17 plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Source-only 0.41.16 is staged separately on Alienware outside the game install; 0.41.17 is being prepared. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.41.10 corrects its focused fixture to copied client IDs and unlock levels; 0.41.11 adds log-line and zone-generation identity for offline location tracking; 0.41.12 rejects same-zone reentry during G2 and requires verified reachable camps before selecting a full-auto camp; 0.41.13 carries exact supply warnings into sticky offline state and loosens only a measured float32 portal-edge tolerance; 0.41.14 adds explicit bounded long-strip budgets and a conservative turn-disk diagnostic; 0.41.15 adds a bounded offline automatic portal selector; 0.41.16 adds a read-only zone-transition log observer; 0.41.17 adds a read-only fresh location-to-G2 scene adapter, still disconnected from live input; 0.39.4 exposes unknown-HP reasons in the owner UI without changing input policy. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.41.18 plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Source-only 0.41.17 is staged separately on Alienware outside the game install; 0.41.18 is being prepared. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.41.10 corrects its focused fixture to copied client IDs and unlock levels; 0.41.11 adds log-line and zone-generation identity for offline location tracking; 0.41.12 rejects same-zone reentry during G2 and requires verified reachable camps before selecting a full-auto camp; 0.41.13 carries exact supply warnings into sticky offline state and loosens only a measured float32 portal-edge tolerance; 0.41.14 adds explicit bounded long-strip budgets and a conservative turn-disk diagnostic; 0.41.15 adds a bounded offline automatic portal selector; 0.41.16 adds a read-only zone-transition log observer; 0.41.17 adds a read-only fresh location-to-G2 scene adapter; 0.41.18 binds the sampled G2 radius to fresh position provenance and the pulse speed bound, still disconnected from live input; 0.39.4 exposes unknown-HP reasons in the owner UI without changing input policy. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -492,6 +492,11 @@ Updated 2026-11-13 14:15 CST for coordinator task `829a00229b29`.
   warning. A live adapter does not connect these stages yet. Twenty-nine
   focused portal/strip/turn tests and the startup demo pass; no game
   input or purchases were performed.
+- Verification for 0.41.18: 41 focused G2/start-area/log/bridge tests passed
+  after the pipe-based bridge test was corrected to accept a measured hold
+  over 0.20 seconds only as a safe halt with key-up. The synthetic 1–50 smoke
+  reached only synthetic level 50 and reported `real_client_level_verified=false`.
+  No real-client G2 pulse or movement was run.
 - Current blocker: 0.39.4 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee

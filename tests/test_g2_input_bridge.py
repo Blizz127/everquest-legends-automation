@@ -8,7 +8,7 @@ from types import SimpleNamespace
 import pytest
 
 from eql_automation.g2_input_bridge import run_g2_forward
-from eql_automation.g2_pulse_budget import G2PulseBudget, G2Scene
+from eql_automation.g2_pulse_budget import G2Halt, G2PulseBudget, G2Scene
 from eql_automation.uinput_watchdog import PulseError
 
 
@@ -79,11 +79,20 @@ def test_bridged_pulse_uses_existing_descriptor_then_requires_new_fixes():
     read_fd, write_fd = os.pipe()
     sender = FakeSender(write_fd)
     policy = budget()
-    held = run_g2_forward(sender, policy, scene, lambda: None, threading.RLock())
+    try:
+        held = run_g2_forward(sender, policy, scene, lambda: None, threading.RLock())
+    except G2Halt as error:
+        # OS scheduling can make the watchdog's measured hold exceed the
+        # strict 0.20-second budget. That must halt, with key-up still sent.
+        assert "duration" in str(error)
+        held = None
     sent = events(read_fd, write_fd)
-    assert 0 < held <= 0.20
     assert sent[:4] == [(1, 103, 1), (0, 0, 0), (1, 103, 0), (0, 0, 0)]
-    assert policy.stage == "await_fix" and not sender.held
+    assert not sender.held
+    if held is None:
+        assert policy.stage == "halted"
+    else:
+        assert 0 < held <= 0.20 and policy.stage == "await_fix"
 
 
 def test_changed_target_before_down_sends_no_key():

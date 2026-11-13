@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.17 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.18 / owner preview 0.39.4
 
 ## Current availability
 
@@ -88,6 +88,13 @@ and rejects batched lines or a same-zone reentry until new evidence arrives.
 It needs a new zone-entry message after launch because existing log history is
 skipped. The required independent checks and owner-confirmed G0/speed bound
 are not yet supplied by the owner preview; G2 and F11 remain unavailable.
+Version 0.41.18 adds an offline G2 start-area preflight. It refuses raw log
+positions without an independently live-calibrated WLD point tied to the same
+fix, copied-client zone ID/name and copied-mesh hash. It checks that the radial
+sample budget and radius cover the pulse's speed upper bound, then reports a
+sampled geometry candidate only. No live alignment record exists, so it cannot
+pass for the current character. It does not authorize G2, F11 or any game
+input.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -339,6 +346,15 @@ multiple location lines in one poll as ambiguous. The client does not echo a
 line. Existing log history cannot establish the starting zone. This library
 does not run in preview 0.39.4, send input, prove a log-to-mesh coordinate
 transform or authorize G2 movement. No new owner launch step is available.
+
+The offline `check_g2_start()` gate also requires a separately verified
+ground-position transform bound to the same new log fix and mesh hash. Its
+default 18-unit radial check needs 684 samples at 36 directions and 1-unit
+spacing; a smaller radius or sample budget can fail before any geometry query.
+The reported radius is reduced by any tiny mesh-start snap and rejects larger
+snaps or the wrong copied-client zone.
+A pass means sampled copied-mesh geometry only. It does not observe dynamic
+obstacles or grant a movement permit. No live alignment record has been made.
 
 The separate `ClientLogReader` for level/death status now uses the same
 non-replaying file-tail protection. An existing log is skipped at startup;
