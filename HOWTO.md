@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.40.7 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.40.8 / owner preview 0.39.3
 
 ## Current availability
 
@@ -16,9 +16,11 @@ is a private server, but its endpoint has not been found; the installed retail
 client still points to Daybreak. Strict live ASSIST and FULL AUTO are not yet
 validated. The owner chose to test rotation himself on live.
 
-The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 adds a
-separate-process same-device release timer tested only with a pipe. Neither
-is in the owner preview or accepts real-client movement. F11 remains disabled.
+The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
+separate-process same-device release timer tested only with a pipe. Version
+0.40.8 also rejects location fixes after an observation-clock rollback. These
+changes are not in the owner preview or accepted for real-client movement.
+F11 remains disabled.
 The owner launch steps below are still for 0.39.3.
 
 ## Owner-run rotation test on Alienware today: preview 0.39.3

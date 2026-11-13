@@ -247,3 +247,24 @@ def test_rotated_log_accepts_only_fresh_appends_with_new_time_baseline(tmp_path:
     fixes = reader.poll(now=3)
     assert len(fixes) == 1
     assert fixes[0].zone_id == 2 and fixes[0].raw_coordinates == (4, 5, 6)
+
+
+def test_poll_clock_rollback_clears_zone_and_requires_new_entry(tmp_path: Path):
+    log, zones = fixture_paths(tmp_path)
+    log.touch()
+    reader = reader_for(log, zones)
+    with log.open("a") as source:
+        source.write(stamped(1, "You have entered Example One.") +
+                     stamped(2, "Your Location is 1, 2, 3"))
+    assert len(reader.poll(now=5)) == 1
+    with log.open("a") as source:
+        source.write(stamped(3, "Your Location is 4, 5, 6"))
+    with pytest.raises(ValueError, match="moved backward"):
+        reader.poll(now=4)
+    assert reader.latest is None and reader.zone_id is None
+    assert reader.poll(now=6) == []  # Pending fix cannot rebind an old zone.
+    with log.open("a") as source:
+        source.write(stamped(4, "You have entered Example Two.") +
+                     stamped(5, "Your Location is 7, 8, 9"))
+    fixes = reader.poll(now=7)
+    assert len(fixes) == 1 and fixes[0].zone_id == 2

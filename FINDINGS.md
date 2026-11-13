@@ -1,5 +1,15 @@
 # FINDINGS
 
+## Location poll clock rollback — 2026-11-13 10:49 CST
+
+**VERIFIED offline:** The location reader already dropped same-poll fixes
+after loading, zone entry and log reset; that earlier review concern was
+already resolved. It now also clears the zone and latest fix if its caller
+supplies a poll time earlier than the previous observation. The pending log
+fix stays unbound until a new zone entry. A focused rollback regression and
+the location-reader checks passed (13 tests). This does not establish live
+log-to-mesh alignment or a safe current player position.
+
 ## Same-device pulse release timer — 2026-11-13 10:46 CST
 
 **VERIFIED offline:** `eql_automation/uinput_watchdog.py` is an optional

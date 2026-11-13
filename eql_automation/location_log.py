@@ -167,6 +167,7 @@ class LocationLogReader:
         self.zone_display_name: str | None = None
         self.latest: RawLocationFix | None = None
         self.last_log_local_time: datetime | None = None
+        self.last_received_monotonic: float | None = None
         self.tail.poll()  # Existing bytes are history; never bootstrap a zone.
 
     def _clear_zone(self) -> None:
@@ -180,6 +181,12 @@ class LocationLogReader:
                 isinstance(received_at, bool) or not isfinite(received_at)):
             self._clear_zone()
             raise ValueError("Poll time must be finite")
+        if (self.last_received_monotonic is not None and
+                received_at < self.last_received_monotonic):
+            self._clear_zone()
+            self.last_log_local_time = None
+            raise ValueError("Poll time moved backward; zone must be observed again")
+        self.last_received_monotonic = received_at
         try:
             lines, reset = self.tail.poll()
         except (OSError, ValueError):
