@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.34 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.35 / owner preview 0.39.4
 
 ## Current availability
 
@@ -299,7 +299,7 @@ clearance and steep polygons, so they are not accepted movement routes.
 
 ## Read-only UI observation for the next movement gate
 
-Project 0.41.34 includes an optional owner-run screenshot crop tool. It reads
+Project 0.41.35 includes an optional owner-run screenshot crop tool. It reads
 one focused EverQuest window without sending any input, saves only the player,
 target and chat window crops under
 `~/.local/share/eql-automation/g2-ui-observations/`, and marks every G2 safety
@@ -312,7 +312,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.34/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.35/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -320,8 +320,10 @@ The tool prints its private output directory. It requires the reviewed 0.39.4
 preview files and exactly one focused game process. It does not turn on F11 or
 prove chat, target, melee or combat state. Leave any screenshot files private;
 their chat crop may contain messages. Paired owner-controlled visible states
-are needed before the UI indicators can become safety checks. No extra owner
-test is required until we request those pairs.
+are needed before the UI indicators can become safety checks. The captured
+image time is separate from later metadata writing, and the saved UI layout
+is still not verified as the active live arrangement. No extra owner test is
+required until we request those pairs.
 
 After the check, the owner can send `~/eql-g0-trace.jsonl` or summarize it
 without printing the `/location` coordinates from the trace:

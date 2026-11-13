@@ -6,7 +6,7 @@ Updated 2026-11-13 16:44 CST for coordinator task `829a00229b29`.
 - Read-only UI progress: the installed Legira layout puts the HP gauge at
   `(1966,693,330,17)` at 2560×1600; the saved HP crop starts 32 pixels too
   high and spans 51 pixels. This is a likely calibration cause, not a live HP
-  fix. Source 0.41.34 adds a pinned, owner-run, focused-window crop tool that
+  fix. Source 0.41.35 adds a pinned, owner-run, focused-window crop tool that
   saves private player/target/chat images with all G2 safety flags unknown.
   Its help and import smoke passed; no live observation has been captured.
   The copied Unrest BSP marks sampled entrance ground as water, so no dry

@@ -70,6 +70,11 @@ def capture(*, label: str, delay: float, preview: Path, game: Path,
         raise ValueError("Label must contain only letters, numbers, _ or -")
     if not 0 <= delay <= 15:
         raise ValueError("Delay must be between 0 and 15 seconds")
+    private_root = DEFAULT_OUTPUT.resolve()
+    protected_prefix = (Path.home() / "Games/everquest-legends").resolve()
+    if (private_root.is_relative_to(protected_prefix) or
+            not output.resolve().is_relative_to(private_root)):
+        raise ValueError("Output must stay in the private G2 UI observation store")
     checked_preview(preview)
     sys.path.insert(0, str(preview))
     from rotation_engine import WindowGate  # owner preview; no input object created
@@ -84,7 +89,11 @@ def capture(*, label: str, delay: float, preview: Path, game: Path,
         session = gate.game_session()
         if len(windows) != 1 or focused is None or focused.id != windows[0].id or session is None:
             raise RuntimeError("Exactly one focused EverQuest window and process are required")
+        capture_started_utc = datetime.now(timezone.utc).isoformat()
+        capture_started_monotonic = time.monotonic()
         image = gate.capture()
+        capture_ended_monotonic = time.monotonic()
+        capture_ended_utc = datetime.now(timezone.utc).isoformat()
         if (gate.focused_window() is None or gate.focused_window().id != focused.id or
                 gate.game_session() != session):
             raise RuntimeError("Game focus or process changed during capture")
@@ -103,6 +112,11 @@ def capture(*, label: str, delay: float, preview: Path, game: Path,
     if not any(crops[name] is not None for name in WINDOWS):
         raise RuntimeError("Current client files did not resolve an on-screen window")
 
+    ini_exact = game / f"UI_{character}_{server}.ini"
+    ui_ini = [ini_exact] if ini_exact.is_file() else sorted(game.glob(f"UI_{character}_{server}_*.ini"))
+    source_paths = {game / "eqclient.ini", *layout.sources.values(), *ui_ini}
+    sources = {str(path): file_sha(path) for path in source_paths if path.is_file()}
+
     os.umask(0o077)
     output.mkdir(mode=0o700, parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -116,15 +130,14 @@ def capture(*, label: str, delay: float, preview: Path, game: Path,
         image.crop(box).save(path)
         saved[name] = {"box": list(box), "file": path.name,
                        "sha256": file_sha(path)}
-    sources = {str(path): file_sha(path)
-               for path in (game / "eqclient.ini", *layout.sources.values())
-               if path.is_file()}
-    ui_ini = sorted(game.glob(f"UI_{character}_{server}*.ini"))
-    if len(ui_ini) == 1:
-        sources[str(ui_ini[0])] = file_sha(ui_ini[0])
+    if sources != {str(path): file_sha(path) for path in source_paths if path.is_file()}:
+        raise RuntimeError("Client UI files changed while writing the observation")
     metadata = {
         "format": "eql-owner-ui-observation-v1",
-        "observed_at_utc": datetime.now(timezone.utc).isoformat(),
+        "capture_started_utc": capture_started_utc,
+        "capture_ended_utc": capture_ended_utc,
+        "capture_duration_monotonic_seconds": capture_ended_monotonic - capture_started_monotonic,
+        "metadata_written_at_utc": datetime.now(timezone.utc).isoformat(),
         "owner_label_unverified": label,
         "game_input_sent": False,
         "g2_safety_flags": {name: "unknown" for name in
@@ -136,7 +149,8 @@ def capture(*, label: str, delay: float, preview: Path, game: Path,
         "frame_rgb_sha256": sha256(image.tobytes()).hexdigest(),
         "ui_skin_from_saved_ini": layout.skin,
         "ui_scale_from_saved_ini": layout.ui_scale,
-        "source_sha256": sources,
+        "source_sha256_postcapture": sources,
+        "saved_layout_is_live_verified": False,
         "crops": saved,
         "missing_or_offscreen_crops": [name for name, box in crops.items() if box is None],
     }

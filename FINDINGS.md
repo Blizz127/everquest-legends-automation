@@ -14,8 +14,11 @@ not confirmed it. The same layout places `Player_Mana` at
 and combat state widgets, but the saved INI/XML does not reveal live focus,
 target, melee state or incoming attacks. Project 0.41.34 adds an owner-run,
 read-only focused-window crop tool pinned to the staged preview's source
-hashes. Its help/import smoke passed; no live screenshot has been captured by
-this release and no G2 safety flag is accepted.
+hashes. Version 0.41.35 tightens capture timestamps and keeps output under
+the private G2 observation store. Its help/import smoke passed; no live
+screenshot has been captured by this release and no G2 safety flag is
+accepted. Hashes of the client's saved UI layout files are recorded after
+capture, not misrepresented as verified active-state evidence.
 
 **VERIFIED copied-source BSP diagnostics, not client movement:** The Unrest
 entrance route's second funnel segment is water-labelled from mesh ground
