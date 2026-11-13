@@ -36,15 +36,17 @@ def test_existing_source_zone_history_is_skipped_but_fresh_destination_is_captur
                    line(1, "Your Location is 10, 20, 30"))
     watcher = reader(log, zones)
     with log.open("a") as source:
-        source.write(line(2, "LOADING, PLEASE WAIT...") +
+        source.write(line(2, "Your Location is 11, 21, 31") +
+                     line(3, "LOADING, PLEASE WAIT...") +
                      line(8, "You have entered Clan Crushbone.") +
                      line(9, "Your Location is -1.50, 2.25, 3.00"))
     observations = watcher.poll(now=100)
     assert len(observations) == 1
     found = observations[0]
     assert found.zone_id == 58 and found.raw_location == (-1.5, 2.25, 3.0)
-    assert (found.loading_line_seq, found.entered_line_seq,
-            found.location_line_seq) == (1, 2, 3)
+    assert (found.preloading_line_seq, found.loading_line_seq,
+            found.entered_line_seq, found.location_line_seq) == (1, 2, 3, 4)
+    assert found.preloading_raw_location == (11.0, 21.0, 31.0)
     assert not any((found.source_zone_verified, found.crossing_method_verified,
                     found.spawn_coordinate_verified, found.route_accepted,
                     found.real_client_movement_accepted))
@@ -102,7 +104,8 @@ def test_owner_cli_writes_only_private_observation_file(tmp_path, monkeypatch):
         if not appended[0]:
             appended[0] = True
             with log.open("a") as source:
-                source.write(line(1, "LOADING, PLEASE WAIT...") +
+                source.write(line(1, "Your Location is 10, 20, 30") +
+                             line(2, "LOADING, PLEASE WAIT...") +
                              line(6, "You have entered Clan Crushbone.") +
                              line(7, "Your Location is 1, 2, 3"))
 
@@ -119,6 +122,8 @@ def test_owner_cli_writes_only_private_observation_file(tmp_path, monkeypatch):
     assert len(outputs) == 1 and outputs[0].stat().st_mode & 0o777 == 0o600
     payload = json.loads(outputs[0].read_text())
     assert payload["zone_id"] == 58 and payload["raw_location"] == [1.0, 2.0, 3.0]
+    assert payload["preloading_raw_location"] == [10.0, 20.0, 30.0]
+    assert payload["preloading_log_time"] is not None
     assert payload["entry_to_location_seconds"] == 1
     assert payload["source_zone_verified"] is False
     assert payload["raw_coordinates_aligned_to_wld"] is False
@@ -161,3 +166,16 @@ def test_owner_cli_refuses_stale_appends_or_ambiguous_batches(tmp_path, monkeypa
             line(5, "Your Location is 4, 5, 6"))
     assert run_with_lines(both) == 2
     assert not list((tmp_path / ".local/share/eql-automation/owner-traces").glob("*.json"))
+
+
+def test_old_preloading_fix_is_discarded_while_destination_remains_observed():
+    tracker = DestinationTracker("Clan Crushbone", 58)
+    lines = [line(0, "Your Location is 1, 2, 3"),
+             line(40, "LOADING, PLEASE WAIT..."),
+             line(45, "You have entered Clan Crushbone."),
+             line(46, "Your Location is 4, 5, 6")]
+    observations = [tracker.consume(item, received_monotonic=100,
+                                    log_epoch=1) for item in lines]
+    found = observations[-1]
+    assert found is not None and found.raw_location == (4.0, 5.0, 6.0)
+    assert found.preloading_raw_location is None

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.19 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.20 / owner preview 0.39.4
 
 ## Current availability
 
@@ -99,6 +99,10 @@ Version 0.41.19 adds a read-only owner-run destination watcher. It can capture
 the first timely Clan Crushbone `/location` after Blizz's manual crossing,
 even when started mid-zone in GFay. It writes only an observation file outside
 the game install and does not send client input or certify a route.
+Version 0.41.20 also retains an optional `/location` printed within 30 seconds
+before loading. It labels that coordinate as an unverified preloading point;
+the destination reading still has no certified spawn or route. The owner-run
+watcher command below uses 0.41.20.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -188,7 +192,7 @@ clearance and steep polygons, so they are not accepted movement routes.
 Optional watcher, staged on Alienware outside the game install:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.19
+cd ~/.local/share/eql-automation/owner-tools/0.41.20
 python3 -m eql_automation.watch_destination --character Legira --server freeport
 ```
 
@@ -207,9 +211,10 @@ coordinator the approximate crossing time or the watcher output path; the lead
 can read those new log lines without touching the character. This is a short
 before/after observation, not a hand-recorded route. The destination fix may
 be after some movement, and the log alone cannot prove the crossing method.
-The watcher records the destination only; the earlier `/location` remains in
-the client log for separate review. Neither result certifies the exact spawn
-position or enables F11.
+The watcher also records the optional preloading `/location` if it was printed
+within 30 seconds of the loading line. That point has no confirmed source-zone
+identity or exact zone-line position. Neither reading certifies the spawn or
+enables F11.
 
 ## Start the offline prototype
 

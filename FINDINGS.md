@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Optional preloading location in owner watcher — 2026-11-13 14:30 CST
+
+**VERIFIED offline, no game input, project 0.41.20:** The destination watcher
+now retains the last new `/location` line no more than 30 seconds before the
+loading line, when Blizz chooses to print one. It serializes that raw point,
+log time and line ID alongside the first timely Clan Crushbone destination
+reading. A stale preloading fix is omitted while a valid destination reading
+can still be saved. Twelve focused destination/transition tests passed,
+including CLI JSON output on temporary files. The source zone and exact
+zone-line position remain unverified; no owner crossing has been captured.
+
+
 ## Owner-run destination capture seam — 2026-11-13 14:27 CST
 
 **VERIFIED offline, no game input, project 0.41.19:** A read-only

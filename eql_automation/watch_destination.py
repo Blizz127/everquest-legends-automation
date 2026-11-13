@@ -20,8 +20,10 @@ from .destination_log import DestinationLogReader
 
 def _payload(arrival, *, zone_names_sha256: str) -> dict:
     data = asdict(arrival)
-    for key in ("loading_log_time", "entered_log_time", "location_log_time"):
-        data[key] = data[key].isoformat()
+    for key in ("loading_log_time", "entered_log_time", "location_log_time",
+                "preloading_log_time"):
+        if data[key] is not None:
+            data[key] = data[key].isoformat()
     data.update({
         "format": 1,
         "captured_at_utc": datetime.now(timezone.utc).isoformat(),

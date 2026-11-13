@@ -34,6 +34,9 @@ class DestinationArrival:
     entered_line_seq: int
     location_line_seq: int
     log_epoch: int
+    preloading_raw_location: tuple[float, float, float] | None = None
+    preloading_log_time: datetime | None = None
+    preloading_line_seq: int | None = None
     source_zone_verified: bool = False
     crossing_method_verified: bool = False
     spawn_coordinate_verified: bool = False
@@ -45,17 +48,24 @@ class DestinationTracker:
     """Recognize loading, exact entry, then the first timely location line."""
 
     def __init__(self, destination: str, zone_id: int, *,
+                 max_preloading_fix_age: float = 30.0,
                  max_loading_seconds: float = 60.0,
                  max_location_delay: float = 30.0) -> None:
         if (not isinstance(destination, str) or not destination or
                 not isinstance(zone_id, int) or isinstance(zone_id, bool) or zone_id < 0 or
+                not isinstance(max_preloading_fix_age, (int, float)) or
+                isinstance(max_preloading_fix_age, bool) or
+                not isfinite(max_preloading_fix_age) or max_preloading_fix_age <= 0 or
                 not isinstance(max_loading_seconds, (int, float)) or
+                isinstance(max_loading_seconds, bool) or
                 not isfinite(max_loading_seconds) or max_loading_seconds <= 0 or
                 not isinstance(max_location_delay, (int, float)) or
+                isinstance(max_location_delay, bool) or
                 not isfinite(max_location_delay) or max_location_delay <= 0):
             raise ValueError("Destination watcher needs an exact zone and finite windows")
         self.destination = destination
         self.zone_id = zone_id
+        self.max_preloading_fix_age = float(max_preloading_fix_age)
         self.max_loading_seconds = float(max_loading_seconds)
         self.max_location_delay = float(max_location_delay)
         self.epoch: int | None = None
@@ -65,10 +75,14 @@ class DestinationTracker:
         self.loading_seq: int | None = None
         self.entered_time: datetime | None = None
         self.entered_seq: int | None = None
+        self.latest_unzoned_location: tuple[tuple[float, float, float], datetime, int] | None = None
+        self.preloading_location: tuple[tuple[float, float, float], datetime, int] | None = None
 
     def _clear_pending(self) -> None:
         self.loading_time = self.loading_seq = None
         self.entered_time = self.entered_seq = None
+        self.latest_unzoned_location = None
+        self.preloading_location = None
 
     def invalidate(self) -> None:
         self._clear_pending()
@@ -99,6 +113,12 @@ class DestinationTracker:
             return None
         self.last_log_time = at
         if body == _LOADING:
+            previous = self.latest_unzoned_location
+            self.preloading_location = (
+                previous if previous is not None and
+                0 <= (at - previous[1]).total_seconds() <= self.max_preloading_fix_age
+                else None)
+            self.latest_unzoned_location = None
             self.loading_time = at
             self.loading_seq = self.seq
             self.entered_time = self.entered_seq = None
@@ -123,8 +143,13 @@ class DestinationTracker:
             return None
         if body.startswith("Your Location is "):
             raw = parse_raw_location(body)
+            if self.loading_time is None and self.entered_time is None:
+                self.latest_unzoned_location = ((raw, at, self.seq)
+                                                if raw is not None else None)
+                return None
             loading_time, loading_seq = self.loading_time, self.loading_seq
             entered_time, entered_seq = self.entered_time, self.entered_seq
+            preloading = self.preloading_location
             self._clear_pending()  # Only the first location after entry may count.
             if (raw is None or loading_time is None or loading_seq is None or
                     entered_time is None or entered_seq is None or
@@ -134,7 +159,10 @@ class DestinationTracker:
             return DestinationArrival(self.zone_id, self.destination, raw,
                                       loading_time, entered_time, at,
                                       float(received_monotonic), loading_seq,
-                                      entered_seq, self.seq, log_epoch)
+                                      entered_seq, self.seq, log_epoch,
+                                      preloading[0] if preloading else None,
+                                      preloading[1] if preloading else None,
+                                      preloading[2] if preloading else None)
         return None
 
 
