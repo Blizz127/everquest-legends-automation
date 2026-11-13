@@ -11,6 +11,8 @@ from .sim import SimSink, run_demo, synthetic_graph
 from .synthetic_run import default_output_dir, run_synthetic_1_50
 from .client_ingest import import_retail_copy
 from .target import inspect_eqhost
+from .poi_index import build_poi_index, current_summary
+from .nav import MAP_STORE
 
 
 def shell() -> None:
@@ -56,10 +58,16 @@ def main() -> None:
                        help="read copied client text files into the untracked local map store")
     group.add_argument("--inspect-target", action="store_true",
                        help="inspect a copied eqhost.txt without connecting to its server")
+    group.add_argument("--index-pois", action="store_true",
+                       help="index unverified labels from the active map snapshot")
+    group.add_argument("--query-pois", metavar="TEXT",
+                       help="search unverified labels in the active map snapshot")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
                         help="copied retail client text directory for --ingest-retail-copy")
+    parser.add_argument("--map", dest="map_name", help="filter POI query by map file stem")
+    parser.add_argument("--limit", type=int, default=20, help="maximum POI query results")
     args = parser.parse_args()
     if args.demo:
         print(json.dumps(run_demo(), indent=2))
@@ -74,6 +82,22 @@ def main() -> None:
         if args.source is None:
             parser.error("--inspect-target requires --source pointing to eqhost.txt")
         print(json.dumps(asdict(inspect_eqhost(args.source)), indent=2))
+    elif args.index_pois or args.query_pois is not None:
+        store = args.output or MAP_STORE
+        summary = args.source or current_summary(store)
+        index, path = build_poi_index(summary, store)
+        if args.index_pois:
+            print(json.dumps({"snapshot_id": index.snapshot_id,
+                              "label_count": len(index.pois),
+                              "hint_counts": index.counts(),
+                              "index_path": str(path),
+                              "all_labels_verified": False}, indent=2))
+        else:
+            print(json.dumps({"snapshot_id": index.snapshot_id,
+                              "query": args.query_pois,
+                              "results": [asdict(poi) for poi in index.search(
+                                  args.query_pois, map_name=args.map_name,
+                                  limit=args.limit)]}, indent=2))
     else:
         shell()
 

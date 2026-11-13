@@ -1,5 +1,18 @@
 # FINDINGS
 
+## Searchable map labels — 2026-11-13 02:25 CST
+
+**VERIFIED offline:** The active 224-map snapshot has 1,445 labels. An untracked
+POI index at
+`~/.local/share/eql-automation/map-store/indices/e0aa3e31762d31fd4c1e.json.gz`
+preserves each label, map name, coordinates, size and RGB. Text-only hints are
+303 `to_` zone-exit candidates, 60 portal candidates, 109 merchant labels,
+84 spell labels, 3 combined merchant/spell labels and 886 other landmarks.
+The CLI can search labels by text/map and find nearby labels. No color is used
+to infer type: blue labels also mark unrelated places, and labels may repeat.
+**No label is verified as an actual zone transition, vendor inventory or safe
+route.** 21 focused tests passed. The private server endpoint remains unknown.
+
 ## Full retail text-map snapshot — 2026-11-13 02:01 CST
 
 **VERIFIED read-only transfer:** The Alienware's top-level `maps/` contains

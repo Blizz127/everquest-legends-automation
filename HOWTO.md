@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.6.0
+# EverQuest Legends automation — current build 0.7.0
 
 ## Current availability
 
@@ -23,6 +23,8 @@ python3 -m eql_automation --shell
 python3 -m eql_automation --synthetic-1-50
 python3 -m eql_automation --inspect-target --source /path/to/copied/eqhost.txt
 python3 -m eql_automation --ingest-retail-copy --source /path/to/copied/client-text
+python3 -m eql_automation --index-pois
+python3 -m eql_automation --query-pois Merchant --map fieldofbone --limit 5
 ```
 
 The demo prints a synthetic route and mode-permission results. The shell stays
@@ -68,6 +70,14 @@ command with that directory to build a snapshot of all 224 client maps. The
 active snapshot is named in `~/.local/share/eql-automation/map-store/current.json`.
 Nested `Solo_Leveling` custom/backup maps are ignored. A failed import leaves
 the active snapshot in place.
+
+`--index-pois` builds a search index of map labels from the active snapshot.
+`--query-pois TEXT` searches it; `--map NAME` narrows to a map file stem.
+Results include coordinates and an **unverified text hint** such as
+`zone_exit_hint`, `merchant_hint`, `spell_hint` or `portal_hint`. A label is
+not evidence that the location is reachable, a zone line functions, or a
+merchant stocks a spell. The index is stored outside git under
+`~/.local/share/eql-automation/map-store/indices/`.
 
 | Simulated mode | Actions permitted by the planner |
 | --- | --- |
