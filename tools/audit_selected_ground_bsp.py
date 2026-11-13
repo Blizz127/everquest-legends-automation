@@ -19,7 +19,8 @@ from tempfile import NamedTemporaryFile
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 from eql_automation.bsp_probe import BspPointLookup  # noqa: E402
-from eql_automation.ground_bsp_route import audit_ground_bsp_route  # noqa: E402
+from eql_automation.ground_bsp_route import (audit_ground_bsp_route,
+                                             verify_helper_bsp_frame)  # noqa: E402
 from eql_automation.pfs_archive import PFSArchive  # noqa: E402
 from eql_automation.wld_inventory import WLDInventory  # noqa: E402
 
@@ -46,6 +47,7 @@ HELPER_HASHES = {
     "eqnav/__init__.py": "717e253506fa07148160efd0679373ae0d430611d9146b73bc9feca02f5258b0",
     "eqnav/mesh.py": "89682ac2f6ee6ad4fc4e4530d946e4d7d883d860573a958d45f7cd7a074fef85",
     "eqnav/world.py": "6441467623a49950af2549496ddb27c3c8c5e3889829d833293a604d9209cfb2",
+    "eqnav/zonegeom.py": "bffd21c5767b111f9516180377838d180bf31e3af8e2bc427258c987d6609a60",
 }
 
 
@@ -66,14 +68,15 @@ def private_file(path: Path, root: Path, *, max_bytes: int) -> Path:
     return resolved
 
 
-def inspect(*, zone: str, source: Path, selection: Path, final_strip: Path,
+def inspect(*, zone: str, source: Path, selection: Path, final_strip: Path | None,
             output: Path, mesh_store: Path, helper_root: Path) -> dict:
     if zone not in SOURCES:
         raise ValueError("zone has no pinned copied-client BSP source")
     candidates = DATA_ROOT / "nav-candidates"
     source = private_file(source, candidates, max_bytes=10 * 1024 * 1024)
     selection = private_file(selection, candidates, max_bytes=10 * 1024 * 1024)
-    final_strip = private_file(final_strip, candidates, max_bytes=10 * 1024 * 1024)
+    if final_strip is not None:
+        final_strip = private_file(final_strip, candidates, max_bytes=10 * 1024 * 1024)
     output = output.expanduser().resolve()
     mesh_store = mesh_store.expanduser().resolve()
     helper_root = helper_root.expanduser().resolve()
@@ -86,14 +89,15 @@ def inspect(*, zone: str, source: Path, selection: Path, final_strip: Path,
         path = helper_root / name
         if not path.is_file() or path.is_symlink() or digest(path) != expected:
             raise ValueError(f"reviewed helper source changed: {name}")
-    route_raw, selected_raw, strip_raw = (path.read_bytes() for path in
-                                           (source, selection, final_strip))
-    route, selected, strip = (json.loads(raw) for raw in
-                              (route_raw, selected_raw, strip_raw))
-    source_hash, selection_hash, strip_hash = (sha256(raw).hexdigest() for raw in
-                                                (route_raw, selected_raw, strip_raw))
+    route_raw, selected_raw = source.read_bytes(), selection.read_bytes()
+    strip_raw = final_strip.read_bytes() if final_strip is not None else None
+    route, selected = json.loads(route_raw), json.loads(selected_raw)
+    strip = json.loads(strip_raw) if strip_raw is not None else None
+    source_hash, selection_hash = (sha256(raw).hexdigest() for raw in
+                                   (route_raw, selected_raw))
+    strip_hash = sha256(strip_raw).hexdigest() if strip_raw is not None else None
     polygons = route.get("polygons", route.get("path_polygons"))
-    points = selected.get("unverified_points")
+    points = selected.get("unverified_points") if strip is not None else selected.get("points")
     if (not isinstance(polygons, list) or not 1 <= len(polygons) <= 512 or
             any(not isinstance(poly, int) or isinstance(poly, bool) or poly < 0
                 for poly in polygons) or
@@ -104,17 +108,28 @@ def inspect(*, zone: str, source: Path, selection: Path, final_strip: Path,
             route.get("offline_only") is not True or route.get("route_accepted") is not False or
             selected.get("format") != "eql-copied-ground-selector-v1" or
             selected.get("zone") != zone or selected.get("source_sha256") != source_hash or
-            selected.get("reason") != "portal_sequence_selected_final_audit_required" or
-            selected.get("candidate") is not False or selected.get("points") != [] or
-            strip.get("format") != "eql-copied-ground-final-strip-v1" or
-            strip.get("zone") != zone or strip.get("source_sha256") != source_hash or
-            strip.get("selection_sha256") != selection_hash or
-            strip.get("candidate") is not True or
-            strip.get("reason") != "sampled_strip_candidate_only" or
-            strip.get("checked_segments") != len(polygons) or
-            strip.get("route_accepted") is not False or
-            strip.get("real_client_accepted") is not False):
+            selected.get("route_accepted") is not False or
+            selected.get("real_client_accepted") is not False):
         raise ValueError("selected route lacks a bound, complete offline strip audit")
+    if strip is not None:
+        if (selected.get("reason") != "portal_sequence_selected_final_audit_required" or
+                selected.get("candidate") is not False or selected.get("points") != [] or
+                strip.get("format") != "eql-copied-ground-final-strip-v1" or
+                strip.get("zone") != zone or strip.get("source_sha256") != source_hash or
+                strip.get("selection_sha256") != selection_hash or
+                strip.get("candidate") is not True or
+                strip.get("reason") != "sampled_strip_candidate_only" or
+                strip.get("checked_segments") != len(polygons) or
+                strip.get("route_accepted") is not False or
+                strip.get("real_client_accepted") is not False):
+            raise ValueError("separate full-strip audit is missing or unbound")
+    elif (selected.get("candidate") is not True or
+          selected.get("reason") != "sampled_ground_approach_candidate_only" or
+          selected.get("ground_polygons") != len(polygons) or
+          not isinstance(selected.get("strip_checks"), int) or
+          selected["strip_checks"] < len(polygons) or
+          selected.get("limits", {}).get("final_recheck") is False):
+        raise ValueError("integrated selected route has no complete strip evidence")
     archive_root = DATA_ROOT / "client-data/retail-full/assets"
     archive = private_file(archive_root / f"{zone}.s3d", archive_root,
                            max_bytes=100 * 1024 * 1024)
@@ -127,9 +142,10 @@ def inspect(*, zone: str, source: Path, selection: Path, final_strip: Path,
     if ((archive_hash, mesh_hash, manifest_hash) != SOURCES[zone] or
             route.get("mesh_sha256") != mesh_hash or
             selected.get("mesh_sha256") != mesh_hash or
-            selected.get("manifest_sha256") != manifest_hash or
-            strip.get("mesh_sha256") != mesh_hash or
-            strip.get("manifest_sha256") != manifest_hash):
+            selected.get("manifest_sha256") not in
+            ((manifest_hash,) if strip is not None else (None, manifest_hash)) or
+            (strip is not None and (strip.get("mesh_sha256") != mesh_hash or
+                                    strip.get("manifest_sha256") != manifest_hash))):
         raise ValueError("copied client archive or mesh provenance changed")
     # The full helper loader builds unrelated wall/link grids and can take
     # minutes on this copied Butcher mesh. This pinned, validated view mirrors
@@ -139,20 +155,25 @@ def inspect(*, zone: str, source: Path, selection: Path, final_strip: Path,
     if any(int(mesh.area[poly]) != 63 for poly in polygons):
         raise ValueError("selected route has a non-ground copied polygon")
     lookup = BspPointLookup(WLDInventory(PFSArchive(archive).read_member(f"{zone}.wld")))
+    frame_control = verify_helper_bsp_frame(
+        lookup, json.loads(manifest_path.read_text(encoding="utf-8")))
     result = audit_ground_bsp_route(mesh, lookup, tuple(polygons),
                                     tuple(tuple(point) for point in points),
                                     max_segments=len(polygons))
     if (digest(source) != source_hash or digest(selection) != selection_hash or
-            digest(final_strip) != strip_hash or
+            (final_strip is not None and digest(final_strip) != strip_hash) or
             (digest(archive), digest(mesh_path), digest(manifest_path)) !=
             (archive_hash, mesh_hash, manifest_hash)):
         raise ValueError("copied route or client source changed during BSP audit")
     record = {
-        "format": "eql-copied-selected-bsp-v1",
+        "format": "eql-copied-selected-bsp-v2",
+        "mesh_package_to_bsp_wld": "swap_xy_keep_z",
+        "frame_positive_control": frame_control,
         "zone": zone,
         "source_sha256": source_hash,
         "selection_sha256": selection_hash,
         "final_strip_sha256": strip_hash,
+        "strip_evidence": "separate_full_strip" if strip is not None else "integrated_selection",
         "archive_sha256": archive_hash,
         "mesh_sha256": mesh_hash,
         "manifest_sha256": manifest_hash,
@@ -187,7 +208,8 @@ def main() -> None:
     parser.add_argument("--zone", required=True, choices=tuple(SOURCES))
     parser.add_argument("--source", required=True, type=Path)
     parser.add_argument("--selection", required=True, type=Path)
-    parser.add_argument("--final-strip", required=True, type=Path)
+    parser.add_argument("--final-strip", type=Path,
+                        help="required for select-only results; omit for an integrated passed selector")
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--mesh-store", type=Path,
                         default=DATA_ROOT / "navmesh/nov12-7e3cd28-store")

@@ -1,7 +1,9 @@
-"""Bounded copied-BSP audit for a selected ground corridor.
+"""Bounded copied-BSP audit for a selected helper-mesh ground corridor.
 
 This checks static water/zoneline labels at strict detail-triangle heights.
 It is an offline diagnostic, never a movement permit or live route acceptance.
+The owner helper stores mesh positions as (/loc X, /loc Y, Z), while the
+copied WLD BSP expects raw (/loc Y, /loc X, Z): swap XY at that boundary.
 """
 from __future__ import annotations
 
@@ -26,6 +28,97 @@ class GroundBspRouteAudit:
 
     def to_dict(self) -> dict:
         return asdict(self)
+
+
+def verify_helper_bsp_frame(lookup, manifest: dict) -> dict:
+    """Require one copied helper trigger to resolve as a raw-WLD zone line."""
+    if not isinstance(manifest, dict):
+        raise ValueError("Helper mesh manifest is missing")
+    lines = manifest.get("extra", {}).get("zone_lines", [])
+    if not isinstance(lines, list):
+        raise ValueError("Helper mesh has no usable zone-line list")
+    for line in lines:
+        if not isinstance(line, dict):
+            continue
+        point = line.get("point")
+        if (not isinstance(point, (list, tuple)) or len(point) != 3 or
+                any(not isinstance(value, (int, float)) or isinstance(value, bool) or
+                    not isfinite(value) for value in point)):
+            continue
+        wld_point = (float(point[1]), float(point[0]), float(point[2]))
+        probe = lookup.probe(*wld_point)
+        if probe.zoneline_candidate:
+            return {"helper_package_xyz": list(point),
+                    "raw_wld_xyz": list(wld_point),
+                    "copied_bsp_region_id": probe.region_id,
+                    "to_zone_hint": line.get("to_zone"),
+                    "labels": list(probe.labels)}
+    raise ValueError("Helper-to-WLD frame positive control did not find a copied zone line")
+
+
+def audit_helper_funnel_bsp(lookup, points: Sequence[Sequence[float]], *,
+                            height_offsets: tuple[float, ...] = (0.0, 1.0),
+                            max_segments: int = 512,
+                            max_total_spans: int = 8192) -> GroundBspRouteAudit:
+    """Classify a helper-frame funnel without claiming a ground strip pass."""
+    if (not isinstance(points, (tuple, list)) or not 2 <= len(points) <= max_segments + 1 or
+            any(not isinstance(point, (tuple, list)) or len(point) != 3 or
+                any(not isinstance(value, (int, float)) or isinstance(value, bool) or
+                    not isfinite(value) for value in point) for point in points) or
+            not isinstance(height_offsets, tuple) or not 1 <= len(height_offsets) <= 4 or
+            any(not isinstance(offset, (int, float)) or isinstance(offset, bool) or
+                not isfinite(offset) or not 0 <= offset <= 10 for offset in height_offsets) or
+            not isinstance(max_total_spans, int) or isinstance(max_total_spans, bool) or
+            not 1 <= max_total_spans <= 32768):
+        raise ValueError("Helper funnel BSP inputs exceed bounds")
+    if any(hypot(b[0] - a[0], b[1] - a[1]) <= 1e-9
+           for a, b in zip(points, points[1:])):
+        raise ValueError("Helper funnel has an empty XY segment")
+    labelled: list[dict] = []
+    unknown: list[dict] = []
+    span_count = 0
+    for offset in height_offsets:
+        for index, (a, b) in enumerate(zip(points, points[1:])):
+            start = (float(a[1]), float(a[0]), float(a[2] + offset))
+            end = (float(b[1]), float(b[0]), float(b[2] + offset))
+            spans = lookup.trace_segment(start, end)
+            cursor = 0.0
+            valid = bool(spans)
+            for span in spans:
+                if (not isfinite(span.start_fraction) or
+                        not isfinite(span.end_fraction) or
+                        abs(span.start_fraction - cursor) > 1e-6 or
+                        not cursor < span.end_fraction <= 1.0 + 1e-6):
+                    valid = False
+                    break
+                cursor = span.end_fraction
+            if abs(cursor - 1.0) > 1e-6:
+                valid = False
+            if not valid:
+                unknown.append({"offset": offset, "index": index,
+                                "reason": "invalid_bsp_partition"})
+                continue
+            span_count += len(spans)
+            if span_count > max_total_spans:
+                return GroundBspRouteAudit(False, "bsp_span_budget_exceeded",
+                                           len(points) - 1, span_count,
+                                           tuple(labelled), tuple(unknown))
+            for span in spans:
+                detail = {"offset": offset, "index": index,
+                          "start_fraction": span.start_fraction,
+                          "end_fraction": span.end_fraction,
+                          "reason": span.reason}
+                if span.region_id is None or "unknown" in span.labels:
+                    unknown.append(detail)
+                if span.labels:
+                    labelled.append({**detail, "region_id": span.region_id,
+                                     "labels": span.labels})
+    reason = ("unknown_bsp_interval" if unknown else
+              "labelled_bsp_interval" if labelled else
+              "copied_funnel_bsp_candidate_only")
+    return GroundBspRouteAudit(not (unknown or labelled), reason,
+                               len(points) - 1, span_count,
+                               tuple(labelled), tuple(unknown))
 
 
 def audit_ground_bsp_route(mesh, lookup, polygons: Sequence[int],
@@ -89,8 +182,10 @@ def audit_ground_bsp_route(mesh, lookup, polygons: Sequence[int],
                 unsupported.append({"offset": offset, "index": index,
                                     "polygon": poly, "reason": "unsupported_detail_height"})
                 continue
-            start = (float(start_xy[0]), float(start_xy[1]), start_z + offset)
-            end = (float(end_xy[0]), float(end_xy[1]), end_z + offset)
+            # Mesh/detail heights are in the helper package frame; the raw
+            # copied WLD BSP plane axes are the reverse XY order.
+            start = (float(start_xy[1]), float(start_xy[0]), start_z + offset)
+            end = (float(end_xy[1]), float(end_xy[0]), end_z + offset)
             spans = lookup.trace_segment(start, end)
             cursor = 0.0
             partition_valid = bool(spans)

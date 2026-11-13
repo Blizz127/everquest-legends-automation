@@ -20,7 +20,8 @@ DATA_ROOT = Path.home() / ".local/share/eql-automation"
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 from eql_automation.bsp_probe import BspPointLookup  # noqa: E402
-from eql_automation.ground_bsp_route import audit_ground_bsp_route  # noqa: E402
+from eql_automation.ground_bsp_route import (audit_ground_bsp_route,
+                                             verify_helper_bsp_frame)  # noqa: E402
 from eql_automation.lateral_strip_audit import audit_segment_strip  # noqa: E402
 from eql_automation.pfs_archive import PFSArchive  # noqa: E402
 from eql_automation.wld_inventory import WLDInventory  # noqa: E402
@@ -28,6 +29,7 @@ HELPER_HASHES = {
     "eqnav/__init__.py": "717e253506fa07148160efd0679373ae0d430611d9146b73bc9feca02f5258b0",
     "eqnav/mesh.py": "89682ac2f6ee6ad4fc4e4530d946e4d7d883d860573a958d45f7cd7a074fef85",
     "eqnav/world.py": "6441467623a49950af2549496ddb27c3c8c5e3889829d833293a604d9209cfb2",
+    "eqnav/zonegeom.py": "bffd21c5767b111f9516180377838d180bf31e3af8e2bc427258c987d6609a60",
     "rotation_core.py": "9f05379c407f7c9042b38dc7f39c72c0b603bc24d6e754330746f805211a3113",
     "leveling_guide.py": "9babe5213d4903f5c014f59bf38b1fa3c3167e22ecb6ff4af61e624cf342ca4c",
     "leveling_guide.json": "bfe936da1aec38b37a683af51f0ee4189cd86bcb4a1680deee613c4dfeba77b9",
@@ -150,6 +152,7 @@ def inspect(camp_id: str, *, helper_root: Path, mesh_store: Path,
                 for name, expected in HELPER_HASHES.items())):
         raise ValueError("copied mesh or helper changed during ring inspection")
     lookup = None
+    frame_control = None
     archive_path = None
     archive_hash = None
     if audit_local:
@@ -163,6 +166,8 @@ def inspect(camp_id: str, *, helper_root: Path, mesh_store: Path,
             raise ValueError("copied client zone archive provenance changed")
         lookup = BspPointLookup(WLDInventory(
             PFSArchive(archive_path).read_member(f"{camp.zone}.wld")))
+        frame_control = verify_helper_bsp_frame(
+            lookup, json.loads(manifest_path.read_text(encoding="utf-8")))
     rows = []
     for index, point in enumerate(spots):
         height_change = float(point[2] - anchor[2])
@@ -226,7 +231,9 @@ def inspect(camp_id: str, *, helper_root: Path, mesh_store: Path,
                 for name, expected in HELPER_HASHES.items())):
         raise ValueError("copied mesh or helper changed during local audit")
     record = {
-        "format": "eql-copied-roam-ring-v1",
+        "format": "eql-copied-roam-ring-v2",
+        "mesh_package_to_bsp_wld": "swap_xy_keep_z" if audit_local else None,
+        "frame_positive_control": frame_control,
         "camp_id": camp.id,
         "zone": camp.zone,
         "guide_marker_yxz": list(camp.loc),

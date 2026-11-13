@@ -1,7 +1,9 @@
 import pytest
 
-from eql_automation.bsp_probe import BspSegmentSpan
-from eql_automation.ground_bsp_route import audit_ground_bsp_route
+from eql_automation.bsp_probe import BspProbe, BspSegmentSpan
+from eql_automation.ground_bsp_route import (audit_ground_bsp_route,
+                                             audit_helper_funnel_bsp,
+                                             verify_helper_bsp_frame)
 
 
 class FlatMesh:
@@ -36,8 +38,62 @@ def test_clean_copied_bsp_is_only_an_offline_candidate():
 
     assert result.candidate and result.reason == "copied_static_bsp_candidate_only"
     assert result.bsp_spans == 2 and len(lookup.calls) == 2
+    assert lookup.calls[0][0] == (5.0, 1.0, 2.0)
+    assert lookup.calls[0][1] == (5.0, 9.0, 2.0)
     assert lookup.calls[0][0][2] == 2.0 and lookup.calls[1][0][2] == 3.0
     assert result.route_accepted is False and result.real_client_accepted is False
+
+
+def test_helper_xy_swap_exposes_raw_wld_label():
+    class AxisSensitiveLookup:
+        def trace_segment(self, start, end):
+            labels = ("zoneline",) if start[:2] == (5.0, 1.0) else ()
+            return (BspSegmentSpan(0.0, 1.0, 1, labels, "sample"),)
+
+    result = audit_ground_bsp_route(FlatMesh(), AxisSensitiveLookup(),
+                                    (0,), POINTS)
+    assert not result.candidate
+    assert result.reason == "labelled_bsp_interval"
+    assert len(result.labelled) == 2
+
+
+def test_manifest_trigger_controls_helper_to_raw_wld_frame():
+    class TriggerLookup:
+        def probe(self, x, y, z):
+            labelled = (x, y, z) == (3137.0, -181.0, 0.0)
+            return BspProbe(3090 if labelled else 3275,
+                            ("zoneline",) if labelled else (), 8,
+                            "labelled leaf" if labelled else "unlabelled leaf",
+                            labelled)
+
+    manifest = {"extra": {"zone_lines": [
+        {"point": [-181.0, 3137.0, 0.0], "to_zone": "kaladima"}]}}
+    control = verify_helper_bsp_frame(TriggerLookup(), manifest)
+    assert control["raw_wld_xyz"] == [3137.0, -181.0, 0.0]
+    assert control["copied_bsp_region_id"] == 3090
+    with pytest.raises(ValueError, match="positive control"):
+        verify_helper_bsp_frame(TriggerLookup(), {"extra": {"zone_lines": [
+            {"point": [3137.0, -181.0, 0.0]}]}})
+
+
+def test_helper_funnel_swaps_axes_and_rejects_copied_water():
+    class FunnelLookup:
+        def __init__(self):
+            self.calls = []
+
+        def trace_segment(self, start, end):
+            self.calls.append((start, end))
+            labels = ("water",) if start[:2] == (5.0, 1.0) else ()
+            return (BspSegmentSpan(0.0, 1.0, 1, labels, "sample"),)
+
+    lookup = FunnelLookup()
+    result = audit_helper_funnel_bsp(lookup, ((1, 5, 2), (9, 5, 2)))
+    assert not result.candidate and result.reason == "labelled_bsp_interval"
+    assert result.segments == 1 and result.bsp_spans == 2
+    assert lookup.calls[0] == ((5.0, 1.0, 2.0), (5.0, 9.0, 2.0))
+    assert lookup.calls[1] == ((5.0, 1.0, 3.0), (5.0, 9.0, 3.0))
+    with pytest.raises(ValueError):
+        audit_helper_funnel_bsp(lookup, ((1, 5, 2), (1, 5, 2)))
 
 
 @pytest.mark.parametrize("labels,region,reason", [

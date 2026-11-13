@@ -1,18 +1,18 @@
 # Level 1–20 route work
 
-Updated 2026-11-13 17:27 CST. This is the prioritized route and acceptance
+Updated 2026-11-13 17:48 CST. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
 | Levels | Planned camp | Route needed | Current evidence |
 | --- | --- | --- | --- |
-| 1–5 | Butcherblock Kaladim gate yards | South Kaladim → Butcherblock, then local camp | The copied South Kaladim map and geometry share the `-y,-x` frame. A 128-unit exit tile yields a six-polygon offline path from a sampled zone-line point toward the Butcherblock map label; it has no fresh-spawn start. Both Kaladim scenes are pinned to copied owner-client archives. The copied helper's default 54-unit roam ring proposes four points, all with >6 units height change. A 12-unit ring proposes 12 one-polygon points that passed copied strip and BSP checks; seven still have >6 units height change. Fresh spawn, full walkable route, zone trigger, camp mobs and movement remain unverified. |
+| 1–5 | Butcherblock Kaladim gate yards | South Kaladim → Butcherblock, then local camp | The copied South Kaladim map and geometry share the `-y,-x` frame. A 128-unit exit tile yields a six-polygon offline path in both directions between a sampled zone-line point and the Butcherblock map label; copied BSP marks the zone-line at one end. It has no fresh-spawn start. Both Kaladim scenes are pinned to copied owner-client archives. The copied helper's default 54-unit roam ring proposes four points, all with >6 units height change. A 12-unit ring proposes 12 one-polygon points that passed copied strip and BSP checks; seven still have >6 units height change. Fresh spawn, full walkable route, zone trigger, camp mobs and movement remain unverified. |
 | 5–8 | Crushbone Slaver Caves (west) | Butcherblock → GFay → Crushbone → safe spot | Copied GFay ground approaches toward Butcherblock and Crushbone pass separate offline strip checks. On the finer copied Crushbone mesh, an 80-polygon graph alternative avoids suspect portal 658↔623, but its width-1.2/grade-1.2 turn audit rejects portal 3244→3242 before any strip check. Excluding both suspect directed edges disconnects the graph. Crushbone arrival and the full Slaver route remain unaccepted. |
 | 6–10 | GFay orc camps, alternate for Legira | Current GFay position → guide marker, then observed pull area | The existing guide lists this outdoor camp and the owner's log confirms relevant `/con` mobs. A copied dry path from the G0 test position avoids water and two steep polygons; its 155 ground segments passed sampled turns, walking-width strips, whole-route and static BSP checks. Five of six 12-unit local spokes pass copied strip/BSP checks; the sixth needs a portal choice. The actual camp, current position and live movement are unverified. |
 | 8–13 | Crushbone Trainer Hill | Slaver Caves → Trainer Hill | The prior guide lists this range; no camp route, con sample or real movement has been accepted. |
 | 12–16 | Crushbone Slaver Pits, alternate to delay the Unrest trip | Trainer Hill → Slaver Pits | The prior guide lists this level band but warns of protected slave/NPC targets and a stronger named mob. Actual target selection, pull safety and live XP remain unverified. |
-| 13–17 | Unrest yard | Crushbone → GFay → Butcherblock → Dagnor's Cauldron → Unrest | Owner-helper Cauldron and Unrest meshes match the copied archive hashes. A dry Cauldron graph corridor has 364 polygons but steep/narrow sections. The Unrest entrance-to-yard corridor fails its sampled selector near the entrance; copied BSP also marks water and unknown spans. No walkable leg or arrival is accepted. |
+| 13–17 | Unrest yard | Crushbone → GFay → Butcherblock → Dagnor's Cauldron → Unrest | Owner-helper Cauldron and Unrest meshes match the copied archive hashes. A dry Cauldron graph corridor has 364 polygons but steep/narrow sections. The Unrest entrance-to-yard corridor fails its sampled selector near the entrance. A corrected-frame scan of its straight funnel has no copied water/unknown labels, but no full walking strip passes. No walkable leg or arrival is accepted. |
 | 14–18 | Crushbone North Wall, danger-limited alternate | Slaver Pits → North Wall | The guide rates this camp poor for automation because a Royal Guard may attack unseen. The bot must reject it until current target identity, danger and XP can be measured. |
 | 17–20 | Unrest first floor, subject to observed difficulty and XP | Yard → first floor | A 59-polygon dry graph path exists, but its copied polygon-wide slope reaches 89.01° and minimum center clearance is 1.57 units. Dynamic doors, pull safety and live XP remain unverified; the prior guide marks this indoor camp poor for automation. |
 | 17–20 | Crushbone Throne Room, danger-limited alternate | North Wall → Throne Room | The guide rates this camp poor because of clustered legionnaires/oracles and an invisible Royal Guard. It is a planning fallback only; no safe route or camp has been accepted. |
@@ -47,11 +47,13 @@ copied archives with an offline command; see [HOWTO.md](HOWTO.md) and
 [FINDINGS.md](FINDINGS.md) for usage and exact source hashes.
 The retained owner-helper meshes for both zones now load from the private
 store with matching source and mesh hashes. Their dry graph connectivity does
-not clear steep/narrow geometry, copied BSP water/unknown spans, dynamic doors
+not clear steep/narrow geometry, corrected-frame copied BSP hazards, dynamic doors
 or actual client traversal. The exact diagnostic artifacts are in FINDINGS.md.
-The copied Unrest BSP labels the entrance corridor as water at foot height in
-several sampled sections. A dry crossing at one edge of polygon 3083 has no
-proved dry continuation toward the yard. This leg remains a planning candidate.
+The older Unrest funnel BSP scan used the wrong helper-mesh frame;
+its water/unknown claims were retracted after a corrected-frame scan found
+only unlabelled copied BSP regions at the two sampled heights. A locally passable
+crossing at polygon 3083 has no proved connected continuation toward the yard.
+This leg remains a planning candidate.
 
 ## What unlocks the first playable leg
 
@@ -68,9 +70,10 @@ proved dry continuation toward the yard. This leg remains a planning candidate.
    zone crossing and arrival. Only then may a specific leg enter the full-auto
    graph. Subsequent camps and errands need their own observations.
 
-The copied GFay → Butcherblock **ground** approach currently has 52 polygons,
-53 selected points and no copied BSP water/zoneline/unknown spans at ground
-or ground+1 height. It stops before the trigger. The route and BSP artifacts
+The copied GFay → Butcherblock **ground** approach currently has 52 polygons
+and 53 selected points. Its corrected-frame v2 BSP scan checks 116 spans at
+two heights with no copied label/unknown interval. It stops before the
+trigger and starts at a historical position. The route and BSP artifacts
 and their hashes are in [FINDINGS.md](FINDINGS.md). There is no accepted
 1–20 grind run, current XP/hour, or evidence of level gain under automation.
 

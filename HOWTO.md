@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.39 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.40 / owner preview 0.39.4
 
 ## Current availability
 
@@ -19,8 +19,8 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.39 are privately staged on Alienware under
-`~/.local/share/eql-automation/owner-tools/0.41.39/source`; they do not
+Source tools 0.41.40 are privately staged on Alienware under
+`~/.local/share/eql-automation/owner-tools/0.41.40/source`; they do not
 replace the owner-run 0.39.4 assist preview.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
@@ -148,8 +148,9 @@ samples. A finer detail setting passed one cut's sampled turns, but still
 failed the other and produced Recast warnings. It does not add a runnable
 travel route; F11 remains disabled.
 Version 0.41.25 records a copied GFay ground approach to Butcherblock that
-passes bounded sampled turns, strips and a copied BSP label scan at ground
-and ground+1 height. It ends before the zone trigger, and the start came from
+passes bounded sampled turns and strips. Its original copied BSP scan used
+the wrong frame; a corrected 0.41.40 reissue found no copied hazards. It ends before the
+zone trigger, and the start came from
 a historical Legira log line. It is not a current or playable route. The
 owner trace summarizer now reports the G0 hold, displacement and post-release
 drift without printing character coordinates. F11 remains disabled.
@@ -158,8 +159,8 @@ corridors. It rejects missing detail heights, non-ground polygons, labelled
 water/zone spans, unknown or incomplete BSP intervals. The current helper's
 retained Butcherblock mesh was copied read-only into the private data store;
 its source archive hashes match the copied client. A dry Kaladim-yard → GFay
-path can avoid seven steep/narrow polygons and its ground prefix has no
-copied BSP labels or unknown intervals at two heights. Its lateral selector
+path can avoid seven steep/narrow polygons. The old ground-prefix BSP
+no-label claim used the wrong frame and is withdrawn. Its lateral selector
 currently stops at polygon 37736 before a complete route; the mesh also has
 1,180 unclassified Recast warnings. This is not a playable path. F11 remains
 disabled.
@@ -232,6 +233,17 @@ Version 0.41.39 adds pinned copied South and North Kaladim archives to the
 offline zone scene, map alignment and BSP region tools. Their map labels and
 nearby BSP zone-line regions are static exit candidates, not accepted
 movement or zone transitions. No owner-run controls change.
+Version 0.41.40 corrects the copied BSP scanner's frame conversion for the
+earlier helper's navmeshes: helper mesh XY must be swapped before querying
+raw client WLD regions. The old helper-mesh BSP artifacts are superseded.
+The corrected GFay and Butcherblock approach scans still find no labelled or
+unknown spans, now with pinned source/frame controls. This changes offline
+evidence only; F11 remains disabled.
+Corrected Cauldron and Unrest funnel scans also have no copied water/unknown
+labels; the prior Unrest water claim was caused by the frame error. The
+Unrest route still fails its turn/strip selector. A corrected GFay→Butcher
+ground-prefix scan also has no copied labels or unknown intervals, but its
+historical start and untested zone trigger keep F11 closed.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -337,7 +349,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.39/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.40/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -345,7 +357,7 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.39/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.40/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 

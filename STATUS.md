@@ -1,8 +1,27 @@
 # STATUS
 
-Updated 2026-11-13 17:34 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:48 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
+- Corrected copied BSP frame: retained helper navmesh XY is the reverse of
+  raw client WLD XY. Helper-mesh BSP route/ring artifacts through 0.41.39
+  used the wrong frame and are superseded. Fixed 0.41.40 scans, with a
+  pinned helper source and positive copied zone-line frame control, again
+  found no labelled/unknown/unsupported spans on the GFay 155-segment
+  approach (376 spans) and Butcherblock 249-segment approach (566 spans).
+  Their SHA-256 evidence is in FINDINGS.md. Corrected frame checks also keep
+  five of six GFay and 12 of 12 Butcher local spokes as static candidates;
+  seven Butcher spokes exceed the diagnostic six-unit height band.
+  Mesh-native turn/strip checks, the owner G0 stop and raw-WLD
+  Kaladim local tile were unaffected. No live movement or F11 permit exists.
+- Corrected Cauldron and Unrest helper-funnel BSP evidence: v2 hash-pinned
+  scans found 224 plain spans over 81 Cauldron segments and 116 plain spans
+  over 30 Unrest segments, with zero water/unknown. The prior Unrest water
+  claim was a frame error and is retracted. These are straight funnels only;
+  the Unrest turn/strip selector still lacks a complete route. A v2
+  corrected-frame GFay→Butcher ground-prefix scan checked 52 segments and
+  116 spans with no labelled/unknown/unsupported interval; its start is
+  historical and it ends before the zone trigger.
 - Level-7 Crushbone route blocker: the finer copied 0.25-detail mesh has an
   80-ground-polygon graph alternative avoiding suspect edge 658↔623, but
   its width-1.2/grade-1.2 selector rejects portal 3244→3242 after 41 turns
@@ -20,8 +39,8 @@ Updated 2026-11-13 17:34 CST for coordinator task `829a00229b29`.
   (30,591 faces). Copied maps and WLD terrain agree on the `-y,-x` frame;
   a South Kaladim BSP zone-line candidate is 30 units from its Butcherblock
   label. A 128-unit exit tile baked 50 provisional polygons; an offline
-  six-polygon Detour query links the sampled zone-line point toward the map
-  label, and a copied BSP scan sees the zone-line at its start. Exact trigger
+  six-polygon Detour query links the sampled zone-line point and map label in
+  both directions, and copied BSP scans place the zone-line at one end. Exact trigger
   direction, fresh spawn, full route and real transition remain unverified.
   Next: derive a bounded South Kaladim corridor from an observed fresh spawn
   to that exit; retain F11 off. XP/hour and deaths
@@ -29,7 +48,7 @@ Updated 2026-11-13 17:34 CST for coordinator task `829a00229b29`.
 - Low-level route progress: a bounded select-only run saved the 249-ground-
   polygon Butcherblock camp→GFay portal sequence; a separate hash-bound
   whole-strip audit passed all 249 copied segments. A separate copied-client
-  BSP scan passed all 249 ground and ground+1 segments with 560 spans and no
+  BSP scan passed all 249 ground and ground+1 segments with 566 corrected-frame spans and no
   labelled, unknown or unsupported spans. Client traversal remains unverified.
   The default Butcher camp roam ring has four >6-unit height changes; a
   smaller 12-unit ring offers 12 one-polygon points that passed copied
@@ -59,8 +78,9 @@ Updated 2026-11-13 17:34 CST for coordinator task `829a00229b29`.
   Source 0.41.38 adds a hash-pinned, read-only HP-crop analyzer that never
   enables healing or movement. Its local metadata/traversal tests passed;
   no live observation has been captured.
-  The copied Unrest BSP marks sampled entrance ground as water, so no dry
-  continuation from its locally passable 3083 crossing is established.
+  The older Unrest entrance BSP water claim used the wrong frame and is
+  retracted by the corrected scan. No connected safe continuation from its
+  locally passable 3083 crossing is established by the turn/strip audits.
 - Level-13–20 source dependency: the owner's Cauldron and Unrest zone/object
   archives were copied read-only to the approved private store, with all four
   remote/local hashes matching. Both zone WLDs passed bounded BSP region and
@@ -85,8 +105,8 @@ Updated 2026-11-13 17:34 CST for coordinator task `829a00229b29`.
   larger bounded turn limit it passed 3083 and stopped at polygon 1605.
   The new bounded backtrack option fixes a synthetic connected-choice case;
   a copied Unrest retry with 32 repair rounds still stopped at polygon 1605.
-  No complete selected sequence exists. Copied
-  funnel BSP sees water and unknown intervals near/along that route. An
+  No complete selected sequence exists. The corrected copied funnel BSP
+  scan is plain at both sampled heights, but checks no full strip. An
   Unrest yard→first-floor dry path has 59 polygons but steep/narrow sections.
   No water-safe crossing, client arrival, collision behavior or movement is
   accepted. Next: reconcile source/bake geometry and BSP at these failures,

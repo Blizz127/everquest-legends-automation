@@ -1,5 +1,64 @@
 # FINDINGS
 
+## Helper-mesh BSP frame correction — 2026-11-13 17:44 CST
+
+**VERIFIED source and copied-data control:** The retained owner helper stores
+navmesh XYZ as `(raw WLD Y, raw WLD X, Z)`; its pinned `eqnav/zonegeom.py`
+SHA-256 is `bffd21c5767b111f9516180377838d180bf31e3af8e2bc427258c987d6609a60`.
+The project's raw copied-WLD `BspPointLookup` expects `(WLD X,WLD Y,Z)`.
+Before 0.41.40, `ground_bsp_route.py` passed helper mesh XY to that lookup
+without swapping them. The old helper-mesh BSP route and ring artifacts are
+**invalid provenance** and must not be used as water/unknown clearance proof.
+A positive control from the copied Butcherblock WLD shows why: the helper
+Kaladim trigger point `(-180.98,3136.79,8.88)` probes an unlabelled region
+without the swap and a zone-line region after the swap. The code now swaps XY
+at this boundary, pins the helper frame source and requires one manifest
+trigger to resolve as a copied BSP zone line before producing v2 evidence.
+
+**VERIFIED corrected offline approach scans, no game input:** A new
+hash-bound v2 GFay G0-position→orc-marker scan checked 155 copied ground
+segments at mesh height and height+1: 376 BSP spans, no labelled, unknown or
+unsupported intervals. Its private artifact SHA-256 is
+`2ed1de243e26aa927ff164677d6251b765e3e3ea468836ea68887298e36a9f33`.
+The corrected Butcherblock camp→GFay v2 scan checked 249 segments at both
+heights: 566 spans, no labelled, unknown or unsupported intervals; artifact
+SHA-256 `ef3239d708dfb1aad6035610e562c7c685e0bdc64da1da6671552a5453189259`.
+Both records explicitly report `swap_xy_keep_z` and a positive copied zone-line
+frame control. The GFay orc camp's corrected v2 local-ring record has five
+of six one-polygon spokes passing copied strip/BSP checks; its sixth needs a
+portal sequence. Artifact SHA-256 is
+`02c86635a07c10eb856569f702b98ea701ad200e109853144960a771396045ab`.
+The corrected Butcherblock Kaladim-yard v2 ring retains 12 of 12 local
+strip/BSP candidates, seven with >6-unit height change; artifact SHA-256 is
+`48d05c38ae76666d54739e3b7674e623d55297b88fa1ec89d65979c7d338d066`.
+Both rings also include a positive copied zone-line frame control. These
+static diagnostics do not verify client collision, current position, a zone
+crossing or actual movement. The project-built raw-WLD Kaladim Detour query
+and its BSP scan were already in the correct frame and are unaffected.
+
+**VERIFIED corrected offline funnel scans:** The old helper-frame Cauldron
+and Unrest funnel BSP artifacts also omitted the XY swap. Replaying their
+saved points in the old frame reproduced the old span totals and eight false
+Unrest water spans. The new hash-pinned v2 Cauldron artifact SHA-256
+`0a115cd3a183c43fece695bacbfd28e849b5f71fb2f25acb04428143fd438e4c`
+has 224 unlabelled spans across 81 segments. The new Unrest artifact SHA-256
+`0815ec90d9ea947dd05ee4e4e6eecd4c3967cc1ebf7f5eec3ac4f9735b434dc6`
+has 116 unlabelled spans across 30 segments. Neither corrected scan has
+water, unknown or other labelled intervals at the path and path+1 heights.
+The older claim that the sampled Unrest entrance route is water at foot
+height is **retracted**. These are straight funnel scans only; they do not
+clear full ground strips, dynamic doors or the failing Unrest route selector.
+The older GFay→Butcher helper-mesh BSP artifact also had the wrong frame.
+Its hash-pinned v2 reissue scanned the 52-ground-polygon approach at mesh
+height and height+1, found 116 spans with no labelled/unknown/unsupported
+intervals, and retained an explicit positive frame control. Artifact SHA-256
+is `1c52bf26c45b0f046af54adb4a67967573b1511cbaf55a389fbae71bcd325081`.
+This ends before the zone trigger and uses a historical start, so it is not
+a current movement route.
+The owner-run G0 stop remains observed; its mesh alignment used the helper's
+proper `/location` swap. The old G0 field `snapped_wld_xyz` is misnamed and
+actually contains helper-frame XYZ. G2 and F11 remain closed.
+
 ## Finer Crushbone corridor still fails a copied turn — 2026-11-13 17:34 CST
 
 **VERIFIED offline, no game input:** The retained included Boundary,
@@ -86,8 +145,13 @@ returned six polygons and five straight points, with start/end snap distances
 `8b975e42785ef693d9af3dfd441e1d83892005e2ed6d991e888eab5d989144d1`.
 A separate copied BSP scan of its four straight segments at path and path+1
 height found two zone-line spans at the start and four unlabelled spans, with
-no water/unknown spans. The query appears to move *out of* the sampled
-zone-line region; the actual trigger direction and transition remain unknown.
+no water/unknown spans. A reverse Detour query from the map label toward the
+sampled zone-line point also completes in six polygons and five points,
+SHA-256 `53604bd54be15e55550fd17ce7a61fb2fef425edad954a07859f9c960c3b411c`.
+Its copied BSP scan at both heights has four unlabelled spans followed by
+two zone-line spans; it has no water or unknown span. This supports an
+offline approach into the labelled region, but the actual trigger direction
+and transition remain unknown.
 The tile covers only the exit vicinity and gives no fresh-character spawn
 location or certified route from spawn. No real client movement was run.
 
