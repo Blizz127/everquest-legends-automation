@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.22 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.23 / owner preview 0.39.4
 
 ## Current availability
 
@@ -123,6 +123,10 @@ geometry query runs beyond their time limit. The
 80-polygon Crushbone route still fails at polygon 3248; a 176-polygon bypass
 fails at later turn disks even with a more permissive diagnostic grade. These
 checks do not establish playable slopes or enable F11.
+Version 0.41.23 makes the standalone turn-disk and fixed-corridor audits
+reject a sampled candidate if their last geometry query exceeds the time
+limit. This is an offline diagnostic correction; it does not change the
+owner-run preview or enable F11.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

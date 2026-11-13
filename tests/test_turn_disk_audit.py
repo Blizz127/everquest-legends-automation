@@ -1,3 +1,6 @@
+from types import SimpleNamespace
+
+from eql_automation import turn_disk_audit as disk
 from eql_automation.turn_disk_audit import audit_turn_disk
 
 
@@ -47,3 +50,17 @@ def test_turn_disk_rejects_forbidden_destination():
     mesh.area[1] = 4
     result = audit_turn_disk(mesh, 0, 1, (10.0, 5.0))
     assert not result.candidate and result.reason == "seam_forbidden_area"
+
+
+def test_final_turn_sample_cannot_pass_after_elapsed_limit(monkeypatch):
+    calls = 0
+
+    def tick():
+        nonlocal calls
+        calls += 1
+        return 1.0 if calls >= 66 else 0.0
+
+    monkeypatch.setattr(disk, "time", SimpleNamespace(monotonic=tick))
+    result = audit_turn_disk(Mesh(), 0, 1, (10.0, 5.0), max_seconds=0.5)
+    assert not result.candidate and result.reason == "turn_work_budget_exceeded"
+    assert result.samples == 64

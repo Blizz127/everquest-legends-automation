@@ -1,5 +1,14 @@
 # FINDINGS
 
+## Final-query deadlines in offline turn and corridor audits — 2026-11-13 14:50 CST
+
+**VERIFIED offline, no game input, project 0.41.23:** The standalone
+turn-disk and fixed-corridor samplers now reject a sampled candidate if the
+last geometry query runs past their wall-time budget. Deterministic clock
+regressions cover both final-query cases. Forty-four focused portal, strip,
+turn and corridor tests passed. This changes only offline diagnostics and
+accepts no live route.
+
 ## Local surface ambiguity and Crushbone grade sensitivity — 2026-11-13 14:40 CST
 
 **VERIFIED offline, no game input, project 0.41.22:** The selector now treats

@@ -94,5 +94,8 @@ def audit_turn_disk(mesh, source_poly: int, target_poly: int,
                                      radius, direction, center_z, z)
         previous_radius = radius
         previous_heights = heights
+    if time.monotonic() - started > max_seconds:
+        return TurnDiskCheck(False, "turn_work_budget_exceeded", samples,
+                             center_height=center_z)
     return TurnDiskCheck(True, "sampled_turn_disk_candidate_only", samples,
                          center_height=center_z)

@@ -125,6 +125,9 @@ def audit_fixed_corridor(mesh, corridor: tuple[int, ...],
                                        reachable_entries=tuple(states),
                                        eligible_exits=tuple(exits))
         states = following
+    if time.monotonic() - started > max_seconds:
+        return PortalCorridorCheck(False, "corridor_work_budget_exceeded",
+                                   checks, len(corridor), corridor[-1])
     best = min(states.values(), key=lambda state: state[0])
     return PortalCorridorCheck(True, "fixed_corridor_geometry_candidate_only",
                                checks, len(corridor), points=best[1])

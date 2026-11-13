@@ -1,3 +1,6 @@
+from types import SimpleNamespace
+
+from eql_automation import portal_corridor_audit as corridor
 from eql_automation.portal_corridor_audit import audit_fixed_corridor
 
 
@@ -73,3 +76,19 @@ def test_bounded_link_override_can_sample_a_clear_portal_position():
     typo = audit_fixed_corridor(mesh, (0, 1), (1.0, 5.0),
                                 (19.0, 5.0), fractions_by_link={(1, 0): (0.5,)})
     assert not typo.candidate and typo.reason == "override_not_on_corridor"
+
+
+def test_last_centerline_cannot_pass_after_elapsed_limit(monkeypatch):
+    calls = 0
+
+    def tick():
+        nonlocal calls
+        calls += 1
+        return 1.0 if calls >= 5 else 0.0
+
+    monkeypatch.setattr(corridor, "time", SimpleNamespace(monotonic=tick))
+    result = audit_fixed_corridor(TwoTileMesh(), (0, 1),
+                                  (1.0, 5.0), (19.0, 5.0),
+                                  fractions=(0.5,), max_seconds=0.5)
+    assert not result.candidate and result.reason == "corridor_work_budget_exceeded"
+    assert result.processed_polygons == 2
