@@ -1,9 +1,15 @@
 # STATUS
 
-Updated 2026-11-13 14:50 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 14:53 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Owner feedback check: at 14:24 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` was found on Alienware. Legira's real-client log was still at 09:31:50 CST. No 0.39.3/0.39.4 live result is available.
+- Private publish: source-only project 0.41.23 commit `26870d8` was staged
+  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.23`
+  outside the game install. The local and remote archive SHA-256 matched:
+  `7d067a46ca5ef429aa26edeb07dafdfdbae61ec612f1bb190c3ed312084977d6`.
+  Its lightweight remote `--demo-navigation` startup smoke passed. This
+  archive does not enable F11 or replace owner-run assist preview 0.39.4.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
 - Build: offline prototype 0.41.23 plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Source-only 0.41.20 and its owner-run watcher are staged separately on Alienware outside the game install; 0.41.21 route-selector staging failed twice because SSH closed the connection and is superseded by 0.41.22. The 0.41.22 source-only archive from commit `0a5ab05` is ready locally at SHA-256 `7d2b8fe8d726820f1f3ad393d3fb62e8a89398dfaddbd848ac2854ad91765d98`; Alienware staging was attempted but its SSH connection timed out. The 0.41.22 geometry work has no owner-run input command. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.41.10 corrects its focused fixture to copied client IDs and unlock levels; 0.41.11 adds log-line and zone-generation identity for offline location tracking; 0.41.12 rejects same-zone reentry during G2 and requires verified reachable camps before selecting a full-auto camp; 0.41.13 carries exact supply warnings into sticky offline state and loosens only a measured float32 portal-edge tolerance; 0.41.14 adds explicit bounded long-strip budgets and a conservative turn-disk diagnostic; 0.41.15 adds a bounded offline automatic portal selector; 0.41.16 adds a read-only zone-transition log observer; 0.41.17 adds a read-only fresh location-to-G2 scene adapter; 0.41.18 binds the sampled G2 radius to fresh position provenance and the pulse speed bound; 0.41.19 adds an optional read-only owner-run destination watcher; 0.41.20 retains an optional preloading fix; 0.41.21 adds bounded alternate portal search after a failed strip; 0.41.22 separates local surface uncertainty from global work exhaustion and propagates an offline grade limit, still no bot input; 0.39.4 exposes unknown-HP reasons in the owner UI without changing input policy. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
@@ -514,6 +520,9 @@ Updated 2026-11-13 14:50 CST for coordinator task `829a00229b29`.
   and polygon 468 with grade 2.0. None reached strip search.
 - Verification for 0.41.23: 44 focused portal, strip, turn and corridor
   tests passed after the final-query deadline checks; offline only.
+  The copied Crushbone graph has a two-edge cut at 3248→3247 and 658→623;
+  all 13 sampled portal fractions on both edges fail the conservative
+  grade-1.2 turn audit. No alternate route is accepted into F11.
 - Current blocker: 0.39.4 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee

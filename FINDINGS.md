@@ -1,5 +1,32 @@
 # FINDINGS
 
+## Crushbone copied-ground two-edge cut — 2026-11-13 14:53 CST
+
+**VERIFIED offline, no game input:** On copied `crushbone.npz` SHA-256
+`bee5a1893ab0e2ffd9c83d0d64a1d7392993b21661f59095b0e2e304b0588793`,
+the directed crossings `3248→3247` and `658→623` form a two-edge cut between
+arrival polygon 2249 and Slaver goal polygon 3805. Blocking either edge alone
+leaves a ground-graph path; blocking both reaches 1,375 polygons from the
+start and not the goal. At diagnostic grade 1.2, all 13 portal fractions from
+0.20 through 0.80 fail the turn-disk audit on both edges: the first has 13
+radial-grade failures; the second has 4 seam-clearance, 7 radial-grade and 2
+angular-grade failures. The outside-git evidence artifact
+`~/.local/share/eql-automation/nav-candidates/crushbone-two-edge-cut-20261113T2052Z.json`
+has SHA-256 `5bce35b185cd6497fb0dbdf55b08691ff6548067ede296855a9d7a0f31f843af`.
+This rules out an alternate *sampled graph corridor under the current copied
+mesh and conservative audit*; it does not prove live client terrain is
+untraversable. Playable grade, WLD-to-bake height, follower error and movement
+remain unverified.
+
+**VERIFIED private staging:** Project 0.41.23 source-only archive from commit
+`26870d8` has SHA-256
+`7d067a46ca5ef429aa26edeb07dafdfdbae61ec612f1bb190c3ed312084977d6`.
+It was copied to the Alienware private EQL store at
+`~/.local/share/eql-automation/owner-tools/0.41.23`; the remote archive hash
+matched, extraction succeeded, and the `--demo-navigation` startup smoke
+reported `simulation_only=true` and `no_game_input=true`. No client input or
+install changes occurred. Owner preview 0.39.4 remains the assist runnable.
+
 ## Final-query deadlines in offline turn and corridor audits — 2026-11-13 14:50 CST
 
 **VERIFIED offline, no game input, project 0.41.23:** The standalone

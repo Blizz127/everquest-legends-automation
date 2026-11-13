@@ -127,6 +127,11 @@ Version 0.41.23 makes the standalone turn-disk and fixed-corridor audits
 reject a sampled candidate if their last geometry query exceeds the time
 limit. This is an offline diagnostic correction; it does not change the
 owner-run preview or enable F11.
+On the copied Crushbone ground graph, both available directed crossings
+through a two-edge cut fail sampled turn checks at diagnostic grade 1.2.
+There is no accepted alternate Slaver route under the current geometry audit.
+The client's traversability and the character's movement limits are still
+unknown.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
