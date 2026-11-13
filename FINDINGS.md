@@ -1,5 +1,37 @@
 # FINDINGS
 
+## Butcherblock client archive inventory — 2026-11-13 05:15 CST
+
+**VERIFIED read-only source/copy:** The Alienware game root contains
+`butcher.s3d` (2,742,696 bytes, SHA-256
+`af504e71d3f3497b5eef037d86475ba96985b261d96f6469915e058e05308839`),
+`butcher_obj.s3d` (3,394,472 bytes, SHA-256
+`ad4c886395c9af7f3de17be1c1a24785e295f892097b8e5785eec670a089c047`),
+and `butcher_2_obj.s3d` (113,036 bytes, SHA-256
+`cb5cabede79b53f9b884c15712ec07225f5ca81e1093be36f7d3d12b8ea03ece`).
+These plus `butcher_assets.txt` were copied by read-only SSH into the
+untracked `~/.local/share/eql-automation/client-data/retail-full/assets/`;
+local hashes match Alienware. The install/prefix was not modified. The archives
+have `PFS ` at offset 4. REA `open_binary` reported this custom container as
+unsupported, so a bounded read-only PFS inventory was implemented from the
+[PFS format description](https://github.com/martinlindhe/eqformat_pfs/blob/master/format_pfs.md)
+and cross-checked against the owner's bytes.
+
+**VERIFIED local member inventory:** `butcher.s3d` has 62 members, including
+`butcher.wld` (2,645,544 bytes, SHA-256
+`d4c8db248f4b7d23fe714ff3dceedaf0c83696b178327efcf88d6091e35c722c`)
+and `objects.wld` (584,504 bytes, SHA-256
+`605bc3b571a8779e62f09481c860b227024b0a97bd5877f4932517335682707b`).
+`butcher_obj.s3d` has 149 members, including `butcher_obj.wld` (225,292
+bytes, SHA-256 `06d6757279a3803a5c2b908b7f8bbce3c414bc802bd8271cb8558ac85acccc00`).
+`butcher_2_obj.s3d` has 9 members, including `butcher_2_obj.wld` (82,812
+bytes, SHA-256 `36598801bbe072e6ac72c6b4e368a14eeecebb478da35f9a004e7352705f54df`).
+Full member manifests are outside git under `assets/manifests/` in that store.
+Two synthetic PFS parser tests and three real copied-archive CLI smokes passed.
+**No WLD mesh, static-object placements, coordinate transform, collision
+clearance, or route has yet been decoded or accepted.** The historical Nov 6
+serialized mesh remains absent; these archives are new candidate source inputs.
+
 ## Butcherblock collision-evidence reconciliation — 2026-11-13 04:53 CST
 
 **OBSERVED coordinator report, historical and not independently reproduced:**

@@ -18,7 +18,8 @@ from .nav import MAP_STORE
 from .zone_candidates import build_zone_candidates
 from .spell_catalog import build_spell_level_index
 from .ui_schema import index_ui_widgets
-from .nav_evidence import audit_butcherblock
+from .nav_evidence import DATA_ROOT, audit_butcherblock
+from .pfs_archive import PFSArchive
 
 
 def shell() -> None:
@@ -110,6 +111,8 @@ def main() -> None:
                        help="search static default UI widget names")
     group.add_argument("--audit-butcherblock", action="store_true",
                        help="audit retained Butcherblock mesh evidence without accepting routes")
+    group.add_argument("--inspect-s3d", action="store_true",
+                       help="inventory a copied client S3D archive inside the EQL data store")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
@@ -218,6 +221,23 @@ def main() -> None:
     elif args.audit_butcherblock:
         print(json.dumps(audit_butcherblock(store=args.output or MAP_STORE,
                                            mesh_path=args.mesh).to_dict(), indent=2))
+    elif args.inspect_s3d:
+        if args.source is None:
+            parser.error("--inspect-s3d requires --source pointing to a copied .s3d")
+        path = args.source.resolve()
+        if not path.is_relative_to(DATA_ROOT.resolve()) or path.suffix.casefold() != ".s3d":
+            parser.error("S3D source must be inside the approved EQL data store")
+        if args.limit < 1:
+            parser.error("--limit must be positive")
+        archive = PFSArchive(path)
+        print(json.dumps({"source": str(path), "archive_sha256": archive.sha256,
+                          "member_count": len(archive.members),
+                          "members": [asdict(item) for item in archive.members[:args.limit]],
+                          "wld_members": [asdict(item) for item in archive.members
+                                          if item.name.casefold().endswith(".wld")],
+                          "all_members_decompressed": True,
+                          "collision_decoded": False,
+                          "navigability_verified": False}, indent=2))
     else:
         shell()
 

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.15.0
+# EverQuest Legends automation — current build 0.16.0
 
 ## Current availability
 
@@ -31,6 +31,7 @@ python3 -m eql_automation --query-pois Merchant --map fieldofbone --limit 5
 python3 -m eql_automation --index-zone-candidates
 python3 -m eql_automation --query-zone-candidates East_Cabilis --map fieldofbone
 python3 -m eql_automation --audit-butcherblock
+python3 -m eql_automation --inspect-s3d --source ~/.local/share/eql-automation/client-data/retail-full/assets/butcher.s3d
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 python3 -m eql_automation --index-ui-widgets
@@ -189,6 +190,13 @@ remain unverified. No route from that historical proof is active in this build.
 evidence with `actual_client_acceptance_ready: false`. Optional `--mesh PATH`
 checks a retained artifact only inside `~/.local/share/eql-automation/`.
 A hash match alone cannot accept a route; the audit creates no graph edges.
+`--inspect-s3d` inventories one copied client PFS/S3D archive inside the
+approved local data store. It bounds decompression, reports member names and
+SHA-256 hashes, and writes no member content to git. Three read-only copied
+Butcherblock archives now have untracked manifests under
+`~/.local/share/eql-automation/client-data/retail-full/assets/manifests/`.
+Their WLD files are candidate terrain, placement and object inputs; archive
+inspection alone does not decode geometry or verify a collision route.
 
 The prior October Paladin/Cleric prototype remains at
 `/home/blizz/Projects/everquest-legends-rotation/`. Its historical controls
