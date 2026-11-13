@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 11:45 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 11:52 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
-- Owner feedback check: at 11:16 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware, and Legira's log still had not changed since 09:31:50 CST. No 0.39.3 live result is available.
+- Owner feedback check: at 11:44 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware; Legira's log had last been checked at 11:16 CST and had not changed since 09:31:50 CST. No 0.39.3 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.41.5 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.41.6 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -445,6 +445,11 @@ Updated 2026-11-13 11:45 CST for coordinator task `829a00229b29`.
   path, with 1,484 local checks. Its hash-pinned route artifact is outside git.
   Seventeen focused checks pass; the result expressly excludes travel-strip,
   live-position and real-client movement acceptance, so F11 remains off.
+  A bounded lateral strip audit now rejects the 0.41.5 centerline candidate
+  at segment 10/poly3146: a 1.2-unit side offset rises about 1.233 units
+  (grade 1.028) across copied mesh detail. Nearby source terrain has
+  overlapping Z=0/2 faces. Twenty-two focused tests pass; no accepted
+  Crushbone travel route or real-client movement result exists.
   A bounded copied-mesh search found a wider GFay candidate with 3.47-unit
   minimum sampled clearance but an 89.19-degree slope flag and 55 standard
   locator mismatches. The filtered Crushbone arrival-to-Slaver route remains
@@ -483,6 +488,9 @@ Updated 2026-11-13 11:45 CST for coordinator task `829a00229b29`.
   The 0.41.5 single-link override supplies one centerline candidate; audit
   its full travel strip and source-to-bake height alignment before any
   supervised movement trial.
+  Resolve or route around the poly3146 lateral step using bounded copied
+  collision evidence, then repeat the strip and corner checks on the whole
+  route; do not promote the centerline artifact to F11.
   Integrate the already tested reachable-camp
   fallback for level 9; resolve the level-11 camp using measured XP and route safety.
   Validate a unique selection signal and chat-open/draft signal on an isolated

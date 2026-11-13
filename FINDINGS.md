@@ -1,5 +1,33 @@
 # FINDINGS
 
+## Lateral strip rejects Crushbone candidate — 2026-11-13 11:52 CST
+
+**VERIFIED offline, no game input:** `eql_automation/lateral_strip_audit.py`
+checks one straight segment's centerline and two 1.2-unit lateral offsets at
+no more than 0.5-unit spacing. It queries nearby copied-mesh polygons
+directly, requiring supported detail height, ground area, same connected
+component, unambiguous surface, bounded cross-grade and side clearance.
+Unsupported overlapping water/other-component surfaces reject; sampled
+clearance includes a half-spacing margin. Segment turns and the entire route
+remain outside its scope. Twenty-two focused portal/corridor/strip tests and
+the simulator startup check pass. The staged module outside the Alienware
+client at `~/.local/share/eql-automation/nav-work/0.41.6/eql_automation/lateral_strip_audit.py`
+matches devbox SHA-256
+`d744eeb1b7f6dbc6c30661c4486146c6f7d893bbab65bb705b60d848794609e2`.
+
+**VERIFIED copied-mesh route check:** The first ten segments of the 0.41.5
+Crushbone centerline artifact passed this sampled strip check. Segment 10,
+polygon 3146, rejects at sample index 18: center detail Z=0.710 and the
+positive-side 1.2-unit offset Z=1.943, a rise/run of about 1.028 above the
+1.0 limit. A separate bounded source OBJ check found overlapping Z=0 and
+Z=2 faces near this segment. Comparing all 81 portal points with the nearest
+source OBJ face at the same XY gave nav-minus-source height differences of
+0.062–1.633 units (median 0.263; four above 1.0); overlapping surfaces make
+this a diagnostic, not a calibrated client-height transform. The centerline
+candidate is therefore **rejected for travel**. No safe full strip, current
+player location, movement stop, follower error or real-client route trial has
+been verified. F11 stays disabled.
+
 ## Full fixed-corridor geometry candidate — 2026-11-13 11:45 CST
 
 **VERIFIED offline, no game input:** A bounded override added one portal
