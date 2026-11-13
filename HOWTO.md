@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.13.0
+# EverQuest Legends automation — current build 0.14.0
 
 ## Current availability
 
@@ -23,6 +23,7 @@ python3 -m eql_automation --shell
 python3 -m eql_automation --synthetic-1-50
 python3 -m eql_automation --demo-navigation
 python3 -m eql_automation --demo-assist
+python3 -m eql_automation --demo-gauges
 python3 -m eql_automation --inspect-target --source /path/to/copied/eqhost.txt
 python3 -m eql_automation --ingest-retail-copy --source /path/to/copied/client-text
 python3 -m eql_automation --index-pois
@@ -134,6 +135,16 @@ mode permit; focus, target, observations and permit must be checked again
 before each future key. This is a code-level contract with synthetic tests,
 not a running in-game rotation. There is no live observer or input sender.
 `--demo-assist` prints a synthetic proposal and shows that OFF invalidates it.
+`--demo-gauges` uses Pillow to read fabricated red HP and blue mana bars. It
+does not capture the game.
+
+The offline `GaugeReader` accepts only explicitly calibrated inner bars from
+a focused game-window image at the same window size and active layout. Its
+calibration requires both bars to appear at least 85% full. A changed layout,
+unfocused window, unreadable fill or empty-looking bar yields **unknown**;
+it never treats an unreadable bar as zero HP or mana. Default client XML uses
+red for both player and target HP, so color alone cannot identify the player
+bar. Live crop coordinates and the active skin have not been verified.
 
 `--index-ui-widgets` reads copied default client UI XML and stores a searchable
 widget index outside git. `--query-ui-widgets TEXT` searches names and EQType
@@ -180,6 +191,7 @@ python3 -m pytest -q tests/test_offline.py
 python3 -m pytest -q tests/test_control.py
 python3 -m pytest -q tests/test_spell_catalog.py tests/test_assist.py
 python3 -m pytest -q tests/test_ui_schema.py
+python3 -m pytest -q tests/test_screen_observer.py
 python3 -m compileall -q eql_automation
 ```
 

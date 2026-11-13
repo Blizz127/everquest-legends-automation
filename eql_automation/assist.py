@@ -11,6 +11,7 @@ from math import isfinite
 from .control import ControlPlane, QueuedAction
 from .modes import Action, ActionKind, Mode, action_from_prior_rotation
 from .prior_rotation_core import Catalog, Rotation, SLOTS, Action as RotationAction
+from .screen_observer import GaugeReading
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,16 @@ class AssistObservation:
     mana: float | None
     memorized: dict[int, int] | None
     available_abilities: frozenset[str] = frozenset()
+
+    @classmethod
+    def from_gauges(cls, reading: GaugeReading, *, character_name: str,
+                    class_name: str, level: int, game_focused: bool,
+                    chat_open: bool, current_target_verified: bool,
+                    memorized: dict[int, int] | None,
+                    available_abilities: frozenset[str] = frozenset()) -> "AssistObservation":
+        return cls(reading.observed_at, character_name, class_name, level,
+                   game_focused, chat_open, current_target_verified,
+                   reading.hp, reading.mana, memorized, available_abilities)
 
 
 @dataclass(frozen=True)

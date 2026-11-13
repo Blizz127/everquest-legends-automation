@@ -313,23 +313,31 @@ def bar_fraction(image, channel: str) -> float | None:
     No reading is preferable to guessing HP from an unrelated window/skin.
     The calibration UI requires the inner gauge at full health/mana.
     """
-    import numpy as np
-    pixels = np.asarray(image.convert("RGB"), dtype=np.float32)
-    if pixels.shape[1] < 20 or pixels.shape[0] < 2:
+    if channel not in {"red", "blue"}:
+        raise ValueError("Gauge channel must be red or blue")
+    pixels = image.convert("RGB")
+    width, height = pixels.size
+    if width < 20 or height < 2:
         return None
-    dominant = pixels[:, :, 0 if channel == "red" else 2]
-    other = np.maximum(pixels[:, :, 1], pixels[:, :, 2 if channel == "red" else 0])
-    colored = (dominant >= 80) & (dominant > other * 1.35 + 8)
-    columns = colored.mean(axis=0) >= 0.20
-    hits = np.flatnonzero(columns)
+    image_pixels = pixels.load()
+    columns = []
+    for x in range(width):
+        hits = 0
+        for y in range(height):
+            red, green, blue = image_pixels[x, y]
+            dominant = red if channel == "red" else blue
+            other = max(green, blue if channel == "red" else red)
+            if dominant >= 80 and dominant > other * 1.35 + 8:
+                hits += 1
+        columns.append(hits / height >= 0.20)
+    hits = [index for index, colored in enumerate(columns) if colored]
     if len(hits) < 2:
         return None
-    width = len(columns)
     # The filled segment must start at the left edge and be mostly contiguous.
     if hits[0] > max(3, width * 0.08):
         return None
-    end = int(hits[-1]) + 1
-    if columns[:end].mean() < 0.65:
+    end = hits[-1] + 1
+    if sum(columns[:end]) / end < 0.65:
         return None
     return min(1.0, end / width)
 

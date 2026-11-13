@@ -12,6 +12,7 @@ from .navigator import NavigationObservation, WorldNavigator
 from .assist import AssistAdvisor, AssistObservation
 from .control import ControlPlane
 from .prior_rotation_core import Catalog
+from .screen_observer import GaugeCalibration, GaugeReader
 
 
 @dataclass
@@ -125,6 +126,31 @@ def run_assist_demo() -> dict:
             "allowed_before_stop": allowed_before_stop,
             "old_proposal_allowed_after_stop": advisor.still_allowed(
                 proposal, observation, now=10.0)}
+
+
+def run_gauge_demo() -> dict:
+    """Read fabricated colored bars, never a game-window screenshot."""
+
+    from PIL import Image
+
+    full = Image.new("RGB", (120, 30), (20, 20, 20))
+    full.paste((200, 20, 20), (0, 0, 100, 8))
+    full.paste((20, 20, 200), (0, 12, 100, 20))
+    calibration = GaugeCalibration.from_full_frame(
+        full, hp_box=(0, 0, 100, 8), mana_box=(0, 12, 100, 20),
+        layout_fingerprint="synthetic-layout")
+    reader = GaugeReader(calibration)
+    half = full.copy()
+    half.paste((20, 20, 20), (50, 0, 100, 8))
+    reading = reader.read(half, observed_at=10.0,
+                          focused_game_window=True,
+                          layout_fingerprint="synthetic-layout")
+    unfocused = reader.read(half, observed_at=10.1,
+                            focused_game_window=False,
+                            layout_fingerprint="synthetic-layout")
+    return {"simulation_only": True, "no_game_input": True,
+            "hp": reading.hp, "mana": reading.mana,
+            "unfocused_values_unknown": not unfocused.complete}
 
 
 def run_navigation_demo() -> dict:

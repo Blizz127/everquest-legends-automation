@@ -8,7 +8,8 @@ from dataclasses import asdict
 
 from .control import ControlPlane
 from .modes import Action, ActionKind
-from .sim import SimSink, run_assist_demo, run_demo, run_navigation_demo, synthetic_graph
+from .sim import (SimSink, run_assist_demo, run_demo, run_gauge_demo,
+                  run_navigation_demo, synthetic_graph)
 from .synthetic_run import default_output_dir, run_synthetic_1_50
 from .client_ingest import import_retail_copy
 from .target import inspect_eqhost
@@ -81,6 +82,8 @@ def main() -> None:
                        help="show offline stuck detection and replanning")
     group.add_argument("--demo-assist", action="store_true",
                        help="show an offline strict current-target rotation proposal")
+    group.add_argument("--demo-gauges", action="store_true",
+                       help="read fabricated player HP/mana bars; no game capture")
     group.add_argument("--shell", action="store_true", help="switch simulated modes without restarting")
     group.add_argument("--synthetic-1-50", action="store_true",
                        help="run a closed-loop synthetic level 1–50 scenario; not real-client proof")
@@ -119,6 +122,8 @@ def main() -> None:
         print(json.dumps(run_navigation_demo(), indent=2))
     elif args.demo_assist:
         print(json.dumps(run_assist_demo(), indent=2))
+    elif args.demo_gauges:
+        print(json.dumps(run_gauge_demo(), indent=2))
     elif args.synthetic_1_50:
         print(json.dumps(run_synthetic_1_50(args.output or default_output_dir()), indent=2))
     elif args.ingest_retail_copy:

@@ -1,5 +1,21 @@
 # FINDINGS
 
+## Offline player gauge reader — 2026-11-13 04:22 CST
+
+**VERIFIED copied client XML:** Default PlayerHP has red FillTint
+`(150,0,0)` with EQType 1; PlayerMana has blue FillTint `(0,100,200)` with
+EQType 2. TargetHP is also red `(150,0,0)`, so color alone cannot identify
+the player gauge. The copied XML hashes are recorded below. **VERIFIED
+synthetic only:** The inherited flat-bar algorithm now runs in pure Python
+without NumPy. A `GaugeReader` accepts a calibrated full-frame player HP/mana
+crop only when the game window is reported focused, its size and active layout
+fingerprint match, and both colored fills remain readable. Calibration
+requires bars at least 85% full. In a fabricated 120×30 image it returned
+HP 0.5 and mana 1.0; an unfocused frame returned unknown. The reading can be
+passed to `AssistObservation`, which still requires target, character, gems
+and chat state. No actual game screenshot, active skin, calibration or
+character state was observed.
+
 ## Default client UI widget inventory — 2026-11-13 04:04 CST
 
 **VERIFIED read-only client data:** The Alienware's `eqclient.ini` has `Log=1`

@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 04:04 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 04:22 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.13.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.14.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -32,9 +32,12 @@ Updated 2026-11-13 04:04 CST for coordinator task `829a00229b29`.
   not send input. Mode transitions are serialized; emergency OFF survives a
   concurrent activation, and indicator failure latches OFF. Seven read-only
   copied client UI XML files yielded 557 static widget IDs in an untracked
-  index; live UI values and active skin are unknown.
-- Verification: `python3 -m pytest -q tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
-  — 44 passed; `--demo-assist` proposed a synthetic `/cast 3` and
+  index; live UI values and active skin are unknown. A pure-Python player
+  gauge reader now requires full-bar calibration, focus, exact window size and
+  matching layout; unreadable values remain unknown.
+- Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
+  — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
+  and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
   rejected it after OFF; CLI
   queue/switch/drain smoke dropped 2 stale synthetic actions;
   complete retail import found 224 maps, 1,057,974 drawing
