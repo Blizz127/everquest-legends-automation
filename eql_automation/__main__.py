@@ -22,8 +22,11 @@ from .ui_schema import index_ui_widgets
 from .nav_evidence import DATA_ROOT, audit_butcherblock
 from .pfs_archive import PFSArchive
 from .wld_inventory import WLDInventory
-from .placement_audit import audit_object_locations
+from .placement_audit import audit_object_locations, read_object_locations
 from .mesh_geometry import read_meshes, summarize_meshes
+from .model_links import combine_model_links
+from .instance_geometry import summarize_instances
+from .candidate_scene import write_candidate_scene
 
 
 def shell() -> None:
@@ -123,6 +126,12 @@ def main() -> None:
                        help="match copied Butcherblock object locations to exact actor definitions")
     group.add_argument("--audit-butcher-meshes", action="store_true",
                        help="decode copied Butcherblock 0x36 mesh arrays without accepting a route")
+    group.add_argument("--audit-butcher-model-links", action="store_true",
+                       help="trace copied Butcherblock actor definitions through mesh references")
+    group.add_argument("--audit-butcher-instances", action="store_true",
+                       help="count copied Butcherblock instanced mesh geometry without accepting collision")
+    group.add_argument("--build-butcher-candidate-scene", action="store_true",
+                       help="write provisional solid-flag Butcherblock OBJ outside git; no route acceptance")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
@@ -321,6 +330,68 @@ def main() -> None:
         print(json.dumps({"inventories": inventories,
                           "collision_composed": False,
                           "navigability_verified": False}, indent=2))
+    elif args.audit_butcher_model_links:
+        asset_root = DATA_ROOT / "client-data" / "retail-full" / "assets"
+        pairs = (("butcher.s3d", "objects.wld"),
+                 ("butcher_obj.s3d", "butcher_obj.wld"),
+                 ("butcher_2_obj.s3d", "butcher_2_obj.wld"))
+        if any(not (asset_root / source).resolve().is_relative_to(DATA_ROOT.resolve())
+               for source, _ in pairs):
+            parser.error("Butcherblock source must stay inside the approved EQL data store")
+        wlds = tuple(WLDInventory(PFSArchive(asset_root / source).read_member(member))
+                     for source, member in pairs)
+        links = combine_model_links(wlds[1:])
+        locations = read_object_locations(wlds[0])
+        placed_names = {item.actor_name for item in locations}
+        print(json.dumps({"wld_sha256": {member: wld.sha256
+                                         for (_, member), wld in zip(pairs, wlds)},
+                          "actor_definition_count": len(links),
+                          "unique_linked_mesh_count": len({(wld.sha256, link.mesh_fragment_index)
+                                                           for wld, link in links.values()}),
+                          "exact_expected_mesh_name_count": sum(
+                              link.exact_expected_mesh_name for _, link in links.values()),
+                          "placement_count": len(locations),
+                          "placed_actor_names": len(placed_names),
+                          "placements_with_mesh": sum(item.actor_name in links
+                                                      for item in locations),
+                          "unlinked_placement_names": sorted(placed_names - set(links)),
+                          "collision_composed": False,
+                          "navigability_verified": False}, indent=2))
+    elif args.audit_butcher_instances:
+        asset_root = DATA_ROOT / "client-data" / "retail-full" / "assets"
+        pairs = (("butcher.s3d", "objects.wld"),
+                 ("butcher_obj.s3d", "butcher_obj.wld"),
+                 ("butcher_2_obj.s3d", "butcher_2_obj.wld"))
+        if any(not (asset_root / source).resolve().is_relative_to(DATA_ROOT.resolve())
+               for source, _ in pairs):
+            parser.error("Butcherblock source must stay inside the approved EQL data store")
+        wlds = tuple(WLDInventory(PFSArchive(asset_root / source).read_member(member))
+                     for source, member in pairs)
+        summary = summarize_instances(wlds[0], wlds[1:])
+        print(json.dumps({"wld_sha256": {member: wld.sha256
+                                         for (_, member), wld in zip(pairs, wlds)},
+                          **asdict(summary)}, indent=2))
+    elif args.build_butcher_candidate_scene:
+        asset_root = DATA_ROOT / "client-data" / "retail-full" / "assets"
+        pairs = (("butcher.s3d", "butcher.wld"),
+                 ("butcher.s3d", "objects.wld"),
+                 ("butcher_obj.s3d", "butcher_obj.wld"),
+                 ("butcher_2_obj.s3d", "butcher_2_obj.wld"))
+        if any(not (asset_root / source).resolve().is_relative_to(DATA_ROOT.resolve())
+               for source, _ in pairs):
+            parser.error("Butcherblock source must stay inside the approved EQL data store")
+        archives = {source: PFSArchive(asset_root / source) for source, _ in pairs}
+        wlds = tuple(WLDInventory(archives[source].read_member(member))
+                     for source, member in pairs)
+        destination = DATA_ROOT / "nav-candidates"
+        if not destination.resolve().is_relative_to(DATA_ROOT.resolve()):
+            parser.error("Candidate scene destination must stay inside the approved EQL data store")
+        scene = write_candidate_scene(destination, wlds[0], wlds[1], wlds[2:])
+        print(json.dumps({"archive_sha256": {name: archive.sha256
+                                              for name, archive in archives.items()},
+                          "wld_sha256": {member: wld.sha256
+                                         for (_, member), wld in zip(pairs, wlds)},
+                          **asdict(scene)}, indent=2))
     else:
         shell()
 

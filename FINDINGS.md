@@ -1,5 +1,43 @@
 # FINDINGS
 
+## Butcherblock provisional composed scene — 2026-11-13 05:29 CST
+
+**VERIFIED copied-client model links:** All 75 type `0x14` actor definitions
+resolve through one-based `0x2D` references to 75 distinct type `0x36`
+meshes; each mesh has the exact corresponding `_DMSPRITEDEF` name. All 1,884
+locations refer to one of these models by exact actor name. Across the 1,862
+non-sentinel instances, the object meshes contribute 83,125 encoded vertices
+and 81,683 triangles: 53,028 flag-zero, 28,655 pass-through `0x10`, and
+**179 exact zero-area triangles**. This independently reproduces the
+historical 179-face cleanup count, while the old navmesh artifact remains
+absent.
+
+**VERIFIED provisional geometry output:** `--build-butcher-candidate-scene`
+streamed copied terrain and static-object meshes into
+`~/.local/share/eql-automation/nav-candidates/butcher-solid-candidate-c4faf053a4e006c6.obj`
+(SHA-256 `c4faf053a4e006c68cbb115b58cccfe293c219a24a10d39f2a73fdd3d1889624`)
+in WLD XYZ with Z up. It contains 115,411 used vertices and 104,676
+flag-zero, nondegenerate triangles, of which 51,827 are terrain and 52,849
+are static-object instances. It excludes 29,523 pass-through triangles, 179
+zero-area instance triangles, and 22 dropped-tree instances. A separate
+read-only OBJ scan confirmed its hash, all face indices, finite coordinates,
+counts and bounds. The untracked provenance manifest SHA-256 is
+`1f6f07433e07b9368c06fbfdf39d4e41b144785340386936a387695fce61865c`.
+The output and source client data are outside git and outside the release
+archive. Focused synthetic tests checked exact model linking, uniform scale,
+rotation axis/order and face filtering.
+
+**INFERRED transform, still gated:** Projection follows the owner-data-compatible
+[LanternExtractor object parser](https://github.com/LanternEQ/LanternExtractor/blob/main/LanternExtractor/EQ/Wld/Fragments/ObjectInstance.cs)
+and [OBJ writer](https://github.com/LanternEQ/LanternExtractor/blob/main/LanternExtractor/EQ/Wld/Exporters/MeshObjWriter.cs):
+uniform scale, rotations from raw WLD units, then mesh center and instance
+position. All copied scale fields used here agree, and no copied instance has
+raw X rotation. This reproduces an exporter candidate, **not verified game
+collision**. Shader/material filtering, water, doors, object state, conservative
+agent clearance, navmesh routing and actual client movement remain unverified.
+The historical 18,292-vertex/10,694-polygon mesh was a different reported
+composition; its hash was not reproduced. No route was accepted.
+
 ## Butcherblock old-format mesh arrays — 2026-11-13 05:24 CST
 
 **VERIFIED copied-client decoding:** A read-only `0x36` decoder for the

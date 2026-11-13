@@ -43,17 +43,16 @@ class MeshGeometry:
         return tuple(self.center[axis] + raw[axis] / factor for axis in range(3))
 
     def degenerate_count(self) -> int:
-        count = 0
-        for triangle in self.triangles:
-            a, b, c = (self.raw_vertices[index] for index in
-                       (triangle.a, triangle.b, triangle.c))
-            u = tuple(b[axis] - a[axis] for axis in range(3))
-            v = tuple(c[axis] - a[axis] for axis in range(3))
-            if (u[1] * v[2] - u[2] * v[1] == 0 and
-                    u[2] * v[0] - u[0] * v[2] == 0 and
-                    u[0] * v[1] - u[1] * v[0] == 0):
-                count += 1
-        return count
+        return sum(self.is_degenerate(triangle) for triangle in self.triangles)
+
+    def is_degenerate(self, triangle: Triangle) -> bool:
+        a, b, c = (self.raw_vertices[index] for index in
+                   (triangle.a, triangle.b, triangle.c))
+        u = tuple(b[axis] - a[axis] for axis in range(3))
+        v = tuple(c[axis] - a[axis] for axis in range(3))
+        return (u[1] * v[2] - u[2] * v[1] == 0 and
+                u[2] * v[0] - u[0] * v[2] == 0 and
+                u[0] * v[1] - u[1] * v[0] == 0)
 
 
 @dataclass(frozen=True)

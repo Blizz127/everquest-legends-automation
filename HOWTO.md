@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.18.0
+# EverQuest Legends automation — current build 0.19.0
 
 ## Current availability
 
@@ -35,6 +35,9 @@ python3 -m eql_automation --inspect-s3d --source ~/.local/share/eql-automation/c
 python3 -m eql_automation --inspect-wld --source ~/.local/share/eql-automation/client-data/retail-full/assets/butcher.s3d --member objects.wld
 python3 -m eql_automation --audit-butcher-placements
 python3 -m eql_automation --audit-butcher-meshes
+python3 -m eql_automation --audit-butcher-model-links
+python3 -m eql_automation --audit-butcher-instances
+python3 -m eql_automation --build-butcher-candidate-scene
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 python3 -m eql_automation --index-ui-widgets
@@ -210,6 +213,14 @@ untracked `assets/manifests/` directory described above.
 `--audit-butcher-meshes` decodes copied old-format terrain and object mesh
 vertex/triangle arrays, checks indices, and counts solid and pass-through
 polygon flags. It does not apply object placements or validate movement.
+`--audit-butcher-model-links` traces exact actor definitions to object meshes.
+`--audit-butcher-instances` reports model geometry weighted by the copied
+placements. `--build-butcher-candidate-scene` writes a provisional OBJ in
+`~/.local/share/eql-automation/nav-candidates/` using flag-zero, nondegenerate
+terrain and static-object triangles. Client-derived geometry stays outside git.
+This OBJ is an input for later collision review. Material/shader collision,
+water, dynamic doors, clearance, navmesh routes and actual movement have not
+been accepted.
 
 The prior October Paladin/Cleric prototype remains at
 `/home/blizz/Projects/everquest-legends-rotation/`. Its historical controls

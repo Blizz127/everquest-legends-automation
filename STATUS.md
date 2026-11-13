@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 05:24 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 05:29 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.18.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.19.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -48,12 +48,18 @@ Updated 2026-11-13 05:24 CST for coordinator task `829a00229b29`.
   A bounded WLD inventory now reads all four copied Butcherblock WLDs and a
   placement audit resolves all 1,884 object locations to exact model names;
   22 tree locations have the documented Z sentinel, leaving 1,862
-  non-sentinel locations. This reproduces the historical placement counts but
-  neither composes collision geometry nor accepts a route.
+  non-sentinel locations. This reproduces the historical placement counts;
+  the placement audit itself accepts no route.
   The old-format `0x36` mesh decoder now reads 1,925 terrain/object mesh
   records with 72,333 encoded vertices and 59,558 triangles total. It records
-  pass-through flags and zero-area raw triangles, while leaving actor-to-mesh
-  composition, clearance and navigability unverified.
+  pass-through flags and zero-area raw triangles; this mesh-only audit leaves
+  placement composition, clearance and navigability unverified.
+  All 75 actor definitions now resolve unambiguously to 75 object meshes;
+  1,862 non-sentinel instances weight those meshes to 81,683 triangles and
+  reproduce the historical 179 zero-area faces. A provisional composed
+  WLD-XYZ OBJ outside git has 115,411 used vertices and 104,676 flag-zero,
+  nondegenerate terrain/object faces. Material collision, dynamic obstacles,
+  clearance, navmesh routes and client alignment remain unverified.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -93,20 +99,26 @@ Updated 2026-11-13 05:24 CST for coordinator task `829a00229b29`.
   `python3 -m pytest -q tests/test_mesh_geometry.py` — 2 passed;
   `--audit-butcher-meshes` decoded all 1,925 copied mesh records with valid
   triangle indices and reported `collision_composed: false`.
+  `python3 -m pytest -q tests/test_model_links.py tests/test_instance_geometry.py tests/test_candidate_scene.py`
+  — 6 passed; `--audit-butcher-model-links` resolved 75/75 exact model chains;
+  `--audit-butcher-instances` reproduced 179 weighted zero-area triangles;
+  `--build-butcher-candidate-scene` wrote an untracked 5,933,075-byte OBJ
+  SHA-256 `c4faf053a4e006c68cbb115b58cccfe293c219a24a10d39f2a73fdd3d1889624`.
+  An independent scan validated its 115,411 vertices, 104,676 faces,
+  finite coordinates and face indices. This is offline geometry only.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
   be sent to that host. Daybreak rules prohibit unattended play and unauthorized
   servers; no Daybreak-authorized live test route is documented. The historical
-  Butcherblock mesh/recipe is also absent from the approved retained store,
-  and the reported GFay vertical mismatch and conservative clearance failure
+  Butcherblock navmesh/recipe is absent from the approved retained store, and
+  the reported GFay vertical mismatch and conservative clearance failure
   remain unresolved. No actual client acceptance is ready. No private
   launcher/server publication destination is configured; this build is local.
 - Next step: obtain the intended private endpoint or separate client config,
-  then verify target identity before any live test. Trace exact actor-to-mesh
-  references, compose decoded Butcherblock meshes with the decoded static
-  placements and build a new collision bake in this project's
-  approved data store;
+  then verify target identity before any live test. Review copied client
+  material/shader collision, water and dynamic-door rules; bake a navmesh from
+  the provisional Butcherblock geometry in this project's approved data store;
   check conservative clearance, GFay height alignment, dynamic doors, water,
   zone transitions and actual movement before accepting a route. Review
   Crushbone next, then select camps from observed level and safety. Build a
