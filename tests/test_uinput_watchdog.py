@@ -5,11 +5,13 @@ import signal
 import struct
 import subprocess
 import sys
+import threading
 import time
 
 import pytest
 
 from eql_automation.uinput_watchdog import PulseError, timed_key_pulse
+import eql_automation.uinput_watchdog as watchdog
 
 
 EVENT = struct.Struct("@llHHi")
@@ -67,6 +69,32 @@ def test_refuses_overlong_hold_before_spawning():
     assert frames(write_fd, read_fd) == []
 
 
+def test_pre_keydown_gate_can_cancel_without_pressing():
+    read_fd, write_fd = os.pipe()
+
+    def reject():
+        raise PulseError("Scene changed before key down")
+
+    with pytest.raises(PulseError, match="Scene changed"):
+        timed_key_pulse(write_fd, 17, 0.15, before_down=reject)
+    sent = frames(write_fd, read_fd)
+    assert all(not (kind == 1 and value == 1) for kind, _, value in sent)
+
+
+def test_expired_child_deadline_never_presses_after_parent_stall():
+    read_fd, write_fd = os.pipe()
+
+    def stale_permit():
+        expires_at = time.monotonic() + 0.05
+        time.sleep(0.15)
+        return expires_at
+
+    with pytest.raises(PulseError, match="did not confirm key down"):
+        timed_key_pulse(write_fd, 17, 0.10, before_down=stale_permit)
+    sent = frames(write_fd, read_fd)
+    assert all(not (kind == 1 and value == 1) for kind, _, value in sent)
+
+
 def test_parent_kill_still_gets_same_device_key_up():
     read_fd, write_fd = os.pipe()
     code = ("import sys,time; from eql_automation.uinput_watchdog import timed_key_pulse; "
@@ -101,3 +129,48 @@ def test_parent_kill_still_gets_same_device_key_up():
             parent.kill()
             parent.wait(timeout=1)
         os.close(read_fd)
+
+
+def test_shared_stop_lock_stays_held_until_down_ack(monkeypatch):
+    read_fd, write_fd = os.pipe()
+    lock = threading.RLock()
+    in_ack = threading.Event()
+    continue_ack = threading.Event()
+    off_acquired = threading.Event()
+    calls = 0
+    original = watchdog._read_status
+
+    def delayed_ack(*args, **kwargs):
+        nonlocal calls
+        calls += 1
+        if calls == 2:
+            in_ack.set()
+            assert continue_ack.wait(1.0)
+        return original(*args, **kwargs)
+
+    monkeypatch.setattr(watchdog, "_read_status", delayed_ack)
+    errors = []
+
+    def pulse():
+        try:
+            timed_key_pulse(write_fd, 17, 0.20, go_lock=lock)
+        except Exception as exc:
+            errors.append(exc)
+
+    worker = threading.Thread(target=pulse)
+    worker.start()
+    assert in_ack.wait(2.0)
+
+    def off():
+        with lock:
+            off_acquired.set()
+
+    stopper = threading.Thread(target=off)
+    stopper.start()
+    assert not off_acquired.wait(0.02)
+    continue_ack.set()
+    worker.join(2.0)
+    stopper.join(2.0)
+    assert not worker.is_alive() and not stopper.is_alive()
+    assert off_acquired.is_set() and not errors
+    assert (1, 17, 0) in frames(write_fd, read_fd)

@@ -1,5 +1,50 @@
 # FINDINGS
 
+## Isolated G2 input bridge and portal-local route lead — 2026-11-13 11:23 CST
+
+**VERIFIED pipe-only:** `eql_automation/g2_input_bridge.py` binds one G2
+budget permit to the November helper's existing `evdev.UInput.fileno()` and
+its `KEY_UP` forward key. On Alienware, installed evdev source exposes that
+same descriptor through `fileno()`; no input device was opened for this
+inspection. The bridge arms a child before reserving a permit, checks the
+scene just before GO, and the child refuses an expired key-down deadline.
+The shared stop/GO lock remains held until the child acknowledges DOWN; if
+that acknowledgment fails, the child is killed and UP is written before OFF
+can acquire the lock. An OFF waiting for that acknowledgment could take up to
+the 0.30-second acknowledgment window plus failure cleanup in this prototype.
+During a pulse, the helper's input check and scene
+guard are polled; final release uses `KeySender.release()` so failed key-up
+retains the held-key record. Pipe-only tests cover changed target before
+DOWN, OFF before GO, stop during pulse, caller stall/kill, stale deadline and
+failed final release. A no-input Alienware pipe smoke reported a 0.150-second
+pulse with the expected DOWN/UP events. This code is not connected to the
+owner preview or to live scene observation; G0 is still unconfirmed and G2
+and F11 remain disabled.
+The isolated Alienware staging path is
+`~/.local/share/eql-automation/nav-work/0.41.1/eql_automation/`. Its staged
+bridge, budget and watchdog match devbox SHA-256 values
+`c7e0313e31a9a7e9a751ed6bb87d768bbe0c6c4e2772313ec97df4481cf8dc73`,
+`1547788a3df63d0e559696b5b4e7b9b637b550209e7c9f04877d3d9030077acc`,
+and `932452feeb07da362b33b8228be23aa8ebc43641a2cc3730fbbb3587f3cc71ff`,
+respectively. The game install and original November helper were not changed.
+
+**OBSERVED copied-mesh analysis:** November Recast inputs use 0.6/0.3 cells,
+agent radius 1.2, slope limit 75 and detail sample distance/error 6/1. The
+GFay mesh's 89.19-degree `slope[poly]` is the steepest detail triangle
+anywhere in that polygon; the 188-polygon candidate line sampled a maximum
+rise/run of 0.702 (about 35 degrees). Its 55 standard locator failures
+occurred where linearly interpolated Z differed from the actual surface by
+up to 9.8 units. This suggests a bounded true-surface, path-local slope
+audit before rebaking; it does not accept the route. In Crushbone, the
+3-unit/6-unit centroid filter disconnects Slaver west, while a 2-unit/4-unit
+filter connects via polygon 4322 (centroid clearance 2.129 units). Its
+portal toward polygon 4320 has sampled clearance up to 8.54 units, so the
+centroid filter may overreject. A 109-polygon centroid line still failed
+local checks (0.366-unit minimum clearance, two blocked rays, 83.32-degree
+polygon slope). Next offline query: bounded portal-to-portal, true-surface
+samples with clearance and slope in the travel strip. The historical
+Crushbone start has not been verified as the GFay arrival point.
+
 ## Revocable G2 permit and slope-filtered route result — 2026-11-13 10:59 CST
 
 **VERIFIED offline:** The G2 pulse policy now returns a generation-bound permit

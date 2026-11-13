@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 10:59 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 11:23 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
-- Owner feedback check: at 10:58 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware, and Legira's log still had not changed since 09:31:50 CST. No 0.39.3 live result is available.
+- Owner feedback check: at 11:16 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware, and Legira's log still had not changed since 09:31:50 CST. No 0.39.3 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.41.0 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.41.1 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -418,6 +418,13 @@ Updated 2026-11-13 10:59 CST for coordinator task `829a00229b29`.
   A copied-mesh GFay route query with slope<=45°, clearance>=3u and portal
   width>=6u disconnected start and Crushbone trigger after 16,132 polygon
   visits. No GFay or Crushbone path is accepted for client travel.
+  An isolated G2 input bridge now uses a same-descriptor child pulse with
+  a child-enforced key-down expiry, serialized stop/GO boundary, helper
+  release bookkeeping and no-input pipe tests. It is not wired to the owner
+  preview or real scene observer. Alienware pipe smoke passed at 0.150 s.
+  Copied-mesh review suggests bounded portal-local surface/slope sampling
+  before rebaking GFay or Crushbone; centroid/polygon-wide metrics may be
+  overconservative, but no candidate passes current route guards.
   A bounded copied-mesh search found a wider GFay candidate with 3.47-unit
   minimum sampled clearance but an 89.19-degree slope flag and 55 standard
   locator mismatches. The filtered Crushbone arrival-to-Slaver route remains
@@ -438,11 +445,12 @@ Updated 2026-11-13 10:59 CST for coordinator task `829a00229b29`.
   the reported GFay vertical mismatch on its historical route and
   conservative clearance failure remain unresolved. No actual client
   acceptance is ready. The 0.39.3 assist/G0 preview is privately staged on
-  Alienware outside the game install; full auto has no release channel yet.
+  Alienware outside the game install; full auto has no playable release yet.
 - Next step: collect the owner's 0.39.3 HP/F8/F9 observations and supervised
   G0 movement-stop result without touching Legira. Build a bounded owner-run
-  G2 straight-motion measurement program using the separately tested release
-  timer and immediate-stop guards; the geometry preflight alone does not permit it.
+  G2 straight-motion measurement program using the isolated pulse bridge,
+  fresh client scene observer and bounded stop guards; the geometry
+  preflight alone does not permit it.
   Build an observed autoattack state/stop acknowledgment gate for
   full auto, then bind the copied mesh store in a separate owner-run route
   trial after G0/G2 checks and resolve the narrow GFay/Crushbone corridors.

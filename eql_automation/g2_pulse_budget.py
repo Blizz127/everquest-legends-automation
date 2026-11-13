@@ -174,6 +174,16 @@ class G2PulseBudget:
         self.stage = "keydown_authorized"
         return permit.seconds
 
+    def still_authorized(self, scene: G2Scene, permit: G2Permit) -> bool:
+        """Check a pulse lease while the same-device child may hold the key."""
+        if (self.stage != "keydown_authorized" or permit is not self.permit or
+                permit.generation != self.generation):
+            self._fail("Forward pulse was cancelled while held")
+        self._check(scene)
+        if _distance(self.origin, scene.raw_location) > self.clear_radius:
+            self._fail("Forward pulse left the checked radius")
+        return True
+
     def record_hold(self, scene: G2Scene, actual_seconds: float) -> None:
         if self.stage != "keydown_authorized":
             self._fail("Hold reported without a current key-down permit")

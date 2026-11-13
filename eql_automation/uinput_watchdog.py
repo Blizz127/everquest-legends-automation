@@ -9,6 +9,8 @@ before and during a pulse. Deadlines depend on OS scheduling, not real time.
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
+import math
 import os
 import select
 import struct
@@ -55,8 +57,10 @@ def _read_status(pipe, deadline: float, *, pump: Callable[[], None] | None = Non
 
 
 def timed_key_pulse(device_fd: int, key_code: int, seconds: float, *,
+                    before_down: Callable[[], float | None] | None = None,
                     pump: Callable[[], None] | None = None,
-                    should_stop: Callable[[], bool] | None = None) -> float:
+                    should_stop: Callable[[], bool] | None = None,
+                    go_lock=None) -> float:
     """Hold one key through the inherited device, or fail closed.
 
     The child writes both DOWN and UP. It attempts to release on its own
@@ -81,10 +85,25 @@ def timed_key_pulse(device_fd: int, key_code: int, seconds: float, *,
             raise PulseError("Release watchdog did not arm")
         if should_stop is not None and should_stop():
             raise PulseError("Pulse cancelled before key down")
-        child.stdin.write(b"GO\n")
-        if _read_status(child.stdout, time.monotonic() + 1.0) != "DOWN":
-            raise PulseError("Release watchdog did not confirm key down")
-        started = True
+        with (go_lock if go_lock is not None else nullcontext()):
+            expires_at = before_down() if before_down is not None else None
+            if expires_at is not None and (not isinstance(expires_at, (int, float)) or
+                                           not math.isfinite(expires_at)):
+                raise PulseError("Invalid key-down permit deadline")
+            command = b"GO\n" if expires_at is None else f"GO:{expires_at:.9f}\n".encode("ascii")
+            try:
+                child.stdin.write(command)
+                if _read_status(child.stdout, time.monotonic() + 0.30) != "DOWN":
+                    raise PulseError("Release watchdog did not confirm key down")
+                started = True
+            except BaseException:
+                # OFF shares this lock. Do not let it return while GO could
+                # still be queued for a child that has not acknowledged DOWN.
+                if child.poll() is None:
+                    child.kill()
+                    child.wait(timeout=0.5)
+                _key(device_fd, key_code, 0)
+                raise
         result = _read_status(child.stdout, time.monotonic() + 1.0,
                               pump=pump, should_stop=should_stop)
         if result == "STOP":
@@ -119,7 +138,20 @@ def _child_main(device_fd: int, key_code: int, seconds: float) -> int:
     try:
         os.write(1, b"READY\n")
         ready, _, _ = select.select([0], [], [], 2.0)
-        if not ready or os.read(0, 32).strip() != b"GO":
+        if not ready:
+            return 1
+        command = os.read(0, 64).strip()
+        if command == b"GO":
+            pass
+        elif command.startswith(b"GO:"):
+            try:
+                expires_at = float(command[3:])
+            except ValueError:
+                return 1
+            if not math.isfinite(expires_at) or time.monotonic() > expires_at:
+                os.write(1, b"EXPIRED\n")
+                return 1
+        else:
             return 1
         down = True
         _key(device_fd, key_code, 1)
