@@ -9,6 +9,7 @@ use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 | --- | --- | --- | --- |
 | 1–5 | Butcherblock Kaladim gate yards | South Kaladim → Butcherblock, then local camp | The prior Alienware guide cites Legira's `/con` log for the low-level mobs. A retained current-helper Butcherblock mesh now loads with source hashes checked; the camp position, source arrival and movement remain unverified. |
 | 5–8 | Crushbone Slaver Caves (west) | Butcherblock → GFay → Crushbone → safe spot | Copied GFay ground approaches toward Butcherblock and Crushbone pass separate offline strip checks. Crushbone arrival and its Slaver route are unaccepted; two copied-mesh crossings fail the current grade-1.2 turn audit. |
+| 6–10 | GFay orc camps, alternate for Legira | Current GFay position → guide marker, then observed pull area | The existing guide lists this outdoor camp and the owner's log confirms relevant `/con` mobs. A dry path from the G0 test position avoids water and, after penalizing two steep polygons, has 155 ground polygons with maximum polygon slope 74.74° and minimum center clearance 7.64 units. Its sampled turns/strips, actual camp location and live movement are unverified. |
 | 8–13 | Crushbone Trainer Hill | Slaver Caves → Trainer Hill | The prior guide lists this range; no camp route, con sample or real movement has been accepted. |
 | 13–17 | Unrest yard | Crushbone → GFay → Butcherblock → Dagnor's Cauldron → Unrest | Copied client map labels name these zone lines. Dagnor's terrain descent and the Unrest arrival are not baked or traversed. |
 | 17–20 | Unrest first floor, subject to observed difficulty and XP | Yard → first floor | The prior guide marks this indoor camp as poor for automation; no safe pull route or live XP rate is observed. |
@@ -18,7 +19,7 @@ The level bands are **candidate priorities from the existing Alienware
 `bfe936da1aec38b37a683af51f0ee4189cd86bcb4a1680deee613c4dfeba77b9`.
 They are not validated as current server spawn levels. For Legira's last
 owner-reported level 7 in GFay, the immediate candidate is GFay → Crushbone
-Slaver Caves. Starting a fresh character at level 1 would instead begin at
+Slaver Caves, with same-zone GFay orc camps as a fallback candidate. Starting a fresh character at level 1 would instead begin at
 the Butcherblock camp if its spawn and safe route are observed. Camp changes
 must use measured XP, con, crowd and danger rather than the table alone.
 
@@ -62,7 +63,18 @@ Its uncached selector ran out of its 180-second work window at polygon 38947
 after 240 turns and 358 strips; this is a work limit, not a geometry pass.
 Caching identical strips cut that to 182 unique strip checks and advanced
 to polygon 14525 (index 155 of 234) in the same 180-second window. A larger,
-still bounded recheck is underway. None of these results is an F11 route.
+still bounded recheck completed its portal search after 240 turns and 260
+unique strips, but its final whole-route pass hit the per-segment time limit
+at polygon 49153. This is a work limit, not a geometry pass. None of these
+results is an F11 route.
+
+The same-zone GFay orc-camp fallback uses the existing guide's approximate
+marker. The first dry route from the G0 test position had two polygons over
+75° slope. Penalizing those two found a 155-ground-polygon alternative with
+no polygon detail-triangle slope over 75° or center clearance under 3 units. This is copied
+mesh evidence only; the guide marker, actual mob/pull site and live path are
+unverified. A bounded full-width route check is underway. Artifacts and
+hashes are in [FINDINGS.md](FINDINGS.md).
 
 At the G0 test spot in GFay, all four fresh `/location` XY points landed on
 copied ground with zero XY snap distance and consistent 2.065–2.085-unit

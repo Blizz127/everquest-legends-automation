@@ -53,7 +53,8 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
                           half_width: float = 1.2,
                           maximum_grade: float = 1.0,
                           max_segment_samples: int = 2048,
-                          max_segment_seconds: float = 10.0) -> PortalSelection:
+                          max_segment_seconds: float = 10.0,
+                          max_turn_seconds: float = 3.0) -> PortalSelection:
     """Find a sampled strip-connected portal sequence, then recheck it whole.
 
     Midpoints that pass the conservative disk start as a single candidate.
@@ -85,7 +86,7 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
             any(not isinstance(n, (int, float)) or isinstance(n, bool) or
                 not math.isfinite(n) or n <= 0
                 for n in (max_seconds, sample_spacing, half_width, maximum_grade,
-                          max_segment_seconds))):
+                          max_segment_seconds, max_turn_seconds))):
         return PortalSelection(False, "invalid_selection_limits")
     started = time.monotonic()
     turns = 0
@@ -128,7 +129,7 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
             turns += 1
             disk = audit_turn_disk(mesh, a, b, (x, y),
                                    maximum_grade=maximum_grade,
-                                   max_seconds=min(remaining, 3.0))
+                                   max_seconds=min(remaining, max_turn_seconds))
             samples += disk.samples
             if samples > max_total_samples or disk.reason == "turn_work_budget_exceeded":
                 return PortalSelection(False, "selection_work_budget_exceeded",
@@ -165,7 +166,7 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
             turns += 1
             disk = audit_turn_disk(mesh, a, b, (x, y),
                                    maximum_grade=maximum_grade,
-                                   max_seconds=min(remaining, 3.0))
+                                   max_seconds=min(remaining, max_turn_seconds))
             samples += disk.samples
             if samples > max_total_samples or disk.reason == "turn_work_budget_exceeded":
                 return added, "selection_work_budget_exceeded"

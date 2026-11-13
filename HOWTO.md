@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.27 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.28 / owner preview 0.39.4
 
 ## Current availability
 
@@ -164,7 +164,14 @@ Version 0.41.27 caches repeated offline strip checks during bounded portal
 repair. It counts only newly sampled work, keeps the global time/sample
 limits, and still rechecks the final selected route. A different Butcherblock
 dry corridor avoids the first rejected turn, but its whole-route lateral
-result remains under review. This version does not change owner-run input.
+pass reached a per-segment time limit; it has not passed. A same-zone GFay
+orc-camp dry path avoids two steep polygons in copied terrain, but its full
+walking-width check, guide marker and live movement are not accepted. This
+version does not change owner-run input.
+Version 0.41.28 makes the offline portal-turn time limit configurable while
+retaining the global work bound. It adds a hash-checked tool to rerun a saved
+copied-ground corridor and record its sampled result outside git. It does not
+send input or enable F11.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

@@ -1,5 +1,64 @@
 # FINDINGS
 
+## G2 owner-preview input gate — 2026-11-13 15:53 CST
+
+**OBSERVED source inspection, no game input:** Isolated owner-assist 0.39.4
+`rotation_engine.py` already checks focused X11 window identity at lines
+224–251 and tracks some evdev keys at lines 708–730 and 832–925. Its input
+device discovery only registers devices advertising F8, so it cannot certify
+all owner keys or keys held before attachment. Recent chat-key timestamps and
+unfinished helper-command state are not an independent chat-closed signal.
+Its target/log state cannot prove no current target, and absence of incoming
+attack log lines cannot prove combat or incoming attacks are clear within the
+G2 observer's 0.1-second bound. `autopilot.py`'s completed G0 measured one
+0.15-second pulse, not a speed upper bound. Project
+`g2_scene_observer.py` requires a fresh location fix and independent scene
+checks; `g2_start_gate.py` additionally requires live alignment and a speed
+bound. These pieces are not wired into the owner preview. **G2 and F11 remain
+disabled.** A future owner-run test must wait for actual independent UI/device
+observations and a bounded measurement release, not inferred clear states.
+
+## Level-7 GFay orc-camp fallback and Butcher route limit — 2026-11-13 15:46 CST
+
+**VERIFIED copied-data offline, no client input:** The existing 0.39.4
+`leveling_guide.json` SHA-256
+`bfe936da1aec38b37a683af51f0ee4189cd86bcb4a1680deee613c4dfeba77b9`
+lists GFay orc camps as a level 6–10 outdoor alternative. Its marker comes
+from Brewall-derived map guidance; the owner's earlier `/con` log supports
+some listed mob levels, not an exact camp or safe pull location. Starting
+from the owner's completed G0 test position, a copied GFay mesh dry query to
+that guide marker found 133 ground polygons, length 4,101.80 units, with two
+polygons whose steepest copied detail triangles exceed 75 degrees. The private artifact
+`~/.local/share/eql-automation/nav-candidates/gfay-g0-to-orc-camp-dry-20261113T2144Z.json`
+has SHA-256 `2830b6e3091189a99e67736aa9bc075520851e016e03f1da02007d91365c9bb8`.
+Penalizing those two steep polygons found a different 155-ground-polygon
+dry path, length 4,095.75 units, with maximum polygon slope 74.74 degrees
+and minimum polygon-center clearance 7.64 units. Its private artifact
+`~/.local/share/eql-automation/nav-candidates/gfay-g0-to-orc-camp-repair-20261113T2145Z.json`
+has SHA-256 `18fdc7d2b051d0920bd25259fea259acf7034816d5547cf2d3dec460ed47e20a`.
+The G0 position is no longer a fresh position for a movement command. The
+sampled turns/strips, copied BSP labels, actual camp and live movement have
+not been accepted. A bounded selector is running; F11 remains disabled.
+
+**VERIFIED bounded work limit:** On the earlier 234-ground-polygon Butcherblock
+camp→GFay bypass, the cached selector reached its final whole-route pass
+after 240 turn and 260 unique strip checks. The complete pass stopped at
+polygon 49153 because an individual segment reached its 10-second work
+limit; elapsed total was 187.163 seconds within a 360-second global limit.
+The private artifact
+`~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-bypass-cache-selector-20261113T2142Z.json`
+has SHA-256 `f5b1bb0d67bd047d19bae620163ad6754f8c24e72084dc39efcfcf919cb9d255`.
+This is not a whole-route geometry pass or real-client acceptance.
+
+**OBSERVED warning-provenance limit:** The retained Butcherblock mesh,
+manifest and report contain only the aggregate 1,180 Recast warning count;
+no retained per-warning type, tile, location or baker stderr log was found
+in the approved store. The matching retained baker hash is
+`072f9b06935ef76d870219e4e2812146006d0c86fdca4bb6c78b70eed4383d44`.
+Those warnings cannot be classified or mapped to this route from retained
+artifacts. They remain an acceptance limitation; no inference is made from
+the warning count alone.
+
 ## Owner-run G0 and retained Butcherblock mesh — 2026-11-13 15:27 CST
 
 **VERIFIED owner-run observation:** Blizz launched isolated assist preview

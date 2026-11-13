@@ -60,6 +60,24 @@ def test_flat_ground_corridor_selects_midpoint_but_never_accepts_live_route():
     assert not result.route_accepted and not result.real_client_accepted
 
 
+def test_turn_time_limit_is_configurable_but_still_bounded(monkeypatch):
+    real = selector.audit_turn_disk
+    limits = []
+
+    def record_limit(mesh, a, b, xy, **kwargs):
+        limits.append(kwargs["max_seconds"])
+        return real(mesh, a, b, xy, **kwargs)
+
+    monkeypatch.setattr(selector, "audit_turn_disk", record_limit)
+    result = select_ground_portals(FlatMesh(), (0, 1), (1.0, 5.0),
+                                   (19.0, 5.0), max_turn_seconds=7.0)
+    assert result.candidate and limits and 0 < limits[0] <= 7.0
+    assert limits[0] > 3.0
+    invalid = select_ground_portals(FlatMesh(), (0, 1), (1.0, 5.0),
+                                    (19.0, 5.0), max_turn_seconds=0.0)
+    assert not invalid.candidate and invalid.reason == "invalid_selection_limits"
+
+
 def test_explicit_grade_sensitivity_rechecks_turns_and_whole_strip():
     mesh = InclinedMesh()
     strict = select_ground_portals(mesh, (0, 1), (1.0, 5.0), (19.0, 5.0),
