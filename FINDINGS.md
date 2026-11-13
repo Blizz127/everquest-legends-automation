@@ -79,3 +79,14 @@ The coordinator did not appear in `ListAgents` (8 peer sessions listed, none of 
 though tmux session `claude-devbox-coordinator` exists. The CLI
 `python3 ~/.local/share/devbox-coordinator/coordinator.py report --task <id> --status <s> --summary "..."`
 is present and accepts `report`.
+
+## Addendum 2026-11-13 12:40 AM CST (coordinator, from Blizz 12:33 AM CST and a read-only check on the Alienware)
+
+- Blizz: "i have a game and client onmy laptop alienware if it neesd it under lutris". Stop searching the devbox.
+- **Client install: Alienware (Bazzite, Tailscale 100.111.220.11)**, Lutris config
+  `/home/blizz/.local/share/lutris/games/everquest-legends-1782570403.yml`; Wine prefix and game dir
+  `/home/blizz/Games/everquest-legends` (13G); launched via umu-run; exe `drive_c/users/blizz/Desktop/EverQuest Legends.lnk`;
+  prelaunch script `fix-eq-music.sh`. (VERIFIED read-only by the coordinator.)
+- Read-only for you: do not modify or delete the install or prefix; copy anything to analyse to the devbox; do not touch his character progress.
+- Server: **still to find and record** (official vs private/EQEmu).
+- Earlier devbox tool to read first: `~/Projects/everquest-legends-rotation/` (Oct 17 2026).
