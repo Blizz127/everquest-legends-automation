@@ -52,6 +52,8 @@ def test_location_reader_skips_history_and_requires_entered_zone(tmp_path: Path)
     assert fixes[0].raw_coordinates == (-1.25, 2.0, 3.5)
     assert fixes[0].coordinates_aligned_to_wld is False
     assert fixes[0].received_monotonic == 3
+    assert fixes[0].log_line_seq == 1
+    assert fixes[0].zone_generation > 0
 
 
 def test_loading_and_zone_entry_invalidate_previous_position(tmp_path: Path):
@@ -268,3 +270,26 @@ def test_poll_clock_rollback_clears_zone_and_requires_new_entry(tmp_path: Path):
                      stamped(5, "Your Location is 7, 8, 9"))
     fixes = reader.poll(now=7)
     assert len(fixes) == 1 and fixes[0].zone_id == 2
+
+
+def test_location_line_identity_and_zone_generation_do_not_claim_request_identity(tmp_path: Path):
+    log, zones = fixture_paths(tmp_path)
+    log.touch()
+    reader = reader_for(log, zones)
+    with log.open("a") as source:
+        source.write(stamped(1, "You have entered Example One.") +
+                     stamped(2, "Your Location is 1, 2, 3") +
+                     stamped(2, "Your Location is 1, 2, 3"))
+    first, second = reader.poll(now=1)
+    assert second.log_line_seq == first.log_line_seq + 1
+    assert second.zone_generation == first.zone_generation
+    assert second.raw_coordinates == first.raw_coordinates
+    with log.open("a") as source:
+        source.write(stamped(3, "LOADING, PLEASE WAIT...") +
+                     stamped(4, "You have entered Example One.") +
+                     stamped(5, "Your Location is 1, 2, 3"))
+    after = reader.poll(now=2)
+    assert len(after) == 1
+    assert after[0].log_line_seq == second.log_line_seq + 1
+    assert after[0].zone_generation > second.zone_generation
+    assert after[0].log_epoch == second.log_epoch  # Zone change is separate from log reset.

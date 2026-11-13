@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.10 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.11 / owner preview 0.39.4
 
 ## Current availability
 
@@ -42,6 +42,9 @@ class observation. Owner preview 0.39.4 shows HP calibration failures in
 its window without changing input permissions.
 Version 0.41.10 checks the hybrid fixture against the copied client's actual
 Furor and Light Healing IDs and unlock levels. It adds no game input.
+Version 0.41.11 numbers new `/location` log lines and zone observations for
+offline G2 work. The client log has no echoed request ID, so those numbers
+do not prove a reply belongs to one command. G2 remains unavailable.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

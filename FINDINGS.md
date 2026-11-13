@@ -1,5 +1,18 @@
 # FINDINGS
 
+## G2 location-line identity, not command identity — 2026-11-13 12:37 CST
+
+**VERIFIED offline, no game input:** `LocationLogReader` now assigns a
+monotonic number to each newly read `/location` line and increments a separate
+zone generation when zone state becomes invalid. A same-zone reentry cannot
+silently reuse a previous generation. Twenty-three focused location/G2 budget
+tests and the simulator startup check pass. Repeated identical location lines
+receive different line numbers because they are distinct appended log lines.
+The client does not echo a request ID for `/location`, so neither this number
+nor temporal arrival proves which command caused a reply. There is still no
+live `G2Scene` provider or owner-confirmed G0/fresh speed bound. G2 and F11
+remain disabled; no route or level gain has been accepted.
+
 ## Hybrid rotation and owner HP diagnostic — 2026-11-13 12:34 CST
 
 **VERIFIED copied client data:** The retained `spells_us.txt` at

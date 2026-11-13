@@ -150,6 +150,10 @@ class RawLocationFix:
     log_local_time: datetime
     received_monotonic: float
     log_epoch: int
+    # These identify a new log line and zone observation, not the /location
+    # command that caused it. The client does not echo a request ID here.
+    log_line_seq: int = 0
+    zone_generation: int = 0
     coordinates_aligned_to_wld: bool = False
 
 
@@ -168,9 +172,12 @@ class LocationLogReader:
         self.latest: RawLocationFix | None = None
         self.last_log_local_time: datetime | None = None
         self.last_received_monotonic: float | None = None
+        self.log_line_seq = 0
+        self.zone_generation = 0
         self.tail.poll()  # Existing bytes are history; never bootstrap a zone.
 
     def _clear_zone(self) -> None:
+        self.zone_generation += 1
         self.zone_id = None
         self.zone_display_name = None
         self.latest = None
@@ -231,8 +238,10 @@ class LocationLogReader:
                 continue
             if raw is None or self.zone_id is None or self.zone_display_name is None:
                 continue
+            self.log_line_seq += 1
             fix = RawLocationFix(self.zone_id, self.zone_display_name, raw,
-                                 log_time, received_at, self.tail.epoch)
+                                 log_time, received_at, self.tail.epoch,
+                                 self.log_line_seq, self.zone_generation)
             self.latest = fix
             fixes.append(fix)
         return fixes
