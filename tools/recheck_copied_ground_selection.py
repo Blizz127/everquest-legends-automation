@@ -25,7 +25,7 @@ from eql_automation.strip_route_audit import audit_route_strips  # noqa: E402
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--zone", required=True,
-                        choices=("gfaydark", "butcher", "crushbone"))
+                        choices=("gfaydark", "butcher", "crushbone", "cauldron", "unrest"))
     parser.add_argument("--source", required=True, type=Path)
     parser.add_argument("--selection", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
@@ -86,7 +86,7 @@ def main() -> None:
             raise ValueError("selection has no complete unverified portal sequence")
         points = tuple(xy(point) for point in points_raw)
         start = route.get("start_wld_xyz")
-        goal = route.get("snapped_goal_wld_xyz")
+        goal = route.get("snapped_goal_wld_xyz") or route.get("goal_wld_xyz")
         if start is None or goal is None or points[0] != xy(start) or points[-1] != xy(goal):
             raise ValueError("unverified points do not bind route endpoints")
         limits = selection.get("limits")

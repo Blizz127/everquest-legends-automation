@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.31 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.32 / owner preview 0.39.4
 
 ## Current availability
 
@@ -193,6 +193,15 @@ Cauldron and Unrest archives needed later in the 1–20 plan. The command
 reproduces provisional static geometry outside git and refuses changed
 archives until their source is audited again. It does not bake a navmesh,
 accept a route or change owner-run controls.
+Version 0.41.32 lets the copied-ground selector and its separate full-strip
+recheck read pinned Cauldron and Unrest meshes. The owner helper already had
+both meshes; their archive and mesh hashes now match the copied client store.
+A dry Cauldron graph path has steep/narrow polygons, and an Unrest
+entrance-to-yard selector stops at a narrow copied polygon. Optional bounded
+`--max-candidates-per-portal` (1–13) and `--max-strip-repair-rounds` (0–16)
+allow offline retries; a retry under loaded devbox conditions hit a local
+time limit before a route result. These are offline
+diagnostics, not F11 routes or owner-run input changes.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

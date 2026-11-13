@@ -51,7 +51,7 @@ def xy(value) -> tuple[float, float]:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--zone", required=True,
-                        choices=("gfaydark", "butcher", "crushbone"))
+                        choices=("gfaydark", "butcher", "crushbone", "cauldron", "unrest"))
     parser.add_argument("--source", required=True, type=Path)
     parser.add_argument("--endpoints", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
@@ -62,6 +62,8 @@ def main() -> None:
     parser.add_argument("--max-seconds", type=float, default=240.0)
     parser.add_argument("--max-turn-seconds", type=float, default=10.0)
     parser.add_argument("--max-segment-seconds", type=float, default=20.0)
+    parser.add_argument("--max-candidates-per-portal", type=int, default=6)
+    parser.add_argument("--max-strip-repair-rounds", type=int, default=8)
     parser.add_argument("--half-width", type=float, default=1.2)
     parser.add_argument("--maximum-grade", type=float, default=1.0)
     parser.add_argument("--select-only", action="store_true",
@@ -97,7 +99,8 @@ def main() -> None:
         start = route.get("start_wld_xyz") or end.get("start_wld_xyz")
         if start is None:
             start = route.get("path_points", [None])[0]
-        goal = end.get("standoff_xy") or end.get("snapped_goal_wld_xyz")
+        goal = (end.get("standoff_xy") or end.get("snapped_goal_wld_xyz") or
+                end.get("goal_wld_xyz"))
         if goal is None:
             goal = route.get("path_points", [None])[-1]
         start_xy, goal_xy = xy(start), xy(goal)
@@ -105,6 +108,9 @@ def main() -> None:
                   args.max_segment_seconds, args.half_width, args.maximum_grade)
         if any(not math.isfinite(v) or v <= 0 for v in limits):
             raise ValueError("all selection limits must be positive and finite")
+        if (not 1 <= args.max_candidates_per_portal <= 13 or
+                not 0 <= args.max_strip_repair_rounds <= 16):
+            raise ValueError("portal candidate or strip repair limit is outside bounds")
         sys.path.append(str(helper))
         from eqnav.mesh import AREA_GROUND
         from eqnav.world import MeshStore
@@ -125,6 +131,8 @@ def main() -> None:
             max_seconds=args.max_seconds,
             max_turn_seconds=args.max_turn_seconds,
             max_segment_seconds=args.max_segment_seconds,
+            max_candidates_per_portal=args.max_candidates_per_portal,
+            max_strip_repair_rounds=args.max_strip_repair_rounds,
             half_width=args.half_width, maximum_grade=args.maximum_grade,
             final_recheck=not args.select_only)
         if (digest(source) != source_hash or digest(endpoints) != endpoints_hash or
@@ -139,6 +147,8 @@ def main() -> None:
             "limits": {"max_seconds": args.max_seconds,
                        "max_turn_seconds": args.max_turn_seconds,
                        "max_segment_seconds": args.max_segment_seconds,
+                       "max_candidates_per_portal": args.max_candidates_per_portal,
+                       "max_strip_repair_rounds": args.max_strip_repair_rounds,
                        "half_width": args.half_width,
                        "maximum_grade": args.maximum_grade,
                        "final_recheck": not args.select_only},

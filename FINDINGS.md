@@ -1,5 +1,83 @@
 # FINDINGS
 
+## Retained Cauldron and Unrest navmeshes, offline route gate — 2026-11-13 16:31 CST
+
+**VERIFIED read-only owner-helper copy, no game input:** The Alienware helper
+store `~/.local/share/eql-automation/navmesh/nov12-7e3cd28-store/` already
+contained Cauldron and Unrest meshes. Its six manifest, report and mesh files
+were copied to the matching approved private devbox store. The Cauldron
+manifest SHA-256 is
+`7fa85bdeb68e8b1ab66b6cbd30ff53dd2702a1ac15580c4477ea001637f05146`,
+report `60296d77ac73393a285aa55ee5935174d5af7562f8a81ce68e4446efee5c88f8`
+and mesh `884bb7c888aa25cfce2286053ab437facdd5e979fb5227da6c066208c8b77a29`.
+The Unrest manifest SHA-256 is
+`8224bd5a1c6dbf721bd801a4310148fc6f472b9ee9cab687078a28f883f31786`,
+report `1210dc41f493be0d1862ccfd143de92f5aeb9c513f0fbd34a403c9b692ffecc2`
+and mesh `2b8fdb3f54078a3977e04df46e69b53d41a72ab56c4783cfe28334e08d4bdace`.
+Each manifest's mesh hash matches its copied mesh; each source archive hash
+matches the corresponding copied owner-client archive listed below. The
+Cauldron manifest reports 14,832 polygons, 3,099 water-area polygons and
+275 Recast warnings whose locations/types are not retained. The Unrest
+manifest reports 3,254 polygons, 99 water-area polygons and zero warnings.
+These reports are copied bake evidence, not real-client acceptance.
+
+**VERIFIED dry graph queries, not strips:** In Cauldron, the ground polygon
+beside the Butcherblock zone line and the one beside Unrest share a dry
+component. A water-forbidden query returned a 364-polygon, 6,665.98-unit
+graph path with no water or zone-line polygons. Ten of its polygons have
+reported slope >75°; two have center clearance <3 units. A bounded graph
+search found that every ground-only path between these endpoints crosses at
+least four polygons violating those thresholds. These polygon-wide metrics
+can overstate the actual crossing difficulty, but no safe strip has passed.
+The private dry artifact SHA-256 is
+`2b102f439b7cb10029aefc9b06af99d853c44a86f75835f9edd67e1ba3666a5f`.
+A BSP scan of only its 81 funnel segments, at copied path height and +1,
+found 210 spans with no labelled or unknown intervals; it did **not** scan
+every polygon strip. That diagnostic artifact SHA-256 is
+`c11d8f54e97927aecf4b804598ebbca63e64a0da0db91f30dfaf28323a68555b`.
+
+In Unrest, a dry ground query from a polygon beside the Cauldron zone line
+to the prior guide's yard marker returned 120 polygons, 1,117.93 units,
+maximum copied polygon slope 37.43° and minimum center clearance 1.26 units.
+Its private dry artifact SHA-256 is
+`94d90612bea9906505f99d8628c10c6dba65f0b91666896f85afcfb7b0b0862d`.
+The bounded portal selector stopped at polygon 3083 after 145 turn and 49
+strip checks with `no_sampled_strip_through_polygon`; it saved no accepted
+points. Its artifact SHA-256 is
+`c4960c5282f0f5a2ee77f1f9d5eef5bf959192993f021ac23d97572f73f7cb05`.
+Polygon 3083 is a flat, narrow ground-graph cut near the entrance; excluding
+it disconnects that entrance pocket from the yard in the copied dry graph.
+It is **not** proven impassable: a direct local check through 3083 passed
+with incoming portal fraction 0.70 and outgoing fraction 0.65 at 1.2-unit
+half-width and grade 1.0. The failure is in finding a connected sampled
+choice sequence under the selector's default repair limits. Version 0.41.32
+exposes bounded candidate (1–13) and repair-round (0–16) limits for offline
+diagnosis. One expanded run under heavy devbox load stopped earlier at
+polygon 1504 with `selection_work_budget_exceeded` after 72 turn checks and
+zero strips, an individual turn-audit time limit rather than a terrain
+rejection. Its private artifact SHA-256 is
+`395933dd925d263c2a084497744c9cf3f34067fc9b956f0c6ba2399c329d674f`.
+Increasing only that per-turn work limit let a second bounded expanded run
+pass polygon 3083 and advance to polygon 1605, where it returned
+`no_sampled_strip_through_polygon` after 176 turns and 133 strip checks in
+7.0 seconds. Its private artifact SHA-256 is
+`a229d775e0dd1e10b436dc3732c0edd2a762d0c00021bfd8bae98c05d97ce104`.
+This is progress through the copied graph, not a whole-route pass.
+The separate final-strip recheck correctly refused this failed selection.
+A BSP scan of only the 30 funnel segments found 8 water-labelled and 71
+unknown spans (`missing BSP child`) across ground and +1 heights, including
+water at segment 2. Its artifact SHA-256 is
+`6c82b19afa82592c7618b8c1c4bf20f63d750ebb7db90140846a045f3617801d`.
+The mesh's dry-area label and the copied BSP water label disagree there;
+at a +2.2-unit height offset, the same segment's water labels disappeared,
+but ground-level foot clearance and the real client's water behavior remain
+unverified. Their real-client meaning needs review. An Unrest yard→first-floor dry query
+returned 59 polygons and 459.46 units, but its polygon slope reaches 89.01°
+and center clearance falls to 1.57 units. Its private artifact SHA-256 is
+`eb1a52b7808d5394b6947d97f3f8a168beaf555de9db5d5f6a4e500221d6f774`.
+No zone transition, camp, live XP, door, water-safe route or movement has
+been verified. F11 remains disabled.
+
 ## Reproducible later-zone scene command — 2026-11-13 16:23 CST
 
 **VERIFIED offline, no game input:** Project 0.41.31 adds
@@ -76,9 +154,10 @@ Unrest has 56,951 used vertices, 32,818 faces and SHA-256
 `bf136a77bf8df60920ed39991f7edf06cf28efbbc8d1b328902ecd78f40ba64d`.
 Both OBJs are outside git under `~/.local/share/eql-automation/nav-candidates/`.
 They include Boundary material faces, skip pass-through and zero-area faces,
-and have **no verified collision-material behavior**. No Recast/Detour
-navmesh, water avoidance, dynamic doors, current camp, transition or actual
-client movement has been accepted for these zones. No 13–20 route is ready.
+and have **no verified collision-material behavior**. The separately retained
+owner-helper Recast meshes were found and copied later, as recorded above;
+they have no accepted water avoidance, dynamic-door behavior, current camp,
+transition or actual client movement. No 13–20 route is ready.
 
 **VERIFIED material sensitivity source:** A copied WLD material audit found
 2,442 Cauldron terrain solid-flag faces labelled `Boundary`, with no such

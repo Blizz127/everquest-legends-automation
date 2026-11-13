@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-13 16:20 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 16:35 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Level-13–20 source dependency: the owner's Cauldron and Unrest zone/object
@@ -13,11 +13,24 @@ Updated 2026-11-13 16:20 CST for coordinator task `829a00229b29`.
   Cauldron scene excludes only those Boundary faces for later sensitivity
   comparison. Project 0.41.31 now reproduces all three copied-source scene
   variants through a hash-pinned offline CLI; each matches the previously
-  recorded scene hash. No verified collision behavior, navmesh, route,
-  water-safe crossing or real-client arrival has been accepted. Next source
-  step is a bounded 256 × 256 candidate tile bake near the copied
-  Cauldron→Unrest label when CPU pressure eases, followed by BSP hazard review.
-  The baker has no water/zone area tags and cannot establish a walkable route.
+  recorded scene hash. Separate retained owner-helper Cauldron and Unrest
+  navmeshes were then copied read-only; their manifest source hashes match
+  the four copied archives, and each mesh hash matches its manifest. Cauldron
+  has 14,832 polygons and 275 unclassified Recast warnings; Unrest has 3,254
+  polygons and zero reported warnings. A dry Cauldron Butcher→Unrest graph
+  corridor has 364 polygons, but 10 exceed 75° slope and two have <3 units
+  center clearance. At least four threshold violations are unavoidable in
+  this copied ground graph. Unrest entrance→yard has a 120-polygon dry graph
+  corridor, but its sampled selector rejects narrow polygon 3083 under the
+  default repair limits; a local shifted strip there passes. An expanded
+  selector first stopped on a timed turn check under devbox load; with a
+  larger bounded turn limit it passed 3083 and stopped at polygon 1605.
+  No complete selected sequence exists. Copied
+  funnel BSP sees water and unknown intervals near/along that route. An
+  Unrest yard→first-floor dry path has 59 polygons but steep/narrow sections.
+  No water-safe crossing, client arrival, collision behavior or movement is
+  accepted. Next: reconcile source/bake geometry and BSP at these failures,
+  then run a bounded tile comparison when CPU pressure eases.
 - Level-7 route focus: the existing guide's GFay orc camps are a same-zone
   fallback while the Crushbone Slaver corridor remains unaccepted. From the
   owner-run G0 spot, a copied-mesh dry route around two steep polygons has
@@ -45,8 +58,8 @@ Updated 2026-11-13 16:20 CST for coordinator task `829a00229b29`.
   Implement and verify the missing owner-run safety/position measurements
   before a supervised short GFay movement test or any F11 route.
 - Owner feedback check: the G0 trace appeared and is summarized below. A
-  read-only 16:01 CST check of Legira's Alienware game log found mtime
-  16:01:36 CST; its latest exact level-up message is the historical
+  read-only 16:35 CST full scan of Legira's Alienware game log found mtime
+  16:10:46 CST; its latest exact level-up message is the historical
   Oct 18 level-7 line. No later level-up message was found. The recent log
   excerpt did not supply a measurable XP/hour or current XP fraction.
 - Owner-run 0.39.4 G0 **passed the short stop observation**: trace SHA-256
@@ -136,8 +149,15 @@ Updated 2026-11-13 16:20 CST for coordinator task `829a00229b29`.
   Its remote `--demo-navigation` and both copied-route CLI `--help` startup
   checks passed with no game input. It supersedes the unstaged 0.41.29
   archive. The runnable owner assist preview remains 0.39.4; F11 stays off.
+- Private publish: source-only project 0.41.31 commit `b8ddbe4` is staged
+  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.31`, outside
+  the game install. Local and remote archive SHA-256 matched
+  `852dd756c6e655ccf550f7894c7afdfd4f0a43a53f12f917bc65969604b6a96f`.
+  Remote `--demo-navigation` returned `simulation_only=true` and
+  `no_game_input=true`; the new scene CLI appeared in remote `--help`.
+  The owner-run assist preview remains 0.39.4; F11 stays disabled.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
-- Build: local source 0.41.30 (G0 trace metrics, 1–20 route record, copied-ground BSP audit, selector strip cache, configurable offline turn budget and private-artifact source rehash and a select-only portal diagnostics and a separate fail-closed full-strip recheck) plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Source-only 0.41.20 and its owner-run watcher are staged separately on Alienware outside the game install; 0.41.21 route-selector staging failed twice because SSH closed the connection and is superseded by 0.41.22. The 0.41.22 source-only archive from commit `0a5ab05` is ready locally at SHA-256 `7d2b8fe8d726820f1f3ad393d3fb62e8a89398dfaddbd848ac2854ad91765d98`; Alienware staging was attempted but its SSH connection timed out. The 0.41.22 geometry work has no owner-run input command. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.41.10 corrects its focused fixture to copied client IDs and unlock levels; 0.41.11 adds log-line and zone-generation identity for offline location tracking; 0.41.12 rejects same-zone reentry during G2 and requires verified reachable camps before selecting a full-auto camp; 0.41.13 carries exact supply warnings into sticky offline state and loosens only a measured float32 portal-edge tolerance; 0.41.14 adds explicit bounded long-strip budgets and a conservative turn-disk diagnostic; 0.41.15 adds a bounded offline automatic portal selector; 0.41.16 adds a read-only zone-transition log observer; 0.41.17 adds a read-only fresh location-to-G2 scene adapter; 0.41.18 binds the sampled G2 radius to fresh position provenance and the pulse speed bound; 0.41.19 adds an optional read-only owner-run destination watcher; 0.41.20 retains an optional preloading fix; 0.41.21 adds bounded alternate portal search after a failed strip; 0.41.22 separates local surface uncertainty from global work exhaustion and propagates an offline grade limit, still no bot input; 0.39.4 exposes unknown-HP reasons in the owner UI without changing input policy. Mode boundary, prior rotation planner reuse,
+- Build: local source 0.41.31 (hash-pinned, reproducible provisional Cauldron and Unrest static scenes) plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Earlier source releases and historical build details are recorded above. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects

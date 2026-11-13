@@ -11,8 +11,8 @@ use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 | 5–8 | Crushbone Slaver Caves (west) | Butcherblock → GFay → Crushbone → safe spot | Copied GFay ground approaches toward Butcherblock and Crushbone pass separate offline strip checks. Crushbone arrival and its Slaver route are unaccepted; two copied-mesh crossings fail the current grade-1.2 turn audit. |
 | 6–10 | GFay orc camps, alternate for Legira | Current GFay position → guide marker, then observed pull area | The existing guide lists this outdoor camp and the owner's log confirms relevant `/con` mobs. A copied dry path from the G0 test position avoids water and two steep polygons; its 155 ground segments passed sampled turns, walking-width strips, whole-route and static BSP checks. The actual camp, current position and live movement are unverified. |
 | 8–13 | Crushbone Trainer Hill | Slaver Caves → Trainer Hill | The prior guide lists this range; no camp route, con sample or real movement has been accepted. |
-| 13–17 | Unrest yard | Crushbone → GFay → Butcherblock → Dagnor's Cauldron → Unrest | Copied client map labels name these zone lines. The owner's Cauldron and Unrest archives are hash-matched in the private store; raw terrain and exact-name placed objects now compose provisional static scenes. Collision behavior, navmesh, water, arrival and movement are unverified. |
-| 17–20 | Unrest first floor, subject to observed difficulty and XP | Yard → first floor | The prior guide marks this indoor camp as poor for automation; no safe pull route or live XP rate is observed. |
+| 13–17 | Unrest yard | Crushbone → GFay → Butcherblock → Dagnor's Cauldron → Unrest | Owner-helper Cauldron and Unrest meshes match the copied archive hashes. A dry Cauldron graph corridor has 364 polygons but steep/narrow sections. The Unrest entrance-to-yard corridor fails its sampled selector near the entrance; copied BSP also marks water and unknown spans. No walkable leg or arrival is accepted. |
+| 17–20 | Unrest first floor, subject to observed difficulty and XP | Yard → first floor | A 59-polygon dry graph path exists, but its copied polygon-wide slope reaches 89.01° and minimum center clearance is 1.57 units. Dynamic doors, pull safety and live XP remain unverified; the prior guide marks this indoor camp poor for automation. |
 
 The level bands are **candidate priorities from the existing Alienware
 `leveling_guide.json`**, SHA-256
@@ -38,6 +38,10 @@ provisional solid-face scenes, but no collision-verified navmesh or route
 has been accepted. Project 0.41.31 reproduces those scenes from pinned
 copied archives with an offline command; see [HOWTO.md](HOWTO.md) and
 [FINDINGS.md](FINDINGS.md) for usage and exact source hashes.
+The retained owner-helper meshes for both zones now load from the private
+store with matching source and mesh hashes. Their dry graph connectivity does
+not clear steep/narrow geometry, copied BSP water/unknown spans, dynamic doors
+or actual client traversal. The exact diagnostic artifacts are in FINDINGS.md.
 
 ## What unlocks the first playable leg
 
