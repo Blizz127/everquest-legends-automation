@@ -1,5 +1,39 @@
 # FINDINGS
 
+## Read-only zone transition evidence boundary — 2026-11-13 14:10 CST
+
+**VERIFIED copied client data:** The GFay manifest
+`~/.local/share/eql-automation/navmesh/nov12-7e3cd28-store/gfaydark.json`
+(SHA-256 `ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82`)
+marks area 4 as `DRNTP00255000004_ZONE` and resolves the destination name
+`crushbone` from a guide hint. Its `target`, destination zone ID and heading
+are null. The reciprocal Crushbone manifest
+`~/.local/share/eql-automation/navmesh/nov12-7e3cd28-store/crushbone.json`
+(SHA-256 `dd15b27c8acb221987780b013e9f0c4a9a14f4df389414a33b9ecf6fcc94979d`)
+has a GFay reference at area 2, also with no arrival target. The pinned
+November parser identifies zone ID 255 as a server zone-point-table reference;
+the approved copied client files did not reveal that table. A light read-only
+search of the installed Alienware prefix timed out, so its full contents were
+not ruled out. The exact missing piece is the server's zone-point-4 arrival
+row or a fresh owner-run crossing with immediate destination `/location`.
+Neither a reciprocal marker nor a guide exit hint proves spawn XYZ.
+
+**VERIFIED copied owner log:** Legira's Nov 5 GFay→Clan Crushbone entry was
+logged at 20:02:02 after loading at 20:01:56. The preceding `/location` was
+232 seconds before loading; the next was 92 seconds after entry. Those fixes
+cannot establish the crossing or arrival point. `TransitionLogReader` now
+tails only new lines of one expected character/server log and can pair a
+log-confirmed source zone, a source fix within 30 seconds, exact loading and
+different-zone entry messages, and the first destination fix within 30
+seconds. It clears pending evidence on replacement, reset, malformed events,
+clock rollback and stale windows. The output always says
+`route_accepted=false`, `spawn_coordinate_verified=false`, and
+`real_client_movement_accepted=false`; the log sequence alone cannot
+distinguish walking from a teleport or relog. It sends no input. Scanning the
+historical copied log produced zero qualified transition pairs under these
+windows. Twenty focused location/transition tests passed. No owner-run
+fresh transition has been captured.
+
 ## Bounded automatic GFay portal selection — 2026-11-13 14:05 CST
 
 **VERIFIED offline, no game input, project 0.41.15:** A new layered selector

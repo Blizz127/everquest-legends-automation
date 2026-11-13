@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.15 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.16 / owner preview 0.39.4
 
 ## Current availability
 
@@ -75,6 +75,12 @@ and passed its turn and whole-strip checks to a pre-trigger standoff. This
 does not supply a verified Crushbone arrival, current character position,
 dynamic obstacle check or live movement test. F11 remains disabled; the
 owner-run preview and launch steps below remain 0.39.4.
+Version 0.41.16 adds a read-only, non-replaying zone-transition log observer.
+It keeps a timely before/after `/location` pair when Blizz walks across a
+zone line himself. The after reading is not certified as an exact spawn
+point, and the log alone does not prove a walk rather than a teleport or
+relogin. No client input or F11 route was added; the owner-run preview remains
+0.39.4.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -158,6 +164,19 @@ line alone does not pass G0. The 2026-11-06 continued-walking report remains
 unresolved until this check passes. F11 travel/grinding remains disabled. The
 copied GFay and Crushbone mesh paths are connected offline but include narrow
 clearance and steep polygons, so they are not accepted movement routes.
+
+## Owner-run GFay→Crushbone zone observation (during normal play)
+
+When Blizz is already near the Crushbone entrance in Greater Faydark, leave
+F11 off and enable `/log on`. While standing near the zone line, type
+`/location`, then walk across himself within 30 seconds. After Clan Crushbone
+loads, stop moving and type `/location` within 30 seconds. Tell the
+coordinator the approximate crossing time; the lead can read those new log
+lines without touching the character. This is a short before/after
+observation, not a hand-recorded route. The destination fix may be after some
+movement, and the log alone cannot prove the crossing method. It does not by
+itself certify the exact spawn position or enable
+F11.
 
 ## Start the offline prototype
 
