@@ -164,6 +164,13 @@ Updated 2026-11-13 16:37 CST for coordinator task `829a00229b29`.
   `1f28f20664b696c32318e9c5bfa8d9a5083f5697e16aa7eb247553f8fe243577`.
   Remote offline navigation startup and extended route-CLI help passed with
   no game input. The runnable owner assist remains 0.39.4; F11 is disabled.
+- Private publish: source-only project 0.41.33 commit `5507bd1` is staged
+  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.33`.
+  Local and remote archive SHA-256 matched
+  `68dc233a698905844f02f782fd048da79430f10682476f05731d3a44cb5bd3e0`.
+  Remote offline navigation startup and backtrack CLI help passed with no
+  game input. It supersedes 0.41.32 as the current source build; owner assist
+  preview 0.39.4 and disabled F11 are unchanged.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
 - Build: local source 0.41.33 (bounded earlier-portal repair plus hash-pinned Cauldron and Unrest scene/mesh diagnostics) plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Earlier source releases and historical build details are recorded above. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
