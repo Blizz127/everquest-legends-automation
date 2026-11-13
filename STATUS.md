@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 11:52 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 11:56 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Owner feedback check: at 11:44 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware; Legira's log had last been checked at 11:16 CST and had not changed since 09:31:50 CST. No 0.39.3 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.41.6 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.41.7 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -450,6 +450,12 @@ Updated 2026-11-13 11:52 CST for coordinator task `829a00229b29`.
   (grade 1.028) across copied mesh detail. Nearby source terrain has
   overlapping Z=0/2 faces. Twenty-two focused tests pass; no accepted
   Crushbone travel route or real-client movement result exists.
+  A route-wide strip scanner now reproduces the segment-10 rejection, then
+  finds segment29/poly3248 after one locally valid portal shift. A bounded
+  12×12 portal-pair search at poly3248 finds no local crossing that also
+  passes adjacent strips. A graph bypass exists but is 176 polygons and
+  remains untested by the strip audit. Twenty-five focused tests pass;
+  F11 remains off.
   A bounded copied-mesh search found a wider GFay candidate with 3.47-unit
   minimum sampled clearance but an 89.19-degree slope flag and 55 standard
   locator mismatches. The filtered Crushbone arrival-to-Slaver route remains
@@ -479,18 +485,11 @@ Updated 2026-11-13 11:52 CST for coordinator task `829a00229b29`.
   Build an observed autoattack state/stop acknowledgment gate for
   full auto, then bind the copied mesh store in a separate owner-run route
   trial after G0/G2 checks and resolve the narrow GFay/Crushbone corridors.
-  For Crushbone, audit the complete portal corridor and investigate the
-  0.60–0.64-unit source-to-bake height offset before treating local centerline
-  candidates as safe; rebake only a bounded region if needed.
-  Explore alternate portal samples or corridors around 4197→4322→4321 with
-  strict work budgets, then audit the resulting travel strip; the current
-  five-fraction fixed corridor has no connected candidate.
-  The 0.41.5 single-link override supplies one centerline candidate; audit
-  its full travel strip and source-to-bake height alignment before any
-  supervised movement trial.
-  Resolve or route around the poly3146 lateral step using bounded copied
-  collision evidence, then repeat the strip and corner checks on the whole
-  route; do not promote the centerline artifact to F11.
+  For Crushbone, the 0.41.5 centerline fails the lateral strip at poly3146;
+  a local portal shift moves the first failure to poly3248. Evaluate the
+  176-polygon graph bypass around poly3248 under the same bounded centerline
+  and strip checks, then inspect turn fans and variable source-to-bake height
+  offsets. Do not promote the centerline artifact to F11.
   Integrate the already tested reachable-camp
   fallback for level 9; resolve the level-11 camp using measured XP and route safety.
   Validate a unique selection signal and chat-open/draft signal on an isolated

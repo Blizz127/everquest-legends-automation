@@ -1,5 +1,31 @@
 # FINDINGS
 
+## Route-wide strip scan and second bottleneck — 2026-11-13 11:56 CST
+
+**VERIFIED offline, no game input:** `eql_automation/strip_route_audit.py`
+applies the bounded lateral strip check in order to a specified polygon and
+portal-point sequence. It also checks each seam and connected component,
+returns the first failure, and enforces segment/sample/time caps. Even an
+all-segments pass would be a sampled geometry candidate only: turn fans,
+follower error, dynamic obstacles, zone transitions, current position and
+actual movement would remain unverified. Twenty-five focused
+portal/corridor/strip tests pass. The staged source outside the Alienware
+client at `~/.local/share/eql-automation/nav-work/0.41.7/eql_automation/strip_route_audit.py`
+matches devbox SHA-256
+`face6e5be2edda493fa586a125d146456071353fcaa2466a7ef16c3d6d9e0dbf`.
+
+On the hash-matched Crushbone route artifact, the route scanner rejects at
+segment 10/poly3146 after 1,281 samples. A bounded local search found a
+small portal adjustment: changing the 3181→3146 crossing from source-link
+fraction 0.1 to 0.2 lets segments 9–11 pass their sampled strips. The same
+80-polygon route then rejects at segment 29/poly3248 after 2,667 samples.
+A bounded 12×12 pair of portal fractions across 3248, requiring its two
+adjacent strips as well, found zero local passing triplets. Polygon 3248
+has only neighbors 3250 and 3247; a dry graph search avoiding it remains
+connected but takes a 176-polygon path instead of the 80-polygon path.
+That bypass has not passed centerline or strip checks. No route is accepted,
+and F11 remains disabled.
+
 ## Lateral strip rejects Crushbone candidate — 2026-11-13 11:52 CST
 
 **VERIFIED offline, no game input:** `eql_automation/lateral_strip_audit.py`
