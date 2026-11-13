@@ -1,5 +1,39 @@
 # FINDINGS
 
+## Butcherblock WLD fragment and placement provenance — 2026-11-13 05:21 CST
+
+**VERIFIED copied-client structure:** A bounded read-only WLD inventory of the
+four WLD members in the copied Butcherblock S3D files parsed their exact header
+fragment counts. `butcher.wld` has 5,738 fragments, including 3,653 type `0x22`
+regions and 1,850 type `0x36` mesh candidates. `objects.wld` has 5,652
+fragments, exactly 1,884 each of types `0x32`, `0x33`, and `0x15`.
+`butcher_obj.wld` has 1,149 fragments and 73 type `0x36` mesh candidates;
+`butcher_2_obj.wld` has 38 fragments and 2 type `0x36` candidates. All four
+parse through the declared fragment count with a four-byte `ffffffff` trailer.
+The single out-of-range negative fragment-name reference is the first `0x35`
+fragment in `butcher.wld`; it is reported as unresolved, not mistaken for an
+object name. The parser follows the published
+[VisualEQ WLD loader](https://github.com/alimalkhalifa/VisualEQ/blob/master/src/server/loaders/s3d.js)
+and checks bounds against these copied files. No geometry has been composed.
+
+**VERIFIED placement audit:** The 1,884 `0x15` locations in `objects.wld`
+resolve to 69 distinct `_ACTORDEF` names. Every name matches one of the 75
+distinct type `0x14` definitions in the two copied object-library WLDs by
+**exact name**; similar names such as `BTENT`/`BTENT1` are kept distinct.
+Twenty-two tree locations have the exact float32 Z value
+`-32767.998046875` (10 `DPINE1`, 5 `DCEDAR1`, 5 `RPINE1`, 2 `BPINE`), leaving
+1,862 non-sentinel locations. This independently reproduces the historical
+1,884/1,862/22 count; it does not reproduce the historical navmesh hash or
+validate any route. The six unused actor definitions include four door names
+and two models in `butcher_2_obj.wld`. The audit records `collision_composed:
+false` and `navigability_verified: false`. Four WLD inventories and the
+placement audit are retained only in the untracked
+`~/.local/share/eql-automation/client-data/retail-full/assets/manifests/`.
+The placement audit manifest SHA-256 is
+`42954af5065d6b5d1098a7b39b036e46e5229d1a7778dc27fc3ef55aa8e1a0f2`.
+Four focused synthetic WLD/placement tests and the real copied-data CLI audit
+passed. No Alienware install/prefix changes or live game input occurred.
+
 ## Butcherblock client archive inventory — 2026-11-13 05:15 CST
 
 **VERIFIED read-only source/copy:** The Alienware game root contains
@@ -28,9 +62,10 @@ bytes, SHA-256 `06d6757279a3803a5c2b908b7f8bbce3c414bc802bd8271cb8558ac85acccc00
 bytes, SHA-256 `36598801bbe072e6ac72c6b4e368a14eeecebb478da35f9a004e7352705f54df`).
 Full member manifests are outside git under `assets/manifests/` in that store.
 Two synthetic PFS parser tests and three real copied-archive CLI smokes passed.
-**No WLD mesh, static-object placements, coordinate transform, collision
-clearance, or route has yet been decoded or accepted.** The historical Nov 6
-serialized mesh remains absent; these archives are new candidate source inputs.
+At this archive-inventory stage, no WLD mesh, static-object placement,
+coordinate transform, collision clearance, or route had been decoded or
+accepted. The later WLD audit above has since decoded placement provenance;
+the historical Nov 6 serialized mesh remains absent.
 
 ## Butcherblock collision-evidence reconciliation — 2026-11-13 04:53 CST
 
@@ -47,7 +82,7 @@ Yard↔South Kaladim route remained. Historical pinned sources were Lantern
 `9f4ce64458dfae86e1239c525ddc219c4e9e06f1`; a later local `bnav_query`
 report described a complete 24-polygon/10-point path. The later overlay review
 and classification of 23 detail-cleanup warnings is likewise historical.
-These reports are **not** current retained proof or real-client acceptance.
+These reports are **not** current retained navmesh proof or real-client acceptance.
 
 **VERIFIED scoped reconciliation:** No Recast/Detour navmesh, placement table,
 bake recipe, `bnav_query`, overlay audit or matching historical hash was found
@@ -55,10 +90,12 @@ in this project or `~/.local/share/eql-automation/`. A SHA-256 scan of 559
 current code/store/release/run files (26,463,952 bytes, excluding copied client
 data) found no serialized mesh hash; local release archives contain no
 navmesh-named members. The removed historical working copy was not accessed,
-recreated or touched. Thus the historical mesh **cannot currently be reused
-or reproduced from retained inputs in this project/store**. The only retained
-Butcherblock/Crushbone map artifacts are client drawing geometry and labels,
-explicitly marked `navigability_verified=false`.
+recreated or touched. Thus the historical mesh **cannot be reused from
+retained inputs in this project/store**. At the time of that reconciliation,
+the only retained Butcherblock/Crushbone map artifacts were client drawing
+geometry and labels, explicitly marked `navigability_verified=false`. The
+copied S3D/WLD inputs documented above were added afterward and support a
+new bake once their geometry and transforms are verified.
 
 **VERIFIED client-map provenance:** Active snapshot `e36ee7fd32a5c4b42f45`
 contains `butcher.txt` (24,225 drawing lines, 0 labels, source SHA-256

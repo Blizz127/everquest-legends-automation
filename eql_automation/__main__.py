@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections import Counter
 from pathlib import Path
 from dataclasses import asdict
 
@@ -20,6 +21,8 @@ from .spell_catalog import build_spell_level_index
 from .ui_schema import index_ui_widgets
 from .nav_evidence import DATA_ROOT, audit_butcherblock
 from .pfs_archive import PFSArchive
+from .wld_inventory import WLDInventory
+from .placement_audit import audit_object_locations
 
 
 def shell() -> None:
@@ -113,10 +116,15 @@ def main() -> None:
                        help="audit retained Butcherblock mesh evidence without accepting routes")
     group.add_argument("--inspect-s3d", action="store_true",
                        help="inventory a copied client S3D archive inside the EQL data store")
+    group.add_argument("--inspect-wld", action="store_true",
+                       help="inventory fragments in a WLD member of a copied S3D")
+    group.add_argument("--audit-butcher-placements", action="store_true",
+                       help="match copied Butcherblock object locations to exact actor definitions")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
                         help="copied retail client text directory for --ingest-retail-copy")
+    parser.add_argument("--member", help="WLD member name for --inspect-wld")
     parser.add_argument("--map", dest="map_name", help="filter POI query by map file stem")
     parser.add_argument("--limit", type=int, default=20, help="maximum POI query results")
     parser.add_argument("--class-name", help="filter client spell candidates by class name")
@@ -238,6 +246,59 @@ def main() -> None:
                           "all_members_decompressed": True,
                           "collision_decoded": False,
                           "navigability_verified": False}, indent=2))
+    elif args.inspect_wld:
+        if args.source is None or not args.member:
+            parser.error("--inspect-wld requires --source copied .s3d and --member .wld")
+        path = args.source.resolve()
+        if not path.is_relative_to(DATA_ROOT.resolve()) or path.suffix.casefold() != ".s3d":
+            parser.error("S3D source must be inside the approved EQL data store")
+        if args.limit < 1:
+            parser.error("--limit must be positive")
+        archive = PFSArchive(path)
+        if args.member.casefold() not in {item.name.casefold() for item in archive.members
+                                          if item.name.casefold().endswith(".wld")}:
+            parser.error("--member must name a WLD file in this archive")
+        member = next(item.name for item in archive.members
+                      if item.name.casefold() == args.member.casefold())
+        wld = WLDInventory(archive.read_member(member))
+        locations = wld.placement_references()
+        references = Counter(name for name, _ in locations)
+        flags = Counter(flag for _, flag in locations)
+        print(json.dumps({"source": str(path), "archive_sha256": archive.sha256,
+                          "member": member, "wld_sha256": wld.sha256,
+                          "version_hex": f"0x{wld.version:08x}",
+                          "fragment_count": wld.fragment_count,
+                          "unresolved_fragment_name_refs": wld.unresolved_fragment_name_refs,
+                          "bsp_region_count": wld.bsp_region_count,
+                          "string_table_bytes": wld.string_table_bytes,
+                          "fragment_type_counts": {f"0x{kind:02x}": count
+                                                   for kind, count in wld.type_counts.items()},
+                          "type_0x15_count": len(locations),
+                          "type_0x15_unique_references": len(references),
+                          "type_0x15_top_references": references.most_common(args.limit),
+                          "type_0x15_flags": {f"0x{flag:x}": count
+                                               for flag, count in sorted(flags.items())},
+                          "sample_fragments": [asdict(item) for item in wld.fragments[:args.limit]],
+                          "trailing_bytes_hex": wld.trailing_bytes_hex,
+                          "collision_decoded": False, "navigability_verified": False}, indent=2))
+    elif args.audit_butcher_placements:
+        asset_root = DATA_ROOT / "client-data" / "retail-full" / "assets"
+        sources = (asset_root / "butcher.s3d", asset_root / "butcher_obj.s3d",
+                   asset_root / "butcher_2_obj.s3d")
+        if any(not path.resolve().is_relative_to(DATA_ROOT.resolve()) for path in sources):
+            parser.error("Butcherblock source must stay inside the approved EQL data store")
+        terrain, objects1, objects2 = (PFSArchive(path) for path in sources)
+        placements = WLDInventory(terrain.read_member("objects.wld"))
+        model1 = WLDInventory(objects1.read_member("butcher_obj.wld"))
+        model2 = WLDInventory(objects2.read_member("butcher_2_obj.wld"))
+        audit = audit_object_locations(placements, (model1, model2))
+        print(json.dumps({"archive_sha256": {source.name: archive.sha256
+                                              for source, archive in zip(
+                                                  sources, (terrain, objects1, objects2))},
+                          "wld_sha256": {"objects.wld": placements.sha256,
+                                         "butcher_obj.wld": model1.sha256,
+                                         "butcher_2_obj.wld": model2.sha256},
+                          **asdict(audit)}, indent=2))
     else:
         shell()
 

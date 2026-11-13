@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 05:15 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 05:21 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.16.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.17.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -35,15 +35,21 @@ Updated 2026-11-13 05:15 CST for coordinator task `829a00229b29`.
   index; live UI values and active skin are unknown. A pure-Python player
   gauge reader now requires full-bar calibration, focus, exact window size and
   matching layout; unreadable values remain unknown. Butcherblock collision
-  evidence was reconciled as historical coordinator-reported proof: no mesh,
-  bake recipe or placement inputs were retained in this project/approved store.
+  evidence was reconciled as historical coordinator-reported proof: at that
+  point no mesh, bake recipe or placement inputs were retained in this
+  project/approved store.
   Butcherblock is the first route/camp review target, Crushbone next; neither
   has a verified nav edge or suitable camp yet. An offline Butcherblock audit
   now rehashes the copied maps and refuses artifacts outside the approved
   store; it never promotes a route from a historical hash alone. Three
   Butcherblock PFS/S3D archives have been copied read-only from Alienware to
   the untracked client-data store; a bounded archive inspector inventories
-  their WLD members and hashes. Geometry/placements remain undecoded.
+  their WLD members and hashes. Collision geometry remains undecoded.
+  A bounded WLD inventory now reads all four copied Butcherblock WLDs and a
+  placement audit resolves all 1,884 object locations to exact model names;
+  22 tree locations have the documented Z sentinel, leaving 1,862
+  non-sentinel locations. This reproduces the historical placement counts but
+  neither composes collision geometry nor accepts a route.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -75,6 +81,11 @@ Updated 2026-11-13 05:15 CST for coordinator task `829a00229b29`.
   `python3 -m pytest -q tests/test_pfs_archive.py` — 2 passed;
   `--inspect-s3d` decoded and inventoried all 3 copied Butcherblock archives
   (62, 149 and 9 members) without client input.
+  `python3 -m pytest -q tests/test_wld_inventory.py tests/test_placement_audit.py`
+  — 4 passed; `--audit-butcher-placements` matched all 1,884 copied placements
+  to 75 exact model definitions and reported 22 dropped-tree sentinels,
+  with collision and navigability false. Four copied WLD members were
+  structurally inventoried without client input.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -85,10 +96,10 @@ Updated 2026-11-13 05:15 CST for coordinator task `829a00229b29`.
   remain unresolved. No actual client acceptance is ready. No private
   launcher/server publication destination is configured; this build is local.
 - Next step: obtain the intended private endpoint or separate client config,
-  then verify target identity before any live test. Locate retained terrain,
-  static-object placements and an authorized bake recipe, or decode the copied
-  Butcherblock WLD terrain/placements and build a new collision bake in this
-  project's approved data store;
+  then verify target identity before any live test. Decode the copied
+  Butcherblock `0x36` terrain and object meshes, compose them with the now
+  decoded static placements and build a new collision bake in this project's
+  approved data store;
   check conservative clearance, GFay height alignment, dynamic doors, water,
   zone transitions and actual movement before accepting a route. Review
   Crushbone next, then select camps from observed level and safety. Build a

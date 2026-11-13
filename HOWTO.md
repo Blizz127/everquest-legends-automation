@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.16.0
+# EverQuest Legends automation — current build 0.17.0
 
 ## Current availability
 
@@ -32,6 +32,8 @@ python3 -m eql_automation --index-zone-candidates
 python3 -m eql_automation --query-zone-candidates East_Cabilis --map fieldofbone
 python3 -m eql_automation --audit-butcherblock
 python3 -m eql_automation --inspect-s3d --source ~/.local/share/eql-automation/client-data/retail-full/assets/butcher.s3d
+python3 -m eql_automation --inspect-wld --source ~/.local/share/eql-automation/client-data/retail-full/assets/butcher.s3d --member objects.wld
+python3 -m eql_automation --audit-butcher-placements
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 python3 -m eql_automation --index-ui-widgets
@@ -197,6 +199,13 @@ Butcherblock archives now have untracked manifests under
 `~/.local/share/eql-automation/client-data/retail-full/assets/manifests/`.
 Their WLD files are candidate terrain, placement and object inputs; archive
 inspection alone does not decode geometry or verify a collision route.
+`--inspect-wld` counts WLD fragment types, inventories copied client name
+references, and records archive/member hashes. `--audit-butcher-placements`
+checks exact placement-to-model names and reports the 22 dropped-tree Z
+sentinels among 1,884 copied Butcherblock locations. Both are read-only.
+The audit does not compose collision geometry, create a navmesh, accept a
+route, or send game input. Its derived JSON files stay outside git in the
+untracked `assets/manifests/` directory described above.
 
 The prior October Paladin/Cleric prototype remains at
 `/home/blizz/Projects/everquest-legends-rotation/`. Its historical controls
