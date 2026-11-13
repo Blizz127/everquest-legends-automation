@@ -53,6 +53,13 @@ class G2Result:
     real_client_accepted: bool = False
 
 
+@dataclass(frozen=True)
+class G2Permit:
+    seconds: float
+    generation: int
+    issued_at: float
+
+
 def _distance(a: tuple[float, float, float], b: tuple[float, float, float]) -> float:
     return math.hypot(a[0] - b[0], a[1] - b[1])
 
@@ -70,6 +77,8 @@ class G2PulseBudget:
         self.total_held = 0.0
         self.last_held = 0.0
         self.reserved_at = None
+        self.generation = 0
+        self.permit: G2Permit | None = None
         if (geometry_candidate is not True or owner_confirmed_g0 is not True or
                 not isinstance(clear_radius, (int, float)) or not math.isfinite(clear_radius) or
                 not 0 < clear_radius <= MAX_DISPLACEMENT or
@@ -107,7 +116,15 @@ class G2PulseBudget:
 
     def _fail(self, reason: str):
         self.stage = "halted"
+        self.generation += 1
+        self.permit = None
         raise G2Halt(reason)
+
+    def cancel(self) -> None:
+        """Invalidate a queued pulse on OFF or any external interruption."""
+        self.stage = "halted"
+        self.generation += 1
+        self.permit = None
 
     def _check(self, scene: G2Scene) -> None:
         if not isinstance(scene, G2Scene):
@@ -127,7 +144,7 @@ class G2PulseBudget:
             self._fail("Scene became unsafe, stale or out of the movement window")
         self.last_at = scene.at
 
-    def reserve_forward(self, scene: G2Scene) -> float:
+    def reserve_forward(self, scene: G2Scene) -> G2Permit:
         if self.stage != "ready":
             self._fail("Forward pulse requested in the wrong phase")
         self._check(scene)
@@ -140,11 +157,26 @@ class G2PulseBudget:
             self._fail("Forward pulse would exceed its count, time or clear-radius budget")
         self.stage = "reserved"
         self.reserved_at = scene.at
-        return PULSE_SECONDS
+        self.generation += 1
+        self.permit = G2Permit(PULSE_SECONDS, self.generation, scene.at)
+        return self.permit
+
+    def confirm_keydown(self, scene: G2Scene, permit: G2Permit) -> float:
+        """Recheck a reserved pulse immediately before the sender's key-down."""
+        if (self.stage != "reserved" or permit is not self.permit or
+                permit.generation != self.generation):
+            self._fail("Queued forward pulse was cancelled or superseded")
+        self._check(scene)
+        if (scene.at - permit.issued_at > 0.05 or
+                _distance(self.latest, scene.raw_location) > STILL_TOLERANCE or
+                abs(self.latest[2] - scene.raw_location[2]) > STILL_TOLERANCE):
+            self._fail("Queued forward pulse is stale or position changed")
+        self.stage = "keydown_authorized"
+        return permit.seconds
 
     def record_hold(self, scene: G2Scene, actual_seconds: float) -> None:
-        if self.stage != "reserved":
-            self._fail("Hold reported without a reserved pulse")
+        if self.stage != "keydown_authorized":
+            self._fail("Hold reported without a current key-down permit")
         self._check(scene)
         if (not isinstance(actual_seconds, (int, float)) or
                 not math.isfinite(actual_seconds) or
@@ -158,6 +190,7 @@ class G2PulseBudget:
         self.pulses += 1
         self.total_held += actual_seconds
         self.last_held = actual_seconds
+        self.permit = None
         self.stage = "await_fix"
 
     def record_fix(self, scene: G2Scene) -> None:

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.40.9 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.41.0 / owner preview 0.39.3
 
 ## Current availability
 
@@ -19,8 +19,9 @@ validated. The owner chose to test rotation himself on live.
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
 separate-process same-device release timer tested only with a pipe. Version
 0.40.8 also rejects location fixes after an observation-clock rollback.
-Version 0.40.9 adds a recording-only short-pulse budget. These changes are
-not in the owner preview or accepted for real-client movement.
+Version 0.40.9 added a recording-only short-pulse budget; 0.41.0 adds a
+revocable permit and records a slope-filtered GFay route failure. These
+changes are not in the owner preview or accepted for real-client movement.
 F11 remains disabled.
 The owner launch steps below are still for 0.39.3.
 

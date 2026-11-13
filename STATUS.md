@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 10:57 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 10:59 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
-- Owner feedback check: at 10:36 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware, and Legira's log had not changed since 09:31:50 CST. No 0.39.3 live result is available.
+- Owner feedback check: at 10:58 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware, and Legira's log still had not changed since 09:31:50 CST. No 0.39.3 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.40.9 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.41.0 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -412,6 +412,12 @@ Updated 2026-11-13 10:57 CST for coordinator task `829a00229b29`.
   fixes; eight focused checks passed. It rejects stale hold reports, final
   fixes and reused log fix sequences. The earlier 8-unit geometry preflight
   cannot authorize a pulse under this bound. It is not connected to game input.
+  The offline policy now requires a generation-bound permit rechecked within
+  0.05 s before key-down; its cancel method invalidates queued permits. Nine
+  focused budget checks pass; the real sender is not integrated.
+  A copied-mesh GFay route query with slope<=45°, clearance>=3u and portal
+  width>=6u disconnected start and Crushbone trigger after 16,132 polygon
+  visits. No GFay or Crushbone path is accepted for client travel.
   A bounded copied-mesh search found a wider GFay candidate with 3.47-unit
   minimum sampled clearance but an 89.19-degree slope flag and 55 standard
   locator mismatches. The filtered Crushbone arrival-to-Slaver route remains

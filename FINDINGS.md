@@ -1,5 +1,22 @@
 # FINDINGS
 
+## Revocable G2 permit and slope-filtered route result — 2026-11-13 10:59 CST
+
+**VERIFIED offline:** The G2 pulse policy now returns a generation-bound permit
+instead of a bare duration. A caller must confirm it against a current scene
+within 0.05 seconds before key-down; cancelling the check invalidates queued
+permits. Nine focused budget checks pass. This is a pure model: it does not
+serialize the eventual input thread or send input. The owner-run sender must
+recheck immediately before and during the same-device pulse. G0 remains
+unconfirmed and G2 is not in the owner preview.
+
+**VERIFIED copied-mesh query, read-only:** In GFay, requiring ground/trigger
+areas, polygon slope at most 45 degrees, centroid clearance at least 3 units
+and portal width at least 6 units disconnects Legira's historical start from
+the Crushbone trigger. The bounded search visited 16,132 of 38,587 polygons
+and scanned 39,503 links. The wider high-clearance corridor below therefore
+does not resolve the slope gate. No route or client movement was accepted.
+
 ## Bounded G2 pulse policy and wider GFay route audit — 2026-11-13 10:57 CST
 
 **VERIFIED offline:** `eql_automation/g2_pulse_budget.py` is a recording-only
@@ -19,9 +36,9 @@ too small for this conservative bound; it does not authorize even one pulse.
 It neither reads the game nor sends input; callers cannot treat its result as
 real-client acceptance. The required scene signals and same-device sender are
 not yet integrated, so G2 is not offered to Blizz and F11 stays disabled.
-The caller must recheck a generation-bound permit immediately before key-down
-and cancel queued work on OFF; this is an integration requirement, not a
-capability of the current recording-only policy.
+The policy now exposes a generation-bound confirm/cancel interface, but it is
+not bound to the helper's input thread. Integration must serialize OFF with
+the sender and recheck immediately before and during key-down.
 
 **OBSERVED bounded copied-mesh search:** A GFay polygon-center corridor from
 Legira's last logged location toward the Crushbone trigger has 188 polygons,

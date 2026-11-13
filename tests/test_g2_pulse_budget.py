@@ -20,8 +20,15 @@ def ready(*, radius=18, speed=20, bound=60):
                          speed_bound_observed_at=0.4)
 
 
+def arm(budget, begin, x=0.0):
+    permit = budget.reserve_forward(scene(begin, x=x))
+    assert permit.seconds == 0.15
+    assert budget.confirm_keydown(scene(begin + 0.01, x=x), permit) == 0.15
+    return permit
+
+
 def pulse(budget, begin, end, x):
-    assert budget.reserve_forward(scene(begin, x=x - 3.0)) == 0.15
+    arm(budget, begin, x - 3.0)
     budget.record_hold(scene(begin + 0.15, x=x - 3.0), 0.15)
     budget.record_fix(scene(end, x=x))
     budget.record_still(scene(end + 0.45, x=x))
@@ -74,13 +81,13 @@ def test_three_is_the_absolute_pulse_limit():
 
 def test_missing_fix_overlong_hold_or_new_target_latches_halt():
     budget = ready()
-    budget.reserve_forward(scene(0.5))
+    arm(budget, 0.5)
     with pytest.raises(G2Halt, match="duration"):
         budget.record_hold(scene(0.65), 0.21)
     assert budget.stage == "halted"
 
     budget = ready()
-    budget.reserve_forward(scene(0.5))
+    arm(budget, 0.5)
     budget.record_hold(scene(0.65), 0.15)
     with pytest.raises(G2Halt, match="unsafe"):
         budget.record_fix(scene(0.8, x=3, target_absent=False))
@@ -101,7 +108,7 @@ def test_postrelease_drift_and_time_window_do_not_pass():
 
 def test_second_pulse_needs_delayed_stillness_and_verified_speed_bound():
     budget = ready()
-    budget.reserve_forward(scene(0.5))
+    arm(budget, 0.5)
     budget.record_hold(scene(0.65), 0.15)
     budget.record_fix(scene(0.85, x=3.0))
     with pytest.raises(G2Halt, match="wrong phase"):
@@ -109,7 +116,7 @@ def test_second_pulse_needs_delayed_stillness_and_verified_speed_bound():
     assert budget.stage == "halted" and budget.pulses == 1
 
     budget = ready()
-    budget.reserve_forward(scene(0.5))
+    arm(budget, 0.5)
     budget.record_hold(scene(0.65), 0.15)
     budget.record_fix(scene(0.85, x=3.0))
     with pytest.raises(G2Halt, match="continued"):
@@ -123,12 +130,12 @@ def test_second_pulse_needs_delayed_stillness_and_verified_speed_bound():
 
 def test_stale_hold_and_reused_or_slow_fixes_are_rejected():
     budget = ready()
-    budget.reserve_forward(scene(0.5))
+    arm(budget, 0.5)
     with pytest.raises(G2Halt, match="duration"):
         budget.record_hold(scene(10.5), 0.15)
 
     budget = ready()
-    budget.reserve_forward(scene(0.5))
+    arm(budget, 0.5)
     budget.record_hold(scene(0.65), 0.15)
     with pytest.raises(G2Halt, match="position"):
         budget.record_fix(scene(0.85, x=3, fix_seq=51))
@@ -137,3 +144,12 @@ def test_stale_hold_and_reused_or_slow_fixes_are_rejected():
     pulse(budget, 0.5, 0.85, 3.0)
     with pytest.raises(G2Halt, match="stopped"):
         budget.finish(scene(1.75, x=3.0), scene(14.9, x=3.0))
+
+
+def test_off_cancels_a_queued_pulse_before_keydown():
+    budget = ready()
+    permit = budget.reserve_forward(scene(0.5))
+    budget.cancel()
+    with pytest.raises(G2Halt, match="cancelled"):
+        budget.confirm_keydown(scene(0.51), permit)
+    assert budget.pulses == 0 and budget.stage == "halted"
