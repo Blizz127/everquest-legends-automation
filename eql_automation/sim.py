@@ -10,6 +10,7 @@ from .world_nav import WorldNav, ZoneTransition
 from .campaign import Camp, CampaignPlanner, WorldSnapshot
 from .navigator import NavigationObservation, WorldNavigator
 from .assist import AssistAdvisor, AssistObservation, TargetRelation
+from .key_bridge import RecordingAssistKeyBridge
 from .control import ControlPlane
 from .prior_rotation_core import Catalog
 from .screen_observer import (
@@ -123,12 +124,24 @@ def run_assist_demo() -> dict:
         raise AssertionError("Synthetic assist supplied no action")
     refreshed = replace(observation, observed_at=10.1)
     allowed_before_stop = advisor.still_allowed(proposal, refreshed, now=10.1)
+    events = []
+    bridge = RecordingAssistKeyBridge(control, events.append)
+    at = 10.0
+    def observe_key():
+        nonlocal at
+        at += 0.05
+        return replace(observation, observed_at=at)
+    recorded = bridge.send(advisor, proposal, observe=observe_key,
+                           clock=lambda: at)
     control.handle_command("stop")
     return {"simulation_only": True, "no_game_input": True,
             "mode_after_stop": control.indicator.mode.value,
             "proposed_action": proposal.queued.action.detail,
             "paladin_level_1_yaulp_excluded": "yaulp" not in advisor.rotation.profile,
             "allowed_before_stop": allowed_before_stop,
+            "recorded_key_down_count": recorded.key_down_count,
+            "recorded_command_complete": recorded.recorded_complete,
+            "recorded_draft_uncertain": recorded.draft_uncertain,
             "old_proposal_allowed_after_stop": advisor.still_allowed(
                 proposal, refreshed, now=10.1)}
 

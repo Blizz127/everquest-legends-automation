@@ -105,6 +105,9 @@ def test_assist_cli_demo_cancels_proposal_without_game_input():
     result = run_assist_demo()
     assert result["simulation_only"] and result["no_game_input"]
     assert result["proposed_action"] == "/cast 3"
+    assert result["recorded_command_complete"]
+    assert result["recorded_key_down_count"] == len("/cast 3") + 1
+    assert not result["recorded_draft_uncertain"]
     assert result["paladin_level_1_yaulp_excluded"]
     assert result["allowed_before_stop"]
     assert not result["old_proposal_allowed_after_stop"]

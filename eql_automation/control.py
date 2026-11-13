@@ -45,6 +45,8 @@ class ControlPlane:
         self.notify = notify
         self._lock = Lock()
         self._transition_lock = RLock()
+        self._key_channel_lock = Lock()
+        self._command_draft_uncertain = False
         self._queued: deque[QueuedAction] = deque()
         self._safety_latched = False
         self.indicator = ModeIndicator(Mode.OFF, 0, "MODE OFF · generation 0 · startup")
@@ -77,6 +79,7 @@ class ControlPlane:
 
     def switch(self, mode: Mode, *, reason: str = "command") -> ModeIndicator:
         mode = Mode(mode)
+        self.controller.cancel_current()
         with self._transition_lock:
             if self._safety_latched and mode != Mode.OFF:
                 raise RuntimeError("Safety stop is latched; use 'reset safety' while OFF")
@@ -111,6 +114,7 @@ class ControlPlane:
         if not reason.strip():
             raise ValueError("Safety stop needs a reason")
         # Cancel outstanding permits before touching the queued-action lock.
+        self.controller.cancel_current()
         with self._transition_lock:
             permit = self.controller.switch(Mode.OFF)
             self._safety_latched = True
@@ -128,6 +132,30 @@ class ControlPlane:
     def allows(self, queued: QueuedAction) -> bool:
         """The final check a future sender must repeat before every key."""
         return self.controller.allows(queued.permit, queued.action)
+
+    def record_key_if_allowed(self, queued: QueuedAction,
+                              record: Callable[[], None]) -> bool:
+        """Serialize a bounded, nonblocking recorder with mode switches."""
+        with self._transition_lock:
+            if not self.allows(queued):
+                return False
+            record()
+            return True
+
+    def acquire_key_channel(self) -> bool:
+        """Only one command can own this control plane's input channel."""
+        return self._key_channel_lock.acquire(blocking=False)
+
+    def release_key_channel(self) -> None:
+        self._key_channel_lock.release()
+
+    @property
+    def command_draft_uncertain(self) -> bool:
+        return self._command_draft_uncertain
+
+    def set_command_draft_uncertain(self, value: bool) -> None:
+        """Called by the exclusive key-channel owner."""
+        self._command_draft_uncertain = bool(value)
 
     def drain(self) -> DrainResult:
         ready: list[QueuedAction] = []

@@ -1,5 +1,36 @@
 # FINDINGS
 
+## Recording-only assist key bridge — 2026-11-13 08:18 CST
+
+**OBSERVED prior tool:** The October `rotation_engine.py` uses an Xlib
+`WindowGate` and evdev `KeySender`; it checks allowed/focus before every
+key down, types slash commands character by character, releases a held key
+in `finally`, and tracks unfinished drafts. Its F8 arming path sends
+`/attack on` and stop can send `/attack off`. Those attack actions are outside
+the requested rotation-only ASSIST mode, so the old live sender has not been
+launched or copied into the active runtime.
+
+**VERIFIED synthetic only:** `RecordingAssistKeyBridge` now records symbolic
+key down/up pairs for an `AssistAdvisor` proposal while checking its original
+permit and a strictly newer matching observation before each key. Its
+allowlist excludes attack, movement, targeting, spell preparation and login.
+The shared `ControlPlane` owns one key-channel lock and the uncertain-draft
+flag across bridge instances. A stopped or failed partial command leaves
+that flag set until explicit clear while OFF with a fresh focused,
+chat-closed observation. A stop request signals permit cancellation before
+waiting for transition bookkeeping; a key already in a bounded recorder
+call is released, and later key downs are denied. Foreign permits and
+advisors from another control plane are rejected. The offline assist demo
+records eight symbolic key downs for `/cast 3`, then OFF invalidates the old
+proposal. Focused tests cover mode stop, target swap, stale observations,
+multiple bridge instances, notifier failure and a stalled recorder.
+
+**Limit:** No game key sender, in-game hotkey grab, real chat-draft ownership
+signal or native input latency bound is implemented. A blocking native key
+callback could delay the OFF command's return even though its permit is
+cancelled immediately. Live immediate-stop acceptance remains unverified;
+no client input was sent.
+
 ## Historical /loc-to-WLD candidate audit — 2026-11-13 07:41 CST
 
 **VERIFIED read-only/offline:** A filtered copy of only 122 system location,

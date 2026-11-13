@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 07:42 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 08:19 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.33.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.34.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -148,6 +148,12 @@ Updated 2026-11-13 07:42 CST for coordinator task `829a00229b29`.
   A bounded historical alignment audit now scores the raw `/loc` triples
   against copied WLD terrain under all eight XY sign/axis candidates. It
   never accepts a transform or route.
+  The October bot's character-by-character command sender was reviewed.
+  A new recording-only assist key bridge checks a fresh matching observation
+  and original permit before each symbolic key. The shared control plane
+  serializes commands across bridge instances and preserves uncertain drafts
+  across mode switches. Attack, movement and targeting stay excluded from
+  ASSIST. No game keyboard input is connected.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -270,6 +276,11 @@ Updated 2026-11-13 07:42 CST for coordinator task `829a00229b29`.
   alignment tests and both copied-data CLI audits passed; the combined focused
   set passed 46 tests. Synthetic 1–50 reran to fabricated level 50 with 1,446
   events at `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T134150Z/`.
+  `python3 -m pytest -q tests/test_key_bridge.py tests/test_assist.py tests/test_control.py tests/test_dispatch.py`
+  — 38 focused checks passed; `--demo-assist` recorded eight symbolic key
+  downs for `/cast 3`, no game input, then OFF rejected the old proposal.
+  Synthetic 1–50 reran to only fabricated level 50 with 1,446 events at
+  `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T141929Z/`.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -294,6 +305,8 @@ Updated 2026-11-13 07:42 CST for coordinator task `829a00229b29`.
   safety. Verify the historical log-to-WLD candidate against a fresh test
   character on the intended private client, including height and log delay,
   before any position can feed `WorldNavigator`; build a read-only runtime UI observer on an
-  isolated client view. ASSIST keeps
+  isolated client view. Verify target-selection identity, chat-draft ownership,
+  a bounded native key sender and immediate OFF before enabling live ASSIST.
+  ASSIST keeps
   movement manual. The October assist tool's live preparation/combat remain
   unverified.

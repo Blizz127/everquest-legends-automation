@@ -77,6 +77,10 @@ class ModeController:
         with self._lock:
             return self._mode
 
+    def cancel_current(self) -> None:
+        """Signal a stop request before other transition bookkeeping can wait."""
+        self._cancelled.set()
+
     def switch(self, mode: Mode) -> Permit:
         mode = Mode(mode)  # An invalid request must not cancel the current mode.
         # Signal the old permit before waiting for the short metadata lock.
@@ -103,7 +107,8 @@ class ModeController:
                 for pattern, kinds in COMMAND_KINDS):
             return False
         with self._lock:
-            if permit.generation != self._generation or permit.mode != self._mode:
+            if (permit.cancelled is not self._cancelled or
+                    permit.generation != self._generation or permit.mode != self._mode):
                 return False
             if self._mode == Mode.FULL_AUTO:
                 return True

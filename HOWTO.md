@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.33.0
+# EverQuest Legends automation — current build 0.34.0
 
 ## Current availability
 
@@ -91,6 +91,19 @@ stop. Do not run both listeners. A real in-game key mapping requires verified
 game bindings, a single keyboard owner, a focus-gated grab, release of held
 keys on OFF, and a sender that rechecks the mode permit before each key. None
 of that live input path has been verified in this build.
+
+`--demo-assist` now also records a symbolic `/cast 3` key sequence. Its
+recording-only bridge uses the October bot's command-typing pattern, checks
+the original ASSIST permit and a newer matching target/scene observation
+before each key, and never records attack, movement or target commands.
+OFF cancels the permit before transition bookkeeping waits. One shared
+control plane permits only one command at a time, even across bridge
+instances. If stopped mid-command, an uncertain draft blocks later sends
+until an explicit clear while OFF and a fresh focused, chat-closed observation.
+These are offline checks: there is no game keyboard sender, grab, live chat
+detector or verified instant-OFF path. A future native sender must have a
+bounded nonblocking key-down operation, release held keys on every failure,
+and prove that the bot owns any command draft before more keys are typed.
 
 `--synthetic-1-50` runs a closed-loop **fabricated** world. It exercises the
 planner and stops at synthetic level 50 or fails if progress stalls. The output
