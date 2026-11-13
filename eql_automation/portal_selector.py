@@ -53,6 +53,7 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
                           max_total_samples: int = 100000,
                           max_seconds: float = 180.0,
                           max_strip_repair_rounds: int = 8,
+                          repair_backtrack_depth: int = 1,
                           sample_spacing: float = 1.0,
                           half_width: float = 1.2,
                           maximum_grade: float = 1.0,
@@ -87,7 +88,10 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
                           max_strip_checks, max_total_samples, max_segment_samples)) or
             not isinstance(max_strip_repair_rounds, int) or
             isinstance(max_strip_repair_rounds, bool) or
-            not 0 <= max_strip_repair_rounds <= 16 or
+            not 0 <= max_strip_repair_rounds <= 32 or
+            not isinstance(repair_backtrack_depth, int) or
+            isinstance(repair_backtrack_depth, bool) or
+            not 1 <= repair_backtrack_depth <= 8 or
             not isinstance(final_recheck, bool) or
             any(not isinstance(n, (int, float)) or isinstance(n, bool) or
                 not math.isfinite(n) or n <= 0
@@ -182,8 +186,9 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
                 break  # Retry the strip before spending budget on another choice.
         return added, None
 
-    # Layered shortest-path search. A failed polygon expands only its two
-    # bounding portals, then retries under the same global work budgets.
+    # Layered shortest-path search. A failed polygon normally expands its two
+    # bounding portals. Explicit backtracking may expand earlier portals when
+    # no incoming state can reach an otherwise passable local strip.
     # The same entry/exit pair recurs in each repair round. Its bounded
     # geometry result is deterministic for this mesh and these limits, so
     # count and perform that sample work once. Time-limit results abort and
@@ -251,9 +256,16 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
                                    turn_checks=turns, strip_checks=strips,
                                    failed_polygon=polygons[failed_index])
         expanded = False
-        neighbors = (failed_index - 1, failed_index)
-        if repair_round % 2:
-            neighbors = neighbors[::-1]
+        neighbors = [failed_index - 1, failed_index]
+        neighbors.extend(failed_index - offset
+                         for offset in range(2, repair_backtrack_depth + 1))
+        neighbors = [index for index in neighbors if 0 <= index < len(layers)]
+        if not neighbors:
+            return PortalSelection(False, "no_sampled_strip_through_polygon",
+                                   turn_checks=turns, strip_checks=strips,
+                                   failed_polygon=polygons[failed_index])
+        rotation = repair_round % len(neighbors)
+        neighbors = neighbors[rotation:] + neighbors[:rotation]
         for portal_index in neighbors:
             if 0 <= portal_index < len(layers):
                 added, stop_reason = expand_portal(portal_index)

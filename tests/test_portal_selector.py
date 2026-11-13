@@ -198,6 +198,44 @@ def test_middle_polygon_can_repair_either_adjacent_portal(monkeypatch):
     assert not result.route_accepted and not result.real_client_accepted
 
 
+def test_bounded_backtrack_can_revisit_upstream_portal_choice(monkeypatch):
+    real_strip = selector.audit_segment_strip
+
+    def upstream_choice_required(mesh, poly, start, end, **kwargs):
+        # The second portal's alternate cannot be reached from the first
+        # portal's midpoint; the third polygon needs that alternate.
+        if ((poly == 1 and start[1] == 5.0 and end[1] == 4.5) or
+                (poly == 2 and start[1] == 5.0)):
+            return LateralStripCheck(False, "synthetic_connected_choice")
+        return real_strip(mesh, poly, start, end, **kwargs)
+
+    monkeypatch.setattr(selector, "audit_segment_strip", upstream_choice_required)
+    options = dict(alternates=(0.55,), max_strip_repair_rounds=4)
+    shallow = select_ground_portals(FlatMesh(4), (0, 1, 2, 3),
+                                    (1.0, 5.0), (39.0, 5.0), **options)
+    assert not shallow.candidate and shallow.reason == "no_sampled_strip_through_polygon"
+    deeper = select_ground_portals(FlatMesh(4), (0, 1, 2, 3),
+                                   (1.0, 5.0), (39.0, 5.0),
+                                   repair_backtrack_depth=2, **options)
+    assert deeper.candidate and deeper.fractions[:2] == (0.55, 0.55)
+    assert not deeper.route_accepted and not deeper.real_client_accepted
+    invalid = select_ground_portals(FlatMesh(1), (0,), (1.0, 5.0),
+                                    (9.0, 5.0), repair_backtrack_depth=0)
+    assert not invalid.candidate and invalid.reason == "invalid_selection_limits"
+    too_many = select_ground_portals(FlatMesh(1), (0,), (1.0, 5.0),
+                                     (9.0, 5.0), max_strip_repair_rounds=33)
+    assert not too_many.candidate and too_many.reason == "invalid_selection_limits"
+
+
+def test_single_polygon_failure_has_no_backtrack_portal(monkeypatch):
+    monkeypatch.setattr(selector, "audit_segment_strip",
+                        lambda *args, **kwargs: LateralStripCheck(False, "synthetic_block"))
+    result = select_ground_portals(FlatMesh(1), (0,), (1.0, 5.0),
+                                   (9.0, 5.0), repair_backtrack_depth=4)
+    assert not result.candidate and result.reason == "no_sampled_strip_through_polygon"
+    assert result.points == () and not result.real_client_accepted
+
+
 def test_first_repair_choice_is_tried_before_later_budget_failure(monkeypatch):
     real_strip = selector.audit_segment_strip
     real_turn = selector.audit_turn_disk

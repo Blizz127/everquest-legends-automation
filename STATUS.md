@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-13 16:35 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 16:37 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Level-13–20 source dependency: the owner's Cauldron and Unrest zone/object
@@ -25,6 +25,8 @@ Updated 2026-11-13 16:35 CST for coordinator task `829a00229b29`.
   default repair limits; a local shifted strip there passes. An expanded
   selector first stopped on a timed turn check under devbox load; with a
   larger bounded turn limit it passed 3083 and stopped at polygon 1605.
+  The new bounded backtrack option fixes a synthetic connected-choice case;
+  a copied Unrest retry with 32 repair rounds still stopped at polygon 1605.
   No complete selected sequence exists. Copied
   funnel BSP sees water and unknown intervals near/along that route. An
   Unrest yard→first-floor dry path has 59 polygons but steep/narrow sections.
@@ -156,8 +158,14 @@ Updated 2026-11-13 16:35 CST for coordinator task `829a00229b29`.
   Remote `--demo-navigation` returned `simulation_only=true` and
   `no_game_input=true`; the new scene CLI appeared in remote `--help`.
   The owner-run assist preview remains 0.39.4; F11 stays disabled.
+- Private publish: source-only project 0.41.32 commit `002e7ad` is staged
+  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.32`.
+  Local and remote archive SHA-256 matched
+  `1f28f20664b696c32318e9c5bfa8d9a5083f5697e16aa7eb247553f8fe243577`.
+  Remote offline navigation startup and extended route-CLI help passed with
+  no game input. The runnable owner assist remains 0.39.4; F11 is disabled.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
-- Build: local source 0.41.31 (hash-pinned, reproducible provisional Cauldron and Unrest static scenes) plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Earlier source releases and historical build details are recorded above. Mode boundary, prior rotation planner reuse,
+- Build: local source 0.41.33 (bounded earlier-portal repair plus hash-pinned Cauldron and Unrest scene/mesh diagnostics) plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Earlier source releases and historical build details are recorded above. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects

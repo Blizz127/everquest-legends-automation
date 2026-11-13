@@ -1,5 +1,30 @@
 # FINDINGS
 
+## Bounded earlier-portal repair — 2026-11-13 16:37 CST
+
+**VERIFIED offline, no game input:** Version 0.41.33 lets the copied-ground
+selector revisit up to eight preceding portal choices when the current
+polygon has no connected incoming strip. A synthetic four-polygon case that
+cannot pass with only adjacent repair now passes after revisiting one earlier
+portal; no result sets `route_accepted` or `real_client_accepted`. The repair
+count remains bounded at 32, and the existing wall-time, turn, strip and
+sample caps still apply. Fifteen focused selector tests passed.
+
+On the copied Unrest entrance→yard corridor, a depth-4/16-round diagnostic
+stopped at polygon 3083 with `strip_repair_round_budget_exceeded`, private
+artifact SHA-256
+`06a2a46adedecd6d6db50898c1b15c94919be48d528be1065fb0d05431293ff7`.
+Depth 2/16 rounds reached polygon 1605 before its repair-round cap, artifact
+SHA-256 `c0847a39c4617a22161b7d74859a4b6d3a66060bc541b7bc8aadec71812a00d8`.
+Depth 2/32 rounds still stopped at polygon 1605 with
+`no_sampled_strip_through_polygon` after 195 turns, 238 strips and 27.23
+seconds, artifact SHA-256
+`afba521ddbaca9271774583a4e8106e4bf8cd33b2bdd4e9a7915448141261e7d`.
+A direct local midpoint strip through polygon 1605 passed, so this failure
+may reflect an earlier connected-choice limit rather than impassable terrain.
+The separate copied BSP water/unknown spans already block this route.
+No complete selected or live path exists; F11 remains disabled.
+
 ## Retained Cauldron and Unrest navmeshes, offline route gate — 2026-11-13 16:31 CST
 
 **VERIFIED read-only owner-helper copy, no game input:** The Alienware helper

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.32 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.33 / owner preview 0.39.4
 
 ## Current availability
 
@@ -198,10 +198,15 @@ recheck read pinned Cauldron and Unrest meshes. The owner helper already had
 both meshes; their archive and mesh hashes now match the copied client store.
 A dry Cauldron graph path has steep/narrow polygons, and an Unrest
 entrance-to-yard selector stops at a narrow copied polygon. Optional bounded
-`--max-candidates-per-portal` (1–13) and `--max-strip-repair-rounds` (0–16)
+`--max-candidates-per-portal` (1–13) and `--max-strip-repair-rounds` (0–32)
 allow offline retries; a retry under loaded devbox conditions hit a local
 time limit before a route result. These are offline
 diagnostics, not F11 routes or owner-run input changes.
+Version 0.41.33 adds bounded `--repair-backtrack-depth` (1–8) to the
+offline selector. A synthetic connected-choice case now finds a route only
+when an earlier portal can be revisited. The copied Unrest corridor still
+fails its selector after bounded retries, and its BSP hazards remain
+unresolved. This release does not change the Alienware assist preview.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
