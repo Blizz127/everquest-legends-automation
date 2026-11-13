@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.34.0
+# EverQuest Legends automation — current build 0.35.0
 
 ## Current availability
 
@@ -104,6 +104,22 @@ These are offline checks: there is no game keyboard sender, grab, live chat
 detector or verified instant-OFF path. A future native sender must have a
 bounded nonblocking key-down operation, release held keys on every failure,
 and prove that the bot owns any command draft before more keys are typed.
+The copied chat UI defines an edit box but offers no verified runtime focus,
+text, or owner signal. If chat opens after the first slash, the recording
+bridge stops OFF with an uncertain draft. The installed `eqclient.ini` has no
+stored custom cast-spell or ability key binding; a direct shortcut has not
+been verified either.
+
+The same demo also records a **synthetic** two-event spell-gem mouse click at
+a fabricated hitbox. `RecordingGemClickBridge` accepts only a current-target
+rotation `/cast 1`–`/cast 8` proposal, a strictly newer matching scene, and
+fresh evidence that the expected gem and spell ID are visible and unobstructed
+within the focused game window at the expected layout. It shares the input
+channel with the command bridge, releases the symbolic button after OFF, and
+records no movement, targeting or attack. The copied static UI identifies
+gem widgets but gives no active screen position. A private-client screenshot,
+layout calibration, unique target-selection signal, and a bounded real mouse
+sender are still needed; the bridge cannot click the game in this build.
 
 `--synthetic-1-50` runs a closed-loop **fabricated** world. It exercises the
 planner and stops at synthetic level 50 or fails if progress stalls. The output

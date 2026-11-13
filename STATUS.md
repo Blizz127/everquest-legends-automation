@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 08:19 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 08:44 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.34.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.35.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -154,6 +154,12 @@ Updated 2026-11-13 08:19 CST for coordinator task `829a00229b29`.
   serializes commands across bridge instances and preserves uncertain drafts
   across mode switches. Attack, movement and targeting stay excluded from
   ASSIST. No game keyboard input is connected.
+  A second recording-only assist bridge models one spell-gem mouse click from
+  a fresh matching scene and visible, unobstructed gem hitbox. It shares the
+  same input channel and permit. A synthetic chat-open-after-slash case stops
+  the command bridge with an uncertain draft. The installed `eqclient.ini`
+  has no custom cast/ability binding; no active gem hitbox is calibrated.
+  No game mouse input is connected.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -281,10 +287,17 @@ Updated 2026-11-13 08:19 CST for coordinator task `829a00229b29`.
   downs for `/cast 3`, no game input, then OFF rejected the old proposal.
   Synthetic 1–50 reran to only fabricated level 50 with 1,446 events at
   `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T141929Z/`.
+  `python3 -m pytest -q tests/test_gem_bridge.py tests/test_key_bridge.py tests/test_assist.py tests/test_control.py tests/test_dispatch.py`
+  — 46 focused checks passed. `--demo-assist` recorded a fabricated gem
+  mouse down/up pair as well as eight symbolic command-key downs. Synthetic
+  1–50 reran to fabricated level 50 with 1,446 events at
+  `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T144347Z/`.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
-  be sent to that host. Daybreak rules prohibit unattended play and unauthorized
+  be sent to that host. Bounded devbox/Banshee process, listener, container and
+  directory checks found no private EQEmu/EQL candidate; this does not rule
+  out another machine or path. Daybreak rules prohibit unattended play and unauthorized
   servers; no Daybreak-authorized live test route is documented. The historical
   Butcherblock navmesh/recipe is absent from the approved retained store, and
   the reported GFay vertical mismatch on its historical route and
@@ -307,6 +320,8 @@ Updated 2026-11-13 08:19 CST for coordinator task `829a00229b29`.
   before any position can feed `WorldNavigator`; build a read-only runtime UI observer on an
   isolated client view. Verify target-selection identity, chat-draft ownership,
   a bounded native key sender and immediate OFF before enabling live ASSIST.
+  A spell-gem click path would also need a private-client screenshot, active
+  hitbox calibration, unique target selection and bounded native mouse sender.
   ASSIST keeps
   movement manual. The October assist tool's live preparation/combat remain
   unverified.

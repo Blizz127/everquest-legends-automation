@@ -107,6 +107,24 @@ def test_changed_or_stale_target_observation_stops_before_next_key(change):
     assert [(event.key, event.down) for event in events] == [("/", True), ("/", False)]
 
 
+def test_chat_open_after_slash_stops_and_keeps_draft_uncertain():
+    control, advisor, base, proposal = setup()
+    events = []
+    bridge = RecordingAssistKeyBridge(control, events.append)
+    observe, clock = observations(base)
+    calls = 0
+    def chat_observe():
+        nonlocal calls
+        calls += 1
+        result = observe()
+        return replace(result, chat_open=calls > 1)
+    result = bridge.send(advisor, proposal, observe=chat_observe, clock=clock)
+    assert result.key_down_count == 1
+    assert result.draft_uncertain
+    assert control.controller.mode == Mode.OFF
+    assert [(event.key, event.down) for event in events] == [("/", True), ("/", False)]
+
+
 def test_key_allowlist_excludes_prior_attack_and_nonrotation_actions():
     for action in (Action(ActionKind.ATTACK, "/attack on"),
                    Action(ActionKind.MOVE, "north"),

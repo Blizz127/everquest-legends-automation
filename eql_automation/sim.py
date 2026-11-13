@@ -11,6 +11,7 @@ from .campaign import Camp, CampaignPlanner, WorldSnapshot
 from .navigator import NavigationObservation, WorldNavigator
 from .assist import AssistAdvisor, AssistObservation, TargetRelation
 from .key_bridge import RecordingAssistKeyBridge
+from .gem_bridge import GemHitboxObservation, RecordingGemClickBridge
 from .control import ControlPlane
 from .prior_rotation_core import Catalog
 from .screen_observer import (
@@ -133,6 +134,16 @@ def run_assist_demo() -> dict:
         return replace(observation, observed_at=at)
     recorded = bridge.send(advisor, proposal, observe=observe_key,
                            clock=lambda: at)
+    click_events = []
+    click_observation = replace(observation, observed_at=10.8)
+    synthetic_hitbox = GemHitboxObservation(
+        observed_at=10.8, window_size=(800, 600),
+        layout_fingerprint="synthetic-active-layout", gem_slot=3,
+        gem_spell_id=14, box=(40, 80, 80, 120), gem_visible=True,
+        unobstructed=True, game_focused=True)
+    click = RecordingGemClickBridge(control, click_events.append).send(
+        advisor, proposal, observe=lambda: (click_observation, synthetic_hitbox),
+        clock=lambda: 10.8, layout_fingerprint="synthetic-active-layout")
     control.handle_command("stop")
     return {"simulation_only": True, "no_game_input": True,
             "mode_after_stop": control.indicator.mode.value,
@@ -142,6 +153,9 @@ def run_assist_demo() -> dict:
             "recorded_key_down_count": recorded.key_down_count,
             "recorded_command_complete": recorded.recorded_complete,
             "recorded_draft_uncertain": recorded.draft_uncertain,
+            "recorded_gem_click_complete": click.recorded_complete,
+            "recorded_mouse_button_events": len(click_events),
+            "gem_coordinates_synthetic": True,
             "old_proposal_allowed_after_stop": advisor.still_allowed(
                 proposal, refreshed, now=10.1)}
 

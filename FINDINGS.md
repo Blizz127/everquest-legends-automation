@@ -1,5 +1,46 @@
 # FINDINGS
 
+## Spell-gem click seam and bounded target recheck — 2026-11-13 08:43 CST
+
+**VERIFIED copied-client sources, read-only:** The copied default
+`EQUI_CastSpellWnd.xml` defines `CSPW_Spell0` through `CSPW_Spell13`, but no
+active on-screen coordinates or key bindings (SHA-256
+`840a7b76ce76f6435c1e597ea8a44e57511415ff74a5a2fc3cb6c961fe09eb05`).
+The copied default `EQUI_ChatWindow.xml` defines `CW_ChatInput` but no
+runtime focused/text/owner signal (SHA-256
+`5662c3b77a36d1ad19ca6b83ff254409b4e7ac7ea2910a9f3baa815be214cd83`).
+The installed Alienware `eqclient.ini` is 12,706 bytes, SHA-256
+`a10560ba3301c411f1b9eb05b5ad2627b4577222b430a7acf59687341356c7fc`.
+Its `[KeyMaps]` section has five custom entries and none for casting or
+abilities. This does not rule out built-in default shortcuts. The October
+`rotation_engine.py`, SHA-256
+`8e32a72eb7f87dae9901f84841679fdb628c46fab7458de216bfdff9fe567683`,
+types slash commands and does not verify chat-draft ownership.
+
+**VERIFIED synthetic only:** `RecordingGemClickBridge` records one mouse
+down/up pair for an approved rotation spell gem, with a newer matching
+current-target observation and externally supplied visible, unobstructed
+hitbox evidence. It shares the exclusive input channel and original permit
+with the recording key bridge. A changed target, chat-open observation,
+missing gem, changed layout, stale hitbox or OFF prevents the click. A focused
+46-test set and `--demo-assist` passed; the demo's hitbox is fabricated.
+The key bridge also now has a focused test showing that chat opening after
+the first slash stops OFF and keeps the command draft uncertain. No capture,
+mouse/keyboard input, login, level or XP was produced. The installed client
+has no verified active hitbox or target-selection signal, so neither bridge
+is ready for live input.
+
+**VERIFIED bounded private-target recheck:** Devbox process, container,
+TCP/UDP listener and named directory checks found no EQEmu/EverQuest server
+candidate. The authorized Banshee peer had no matching process, service,
+container, image, listener or bounded `/home/blizz/dev` candidate; its
+unrelated Sandalcore `worldd` was excluded. `banshee-ax41` was offline at
+the time of the check. These negative checks do not prove there is no server
+elsewhere. The missing private login endpoint/separate client configuration
+remains the exact gate for any real-client automation test. The only located
+Alienware client still points to Daybreak's live host; no connection or
+input was sent.
+
 ## Recording-only assist key bridge — 2026-11-13 08:18 CST
 
 **OBSERVED prior tool:** The October `rotation_engine.py` uses an Xlib
