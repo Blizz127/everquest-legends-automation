@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.26.0
+# EverQuest Legends automation — current build 0.27.0
 
 ## Current availability
 
@@ -301,7 +301,10 @@ endpoint gaps against copied BSP labels. A filename/hash match does not
 prove the nav mesh is correct for the real zone. A zero-label result means
 only that the sampled points had no labelled region; unknown samples and
 narrow missed regions remain possible. The audit always keeps route and
-movement acceptance false.
+movement acceptance false. Its output now separates sample, unknown, and
+label counts for the start connector, Detour corridor, and end connector.
+The sampled Crushbone path has one unknown BSP result in each connector;
+the corridor itself has none. Both gaps require review before movement.
 
 For bounded **offline** navmesh experiments, place the upstream
 [RecastNavigation source](https://github.com/recastnavigation/recastnavigation)

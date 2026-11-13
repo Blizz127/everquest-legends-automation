@@ -15,6 +15,7 @@ from .bsp_probe import BspPointLookup
 
 MAX_PATH_POINTS = 256
 MAX_SAMPLES = 20000
+SEGMENT_KINDS = ("start_connector", "corridor", "end_connector")
 
 
 def audit_path_hazards(lookup: BspPointLookup,
@@ -57,8 +58,13 @@ def audit_path_hazards(lookup: BspPointLookup,
     if (end_snap_distance is not None and
             abs(end_connector - end_snap_distance) > max(0.05, 0.05 * end_snap_distance)):
         raise ValueError("End snap distance disagrees with path endpoint")
-    sampled_points = ([requested_first] if start_connector > 1e-6 else []) + points + (
-        [requested_last] if end_connector > 1e-6 else [])
+    has_start_connector = start_connector > 1e-6
+    has_end_connector = end_connector > 1e-6
+    sampled_points = ([requested_first] if has_start_connector else []) + points + (
+        [requested_last] if has_end_connector else [])
+    segment_kinds = (["start_connector"] if has_start_connector else []) + (
+        ["corridor"] * (len(points) - 1)) + (
+        ["end_connector"] if has_end_connector else [])
     segment_steps = []
     for start, end in zip(sampled_points, sampled_points[1:]):
         length = dist(start, end)
@@ -70,27 +76,35 @@ def audit_path_hazards(lookup: BspPointLookup,
         raise ValueError("Straight path sampling exceeds cap")
 
     label_counts: Counter[str] = Counter()
+    labels_by_segment = {kind: Counter() for kind in SEGMENT_KINDS}
+    samples_by_segment = Counter({kind: 0 for kind in SEGMENT_KINDS})
+    unknown_by_segment = Counter({kind: 0 for kind in SEGMENT_KINDS})
     unknown = 0
     labelled = 0
     first_labelled = None
     first_unknown = None
     for segment_index, (start, end) in enumerate(zip(sampled_points, sampled_points[1:])):
+        kind = segment_kinds[segment_index]
         steps = segment_steps[segment_index]
         for step in range(0 if segment_index == 0 else 1, steps + 1):
+            samples_by_segment[kind] += 1
             fraction = step / steps
             point = tuple(start[index] + (end[index] - start[index]) * fraction
                           for index in range(3))
             probe = lookup.probe(*point)
             if probe.region_id is None or "unknown" in probe.labels:
                 unknown += 1
+                unknown_by_segment[kind] += 1
                 if first_unknown is None:
-                    first_unknown = {"wld_xyz": point, "reason": probe.reason}
+                    first_unknown = {"wld_xyz": point, "reason": probe.reason,
+                                     "segment_kind": kind}
             if probe.labels:
                 labelled += 1
                 label_counts.update(probe.labels)
+                labels_by_segment[kind].update(probe.labels)
                 if first_labelled is None:
                     first_labelled = {"wld_xyz": point, "region_id": probe.region_id,
-                                      "labels": probe.labels}
+                                      "labels": probe.labels, "segment_kind": kind}
     return {
         "straight_path_points": len(points),
         "sampled_polyline_points": len(sampled_points),
@@ -102,6 +116,11 @@ def audit_path_hazards(lookup: BspPointLookup,
         "start_snap_distance": start_snap_distance,
         "end_snap_distance": end_snap_distance,
         "label_sample_counts": dict(sorted(label_counts.items())),
+        "sample_counts_by_segment_kind": dict(samples_by_segment),
+        "unknown_counts_by_segment_kind": dict(unknown_by_segment),
+        "label_counts_by_segment_kind": {
+            kind: dict(sorted(labels_by_segment[kind].items()))
+            for kind in SEGMENT_KINDS},
         "labelled_region_sample_count": labelled,
         "unknown_region_sample_count": unknown,
         "first_labelled_sample": first_labelled,

@@ -1,5 +1,43 @@
 # FINDINGS
 
+## Copied client executable and segmented path audit — 2026-11-13 06:25 CST
+
+**VERIFIED read-only source copy:** The Alienware retail client executable at
+`/home/blizz/Games/everquest-legends/drive_c/users/Public/Daybreak Game Company/Installed Games/EverQuest Legends/eqgame.exe`
+is 15,676,536 bytes, SHA-256
+`65b8a28b2df70a256746567c4203c47f91696813865cba97f7151a5f4952503a`.
+It was copied with a matching hash to the untracked
+`~/.local/share/eql-automation/client-data/retail-full/bin/eqgame.exe`.
+The PE32+ x86-64 executable was never launched or changed. A bounded static
+string/reference search found target command and UI names (`TARGETNPC`,
+`CLEAR_TARGET`, `GAUGETYPE_TARGET_OF_TARGET`) but **no verified unique target
+ID, selection epoch, or target relationship signal**. A missing string or
+reference in that search does not prove no runtime signal exists. REA's deep
+analysis providers were unavailable here; Ghidra needs JDK 21, and Java is
+absent. Its portable PE import inspection succeeded, but imports alone do not
+answer the target question. The retained REA evidence bundle is outside git at
+`~/.local/share/eql-automation/evidence/eqgame-pe-imports-65b8a28b.json`,
+SHA-256 `50f6b9a78f1f2eaaefeedb358f132094d6d2afb238bc2cd2be57d446ac0779f3`.
+
+**VERIFIED offline path audit:** The BSP sampler now attributes every sample
+to `start_connector`, `corridor`, or `end_connector`. A focused synthetic test
+checks both connector directions. The copied Butcherblock FAYHOUSE path still
+has 27 samples: 2 start, 24 corridor, 1 end, with no copied labels or unknowns.
+The copied Crushbone TIKIBAM path still has 10 samples: 3 start, 6 corridor,
+1 end. Its two unknown BSP results are **one on the 5.407412-unit start
+connector and one on the 0.49-unit end connector**; the corridor has none.
+The earlier shorthand attributing both unknowns to the start gap was wrong.
+The first unknown is a missing BSP child at WLD XYZ
+`(-90.2200012, 691.169983, -30.9899998)`. Neither path is accepted for
+movement. Untracked audit JSON SHA-256 hashes are
+`5ad31164d0e1e6dbb897398dc62a7cc0808dd5df8d4cdd1185dc07d12a137850`
+(Butcherblock) and
+`c4e2745c8a3230a325f4d8adb63787cc942dde51eb30eb33459004994a90dde9`
+(Crushbone), under `~/.local/share/eql-automation/nav-candidates/`.
+`python3 -m pytest -q tests/test_region_audit.py` passed 4 focused tests;
+the two copied-zone CLI audits and `compileall` passed. No client or server
+input occurred.
+
 ## Assist target continuity and spell targeting — 2026-11-13 06:19 CST
 
 **VERIFIED synthetic only:** Assist proposals now bind a unique target-selection

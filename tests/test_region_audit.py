@@ -98,8 +98,22 @@ def test_bounded_path_sampling_flags_water_zone_and_unknown_without_acceptance()
                                end_snap_distance=0)
     assert audit["label_sample_counts"] == {"water": 1, "zoneline": 1}
     assert audit["unknown_region_sample_count"] == 2
+    assert audit["sample_counts_by_segment_kind"] == {
+        "start_connector": 2, "corridor": 2, "end_connector": 0}
+    assert audit["unknown_counts_by_segment_kind"] == {
+        "start_connector": 1, "corridor": 1, "end_connector": 0}
+    assert audit["label_counts_by_segment_kind"]["start_connector"] == {"zoneline": 1}
+    assert audit["label_counts_by_segment_kind"]["corridor"] == {"water": 1}
+    assert audit["first_unknown_sample"]["segment_kind"] == "start_connector"
     assert audit["requested_start_connector_length"] == 1
     assert audit["route_accepted"] is False
+    with_end_connector = audit_path_hazards(
+        lookup, [(1, -1, 0), (1, 1, 0)],
+        requested_start=(0, -1, 0), requested_end=(2, 1, 0),
+        spacing=1.0, query_complete=True, start_snap_distance=1,
+        end_snap_distance=1)
+    assert with_end_connector["sample_counts_by_segment_kind"]["end_connector"] == 1
+    assert with_end_connector["label_counts_by_segment_kind"]["end_connector"] == {"water": 1}
     with pytest.raises(ValueError, match="sampling exceeds cap"):
         audit_path_hazards(lookup, [(0, 0, 0), (1_000_000, 0, 0)],
                            requested_start=(0, 0, 0), requested_end=(1_000_000, 0, 0))
