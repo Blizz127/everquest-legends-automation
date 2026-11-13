@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.35.0
+# EverQuest Legends automation — current build 0.36.0
 
 ## Current availability
 
@@ -157,6 +157,15 @@ This is a library seam, not a running observer or a navigation input. It does
 not request `/loc`, convert log axes to WLD axes, verify log-to-client latency,
 or move the character. The installed client currently has no verified private
 target; do not use its owner-character log for a bot run.
+
+The separate `ClientLogReader` for level/death status now uses the same
+non-replaying file-tail protection. An existing log is skipped at startup;
+replacement, truncation and oversized backlog skip old lines and invalidate
+the run's level, XP, death count, camp and zone until character/session
+identity is re-established. Only a log path known to be absent for a **fresh
+test character** should opt in with `fresh_test_character=True` to retain its
+first newly written event. This is a read-only library, not a client login or
+live telemetry feed.
 
 For a **read-only historical geometry audit**, a filtered file containing only
 the owner's own timestamped zone, loading and `/loc` system lines can be kept

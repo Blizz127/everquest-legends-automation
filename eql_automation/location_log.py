@@ -60,11 +60,16 @@ def unique_client_zone_ids(zone_names_path: Path) -> tuple[dict[str, int], set[s
 class NonReplayingLogTail:
     """Read appended complete lines; drop history after a reset or backlog."""
 
-    def __init__(self, path: Path, *, max_bytes: int = 512 * 1024) -> None:
+    def __init__(self, path: Path, *, max_bytes: int = 512 * 1024,
+                 include_first_created_file: bool = False) -> None:
         if not isinstance(max_bytes, int) or isinstance(max_bytes, bool) or max_bytes <= 0:
             raise ValueError("max_bytes must be positive")
+        if not isinstance(include_first_created_file, bool):
+            raise ValueError("First-created-file option must be boolean")
         self.path = path
         self.max_bytes = max_bytes
+        self.include_first_created_file = include_first_created_file
+        self.awaiting_first_creation = False
         self.initialized = False
         self.identity: tuple[int, int] | None = None
         self.position = 0
@@ -85,6 +90,8 @@ class NonReplayingLogTail:
         try:
             source = self.path.open("rb")
         except FileNotFoundError:
+            if not self.initialized and self.include_first_created_file:
+                self.awaiting_first_creation = True
             reset = self.identity is not None
             self.identity = None
             self.position = 0
@@ -99,9 +106,21 @@ class NonReplayingLogTail:
             if not stat.S_ISREG(metadata.st_mode):
                 raise ValueError("Location log source must be a regular file")
             identity = (metadata.st_dev, metadata.st_ino)
+            # Only a path absent at first observation may begin at byte zero.
+            # This is for a fresh test-character log created after startup;
+            # replacements and an existing file always skip their history.
+            first_created = self.awaiting_first_creation and self.identity is None
+            self.awaiting_first_creation = False
             reset = (not self.initialized or identity != self.identity or
                      metadata.st_size < self.position or
                      metadata.st_size - self.position > self.max_bytes)
+            if first_created and metadata.st_size <= self.max_bytes:
+                reset = False
+                self.identity = identity
+                self.position = 0
+                self.partial = b""
+                self.anchor = b""
+                self.epoch += 1
             self.initialized = True
             if not reset and self.anchor:
                 source.seek(self.position - len(self.anchor))

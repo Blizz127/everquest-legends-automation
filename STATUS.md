@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 08:44 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 09:04 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.35.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.36.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -160,6 +160,10 @@ Updated 2026-11-13 08:44 CST for coordinator task `829a00229b29`.
   the command bridge with an uncertain draft. The installed `eqclient.ini`
   has no custom cast/ability binding; no active gem hitbox is calibrated.
   No game mouse input is connected.
+  Run-level status now uses a non-replaying log tail. Replaced, truncated or
+  backlogged logs invalidate level, XP, death count, camp and zone instead
+  of replaying old events. First content from a newly created fresh-character
+  log requires explicit opt-in. No owner-character log was read for this test.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -292,6 +296,11 @@ Updated 2026-11-13 08:44 CST for coordinator task `829a00229b29`.
   mouse down/up pair as well as eight symbolic command-key downs. Synthetic
   1–50 reran to fabricated level 50 with 1,446 events at
   `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T144347Z/`.
+  `python3 -m pytest -q tests/test_offline.py tests/test_location_log.py`
+  — 37 focused checks passed, including replacement, truncate, partial-line,
+  backlog and nonmonotonic XP-time regressions. Synthetic 1–50 reran to only
+  fabricated level 50 with 1,446 events at
+  `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T150416Z/`.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will

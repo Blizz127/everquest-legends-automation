@@ -80,7 +80,7 @@ def test_log_tail_ignores_history_and_status_tracks_only_new_events(tmp_path: Pa
     log = tmp_path / "synthetic.log"
     log.write_text("[old] You have gained a level! Welcome to level 30!\n")
     state = RunState()
-    reader = ClientLogReader(log, state)
+    reader = ClientLogReader(log, state, fresh_test_character=True)
     assert reader.poll() == []
     assert state.level is None
     with log.open("a") as stream:
@@ -101,10 +101,88 @@ def test_log_tail_ignores_history_and_status_tracks_only_new_events(tmp_path: Pa
 def test_log_created_after_reader_start_keeps_first_event(tmp_path: Path):
     log = tmp_path / "new.log"
     state = RunState()
-    reader = ClientLogReader(log, state)
+    reader = ClientLogReader(log, state, fresh_test_character=True)
     log.write_text("[now] You have gained a level! Welcome to level 2!\n")
     assert len(reader.poll()) == 1
     assert state.level == 2
+
+
+def test_new_log_without_fresh_character_opt_in_skips_first_bytes(tmp_path: Path):
+    log = tmp_path / "new.log"
+    state = RunState()
+    reader = ClientLogReader(log, state)
+    log.write_text("[old] You have gained a level! Welcome to level 30!\n")
+    assert reader.poll() == []
+    assert state.level is None
+    with log.open("a") as stream:
+        stream.write("[now] You have gained a level! Welcome to level 2!\n")
+    assert len(reader.poll()) == 1 and state.level == 2
+
+
+def test_replaced_log_skips_history_and_invalidates_run_metrics(tmp_path: Path):
+    log = tmp_path / "synthetic.log"
+    log.write_text("")
+    state = RunState()
+    reader = ClientLogReader(log, state)
+    with log.open("a") as stream:
+        stream.write("[now] You have gained a level! Welcome to level 2!\n")
+        stream.write("[now] You have been slain by a synthetic mob.\n")
+    assert len(reader.poll()) == 2
+    state.camp = "synthetic camp"
+    state.observe_xp(100, now=10)
+    replacement = tmp_path / "replacement.log"
+    replacement.write_text("[old] You have gained a level! Welcome to level 40!\n"
+                           "[old] You have been slain by an old mob.\n")
+    replacement.replace(log)
+    assert reader.poll() == []
+    assert (state.level, state.xp, state.deaths, state.camp, state.zone) == (
+        None, None, None, None, None)
+    assert "Deaths: n/a" in render_status(state)
+    with log.open("a") as stream:
+        stream.write("[new] You have gained a level! Welcome to level 3!\n")
+    assert len(reader.poll()) == 1 and state.level == 3
+    assert state.deaths is None  # Run continuity still needs independent proof.
+
+
+def test_truncate_and_partial_log_cannot_replay_old_events(tmp_path: Path):
+    log = tmp_path / "synthetic.log"
+    log.write_text("")
+    state = RunState()
+    reader = ClientLogReader(log, state)
+    with log.open("a") as stream:
+        stream.write("[now] You have gained a level! Welcome to level 2!\n")
+    reader.poll()
+    with log.open("a") as stream:
+        stream.write("[partial] You have been slain")
+    assert reader.poll() == []
+    log.write_text("[old] You have been slain by a prior mob.\n")
+    assert reader.poll() == []
+    assert state.level is None and state.deaths is None
+
+
+def test_excessive_log_backlog_is_skipped_and_state_invalidated(tmp_path: Path):
+    log = tmp_path / "synthetic.log"
+    log.write_text("")
+    state = RunState()
+    reader = ClientLogReader(log, state)
+    with log.open("a") as stream:
+        stream.write("[now] You have gained a level! Welcome to level 2!\n")
+    reader.poll()
+    with log.open("a") as stream:
+        stream.write("[old] You have been slain by a prior mob.\n" * 14000)
+    assert reader.poll() == []
+    assert state.level is None and state.deaths is None
+
+
+def test_raw_xp_rate_discards_nonmonotonic_sample_times():
+    state = RunState()
+    state.observe_xp(100, now=10)
+    state.observe_xp(130, now=70)
+    assert state.xp_per_hour == 1800
+    state.observe_xp(140, now=20)
+    assert state.xp == 140 and state.xp_per_hour is None
+    with pytest.raises(ValueError, match="sample time"):
+        state.observe_xp(150, now=float("nan"))
 
 
 def test_current_level_progress_is_not_raw_xp_and_resets_on_level_or_drop():

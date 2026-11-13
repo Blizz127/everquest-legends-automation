@@ -1,5 +1,25 @@
 # FINDINGS
 
+## Non-replaying run telemetry — 2026-11-13 09:04 CST
+
+**OBSERVED source risk:** The October `LogTail` reset its byte offset to
+zero after inode replacement or truncation. In `ClientLogReader`, that could
+replay historical level/death lines, double-count deaths or restore stale
+zone state. Its separate `stat()` and `open()` could also race a rotation.
+
+**VERIFIED offline:** Run telemetry now uses the already bounded,
+file-descriptor-based `NonReplayingLogTail`. Existing file contents are
+skipped; replacement, truncation and oversized backlog are skipped and
+invalidate level, raw XP, level-progress rate, camp and zone. Because the
+same character/run is not independently proven after a reset, the death
+count becomes `n/a`. Reading the first bytes of a newly created log is an
+explicit `fresh_test_character=True` opt-in, armed only when that path was
+absent at startup. The default still skips first-created content. Focused
+tests cover existing history, first creation, replacement, truncation,
+partial lines and backlog. Raw XP rate samples now discard nonmonotonic
+timestamps rather than combining incompatible windows. No real character
+log or client input was used.
+
 ## Spell-gem click seam and bounded target recheck — 2026-11-13 08:43 CST
 
 **VERIFIED copied-client sources, read-only:** The copied default

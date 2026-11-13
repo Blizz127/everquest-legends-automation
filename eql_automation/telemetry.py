@@ -1,8 +1,9 @@
 """Read-only log event tracking and hourly status rendering.
 
-The incremental file reader and level-message parser come from the October
-Paladin/Cleric tool. XP, camp, and position require explicit trusted telemetry;
-this module never invents those values from unrelated log text.
+The level-message parser comes from the October Paladin/Cleric tool. The
+incremental reader now skips replacement history instead of replaying it.
+XP, camp, and position require explicit trusted telemetry; this module never
+invents those values from unrelated log text.
 """
 from __future__ import annotations
 
@@ -14,7 +15,8 @@ from pathlib import Path
 import re
 import time
 
-from .prior_rotation_core import LogTail, level_from_message, message_body
+from .location_log import NonReplayingLogTail
+from .prior_rotation_core import level_from_message, message_body
 
 
 DEATH = re.compile(r"^(?:You have been slain |You died|You die[.!])")
@@ -25,7 +27,7 @@ ZONE = re.compile(r"^(?:LOADING, PLEASE WAIT|You have entered )")
 class RunState:
     level: int | None = None
     xp: int | None = None
-    deaths: int = 0
+    deaths: int | None = 0
     camp: str | None = None
     zone: str | None = None
     blocker: str = "Private server endpoint/client configuration not verified"
@@ -44,10 +46,24 @@ class RunState:
                 self.level_progress_samples.clear()
             self.level = level
         body = message_body(line)
-        if DEATH.match(body):
+        if DEATH.match(body) and self.deaths is not None:
             self.deaths += 1
         if ZONE.match(body):
             self.zone = body
+
+    def invalidate_log_session(self) -> None:
+        """Unknown continuity cannot retain level, XP, camp, or death count."""
+        self.level = None
+        self.xp = None
+        self.xp_samples.clear()
+        self.level_progress_level = None
+        self.level_progress_fraction = None
+        self.level_progress_samples.clear()
+        self.zone = None
+        self.camp = None
+        self.deaths = None
+        self.blocker = "Client log reset or backlog; run identity is unverified"
+        self.next_step = "Reconfirm the fresh character and current client state"
 
     def observe_xp(self, total_xp: int, now: float | None = None) -> None:
         """Accept a verified cumulative XP value supplied by an adapter."""
@@ -56,6 +72,11 @@ class RunState:
                 total_xp < 0):
             raise ValueError("Cumulative raw XP must be a nonnegative integer")
         now = time.monotonic() if now is None else now
+        if (not isinstance(now, (int, float)) or isinstance(now, bool) or
+                not isfinite(now)):
+            raise ValueError("Cumulative XP sample time must be finite")
+        if self.xp_samples and now <= self.xp_samples[-1][0]:
+            self.xp_samples.clear()
         if self.xp is not None and total_xp < self.xp:
             self.xp_samples.clear()  # A reset or changed character needs a new rate window.
         self.xp = total_xp
@@ -150,7 +171,7 @@ def render_status(state: RunState) -> str:
         f"- XP/hour: {f'{rate:.1f}' if rate is not None else 'n/a'}\n"
         f"- Current-level XP progress: {f'{level_progress * 100:.1f}%' if level_progress is not None else 'n/a'}\n"
         f"- Current-level progress/hour: {f'{level_rate:.1f} percentage points/hour' if level_rate is not None else 'n/a'}\n"
-        f"- Deaths: {state.deaths}\n"
+        f"- Deaths: {state.deaths if state.deaths is not None else 'n/a'}\n"
         f"- Camp: {state.camp or 'none'}\n"
         f"- Zone: {state.zone or 'unknown'}\n"
         f"- Current blocker: {state.blocker}\n"
@@ -159,20 +180,21 @@ def render_status(state: RunState) -> str:
 
 
 class ClientLogReader:
-    """Tail only new lines, preserving the prior tool's no-history behavior."""
+    """Tail complete new lines; never replay replacement or truncated history."""
 
-    def __init__(self, path: Path, state: RunState) -> None:
-        self.tail = LogTail(path)
+    def __init__(self, path: Path, state: RunState, *,
+                 fresh_test_character: bool = False) -> None:
+        if not isinstance(fresh_test_character, bool):
+            raise ValueError("Fresh test character flag must be boolean")
+        self.tail = NonReplayingLogTail(
+            path, include_first_created_file=fresh_test_character)
         self.state = state
-        # If the file does not exist yet, its first content is new activity,
-        # not historical content to skip. The prior LogTail defaults to
-        # skipping on its first successful stat().
-        if not path.exists():
-            self.tail.initialized = True
-        self.tail.poll()
+        self.tail.poll()  # Existing bytes are history.
 
     def poll(self) -> list[str]:
-        lines = self.tail.poll()
+        lines, reset = self.tail.poll()
+        if reset:
+            self.state.invalidate_log_session()
         for line in lines:
             self.state.observe_log(line)
         return lines
