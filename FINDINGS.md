@@ -1,5 +1,34 @@
 # FINDINGS
 
+## Finer Crushbone corridor still fails a copied turn — 2026-11-13 17:34 CST
+
+**VERIFIED offline, no game input:** The retained included Boundary,
+detail-error 0.25 Crushbone mesh SHA-256
+`ba544e96700b51777d81c522c3dd6eba27c4d4a1af387852bf70729086158e56`
+has an 80-ground-polygon graph path from the copied arrival to the Slaver
+goal after excluding the second suspect portal 658↔623. The private
+hash-bound corridor JSON is
+`crushbone-detail025-avoid-658-623-route-0.41.39.json`, SHA-256
+`5762a13cf23d5b3a957d7e896662ff114700a1711c3d42cbe644f1a4eb15d9ad`.
+It is a graph result, not a verified walkable path.
+
+The required selector at width 1.2 and grade 1.2 rejected portal
+3244→3242 with `no_sampled_turn_disk_candidate` after 41 turn checks and
+zero full strips; expanding its candidate budget from 6 to 13 made no
+difference. The second selector JSON SHA-256 is
+`fa3c69bdcdca9ccf381690e9f3858b396d6b2be149b6584b5063bd57107e8c3a`.
+At that edge, 0.2 of the portal fails angular grade and sampled fractions
+0.35–0.8 fail radial grade, all at a 0.6-unit check radius. A separate
+read-only graph check found that excluding both directed portals 3244→3242
+and 658→623 disconnects the saved arrival from the Slaver goal: 1,376
+ground polygons are reachable without reaching the goal. Either edge alone
+leaves graph connectivity. All 13 sampled fractions at 3244→3242 fail at
+grade 1.2, and none passes even at diagnostic grade 2.0. A graph route
+avoiding polygon 3244 alone takes 198 polygons via 658→623 and fails its
+selector earlier at polygon 55 even at diagnostic grade 1.75. The mesh's
+21 Recast warnings remain unclassified, and the route has no full strip/BSP
+acceptance or real-client traversal. F11 remains disabled.
+
 ## Copied Kaladim starting-zone source — 2026-11-13 17:27 CST
 
 **VERIFIED offline, no game input:** `kaladima` is South Kaladim in the

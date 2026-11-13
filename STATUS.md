@@ -1,8 +1,18 @@
 # STATUS
 
-Updated 2026-11-13 17:31 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:34 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
+- Level-7 Crushbone route blocker: the finer copied 0.25-detail mesh has an
+  80-ground-polygon graph alternative avoiding suspect edge 658↔623, but
+  its width-1.2/grade-1.2 selector rejects portal 3244→3242 after 41 turns
+  and before full-strip checks. A larger candidate budget gave the same
+  result. A read-only directed-cut check shows that excluding both
+  3244→3242 and 658→623 disconnects arrival from the Slaver goal; either
+  edge alone leaves graph connectivity. Next: isolate their copied
+  source/detail geometry and prioritize the same-zone GFay camp; no F11
+  route is ready. Current XP/hour remains
+  unavailable, so the GFay orc camp remains a planning fallback only.
 - Fresh level-1 source progress: South and North Kaladim zone/object archives
   and maps were copied read-only from the owner's client to the private store
   with matching SHA-256. Pinned offline scene composition produced South
