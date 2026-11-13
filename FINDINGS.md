@@ -1,5 +1,26 @@
 # FINDINGS
 
+## Owner-run attack-free rotation preview — 2026-11-13 09:14 CST
+
+**VERIFIED offline:** `owner_live_entry.py` checks SHA-256 of the three
+reviewed October source files before importing their GUI, engine and spell
+catalog; changed or missing source refuses to start. Its adapted engine
+suppresses `/attack on` and `/attack off`, leaves autoattack manual, and
+requires explicit F6 gem preparation before F8 can arm. F8/F9 stop only the
+helper's rotation; the status line says Rotation ON/OFF. Only rotation
+`/cast`, `Bash`/`Smite` ability and Lay on Hands commands can reach the
+inherited sender in combat. The inherited physical Escape/Enter handling
+no longer clears an uncertain command draft during the same process. No
+targeting, movement, loot, vendor, camp or login command is added.
+
+The focused adapter/assist/mode set passed 39 tests. A no-device invocation
+of the adapted real October `Engine` blocked an unprepared F8 and did not
+create a sender. The entry's `--dry-run --level 1` passed against the copied
+client spell sample, with no game input. This does **not** verify live combat,
+target relation, chat-draft ownership, implied healing, input latency or
+level 50. The owner will drive any live test; the lead has not entered a
+character. The owner-run command is in HOWTO.md.
+
 ## Owner-run live rotation handoff — 2026-11-13 09:10 CST
 
 **VERIFIED read-only:** Alienware currently has the October

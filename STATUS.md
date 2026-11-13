@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 09:11 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 09:14 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.36.1. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype plus owner-run preview 0.37.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -170,6 +170,12 @@ Updated 2026-11-13 09:11 CST for coordinator task `829a00229b29`.
   owner-run command and controls. It is a legacy test path with attack
   toggles and gem preparation, not strict current ASSIST. No lead-controlled
   login, key input or character progress occurred.
+  An attack-free owner-run adapter for the reviewed October helper now
+  suppresses autoattack commands, requires explicit F6 preparation before
+  F8, and preserves uncertain chat drafts after physical Escape/Enter.
+  It hash-checks the inherited source before import. This preview is still
+  short of strict ASSIST because target relation, chat ownership, implied
+  healing and live stop latency are unverified.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -307,7 +313,11 @@ Updated 2026-11-13 09:11 CST for coordinator task `829a00229b29`.
   backlog and nonmonotonic XP-time regressions. Synthetic 1–50 reran to only
   fabricated level 50 with 1,446 events at
   `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T150416Z/`.
-- Current blocker: owner-run legacy rotation testing is now available, but
+  `python3 -m pytest -q tests/test_owner_live_adapter.py tests/test_key_bridge.py tests/test_assist.py tests/test_control.py`
+  — 39 focused checks passed; the adapted October engine no-device smoke
+  blocked F8 before F6; the owner entry's dry run passed on copied spell data.
+- Current blocker: owner-run legacy rotation testing and an attack-free preview
+  are available, but
   strict current ASSIST still lacks validated target/chat observation and
   native input; full-auto real-client acceptance still lacks the intended
   private endpoint/client configuration. Owner says the target is private, but its endpoint/client
@@ -322,7 +332,8 @@ Updated 2026-11-13 09:11 CST for coordinator task `829a00229b29`.
   conservative clearance failure remain unresolved. No actual client
   acceptance is ready. No private
   launcher/server publication destination is configured; this build is local.
-- Next step: collect the owner's live rotation observations without touching
+- Next step: stage the attack-free preview outside the Alienware game install,
+  smoke its startup without game input, and collect the owner's live rotation observations without touching
   his character, and build a strict rotation-only owner-run variant that does
   not toggle autoattack or prepare gems during combat. Obtain the intended private endpoint or separate client config,
   then verify target identity before any live test. Review copied client
