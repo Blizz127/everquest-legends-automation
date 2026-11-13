@@ -1,0 +1,22 @@
+--- a/test_rotation.py
++++ b/test_rotation.py
+@@ -405,6 +405,19 @@
+     wrong.paste((200, 20, 20), (80, 0, 100, 8))
+     assert bar_fraction(wrong, "red") is None
+     assert bar_fraction(Image.new("RGB", (100, 8), "black"), "red") is None
++
++
++def test_gauge_reader_finds_thin_hp_band_inside_broad_calibration():
++    from PIL import Image
++    for band_height in (6, 8, 10):
++        image = Image.new("RGB", (338, 51), (20, 20, 20))
++        image.paste((150, 0, 0), (0, 9, 203, 9 + band_height))
++        image.paste((0, 0, 150), (0, 45, 200, 51))  # Overlapping mana crop.
++        assert bar_fraction(image, "red") == pytest.approx(203 / 338)
++    ambiguous = Image.new("RGB", (338, 51), (20, 20, 20))
++    ambiguous.paste((150, 0, 0), (0, 2, 200, 8))
++    ambiguous.paste((150, 0, 0), (0, 22, 100, 28))
++    assert bar_fraction(ambiguous, "red") is None
+ 
+ 
+ def test_settings_atomic_roundtrip_and_clamp(tmp_path):

@@ -1,5 +1,64 @@
 # FINDINGS
 
+## Owner live test and isolated assist preview — 2026-11-13 09:43 CST
+
+**OBSERVED owner test, read-only trace review:** Blizz ran the November Solo
+Assist on Legira, reported level 7 in Greater Faydark. Trace
+`/tmp/eql-trace.jsonl` on Alienware, SHA-256
+`c24a83e8f42a246e7e3f87f30d5f04285a24bf5e058147198d1381a3c8024c26`,
+shows F8 casting armor, Yaulp, Bash, stun and four nukes; gem preparation
+and focus checks worked. HP was `null` for 13 early combat gauge reads, then
+read 0.7988 and later 0.93–1.0. The saved HP rectangle
+`[1963,661,2301,712]` is 338×51 at 2560×1600 and overlaps the mana crop.
+The copied default player UI describes a 14-pixel HP gauge. A six-to-ten-pixel
+red fill inside the 51-pixel crop reproduced `bar_fraction=None`; the old
+test painted almost the entire crop red. The actual rejected live pixels were
+not saved, so this is a supported cause, not confirmed pixel-level diagnosis.
+
+**OBSERVED stop limit:** The trace attributes two invalid-command replies to
+`/attack off`, but it records intended command text rather than the exact
+chat draft EverQuest received. Helper hotkeys F7/F11 occurred during those
+drafts. The trace does not prove whether the literal command is unsupported
+or mistyped. The bounded owner log has `Auto attack is on.` and no later
+`Auto attack is off.` through 09:31. The installed client describes `/attack`
+as a toggle and defines exact on/off messages. The November helper clears
+its internal attack flag on send without waiting for an off acknowledgment;
+native melee stop therefore remains unverified. Blizz must control and
+confirm melee himself in the isolated assist preview.
+
+**VERIFIED offline route evidence:** F11 halted on a missing recorded route
+because the default runtime mesh store was absent. A 37-zone mesh store
+already exists under the original helper's `artifacts/navmesh/store`, outside
+the game install. GFay mesh SHA-256
+`5f8e16c5bcd2221ba273f681750ca480349780524d23609c059a3e817df6abd9`
+and Crushbone mesh SHA-256
+`bee5a1893ab0e2ffd9c83d0d64a1d7392993b21661f59095b0e2e304b0588793`
+load with their installed-client source hashes. The owner's last logged GFay
+position and the Crushbone trigger share a dry component; the Crushbone
+entrance and Slaver Caves camp share one there. This supports an automatic
+route without hand recording, but no live follower/zone/stop acceptance.
+The level-9 primary Trainer Hill camp is disconnected in the current mesh;
+later guide camps also have disconnected/manual gaps. A mesh path alone does
+not prove hands-off level 50.
+
+**VERIFIED no-input build:** An isolated 0.39.1 preview was built from a
+read-only copy of the dirty November source at base revision `7e3cd28`.
+The original Alienware working tree and client install were not modified.
+The preview's HP reader selects a thin red inner band from the calibrated
+crop and rejects ambiguous bands. Its adapter suppresses every helper
+`/attack on/off`, blocks F11/F12 movement and route jobs, and labels melee
+manual when rotation stops. The direct `eql_rotation.py` entry refuses
+startup; `./launch.sh` applies a source hash guard and adapter. The preview
+is staged at `~/.local/share/eql-automation/owner-assist/0.39.1` on Alienware.
+The private preview archive is
+`~/.local/share/eql-automation/releases/eql-owner-assist-preview-0.39.1.tar.gz`
+on the devbox, SHA-256
+`513172e4c7152952b1f749d0f4d904b6f76a65c70b7f4113db813792808376fe`.
+Its no-device smoke passed source pin, thin-band HP, melee suppression and
+F11 block; `./launch.sh --dry-run --level 7` passed. Four focused adapter/guard
+tests passed on devbox. This is ready for owner-supervised HP/assist feedback,
+but **not** live accepted, strict target/chat verified, or full-auto ready.
+
 ## November helper target evidence and read-only hint reader — 2026-11-13 09:25 CST
 
 **OBSERVED source:** The current Alienware November 12 engine, SHA-256

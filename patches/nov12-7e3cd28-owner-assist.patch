@@ -1,0 +1,71 @@
+--- a/rotation_core.py
++++ b/rotation_core.py
+@@ -479,30 +479,47 @@
+ 
+ 
+ def bar_fraction(image, channel: str) -> float | None:
+-    """Estimate a calibrated, flat red/blue gauge; reject noisy/non-gauge images.
++    """Estimate one left-origin red/blue gauge band in a calibrated crop.
+ 
+     No reading is preferable to guessing HP from an unrelated window/skin.
+-    The calibration UI requires the inner gauge at full health/mana.
++    The crop can be taller than its inner fill; averaging the whole crop hides
++    a thin real bar. Multiple plausible bands with different fills are unknown.
+     """
+     import numpy as np
+     pixels = np.asarray(image.convert("RGB"), dtype=np.float32)
+-    if pixels.shape[1] < 20 or pixels.shape[0] < 2:
++    height, width = pixels.shape[:2]
++    if width < 20 or height < 3:
+         return None
+     dominant = pixels[:, :, 0 if channel == "red" else 2]
+     other = np.maximum(pixels[:, :, 1], pixels[:, :, 2 if channel == "red" else 0])
+     colored = (dominant >= 80) & (dominant > other * 1.35 + 8)
+-    columns = colored.mean(axis=0) >= 0.20
+-    hits = np.flatnonzero(columns)
+-    if len(hits) < 2:
++    qualifying = colored.mean(axis=1) >= max(0.025, 4 / width)
++    candidates = []
++    row = 0
++    while row < height:
++        if not qualifying[row]:
++            row += 1
++            continue
++        start = row
++        while row < height and qualifying[row]:
++            row += 1
++        if row - start < 3:
++            continue
++        columns = colored[start:row].mean(axis=0) >= 0.60
++        hits = np.flatnonzero(columns)
++        if len(hits) < 4 or hits[0] > max(3, width * 0.08):
++            continue
++        end = int(hits[-1]) + 1
++        if end < 12 or columns[:end].mean() < 0.65:
++            continue
++        candidates.append(((row - start) * end, end / width))
++    if not candidates:
+         return None
+-    width = len(columns)
+-    # The filled segment must start at the left edge and be mostly contiguous.
+-    if hits[0] > max(3, width * 0.08):
++    candidates.sort(reverse=True)
++    if (len(candidates) > 1 and candidates[1][0] >= candidates[0][0] * 0.5
++            and abs(candidates[1][1] - candidates[0][1]) > 0.08):
+         return None
+-    end = int(hits[-1]) + 1
+-    if columns[:end].mean() < 0.65:
+-        return None
+-    return min(1.0, end / width)
++    return min(1.0, candidates[0][1])
+ 
+ 
+ def profile_report(catalog: Catalog, level: int, known: set[int] | None = None) -> dict:
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -887,4 +887,4 @@
+ 
+ 
+ if __name__ == "__main__":
+-    main()
++    raise SystemExit("This owner preview requires ./launch.sh so its source guard and rotation adapter run.")

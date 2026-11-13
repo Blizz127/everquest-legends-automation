@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 09:25 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 09:43 CST for coordinator task `829a00229b29`.
 
-- Real-client level: n/a. No automated character login or live run.
-- Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no run). Camp: none.
-- Build: offline prototype 0.38.0; the 0.37.0 guarded owner-run preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Real-client level: 7 for Legira in Greater Faydark, **owner-reported**; no lead-controlled login or automated level gain verified.
+- Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
+- Build: offline prototype 0.39.1 plus an isolated owner-run assist preview staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -189,6 +189,18 @@ Updated 2026-11-13 09:25 CST for coordinator task `829a00229b29`.
   A read-only target log monitor now emits only new hints from a specified
   character/server file, revokes them on unsafe state changes, and never
   grants a unique target token or authorizes strict ASSIST.
+  Blizz's November helper live test fired armor, Yaulp, Bash, stun and four
+  nukes; gem preparation and focus checks worked. HP was null for 13 early
+  combat gauge readings, then later resolved. A thin red bar inside the
+  saved 51-pixel HP crop reproduces the rejection offline. The 0.39.1
+  preview measures a contiguous inner band and leaves ambiguous crops
+  unknown. It suppresses helper autoattack, makes native melee manual,
+  and blocks F11/F12. Its source guard refuses changed November modules.
+  It has not been run against a logged-in character by the lead or owner.
+  The original F11 halt is explained by an absent default runtime mesh
+  store; an existing 37-zone store has an offline GFay→Crushbone→Slaver
+  corridor on the relevant dry components. Live movement/stop/zone gates
+  are still unrun; the level-9 Trainer Hill primary camp is disconnected.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -331,11 +343,17 @@ Updated 2026-11-13 09:25 CST for coordinator task `829a00229b29`.
   blocked F8 before F6; the owner entry's dry run passed on copied spell data.
   `python3 -m pytest -q tests/test_target_log.py` — 6 focused synthetic
   checks passed; no owner-character log or input was used.
-- Current blocker: owner-run supervised F8/F9 legacy rotation testing is
-  available, but the new attack-free preview refuses the changed Alienware
-  source and
-  strict current ASSIST still lacks validated target/chat observation and
-  native input; full-auto real-client acceptance still lacks the intended
+  `python3 -m pytest -q tests/test_owner_nov12_adapter.py tests/test_owner_nov12_entry.py`
+  — 4 focused checks passed. The staged Alienware 0.39.1 no-device smoke
+  passed its source pin, thin HP band, attack suppression and F11 block;
+  `./launch.sh --dry-run --level 7` exited 0. The legacy 0.39.0 working
+  preview's packaged test import was incomplete and its staging directory
+  was renamed `0.39.0-smoke-incomplete`; it was never handed to the owner.
+- Current blocker: 0.39.1 owner-supervised F8/F9 HP and attack-free rotation
+  feedback is pending. Strict current ASSIST still lacks a unique target and
+  verified chat-draft observation. Full-auto F11 needs confirmed native melee
+  stop, G0/G2 movement-stop/follower acceptance, runtime mesh-store binding,
+  and a level-aware reachable-camp policy; real-client acceptance also lacks the intended
   private endpoint/client configuration. Owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -346,14 +364,15 @@ Updated 2026-11-13 09:25 CST for coordinator task `829a00229b29`.
   Butcherblock navmesh/recipe is absent from the approved retained store, and
   the reported GFay vertical mismatch on its historical route and
   conservative clearance failure remain unresolved. No actual client
-  acceptance is ready. No private
-  launcher/server publication destination is configured; this build is local.
-- Next step: keep the changed Alienware helper source read-only, collect the
-  owner's F8/F9 live observations without touching
-  his character, validate a unique selection signal and chat-open/draft signal
-  on an isolated client view, then build a strict rotation-only owner-run variant that does
-  not toggle autoattack or prepare gems during combat. Obtain the intended private endpoint or separate client config,
-  then verify target identity before any live test. Review copied client
+  acceptance is ready. The 0.39.1 assist preview is privately staged on
+  Alienware outside the game install; full auto has no release channel yet.
+- Next step: collect the owner's 0.39.1 HP/F8/F9 observations without touching
+  Legira. Build an observed autoattack state/stop acknowledgment gate for
+  full auto, then bind the existing mesh store in a separate owner-run route
+  trial after G0/G2 checks. Add reachable-camp fallback before level 9.
+  Validate a unique selection signal and chat-open/draft signal on an isolated
+  client view; the preview remains supervised. Obtain the intended private endpoint or separate client config,
+  then verify target identity before strict live assist input. Review copied client
   Boundary collision, water region shapes and dynamic-door rules; compare
   more offline clearance variants without promoting edges. Trace the
   historical GFay height mismatch. Inspect dynamic doors, water, zone
@@ -371,5 +390,5 @@ Updated 2026-11-13 09:25 CST for coordinator task `829a00229b29`.
   A spell-gem click path would also need a private-client screenshot, active
   hitbox calibration, unique target selection and bounded native mouse sender.
   ASSIST keeps
-  movement manual. The October assist tool's live preparation/combat remain
+  movement manual. The new 0.39.1 preview's live HP and stop behavior remain
   unverified.

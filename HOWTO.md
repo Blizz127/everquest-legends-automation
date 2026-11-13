@@ -1,11 +1,11 @@
-# EverQuest Legends automation — current build 0.38.0
+# EverQuest Legends automation — current build 0.39.1
 
 ## Current availability
 
-This project's bot remains an **offline simulator and planning library**.
-The separate Alienware helper below has an owner-run legacy rotation path;
-the lead has not run it against a logged-in character. This project does not
-launch EverQuest Legends or log in. The owner's installed client points to
+This project's full-auto bot remains an **offline simulator and planning
+library**. An isolated, owner-run rotation preview 0.39.1 is staged on the
+Alienware outside the game install. Blizz runs the game and helper himself;
+the lead has not logged in or sent game input. The installed client points to
 Daybreak's live service. Its published
 [Rules of Conduct](https://help.daybreakgames.com/hc/en-us/articles/53818164365843-What-are-the-EverQuest-Legends-Rules-of-Conduct),
 [EULA](https://www.daybreakgames.com/eula?locale=en_US), and
@@ -16,38 +16,44 @@ is a private server, but its endpoint has not been found; the installed retail
 client still points to Daybreak. Strict live ASSIST and FULL AUTO are not yet
 validated. The owner chose to test rotation himself on live.
 
-## Owner-run rotation test on Alienware today
+## Owner-run rotation test on Alienware today: preview 0.39.1
 
-Blizz starts the game through Lutris and logs in himself. The **currently
-installed Alienware helper** can then be opened from the desktop entry **EQ
-Legends Solo Assist**, or from an Alienware terminal:
+Close any already running Solo Assist window. Blizz starts the game through
+Lutris and logs in himself. In an Alienware terminal, start the isolated
+preview:
 
 ```bash
-cd ~/Projects/everquest-legends-rotation
+cd ~/.local/share/eql-automation/owner-assist/0.39.1
 ./launch.sh
 ```
 
 The GUI starts disarmed. Blizz chooses his character and current level there.
 **F6** explicitly refreshes and memorizes the spell bar while out of combat.
-He selects and moves to the target himself. **F8** arms persistent combat on
-his selected target, **F9** turns it off, **F7** toggles, and **F10** requests a
-heal. F8 does not prepare spells or select a target. The helper's STOP button
-or closing its window ends the test. **Use F8/F9 for this supervised rotation
-test; do not press F11 or F12.** F11 can start unattended targeting and
-movement even though its live movement/stop gates are not complete; F12
-records route points. Do not run two rotation helpers at once.
+He selects and moves to the target himself. **F8** arms the spell and ability
+rotation on that target; **F9** stops it; **F7** toggles; **F10** requests a heal.
+F8 does not prepare gems or select a target. The helper's STOP button or
+closing its window ends the test. The preview suppresses all helper `/attack`
+commands: **Blizz controls melee himself, and F9 does not turn off native
+melee.** Use the game's own attack control to stop it and verify it is off.
+F11 movement and F12 route recording are disabled in this preview. The helper
+does not move, retarget, loot, vendor or camp. Do not run two helpers at once.
 
-The current Alienware source is a larger November 12 revision of the October
-helper. F8 uses `/consider` to review the selected target and controls melee
-with `/attack`; it does not itself select targets, move, loot, vendor or camp.
-It is a **legacy combat assist**, not the strict rotation-only ASSIST requested
-for this project. Its README reports an earlier live F8 fight, but that
-evidence file is absent from the current checkout. I verified only its
-read-only `./launch.sh --dry-run --level 4` startup; I did not log in, send
-keys or validate live combat. Blizz should watch the helper's status and use
-F9 if the target or action is wrong. F9 disarms the helper on key-down, but
-its native `/attack off` can wait until game focus/input is safe. Check that
-melee actually stops. F10 also sends `/attack off` before its heal.
+The preview's HP reader finds a thin colored band inside the saved crop.
+That change and its source guard passed a no-input Alienware smoke, but live
+HP reading and smart healing remain **unverified**. If the GUI shows HP
+unknown, heal manually. The preview still uses `/consider` to review the
+owner-selected target and inherits unverified chat-draft/target-identity
+behavior; it is a supervised test, not accepted strict ASSIST. F9 displays
+that rotation is off and melee is manual.
+
+**OBSERVED owner test of the original November helper:** F8 cast armor,
+Yaulp, Bash, stun and four nukes; gem preparation and focus checks worked.
+Early HP readings were null, then later readings appeared. Two invalid-command
+replies were attributed to `/attack off`, but the trace cannot prove the exact
+text EverQuest received. Native melee stop was not confirmed. F11 halted
+because its default navmesh store was missing. Keep the original helper at
+`~/Projects/everquest-legends-rotation` unchanged for comparison; do not use
+its F11 until the route and stop gates pass.
 
 The 0.37.0 attack-free wrapper was staged outside the game install, but its
 source hash guard **refused** the changed November helper. It was moved to
@@ -470,10 +476,10 @@ polygons and a 24-polygon offline Detour query path. Its data stays under
 `~/.local/share/eql-automation/nav-candidates/`. No query is an accepted bot
 route or proof of game movement; the active bot still has no verified nav edge.
 
-The separate Alienware helper at `~/Projects/everquest-legends-rotation` is
-the supervised owner-run F8/F9 test path described above. Its current November
-source is not this build's strict ASSIST implementation. Do not run its
-installer: it writes character INIs in the protected Alienware prefix.
+The owner-run 0.39.1 preview above is built from a pinned copy of the November
+helper plus the source patch in `patches/`. Its original working tree at
+`~/Projects/everquest-legends-rotation` was not edited. Do not run the old
+tool's installer: it writes character INIs in the protected Alienware prefix.
 
 ## Verification
 
@@ -485,8 +491,17 @@ python3 -m pytest -q tests/test_spell_catalog.py tests/test_assist.py
 python3 -m pytest -q tests/test_ui_schema.py
 python3 -m pytest -q tests/test_screen_observer.py
 python3 -m pytest -q tests/test_target_log.py
+python3 -m pytest -q tests/test_owner_nov12_adapter.py tests/test_owner_nov12_entry.py
 python3 -m pytest -q tests/test_nav_evidence.py
 python3 -m compileall -q eql_automation
+```
+
+The staged owner preview also supports a no-input Alienware check:
+
+```bash
+cd ~/.local/share/eql-automation/owner-assist/0.39.1
+/usr/bin/python3 -B owner_nov12_smoke.py
+./launch.sh --dry-run --level 7
 ```
 
 The **real-client** level 50 run, in-game mode switching,
