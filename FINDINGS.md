@@ -1,5 +1,32 @@
 # FINDINGS
 
+## Bounded automatic GFay portal selection — 2026-11-13 14:05 CST
+
+**VERIFIED offline, no game input, project 0.41.15:** A new layered selector
+tests shared-portal turn disks, expands fractions only at failed midpoints,
+connects surviving choices through audited polygon strips, and rechecks the
+chosen whole ground route. Missing/ambiguous portals, unsupported surfaces,
+failed final checks and exhausted work budgets fail closed. It returns
+`route_accepted=false` and `real_client_accepted=false` even on a sampled
+geometry candidate. This avoids hand-picked route points in the offline
+pipeline; it has no owner-client input path.
+
+Against the hash-matched copied GFay mesh and the saved 216-polygon graph
+corridor, the final source run passed in 92.162 seconds with 243 turn-disk
+checks and 270 candidate strip checks, then passed its final whole-strip
+recheck to the same 2-unit pre-trigger standoff. It chose portal fractions
+`{170: 0.75, 171: 0.70, 187: 0.60}`; the other 211 links remained at 0.50.
+The result, including all 216 mesh-frame points, is outside git at
+`~/.local/share/eql-automation/nav-candidates/gfay-auto-portal-selection-final-20261113T2004Z.json`
+(SHA-256 `5a29d3ddc9a70c5d1cb6e7746c884fc2800394f96e97e5a53cf9d3834696ef82`).
+Five focused selector tests passed, including adjacent candidate conflict,
+missing link, sample exhaustion and final-audit refusal. The selector does
+not repair a strip failure bounded by two disk-passing midpoints and can
+reject a traversable turn because its disk is conservative. The copied area-4
+zone transition has no verified arrival point; current position, dynamic
+obstacles, follower error, G0/G2 and real client movement remain unverified.
+F11 is still disabled and no actual level gain has been accepted.
+
 ## GFay ground-strip candidate and turn review — 2026-11-13 13:52 CST
 
 **VERIFIED offline, no game input, project 0.41.14:** `audit_route_strips()` now accepts

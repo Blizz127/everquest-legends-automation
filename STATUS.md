@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 13:57 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 14:05 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
-- Owner feedback check: at 13:09 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware; Legira's real-client log still had the 09:31:50 CST last-modified time. No 0.39.3/0.39.4 live result is available.
+- Owner feedback check: at 13:59 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` was found on Alienware. The last successful log mtime check at 13:09 CST showed Legira's real-client log still at 09:31:50 CST. No 0.39.3/0.39.4 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
-- Build: offline prototype 0.41.14 plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.41.10 corrects its focused fixture to copied client IDs and unlock levels; 0.41.11 adds log-line and zone-generation identity for offline location tracking; 0.41.12 rejects same-zone reentry during G2 and requires verified reachable camps before selecting a full-auto camp; 0.41.13 carries exact supply warnings into sticky offline state and loosens only a measured float32 portal-edge tolerance; 0.41.14 adds explicit bounded long-strip budgets and a conservative turn-disk diagnostic; 0.39.4 exposes unknown-HP reasons in the owner UI without changing input policy. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.41.15 plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.41.10 corrects its focused fixture to copied client IDs and unlock levels; 0.41.11 adds log-line and zone-generation identity for offline location tracking; 0.41.12 rejects same-zone reentry during G2 and requires verified reachable camps before selecting a full-auto camp; 0.41.13 carries exact supply warnings into sticky offline state and loosens only a measured float32 portal-edge tolerance; 0.41.14 adds explicit bounded long-strip budgets and a conservative turn-disk diagnostic; 0.41.15 adds a bounded offline automatic portal selector; 0.39.4 exposes unknown-HP reasons in the owner UI without changing input policy. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -474,7 +474,9 @@ Updated 2026-11-13 13:57 CST for coordinator task `829a00229b29`.
   before the copied Crushbone area-4 trigger. A conservative turn disk flags
   local grade at waypoints 170, 171 and 187. With three adjusted portal
   crossings, separate whole-route runs pass all 214 turn disks and all 215
-  ground strips plus 214 seams. The trigger crossing, arrival
+  ground strips plus 214 seams. The new automatic selector independently
+  chose fractions 0.75/0.70/0.60 at those links and passed a whole ground
+  strip recheck. The trigger crossing, arrival
   and actual movement are unverified, so no route is accepted into F11.
   The copied owner log's
   no-room and food/drink warnings now stay in offline telemetry until a
@@ -502,8 +504,8 @@ Updated 2026-11-13 13:57 CST for coordinator task `829a00229b29`.
   Alienware outside the game install; full auto has no playable release yet.
 - Next step: design a separate observed zone-trigger/arrival check for the
   sampled GFay ground approach, without promoting F11 before G0/G2 and
-  actual movement. Select portal fractions automatically in a future route
-  planner instead of fixing them by hand.
+  actual movement. Integrate the offline portal selector only after an owner
+  G0 stop result, current-position observation and measured follower error.
   Collect the owner's 0.39.4 HP/F8/F9 observations and supervised
   G0 movement-stop result without touching Legira. Build a bounded owner-run
   G2 straight-motion measurement program using the isolated pulse bridge,

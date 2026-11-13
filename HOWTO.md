@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.14 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.15 / owner preview 0.39.4
 
 ## Current availability
 
@@ -69,6 +69,12 @@ complete approach passed 214 sampled turn disks and all 215 strips in
 separate whole-route offline runs. The actual zone transition, Crushbone
 arrival and client movement are unverified. F11 remains disabled. The
 owner-run preview remains 0.39.4.
+Version 0.41.15 chooses portal crossing fractions automatically for an offline
+ground corridor. On the copied GFay mesh it selected three adjusted crossings
+and passed its turn and whole-strip checks to a pre-trigger standoff. This
+does not supply a verified Crushbone arrival, current character position,
+dynamic obstacle check or live movement test. F11 remains disabled; the
+owner-run preview and launch steps below remain 0.39.4.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
