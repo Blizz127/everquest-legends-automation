@@ -66,7 +66,7 @@ class NativeMeleeStopGate:
         self.last_observed_at = observed_at
         self.state = next_state
         if self.pending_since is not None:
-            if next_state is MeleeState.OFF and observed_at >= self.pending_since:
+            if next_state is MeleeState.OFF and observed_at > self.pending_since:
                 self.pending_since = None
             elif next_state is MeleeState.ON and observed_at >= self.pending_since:
                 # The one attempted toggle did not establish OFF. A second

@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 10:10 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 10:16 CST for coordinator task `829a00229b29`.
 
-- Real-client level: 7 for Legira in Greater Faydark, **owner-reported**; no lead-controlled login or automated level gain verified.
+- Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.40.3 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.40.4 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -361,7 +361,7 @@ Updated 2026-11-13 10:10 CST for coordinator task `829a00229b29`.
   The 0.39.2 preview passed five adapter/guard checks, no-device smoke,
   level-7 dry-run and an offscreen measurement GUI smoke on Alienware.
   The isolated reachable-camp patch passed 19 focused camp/travel checks;
-  a copied-mesh query accepted GFay→Slaver and Slaver→GFay Orc candidates,
+  a copied-mesh query found GFay→Slaver and Slaver→GFay Orc connected candidates,
   rejected Slaver→Trainer Hill, and stopped the offline sequence at level 11.
   Preview 0.39.3 rejected the broad saved HP crop and synthetic red accents;
   its pinned-source smoke, level-7 dry-run and offscreen GUI smoke passed on
@@ -370,14 +370,26 @@ Updated 2026-11-13 10:10 CST for coordinator task `829a00229b29`.
   `78c547a0a0cdde6418a93de32bb50de6f46bd2e14872725a97f44eb894655c6e`.
   The original 69-MB, 116-file mesh store was copied outside the game and
   old helper; `diff -qr` matched it and the isolated loader opened GFay and
-  Crushbone. The default GFay→Crushbone path is 4,927.779 mesh units and
-  passes within 0.932 units of a wall, below its 1.2-unit baked agent radius;
-  the Crushbone→Slaver corridor contains a polygon with 0.2-unit clearance.
+  Crushbone. The default GFay→Crushbone path is 4,927.779 mesh units; its
+  minimum waypoint clearance is 0.932, below the 1.2-unit baked agent radius;
+  the Crushbone→Slaver corridor contains a polygon with 0.2-unit centroid
+  clearance. A later full-path sample at ≤2-unit spacing supersedes the
+  waypoint minima: only 0.122-unit clearance on the GFay leg and 0.528 on the
+  Crushbone leg. Wider funnel margins of 4/6 remain below the 1.2-unit baked
+  radius on both legs. F11 is withheld.
   These are offline candidates only. A read-only trace summarizer reproduced
   the owner trace SHA and 13 unknown / 5 known HP gauge samples.
   A recording-only native melee stop gate requires exact ON/OFF log messages,
   a separately verified toggle, one attempt and a later OFF acknowledgment;
-  four focused safety checks passed. It is not connected to the live helper.
+  five focused safety checks passed. It is not connected to the live helper.
+  A bounded offline path-quality audit checks path-local area, raycast,
+  clearance, slope and sample budget; four focused checks passed. It requires
+  measured follower error and is not wired to F11. A no-input Alienware check
+  rejected both copied route legs before clearance sampling: GFay off allowed
+  mesh and Crushbone blocked raycast. The owner's log confirms
+  one level-8 centurion kill for 2.574% XP but does not locate that fight;
+  it also reports no food/drink and full bags. The only GFay guide camp is
+  about 4,104 mesh units from the last fix and its route has a steep polygon.
 - Current blocker: 0.39.3 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee

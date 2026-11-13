@@ -43,3 +43,11 @@ def test_log_gap_and_clock_rollback_discard_state():
     gate.observe("Auto attack is on.", 8)
     assert not gate.observe("Auto attack is off.", 7)
     assert gate.request_stop(9) is StopDecision.MANUAL
+
+
+def test_same_instant_off_message_cannot_ack_a_new_toggle():
+    gate = NativeMeleeStopGate(toggle_verified=True)
+    gate.observe("Auto attack is on.", 1)
+    assert gate.request_stop(2) is StopDecision.SEND_ONCE
+    gate.observe("Auto attack is off.", 2)
+    assert gate.request_stop(2.1) is StopDecision.WAIT

@@ -1,5 +1,38 @@
 # FINDINGS
 
+## Bounded corridor audit model and local-camp evidence — 2026-11-13 10:16 CST
+
+**VERIFIED offline:** `audit_path` now checks a mesh path with a capped
+sample count, allowed corridor areas, a raycast for each funnel segment,
+path-local allowed-mesh membership, slope review and clearance at no more
+than two units between samples. The clearance budget includes the baked
+agent radius, measured follower error and half the sample spacing. Missing
+follower error rejects by default; even a geometric pass remains explicitly
+unaccepted in the real client. Four focused corridor checks and five melee
+stop checks passed. This audit is not yet wired into the November follower,
+so F11 remains disabled; every runtime replan and recorded route still needs
+a real guard. A no-input Alienware check against the copied route artifact
+returned `sample_off_allowed_mesh` for GFay and `segment_not_walkable` for
+Crushbone even with slope review disabled. Both are conservative rejections;
+the separate dense clearance audit below independently found sub-radius
+chokes. The reproducible offline GFay/Crushbone route artifact is held
+outside git at
+`~/.local/share/eql-automation/nav-candidates/legira-gfay-crushbone-candidate-20261113.json`,
+SHA-256
+`4156dc438757689a8f3b9ca3ff20a1d1b946158f43e41aa9adf30016cda3b88d`.
+
+**OBSERVED owner log, read-only:** A level-8 Orc centurion in GFay awarded
+Legira 2.574% current-level XP at 09:27:56, but the first `/loc` fix was
+44 seconds later, so the fight's exact position is unknown. The guide's
+only GFay Orc Camps anchor is about 4,104 dry-mesh units from that fix and
+its candidate route includes a steep polygon; it is no accepted short local
+route. The same log repeatedly reports no food or drink from 09:09:50 through
+09:31:18, and no inventory room for loot at 09:27:57. Copied owner log
+SHA-256:
+`d622b3c12567f903d411860d3de1a0be28e4e8b38be7bbdc2bebfdd62c60f04e`.
+One kill cannot establish XP/hour or level-11 camp suitability. No character
+input was sent by the lead.
+
 ## Native melee stop acknowledgment model — 2026-11-13 10:10 CST
 
 **VERIFIED offline:** A recording-only `NativeMeleeStopGate` now accepts only
@@ -32,14 +65,20 @@ staging. No game data was committed to git.
 
 **VERIFIED offline path query, not live acceptance:** From Legira's last
 logged GFay position to the Crushbone trigger, the default dry mesh path is
-4,927.779 units, 200 polygons and 31 waypoints. Its minimum waypoint/sample
-wall clearance is 0.932, below the baked 1.2-unit agent radius; it includes
+4,927.779 units, 200 polygons and 31 waypoints. Its minimum waypoint wall
+clearance is 0.932, below the baked 1.2-unit agent radius; it includes
 two corridor polygons with centroid clearance below 2 and one with 81.78°
 slope, above the 75° bake limit. From a historical Crushbone arrival fix to
 Slaver Caves west, the dry mesh path is 1,049.819 units, 80 polygons and 21
 waypoints; one corridor polygon has only 0.2-unit centroid clearance and a
-polygon reaches 83.79° slope. A wider funnel margin of 4 improves waypoint
-clearance but leaves those corridor findings. The zone trigger has no encoded
+polygon reaches 83.79° slope. A later full-path sample at no more than two
+planar units per point **superseded** the earlier sparse minima: the GFay path
+reaches only 0.122-unit wall clearance (2,510–2,529 samples across margin
+variants), and the Crushbone path reaches only 0.528 (556–571 samples). Wider
+funnel margins of 4 and 6 still leave minima of 0.175/0.249 in GFay and
+0.966/0.978 in Crushbone, all below the 1.2-unit baked agent radius. A nearby
+Crushbone mesh surface also differs from interpolated path Z by about 1.4 units.
+The zone trigger has no encoded
 arrival point. The route therefore remains a candidate; no F11 live travel is
 accepted. Aggro, water, dynamic obstacles, transition and movement-stop
 behavior remain unverified. A light trace summarizer reproduced the owner
@@ -103,7 +142,7 @@ choice, keeps an owner-recorded path or a camp already occupied by the owner,
 and rejects disconnected mesh camps. The patch applied cleanly to the
 0.39.1 runtime copy; 19 focused camp/travel checks passed in an isolated
 Alienware source copy. Against the original helper's hashed mesh store, a
-read-only query returned Slaver Caves reachable from Legira's last GFay fix,
+read-only query returned Slaver Caves mesh-connected from Legira's last GFay fix,
 Trainer Hill disconnected from Slaver, and GFay Orc Camps reachable from
 Slaver. A synthetic guide/mesh progression chooses Slaver at levels 7–8,
 GFay Orc Camps at 9–10, then stops at 11 with **no verified camp route**.
