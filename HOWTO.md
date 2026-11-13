@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.20.0
+# EverQuest Legends automation — current build 0.21.0
 
 ## Current availability
 
@@ -228,7 +228,20 @@ the current OBJ. The current winding-corrected OBJ has SHA-256
 `1ec7706037c35c06205c026c4ed56c1b4032fd2fb7a8e2dbe0cf2490d18a1bc3`.
 Boundary handling and water need real-client validation before a route is
 usable. A pinned Recast/Detour library build is local under
-`~/.local/share/eql-automation/toolchains/`; no navmesh has been accepted.
+`~/.local/share/eql-automation/toolchains/`.
+
+For bounded **offline** navmesh experiments, place the upstream
+[RecastNavigation source](https://github.com/recastnavigation/recastnavigation)
+at `~/.local/share/eql-automation/toolchains/recastnavigation`, check out
+commit `9f4ce64458dfae86e1239c525ddc219c4e9e06f1`, then run
+`tools/build_local_nav_tools.sh`. The script verifies that pin and compiles
+`eql-bake-local` and `eql-query-local` outside git. The baker takes a copied
+candidate OBJ, an output `.nav` path, WLD center X/Y, half-extent, min/max Z
+and label. It uses the offline height/radius/climb/slope profile `(8,5,2,45)`.
+One local Butcherblock FAYHOUSE 256×256 bake produced 156 provisional nav
+polygons and a 24-polygon offline Detour query path. Its data stays under
+`~/.local/share/eql-automation/nav-candidates/`. No query is an accepted bot
+route or proof of game movement; the active bot still has no verified nav edge.
 
 The prior October Paladin/Cleric prototype remains at
 `/home/blizz/Projects/everquest-legends-rotation/`. Its historical controls

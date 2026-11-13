@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 05:34 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 05:39 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.20.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.21.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -65,7 +65,9 @@ Updated 2026-11-13 05:34 CST for coordinator task `829a00229b29`.
   uncertain candidate obstacles. The OBJ face order now matches the Lantern
   exporter and yields predominantly upward terrain normals. Recast/Detour
   source was checked out at historical pin `9f4ce64` and static libraries
-  built locally, but no navmesh or route has been accepted.
+  built locally. A bounded provisional FAYHOUSE region now bakes to 323 nav
+  vertices and 156 polygons; one 24-polygon offline Detour query completes.
+  No route has been accepted into the bot graph or tested in the client.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -119,6 +121,12 @@ Updated 2026-11-13 05:34 CST for coordinator task `829a00229b29`.
   `--audit-butcher-materials` resolved all 1,925 mesh material chains and
   identified 6,443 Boundary faces. CMake/Ninja Recast/Detour build passed.
   This is offline geometry only.
+  A synthetic plane baked to 17 nav polygons and a complete 6-polygon query;
+  the copied-scene FAYHOUSE region baked to 323 nav vertices/156 polygons,
+  Detour data SHA-256
+  `6347c67693d782d4643b5a45c15b13c9415606aecd678cf6e50b1df1e4db3863`.
+  A sampled 24-polygon query completed offline; another was partial. The
+  current active graph still has zero verified Butcherblock edges.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -130,9 +138,9 @@ Updated 2026-11-13 05:34 CST for coordinator task `829a00229b29`.
   launcher/server publication destination is configured; this build is local.
 - Next step: obtain the intended private endpoint or separate client config,
   then verify target identity before any live test. Review copied client
-  Boundary collision, water and dynamic-door rules; bake a bounded provisional navmesh from
-  the provisional Butcherblock geometry in this project's approved data store;
-  check conservative clearance, GFay height alignment, dynamic doors, water,
+  Boundary collision, water and dynamic-door rules; compare offline navmesh
+  variants and conservative clearance without promoting edges. Check GFay
+  height alignment, dynamic doors, water,
   zone transitions and actual movement before accepting a route. Review
   Crushbone next, then select camps from observed level and safety. Build a
   read-only runtime UI observer on an isolated client view. ASSIST keeps

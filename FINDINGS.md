@@ -1,5 +1,39 @@
 # FINDINGS
 
+## Bounded provisional Recast/Detour bake — 2026-11-13 05:39 CST
+
+**VERIFIED offline toolchain and synthetic smoke:** `tools/build_local_nav_tools.sh`
+rebuilds two local C++ tools against pinned Recast/Detour
+`9f4ce64458dfae86e1239c525ddc219c4e9e06f1`. A fabricated 64×64 flat
+WLD-XYZ plane baked to a 17-polygon Detour mesh; an offline query from
+`(10,10,0)` to `(50,50,0)` completed through 6 corridor polygons and 2
+straight points. The tools convert WLD XYZ/Z-up to Recast `(-X,Z,Y)`/Y-up and
+use a bounded grid. No game or account input was sent.
+
+**VERIFIED copied-scene local bake:** Around the copied
+`FAYHOUSE_ACTORDEF` location `(1425.765747, 2737.740967, -3.652549)`, a
+256×256-unit region of the winding-corrected provisional OBJ selected 885
+triangles, 160 of which Recast marked walkable by slope. With an **offline
+candidate** agent profile height 8, radius 5, climb 2, slope 45°, the bake
+produced 323 nav vertices, 156 nav polygons, and 25,484 Detour data bytes.
+The untracked data is
+`~/.local/share/eql-automation/nav-candidates/butcher-fayhouse-128.nav`
+(SHA-256 `6347c67693d782d4643b5a45c15b13c9415606aecd678cf6e50b1df1e4db3863`).
+The offline bake/query manifest SHA-256 is
+`a2a77cfbad2f05af4cc9ad737c7592632c3a10e2f869271c91c0e3231d561991`.
+An offline Detour query from WLD `(1405.765747,2757.740967,-3.65255)` to
+`(1405.765747,2797.740967,-3.65255)` completed through 24 corridor polygons
+and 8 straight points. A different sampled query from the house location to
+`(+50,+50)` found both nearest polygons but returned a partial corridor.
+This is **not** the historical Nov 6 mesh or route; its earlier clearance
+failure is not resolved by these different local samples.
+
+**Acceptance remains closed:** The candidate OBJ contains uncertain Boundary
+faces and lacks verified water/door handling. Recast's route is an offline
+geometry query, not observed game movement. No waypoint or zone edge has been
+promoted into the active bot graph; actual client acceptance remains false.
+The intended private server endpoint or separate login config remains missing.
+
 ## Butcherblock material chains and OBJ winding — 2026-11-13 05:34 CST
 
 **VERIFIED copied-client material audit:** All 1,925 `0x36` meshes have valid
