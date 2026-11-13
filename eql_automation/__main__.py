@@ -3,9 +3,11 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 
 from .modes import Action, ActionKind, Mode, ModeController
 from .sim import SimSink, run_demo, synthetic_graph
+from .synthetic_run import default_output_dir, run_synthetic_1_50
 
 
 def shell() -> None:
@@ -45,9 +47,15 @@ def main() -> None:
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--demo", action="store_true", help="run one synthetic scenario")
     group.add_argument("--shell", action="store_true", help="switch simulated modes without restarting")
+    group.add_argument("--synthetic-1-50", action="store_true",
+                       help="run a closed-loop synthetic level 1–50 scenario; not real-client proof")
+    parser.add_argument("--output", type=Path,
+                        help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     args = parser.parse_args()
     if args.demo:
         print(json.dumps(run_demo(), indent=2))
+    elif args.synthetic_1_50:
+        print(json.dumps(run_synthetic_1_50(args.output or default_output_dir()), indent=2))
     else:
         shell()
 

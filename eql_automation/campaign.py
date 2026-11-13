@@ -49,15 +49,17 @@ class CampaignPlanner:
 
         if state.gm_present:
             return Action(ActionKind.PAUSE, "GM presence requires immediate stop and review")
-        if state.dead:
-            return Action(ActionKind.RECOVER, "corpse recovery requires a verified route")
         if state.disconnected:
             return Action(ActionKind.LOGIN, "relogin requires authorized account access")
+        if state.dead:
+            return Action(ActionKind.RECOVER, "corpse recovery requires a verified route")
         if any(value is None or not 0 <= value <= 1
                for value in (state.hp, state.mana, state.bag_fullness)):
             return Action(ActionKind.PAUSE, "health, mana or bag state is unknown")
         if state.under_attack and not state.target_present:
             return Action(ActionKind.PAUSE, "being attacked with no verified current target")
+        if state.under_attack:
+            return None  # Only the combat rotation may act until combat ends.
         if state.bag_fullness >= 0.9:
             return Action(ActionKind.VENDOR, "sell only after item/value review")
         if state.hp <= 0.5 or state.mana <= 0.25:

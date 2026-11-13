@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.3.0
+# EverQuest Legends automation — current build 0.4.0
 
 ## Current availability
 
@@ -18,6 +18,7 @@ From this project directory:
 ```bash
 python3 -m eql_automation --demo
 python3 -m eql_automation --shell
+python3 -m eql_automation --synthetic-1-50
 ```
 
 The demo prints a synthetic route and mode-permission results. The shell stays
@@ -38,6 +39,14 @@ quit
 without a restart. Each switch prints `MODE ...` on screen. `mode off` cancels
 the previous action permit immediately; `quit` stops the shell. These are
 terminal commands, not in-game commands or hotkeys.
+
+`--synthetic-1-50` runs a closed-loop **fabricated** world. It exercises the
+planner and stops at synthetic level 50 or fails if progress stalls. The output
+prints `simulation_only: true` and `real_client_level_verified: false`.
+Trace, summary and a synthetic status file go under
+`~/.local/share/eql-automation/runs/synthetic-1-50-<UTC timestamp>/`.
+Use `--output DIRECTORY` to choose a different trace directory. These files
+are test evidence only; they do not show an EverQuest Legends character at 50.
 
 | Simulated mode | Actions permitted by the planner |
 | --- | --- |
@@ -75,6 +84,7 @@ python3 -m pytest -q tests/test_offline.py
 python3 -m compileall -q eql_automation
 ```
 
-The level 50 run, real-client map ingestion, in-game mode switching, automated
-spell acquisition, camps, death recovery, and relogin are not implemented or
-verified. `FINDINGS.md` records the exact client/server evidence and blocker.
+The **real-client** level 50 run, map ingestion, in-game mode switching,
+automated spell acquisition, camps, death recovery, and relogin are not
+implemented or verified. `FINDINGS.md` records the exact client/server
+evidence and blocker.

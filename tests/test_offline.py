@@ -9,6 +9,7 @@ from eql_automation.spells import SpellPlanner, SpellSpec
 from eql_automation.campaign import Camp, CampaignPlanner, WorldSnapshot
 from eql_automation.telemetry import ClientLogReader, RunState, StatusWriter
 from eql_automation.world_nav import WorldNav, ZoneTransition
+from eql_automation.synthetic_run import SyntheticEnvironment, run_synthetic_1_50
 
 
 def test_mode_boundary_and_immediate_stop():
@@ -145,6 +146,10 @@ def test_campaign_pauses_on_unknown_or_unsafe_state_and_loots_only_when_safe():
     assert planner.decide(WorldSnapshot(**{**base, "loot_available": True})).kind == ActionKind.LOOT
     assert planner.decide(WorldSnapshot(**{**base, "loot_available": True,
                                           "under_attack": True})) is None
+    assert planner.decide(WorldSnapshot(**{**base, "bag_fullness": 1.0,
+                                          "under_attack": True})) is None
+    assert planner.decide(WorldSnapshot(**{**base, "dead": True,
+                                          "disconnected": True})).kind == ActionKind.LOGIN
 
 
 def test_world_route_crosses_verified_zone_line_and_replans():
@@ -178,3 +183,31 @@ def test_world_route_crosses_verified_zone_line_and_replans():
         world.route("one", "spawn", "two", "camp", level=2)
     assert any(step.kind == "zone" for step in world.route(
         "one", "spawn", "two", "camp", level=2, max_aggro=1))
+
+
+def test_closed_loop_synthetic_level_50_exercises_required_planners(tmp_path: Path):
+    result = run_synthetic_1_50(tmp_path)
+    assert result["simulation_only"] is True
+    assert result["real_client_level_verified"] is False
+    assert result["synthetic_level_reached"] == 50
+    assert result["counts"]["recover"] == 1
+    assert result["counts"]["login"] == 1
+    assert result["counts"]["zone"] >= 4
+    assert result["counts"]["spell_memorize"] == 5
+    assert result["assist_denied_nonrotation"] is True
+    assert result["assist_cast_allowed"] is True
+    assert result["off_cancels_assist"] is True
+    assert "simulation_only" in (tmp_path / "trace-synthetic.jsonl").read_text()
+    assert "Synthetic simulation only" in (tmp_path / "STATUS-synthetic.md").read_text()
+
+
+def test_synthetic_gm_pause_latches_off():
+    env = SyntheticEnvironment()
+    unsafe = WorldSnapshot(level=1, hp=1, mana=1, bag_fullness=0,
+                           gm_present=True)
+    decision = env.campaign.decide(unsafe)
+    assert decision is not None and decision.kind == ActionKind.PAUSE
+    with pytest.raises(RuntimeError, match="latched OFF"):
+        env.apply_intent(1, decision)
+    assert env.controller.mode == Mode.OFF
+    assert not env.sink.submit(Action(ActionKind.CAST, "/cast 3"))

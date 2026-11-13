@@ -33,6 +33,8 @@ class ActionKind(str, Enum):
     LOGIN = "login"
     RECOVER = "recover"
     PAUSE = "pause"
+    SCRIBE = "scribe"
+    MEMORIZE = "memorize"
 
 
 ASSIST_ACTIONS = frozenset({
