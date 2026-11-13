@@ -22,9 +22,9 @@ BASE_HASHES = {
     "eql_rotation.py": "c4fd21f59d0e6cfa2321f0c64826d8402d566a2ac0bde14b4614db4d5a49ac8e",
 }
 PREVIEW_HASHES = {
-    "rotation_core.py": "2dc77712f070234a0beddd3b3472a6e47276d345009c23890af0cb08f041a002",
-    "rotation_engine.py": BASE_HASHES["rotation_engine.py"],
-    "eql_rotation.py": "244e707b2b8a1a94ca09b93c5bc7a2db7492b17c05e5f6401003a83f82fd83c6",
+    "rotation_core.py": "9f05379c407f7c9042b38dc7f39c72c0b603bc24d6e754330746f805211a3113",
+    "rotation_engine.py": "8ab73f40b9462f0d6a932614b524f2f1e687f41ee09823e8926981377648b487",
+    "eql_rotation.py": "cd46cca8cd1c91b77486282d3a5f17c759802f0c24c56f48e36beb8dbfe864e9",
 }
 RUNTIME_FILES = (
     "rotation_core.py", "rotation_engine.py", "eql_rotation.py",
@@ -54,9 +54,13 @@ def build(source: Path, output: Path) -> None:
             shutil.copy2(path, work / "eqnav" / path.name)
         if not (work / "eqnav" / "__init__.py").exists():
             raise ValueError("November eqnav Python package is incomplete")
-        patch = PROJECT / "patches/nov12-7e3cd28-owner-assist.patch"
-        subprocess.run(["patch", "--batch", "--forward", "-p1", "-i", str(patch)],
-                       cwd=work, check=True, capture_output=True, text=True)
+        patches = (
+            PROJECT / "patches/nov12-7e3cd28-owner-assist.patch",
+            PROJECT / "patches/nov12-7e3cd28-tight-hp-preview.patch",
+        )
+        for patch in patches:
+            subprocess.run(["patch", "--batch", "--forward", "-p1", "-i", str(patch)],
+                           cwd=work, check=True, capture_output=True, text=True)
         for name, expected in PREVIEW_HASHES.items():
             if sha256(work / name) != expected:
                 raise ValueError(f"Patched owner preview mismatch: {name}")
@@ -69,12 +73,12 @@ def build(source: Path, output: Path) -> None:
         shutil.copy2(PROJECT / "tools/owner_nov12_launch.sh", work / "launch.sh")
         (work / "launch.sh").chmod(0o755)
         (work / "BUILD_INFO.json").write_text(json.dumps({
-            "version": "0.39.2",
+            "version": "0.39.3",
             "base_revision": "7e3cd28d24770299314fd9775cef7b460a94ee3d",
             "base_hashes": BASE_HASHES,
             "preview_hashes": PREVIEW_HASHES,
-            "patch_sha256": sha256(patch),
-            "mode": "owner-run attack-free assist; G0 stop check in measurement mode; F11 travel/F12 disabled",
+            "patch_sha256": [sha256(patch) for patch in patches],
+            "mode": "owner-run attack-free assist with narrow HP calibration; G0 stop check in measurement mode; F11 travel/F12 disabled",
             "real_client_acceptance": False,
         }, indent=2) + "\n")
         work.rename(output)

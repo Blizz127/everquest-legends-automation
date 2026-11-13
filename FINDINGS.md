@@ -1,5 +1,36 @@
 # FINDINGS
 
+## Narrow HP owner preview 0.39.3 and G2 preflight design — 2026-11-13 10:02 CST
+
+**VERIFIED no-input owner preview:** Review found that the 0.39.2 band reader
+would classify an unrelated 12×3 red patch at the crop's left edge as 3.6%
+HP, which could feed the smart-heal decision. Preview 0.39.3 supersedes it.
+It rejects the old 338×51 HP crop, requires a fresh 5–24-pixel-tall inner
+red-bar calibration, rejects small red accents and returns unknown below
+10% rather than treating an isolated red patch as critical HP. The user must
+heal manually while HP is unknown. On Alienware, its pinned-source smoke,
+level-7 dry-run and offscreen measurement GUI smoke passed without opening
+game input devices; the GUI image was 85,715 bytes. Five focused local
+adapter/guard tests passed. The devbox runtime smoke could not import numpy;
+the Alienware smoke with its installed numpy passed. The isolated owner-run
+build is `~/.local/share/eql-automation/owner-assist/0.39.3`; the private
+archive SHA-256 is
+`78c547a0a0cdde6418a93de32bb50de6f46bd2e14872725a97f44eb894655c6e`.
+No 0.39.3 live HP or healing behavior has been reported. G0 remains NOT_RUN.
+
+**OBSERVED offline route gate:** The November helper defaults to
+`~/.local/share/eql-rotation/navmesh`, whereas its existing 37-zone,
+69-MB hashed mesh store is under its `artifacts/navmesh/store`. A future
+isolated launcher can point `EQL_NAVMESH_DIR` at an approved copy outside
+the client install. The documented G2 fallback `eqnav.livecheck.py` is absent;
+the alternative F11 starts the full grinder. G2 needs a separate short,
+owner-supervised travel job with a hard input budget and verified stop before
+any F11 release. Read-only Crushbone pathing connects Slaver Caves to Slaver
+Pits, but one waypoint has only 0.9 units of wall clearance and the owner's
+log records dangerous adds there. That does not establish a safe level-11
+camp. A finer one-zone rebake was deferred because devbox load was about
+275 on 48 cores with CPU pressure near 68%; no rebake or client movement ran.
+
 ## G0 owner preview and level-aware mesh camp filter — 2026-11-13 09:56 CST
 
 **VERIFIED no-input owner preview 0.39.2:** A versioned copy is staged at

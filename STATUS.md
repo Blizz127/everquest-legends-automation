@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 09:55 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 10:03 CST for coordinator task `829a00229b29`.
 
 - Real-client level: 7 for Legira in Greater Faydark, **owner-reported**; no lead-controlled login or automated level gain verified.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.40.0 plus an isolated owner-run assist/G0 preview 0.39.2 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.40.1 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -363,27 +363,33 @@ Updated 2026-11-13 09:55 CST for coordinator task `829a00229b29`.
   The isolated reachable-camp patch passed 19 focused camp/travel checks;
   a copied-mesh query accepted GFay→Slaver and Slaver→GFay Orc candidates,
   rejected Slaver→Trainer Hill, and stopped the offline sequence at level 11.
-- Current blocker: 0.39.2 owner-supervised F8/F9 HP and attack-free rotation
+  Preview 0.39.3 rejected the broad saved HP crop and synthetic red accents;
+  its pinned-source smoke, level-7 dry-run and offscreen GUI smoke passed on
+  Alienware without game input. Five focused local adapter/guard tests passed.
+  Its private archive SHA-256 is
+  `78c547a0a0cdde6418a93de32bb50de6f46bd2e14872725a97f44eb894655c6e`.
+- Current blocker: 0.39.3 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee
   stop, G0/G2 movement-stop/follower acceptance, runtime mesh-store binding,
   integration of the offline reachable-camp patch and a level-11 camp; real-client acceptance also lacks the intended
   private endpoint/client configuration. Owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
-  to Daybreak's official live login host. No automated connection or input will
-  be sent to that host. Bounded devbox/Banshee process, listener, container and
+  to Daybreak's official live login host. The lead will not send automated
+  connection or character input to that host. Bounded devbox/Banshee process, listener, container and
   directory checks found no private EQEmu/EQL candidate; this does not rule
   out another machine or path. Daybreak rules prohibit unattended play and unauthorized
   servers; no Daybreak-authorized live test route is documented. The historical
   Butcherblock navmesh/recipe is absent from the approved retained store, and
   the reported GFay vertical mismatch on its historical route and
   conservative clearance failure remain unresolved. No actual client
-  acceptance is ready. The 0.39.2 assist/G0 preview is privately staged on
+  acceptance is ready. The 0.39.3 assist/G0 preview is privately staged on
   Alienware outside the game install; full auto has no release channel yet.
-- Next step: collect the owner's 0.39.2 HP/F8/F9 observations and supervised
+- Next step: collect the owner's 0.39.3 HP/F8/F9 observations and supervised
   G0 movement-stop result without touching Legira. Build an observed autoattack state/stop acknowledgment gate for
   full auto, then bind the existing mesh store in a separate owner-run route
-  trial after G0/G2 checks. Add reachable-camp fallback before level 9.
+  trial after G0/G2 checks. Integrate the already tested reachable-camp
+  fallback for level 9; resolve the level-11 camp using measured XP and route safety.
   Validate a unique selection signal and chat-open/draft signal on an isolated
   client view; the preview remains supervised. Obtain the intended private endpoint or separate client config,
   then verify target identity before strict live assist input. Review copied client
@@ -404,5 +410,5 @@ Updated 2026-11-13 09:55 CST for coordinator task `829a00229b29`.
   A spell-gem click path would also need a private-client screenshot, active
   hitbox calibration, unique target selection and bounded native mouse sender.
   ASSIST keeps
-  movement manual. The new 0.39.2 preview's live HP and stop behavior remain
+  movement manual. The new 0.39.3 preview's live HP and stop behavior remain
   unverified.

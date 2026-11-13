@@ -1,9 +1,9 @@
-# EverQuest Legends automation — project 0.40.0 / owner preview 0.39.2
+# EverQuest Legends automation — project 0.40.1 / owner preview 0.39.3
 
 ## Current availability
 
 This project's full-auto bot remains an **offline simulator and planning
-library**. An isolated, owner-run rotation preview 0.39.2 is staged on the
+library**. An isolated, owner-run rotation preview 0.39.3 is staged on the
 Alienware outside the game install. Blizz runs the game and helper himself;
 the lead has not logged in or sent game input. The installed client points to
 Daybreak's live service. Its published
@@ -16,18 +16,25 @@ is a private server, but its endpoint has not been found; the installed retail
 client still points to Daybreak. Strict live ASSIST and FULL AUTO are not yet
 validated. The owner chose to test rotation himself on live.
 
-## Owner-run rotation test on Alienware today: preview 0.39.2
+## Owner-run rotation test on Alienware today: preview 0.39.3
 
 Close any already running Solo Assist window. Blizz starts the game through
 Lutris and logs in himself. In an Alienware terminal, start the isolated
 preview:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.2
-./launch.sh
+cd ~/.local/share/eql-automation/owner-assist/0.39.3
+EQL_ROTATION_TRACE="$HOME/eql-assist-trace.jsonl" ./launch.sh
 ```
 
 The GUI starts disarmed. Blizz chooses his character and current level there.
+At full HP, click **Calibrate HP** and select only the inner red gauge from
+left to right, 5–24 pixels tall; exclude the frame, text and blue mana bar.
+The older 51-pixel-tall saved HP crop is rejected in this preview. Check that
+the Combat tab shows a plausible full HP reading before combat. If HP remains
+unknown or falls below 10%, heal manually; the preview treats those readings
+as unknown rather than guessing. The trace is saved in
+`~/eql-assist-trace.jsonl` for owner feedback.
 **F6** explicitly refreshes and memorizes the spell bar while out of combat.
 He selects and moves to the target himself. **F8** arms the spell and ability
 rotation on that target; **F9** stops it; **F7** toggles; **F10** requests a heal.
@@ -38,10 +45,10 @@ melee.** Use the game's own attack control to stop it and verify it is off.
 F11 movement and F12 route recording are disabled in this preview. The helper
 does not move, retarget, loot, vendor or camp. Do not run two helpers at once.
 
-The preview's HP reader finds a thin colored band inside the saved crop.
-That change and its source guard passed a no-input Alienware smoke, but live
-HP reading and smart healing remain **unverified**. If the GUI shows HP
-unknown, heal manually. The preview still uses `/consider` to review the
+The preview's HP reader checks a narrow colored band and rejects short red
+accents, broad saved crops and readings below 10%. These checks and its source
+guard passed a no-input Alienware smoke, but live HP reading and smart healing
+remain **unverified**. The preview still uses `/consider` to review the
 owner-selected target and inherits unverified chat-draft/target-identity
 behavior; it is a supervised test, not accepted strict ASSIST. F9 displays
 that rotation is off and melee is manual.
@@ -62,14 +69,14 @@ not a runnable owner test. The active legacy helper source was not changed.
 
 ## Owner-run G0 movement-stop check (optional after assist test)
 
-Preview 0.39.2 also allows the **Check movement stop** button in measurement
+Preview 0.39.3 also allows the **Check movement stop** button in measurement
 mode. This is the first supervised movement gate, not a route or F11 grind.
 Blizz first stops native melee with the game's own control, stands on open,
 flat, dry ground with full HP and no target, and enables `/log on`. Close any
 other helper, then launch:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.2
+cd ~/.local/share/eql-automation/owner-assist/0.39.3
 EQL_ROTATION_TRACE="$HOME/eql-g0-trace.jsonl" ./launch.sh --measure-navigation
 ```
 
@@ -499,7 +506,7 @@ polygons and a 24-polygon offline Detour query path. Its data stays under
 `~/.local/share/eql-automation/nav-candidates/`. No query is an accepted bot
 route or proof of game movement; the active bot still has no verified nav edge.
 
-The owner-run 0.39.2 preview above is built from a pinned copy of the November
+The owner-run 0.39.3 preview above is built from a pinned copy of the November
 helper plus the source patch in `patches/`. Its original working tree at
 `~/Projects/everquest-legends-rotation` was not edited. Do not run the old
 tool's installer: it writes character INIs in the protected Alienware prefix.
@@ -522,7 +529,7 @@ python3 -m compileall -q eql_automation
 The staged owner preview also supports a no-input Alienware check:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.2
+cd ~/.local/share/eql-automation/owner-assist/0.39.3
 /usr/bin/python3 -B owner_nov12_smoke.py
 ./launch.sh --dry-run --level 7
 ```

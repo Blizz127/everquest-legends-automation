@@ -1,0 +1,49 @@
+--- a/rotation_core.py
++++ b/rotation_core.py
+@@ -503,14 +503,17 @@
+         start = row
+         while row < height and qualifying[row]:
+             row += 1
+-        if row - start < 3:
++        # A tiny red UI accent must not be interpreted as critical HP.
++        if row - start < max(5, int(height * 0.30 + 0.999)):
+             continue
+         columns = colored[start:row].mean(axis=0) >= 0.60
+         hits = np.flatnonzero(columns)
+         if len(hits) < 4 or hits[0] > max(3, width * 0.08):
+             continue
+         end = int(hits[-1]) + 1
+-        if end < 12 or columns[:end].mean() < 0.65:
++        # Values below ten percent are unknown in this supervised preview:
++        # a short unrelated red patch could otherwise trigger Lay Hands.
++        if end < max(12, int(width * 0.10 + 0.999)) or columns[:end].mean() < 0.65:
+             continue
+         candidates.append(((row - start) * end, end / width))
+     if not candidates:
+--- a/rotation_engine.py
++++ b/rotation_engine.py
+@@ -361,6 +361,8 @@
+                     reason = f"size_mismatch:{width}x{height}"
+                 elif len(box) != 4 or not (0 <= box[0] < box[2] <= width and 0 <= box[1] < box[3] <= height):
+                     reason = "box_out_of_bounds"
++                elif channel == "red" and not (5 <= box[3] - box[1] <= 24):
++                    reason = "hp_recalibrate_inner_bar"
+                 else:
+                     x0, y0, x1, y1 = (int(edge) for edge in box)
+                     raw = window.get_image(x0, y0, x1 - x0, y1 - y0, self.X.ZPixmap, 0xFFFFFFFF)
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -138,10 +138,11 @@
+ 
+         def selected(self, box):
+             fraction = bar_fraction(self.image.crop(tuple(box)), self.channel)
+-            valid = fraction is not None and fraction >= 0.85
++            valid = (fraction is not None and fraction >= 0.85 and
++                     (self.channel != "red" or 5 <= box[3] - box[1] <= 24))
+             self.region = {"box": box, "window_size": list(self.image.size)} if valid else None
+             self.reading.setText(f"Preview: {round(fraction * 100)}%. Save if this is your full gauge." if valid else
+-                                 "Cannot validate a full gauge here. Select only the inner red/blue bar while it is full.")
++                                 "Cannot validate a full gauge here. At full HP, select only a 5–24 pixel-tall inner red bar; exclude frame and mana.")
+             self.buttons.button(QDialogButtonBox.StandardButton.Save).setEnabled(valid)
+ 
+     class Window(QMainWindow):

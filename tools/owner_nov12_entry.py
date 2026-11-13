@@ -13,9 +13,9 @@ import sys
 
 
 EXPECTED = {
-    "rotation_core.py": "2dc77712f070234a0beddd3b3472a6e47276d345009c23890af0cb08f041a002",
-    "rotation_engine.py": "1e1e6e3e021619471f9d954e86c9af81363315a66a7b8771b766acea53ea4731",
-    "eql_rotation.py": "244e707b2b8a1a94ca09b93c5bc7a2db7492b17c05e5f6401003a83f82fd83c6",
+    "rotation_core.py": "9f05379c407f7c9042b38dc7f39c72c0b603bc24d6e754330746f805211a3113",
+    "rotation_engine.py": "8ab73f40b9462f0d6a932614b524f2f1e687f41ee09823e8926981377648b487",
+    "eql_rotation.py": "cd46cca8cd1c91b77486282d3a5f17c759802f0c24c56f48e36beb8dbfe864e9",
 }
 
 
