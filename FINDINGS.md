@@ -1,5 +1,34 @@
 # FINDINGS
 
+## Client class levels and rotation eligibility — 2026-11-13 03:56 CST
+
+**VERIFIED read-only client data:** Alienware `<game root>/dbstr_us.txt`
+(SHA-256 `fd0508baa7151cc7575198860394967a40d72aeecc2db02a2c3024ea1ffbcefe`)
+contains class IDs 1–16 in `class_id^45^name` rows. A copy is under the
+untracked `~/.local/share/eql-automation/client-data/retail-full/` directory.
+The paired `spells_us.txt` (SHA-256
+`8db5548696635075f982a20a8afae13b57346637f5edae3c8d93432c848524de`)
+has 74,021 unique-ID, 174-field rows. Its fields 36–51 form the 16 class
+level columns. **INFERRED from client IDs and corroborated by known Cleric and
+Paladin rows:** field index `35 + class ID` is that class's level. `Strike`
+and `Minor Healing` have Cleric/Paladin level 1; `Yaulp` has Cleric level 1
+and Paladin level 9. The new index parses 1,450 rows with at least one class
+level 1–50, stores only derived metadata outside git, and exposes class/level
+queries. These rows include skills/discipline-like entries and **do not prove
+server availability, vendor stock or scribing**.
+
+**VERIFIED bug fix:** The copied October rotation planner previously filtered
+spells by the lower of Cleric and Paladin levels. It could therefore offer
+`Yaulp` to a level-1 Paladin. Profiles now require an explicit character
+class and check its own level. Real copied client data produced no
+class-invalid profiles at levels 1–50 for Cleric or Paladin; Paladin Yaulp is
+absent at level 1 and present at level 9. This validates client catalog
+eligibility only. It does not verify any live rotation or character spellbook.
+The full 224-map retail text import was rerun into atomic snapshot
+`e36ee7fd32a5c4b42f45` so its profile-validity flag reflects the corrected
+class-specific check. The geometry totals remain 1,057,974 lines and 1,445
+labels. 37 focused tests passed.
+
 ## Offline mode control — 2026-11-13 03:50 CST
 
 **VERIFIED synthetic only:** A running CLI now accepts `mode full|assist|off`

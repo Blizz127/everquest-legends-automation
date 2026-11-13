@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.10.0
+# EverQuest Legends automation — current build 0.11.0
 
 ## Current availability
 
@@ -28,6 +28,8 @@ python3 -m eql_automation --index-pois
 python3 -m eql_automation --query-pois Merchant --map fieldofbone --limit 5
 python3 -m eql_automation --index-zone-candidates
 python3 -m eql_automation --query-zone-candidates East_Cabilis --map fieldofbone
+python3 -m eql_automation --index-spell-levels
+python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 ```
 
 The demo prints a synthetic route and mode-permission results. The shell stays
@@ -107,6 +109,18 @@ merchant stocks a spell. The index is stored outside git under
 reordered-word matches are distinguished. Matches are **unverified** and do
 not add a transition to the navigation graph. A missing match does not prove
 that no zone line exists.
+
+`--index-spell-levels` reads the copied `spells_us.txt` and `dbstr_us.txt`
+from the active retail snapshot's source directory. It indexes client spell
+and skill rows with a class level from 1–50 under
+`~/.local/share/eql-automation/map-store/indices/`. Use `--source DIRECTORY`
+to select another copied client directory. `--query-spell-levels TEXT` searches
+the index; `--class-name` and `--level` filter it. These are **client level
+candidates**. They do not prove a private server grants a spell, that a vendor
+stocks it, or that it can be scribed or memorized. The planner requires
+separate observed spellbook and vendor facts before proposing an acquisition.
+The old Paladin/Cleric rotation profile now checks each class's own level;
+it will not offer Paladin Yaulp at level 1 when the client requires level 9.
 
 | Simulated mode | Actions permitted by the planner |
 | --- | --- |

@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 03:50 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 03:57 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.10.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.11.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -24,12 +24,21 @@ Updated 2026-11-13 03:50 CST for coordinator task `829a00229b29`.
   command or simulated F7/F8/F9 events, prints mode/generation/reason, and
   cancels queued or already drained intents after a mode change. The F8/F9
   mapping is not wired to the game; the October tool already uses those keys.
-- Verification: `python3 -m pytest -q tests/test_control.py tests/test_offline.py`
-  — 31 passed; CLI queue/switch/drain smoke dropped 2 stale synthetic actions;
+  Read-only client class strings now identify all 16 classes; an untracked
+  spell/skill index holds 1,450 client level 1–50 candidates. The inherited
+  Paladin/Cleric profile now checks each class's own unlock level.
+- Verification: `python3 -m pytest -q tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
+  — 37 passed; CLI queue/switch/drain smoke dropped 2 stale synthetic actions;
   complete retail import found 224 maps, 1,057,974 drawing
   lines, 1,445 labels, 701 zone names and 198 Paladin/Cleric spells;
-  all 1–50 spell profiles valid. Active snapshot:
-  `~/.local/share/eql-automation/map-store/snapshots/e0aa3e31762d31fd4c1e/`.
+  all 1–50 Cleric and Paladin profiles class-valid after correction. Active
+  snapshot: `~/.local/share/eql-automation/map-store/snapshots/e36ee7fd32a5c4b42f45/`.
+  Client class-name SHA-256:
+  `fd0508baa7151cc7575198860394967a40d72aeecc2db02a2c3024ea1ffbcefe`.
+  Client spell-catalog SHA-256:
+  `8db5548696635075f982a20a8afae13b57346637f5edae3c8d93432c848524de`.
+  Paladin Yaulp is absent from the level-1 profile and present at level 9.
+  Indexed levels do not establish server spell availability or vendor stock.
   POI and zone-candidate CLI smoke passed. The 351 transition review candidates
   include 224 exact `to_` name matches, 4 reordered-name matches, 48 unprefixed
   exact matches and 75 unmatched `to_` labels. Drawing geometry and labels

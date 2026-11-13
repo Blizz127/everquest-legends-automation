@@ -167,7 +167,7 @@ def import_retail_copy(source: Path, store: Path = MAP_STORE) -> dict:
             raise ValueError("Unsafe map file name")
     hashes = {str(path.relative_to(source)): sha256_file(path)
               for path in [*maps, zone_path, spell_path]}
-    digest = sha256(json.dumps({"schema": 2, "hashes": hashes},
+    digest = sha256(json.dumps({"schema": 3, "hashes": hashes},
                                sort_keys=True).encode()).hexdigest()[:20]
     snapshot_root = store / "snapshots"
     snapshot_root.mkdir(parents=True, exist_ok=True)
@@ -205,13 +205,15 @@ def import_retail_copy(source: Path, store: Path = MAP_STORE) -> dict:
                            "spells": [asdict(spell) for spell in catalog.spells.values()]},
                           stream, separators=(",", ":"))
             profiles_valid = True
-            for level in range(1, 51):
-                profile = catalog.profile(level)
-                ids = [spell.id for spell in profile.values()]
-                if (len(ids) != len(set(ids)) or
-                        any(spell.level > level for spell in profile.values())):
-                    profiles_valid = False
-                    break
+            for class_name in ("cleric", "paladin"):
+                for level in range(1, 51):
+                    profile = catalog.profile(level, class_name=class_name)
+                    ids = [spell.id for spell in profile.values()]
+                    if (len(ids) != len(set(ids)) or
+                            any(spell.level_for(class_name) > level
+                                for spell in profile.values())):
+                        profiles_valid = False
+                        break
             summary = {
                 "source_kind": "copied-retail-client-text",
                 "source_dir": str(source),
@@ -224,6 +226,7 @@ def import_retail_copy(source: Path, store: Path = MAP_STORE) -> dict:
                 "paladin_cleric_spell_count": len(catalog.spells),
                 "paladin_cleric_spell_store": str(snapshot / spell_relative),
                 "prior_rotation_profiles_1_to_50_valid": profiles_valid,
+                "profile_classes_validated": ["cleric", "paladin"],
                 "navigability_verified": False,
                 "private_server_identified": False,
                 "summary_path": str(summary_path),

@@ -43,7 +43,16 @@ class Spell:
 
     @property
     def level(self) -> int:
+        """Earliest level of either legacy class; never use for eligibility."""
         return min(self.cleric_level, self.paladin_level)
+
+    def level_for(self, class_name: str) -> int:
+        key = class_name.casefold()
+        if key == "cleric":
+            return self.cleric_level
+        if key == "paladin":
+            return self.paladin_level
+        raise ValueError("Legacy rotation supports only Cleric or Paladin")
 
     @property
     def busy_seconds(self) -> float:
@@ -113,20 +122,26 @@ class Catalog:
                     known.add(spell.id)
         return known
 
-    def profile(self, level: int, known: set[int] | None = None) -> dict[str, Spell]:
+    def profile(self, level: int, *, class_name: str,
+                known: set[int] | None = None) -> dict[str, Spell]:
         if not 1 <= level <= 50:
             raise ValueError("Level must be between 1 and 50")
+        class_name = class_name.casefold()
+        if class_name not in {"cleric", "paladin"}:
+            raise ValueError("Legacy rotation supports only Cleric or Paladin")
         result = {}
         for role, names in FAMILIES.items():
             candidates = [self.by_name[name.casefold()] for name in names if name.casefold() in self.by_name]
-            candidates = [s for s in candidates if s.level <= level and (known is None or s.id in known)]
+            candidates = [s for s in candidates if 1 <= s.level_for(class_name) <= level
+                          and (known is None or s.id in known)]
             if candidates:
                 if role == "stun":
                     # Cleric Stun (L2, 4 seconds) is stronger control than the
                     # later Paladin Cease/Desist; do not downgrade by level.
                     result[role] = max(candidates, key=lambda s: names.index(s.name))
                 else:
-                    result[role] = max(candidates, key=lambda s: (s.level, names.index(s.name)))
+                    result[role] = max(candidates, key=lambda s: (
+                        s.level_for(class_name), names.index(s.name)))
         # Before the Echo line, the fast heal uses the same heal as the large
         # heal. EQ cannot memorize a spell twice; leave gem 2 unused then.
         if "quick_heal" not in result and "heal" in result:
@@ -314,9 +329,10 @@ def bar_fraction(image, channel: str) -> float | None:
     return min(1.0, end / width)
 
 
-def profile_report(catalog: Catalog, level: int, known: set[int] | None = None) -> dict:
-    profile = catalog.profile(level, known)
-    return {"level": level, "spellbook_confirmed": known is not None,
+def profile_report(catalog: Catalog, level: int, *, class_name: str,
+                   known: set[int] | None = None) -> dict:
+    profile = catalog.profile(level, class_name=class_name, known=known)
+    return {"level": level, "class": class_name, "spellbook_confirmed": known is not None,
             "gems": [{"slot": SLOTS[role], "role": role, "name": spell.name,
-                      "id": spell.id, "required_level": spell.level, "mana": spell.mana,
+                      "id": spell.id, "required_level": spell.level_for(class_name), "mana": spell.mana,
                       "cast_ms": spell.cast_ms} for role, spell in profile.items()]}

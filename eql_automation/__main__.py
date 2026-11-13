@@ -15,6 +15,7 @@ from .target import inspect_eqhost
 from .poi_index import build_poi_index, current_summary
 from .nav import MAP_STORE
 from .zone_candidates import build_zone_candidates
+from .spell_catalog import build_spell_level_index
 
 
 def shell() -> None:
@@ -92,12 +93,18 @@ def main() -> None:
                        help="cross-reference map labels with client zone names as unverified candidates")
     group.add_argument("--query-zone-candidates", metavar="TEXT",
                        help="search unverified zone-line candidates")
+    group.add_argument("--index-spell-levels", action="store_true",
+                       help="index client class levels for spells and skills; no server availability claim")
+    group.add_argument("--query-spell-levels", metavar="TEXT",
+                       help="search client spell/skill level candidates")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
                         help="copied retail client text directory for --ingest-retail-copy")
     parser.add_argument("--map", dest="map_name", help="filter POI query by map file stem")
     parser.add_argument("--limit", type=int, default=20, help="maximum POI query results")
+    parser.add_argument("--class-name", help="filter client spell candidates by class name")
+    parser.add_argument("--level", type=int, help="filter client spell candidates unlocked by this level")
     args = parser.parse_args()
     if args.demo:
         print(json.dumps(run_demo(), indent=2))
@@ -147,6 +154,30 @@ def main() -> None:
                                   args.query_zone_candidates,
                                   source_map=args.map_name,
                                   limit=args.limit)]}, indent=2))
+    elif args.index_spell_levels or args.query_spell_levels is not None:
+        store = args.output or MAP_STORE
+        source = args.source
+        if source is None:
+            source = Path(json.loads(current_summary(store).read_text())["source_dir"])
+        index, path = build_spell_level_index(source, store)
+        if args.index_spell_levels:
+            print(json.dumps({"spell_catalog_sha256": index.spell_sha256,
+                              "class_names_sha256": index.class_name_sha256,
+                              "client_level_candidate_count": len(index.spells),
+                              "class_candidate_counts": index.counts(),
+                              "index_path": str(path),
+                              "server_availability_verified": False,
+                              "vendor_stock_verified": False}, indent=2))
+        else:
+            print(json.dumps({"query": args.query_spell_levels,
+                              "class": args.class_name,
+                              "level": args.level,
+                              "results": [asdict(item) for item in index.search(
+                                  args.query_spell_levels,
+                                  class_name=args.class_name,
+                                  level=args.level,
+                                  limit=args.limit)],
+                              "server_availability_verified": False}, indent=2))
     else:
         shell()
 

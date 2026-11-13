@@ -6,9 +6,12 @@ live adapter and verified vendor, inventory and spellbook observations.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable
+from typing import Iterable, TYPE_CHECKING
 
 from .prior_rotation_core import Catalog as PriorCatalog
+
+if TYPE_CHECKING:
+    from .spell_catalog import ClientSpellLevelIndex
 
 
 @dataclass(frozen=True)
@@ -50,6 +53,13 @@ class SpellPlanner:
                 levels["paladin"] = spell.paladin_level
             result.append(SpellSpec(spell.id, spell.name, levels, spell.mana))
         return cls(result)
+
+    @classmethod
+    def from_client_index(cls, index: "ClientSpellLevelIndex") -> "SpellPlanner":
+        """Use client level candidates; observations must confirm acquisition."""
+
+        return cls(SpellSpec(spell.id, spell.name, spell.class_levels, spell.mana)
+                   for spell in index.spells.values())
 
     def eligible(self, class_names: set[str], level: int) -> list[SpellSpec]:
         if not 1 <= level <= 50:
