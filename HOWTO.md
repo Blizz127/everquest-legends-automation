@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.40.1 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.40.2 / owner preview 0.39.3
 
 ## Current availability
 
@@ -88,7 +88,9 @@ if movement persists. G0 passes only when the helper reports **observed stop
 after release**, the trace contains `ap_stop_check_result` with
 `outcome=observed_stop`, and Blizz sees the character stop. A dry-run or log
 line alone does not pass G0. The 2026-11-06 continued-walking report remains
-unresolved until this check passes. F11 travel/grinding remains disabled.
+unresolved until this check passes. F11 travel/grinding remains disabled. The
+copied GFay and Crushbone mesh paths are connected offline but include narrow
+clearance and steep polygons, so they are not accepted movement routes.
 
 ## Start the offline prototype
 
@@ -523,6 +525,7 @@ python3 -m pytest -q tests/test_screen_observer.py
 python3 -m pytest -q tests/test_target_log.py
 python3 -m pytest -q tests/test_owner_nov12_adapter.py tests/test_owner_nov12_entry.py
 python3 -m pytest -q tests/test_nav_evidence.py
+python3 tools/summarize_owner_nov12_trace.py /path/to/copied/owner-trace.jsonl
 python3 -m compileall -q eql_automation
 ```
 

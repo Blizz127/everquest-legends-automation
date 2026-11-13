@@ -1,5 +1,38 @@
 # FINDINGS
 
+## Read-only GFay→Crushbone route audit — 2026-11-13 10:07 CST
+
+**VERIFIED copied-store provenance:** The 69-MB November mesh store was copied
+from the old helper to
+`~/.local/share/eql-automation/navmesh/nov12-7e3cd28-store` on Alienware,
+outside its client and original helper. `diff -qr` found no difference across
+the 116 copied files. The isolated preview's `MeshStore` loaded GFay and
+Crushbone from this copy with 38,587 and 5,150 area entries. Their `.npz`
+SHA-256 hashes are
+`5f8e16c5bcd2221ba273f681750ca480349780524d23609c059a3e817df6abd9`
+and `bee5a1893ab0e2ffd9c83d0d64a1d7392993b21661f59095b0e2e304b0588793`;
+manifest hashes are
+`ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82`
+and `dd15b27c8acb221987780b013e9f0c4a9a14f4df389414a33b9ecf6fcc94979d`.
+The old helper's three pinned source hashes were rechecked unchanged after
+staging. No game data was committed to git.
+
+**VERIFIED offline path query, not live acceptance:** From Legira's last
+logged GFay position to the Crushbone trigger, the default dry mesh path is
+4,927.779 units, 200 polygons and 31 waypoints. Its minimum waypoint/sample
+wall clearance is 0.932, below the baked 1.2-unit agent radius; it includes
+two corridor polygons with centroid clearance below 2 and one with 81.78°
+slope, above the 75° bake limit. From a historical Crushbone arrival fix to
+Slaver Caves west, the dry mesh path is 1,049.819 units, 80 polygons and 21
+waypoints; one corridor polygon has only 0.2-unit centroid clearance and a
+polygon reaches 83.79° slope. A wider funnel margin of 4 improves waypoint
+clearance but leaves those corridor findings. The zone trigger has no encoded
+arrival point. The route therefore remains a candidate; no F11 live travel is
+accepted. Aggro, water, dynamic obstacles, transition and movement-stop
+behavior remain unverified. A light trace summarizer reproduced the owner
+trace SHA and 13 unknown versus 5 known HP gauge samples without printing
+character data; it does not certify in-game actions.
+
 ## Narrow HP owner preview 0.39.3 and G2 preflight design — 2026-11-13 10:02 CST
 
 **VERIFIED no-input owner preview:** Review found that the 0.39.2 band reader

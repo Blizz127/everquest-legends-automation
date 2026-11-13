@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 10:03 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 10:08 CST for coordinator task `829a00229b29`.
 
 - Real-client level: 7 for Legira in Greater Faydark, **owner-reported**; no lead-controlled login or automated level gain verified.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.40.1 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.40.2 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -368,10 +368,17 @@ Updated 2026-11-13 10:03 CST for coordinator task `829a00229b29`.
   Alienware without game input. Five focused local adapter/guard tests passed.
   Its private archive SHA-256 is
   `78c547a0a0cdde6418a93de32bb50de6f46bd2e14872725a97f44eb894655c6e`.
+  The original 69-MB, 116-file mesh store was copied outside the game and
+  old helper; `diff -qr` matched it and the isolated loader opened GFay and
+  Crushbone. The default GFay→Crushbone path is 4,927.779 mesh units and
+  passes within 0.932 units of a wall, below its 1.2-unit baked agent radius;
+  the Crushbone→Slaver corridor contains a polygon with 0.2-unit clearance.
+  These are offline candidates only. A read-only trace summarizer reproduced
+  the owner trace SHA and 13 unknown / 5 known HP gauge samples.
 - Current blocker: 0.39.3 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee
-  stop, G0/G2 movement-stop/follower acceptance, runtime mesh-store binding,
+  stop, G0/G2 movement-stop/follower acceptance, validated runtime mesh-store binding,
   integration of the offline reachable-camp patch and a level-11 camp; real-client acceptance also lacks the intended
   private endpoint/client configuration. Owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
@@ -387,8 +394,9 @@ Updated 2026-11-13 10:03 CST for coordinator task `829a00229b29`.
   Alienware outside the game install; full auto has no release channel yet.
 - Next step: collect the owner's 0.39.3 HP/F8/F9 observations and supervised
   G0 movement-stop result without touching Legira. Build an observed autoattack state/stop acknowledgment gate for
-  full auto, then bind the existing mesh store in a separate owner-run route
-  trial after G0/G2 checks. Integrate the already tested reachable-camp
+  full auto, then bind the copied mesh store in a separate owner-run route
+  trial after G0/G2 checks and resolve the narrow GFay/Crushbone corridors.
+  Integrate the already tested reachable-camp
   fallback for level 9; resolve the level-11 camp using measured XP and route safety.
   Validate a unique selection signal and chat-open/draft signal on an isolated
   client view; the preview remains supervised. Obtain the intended private endpoint or separate client config,
