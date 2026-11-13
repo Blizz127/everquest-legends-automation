@@ -35,6 +35,20 @@ from .bsp_probe import BspPointLookup, nearby_zoneline_candidate
 from .path_hazard_audit import audit_path_hazards
 
 
+# Copied owner-client archives already checked against the Alienware install.
+# A changed archive needs a new source audit before it can compose route input.
+LATER_ZONE_ARCHIVES = {
+    "cauldron": {
+        "cauldron.s3d": "a035788d5df592e313d7b2a7998a3ceae300ebe68cf9e837c2509a2cd98b4409",
+        "cauldron_obj.s3d": "b4d59143a630c81b9a9b39156a27854df5c72641e7ad3d93e5fe49ecdc89a686",
+    },
+    "unrest": {
+        "unrest.s3d": "e34c4b636d731dbf67dcb5ac028a75ac4e68c9a45a4a6cabd1cdce0f6793df1f",
+        "unrest_obj.s3d": "5756a96a0c7b4d57f5fac25533871024fdef3eea4eb9ec12b2da655f53f8aaa1",
+    },
+}
+
+
 def shell() -> None:
     control = ControlPlane()
     sink = SimSink(control.controller)
@@ -144,6 +158,8 @@ def main() -> None:
                        help="inventory copied Crushbone placements, meshes and materials offline")
     group.add_argument("--build-crushbone-candidate-scene", action="store_true",
                        help="write provisional Crushbone solid-flag OBJ outside git")
+    group.add_argument("--build-later-zone-candidate-scene", choices=tuple(LATER_ZONE_ARCHIVES),
+                       metavar="ZONE", help="compose a hash-pinned Cauldron or Unrest OBJ outside git")
     group.add_argument("--audit-zone-regions", choices=("butcher", "crushbone", "gfaydark"),
                        metavar="ZONE", help="audit copied WLD water/zone region labels offline")
     group.add_argument("--audit-map-alignment", choices=("butcher", "crushbone", "gfaydark"),
@@ -462,6 +478,33 @@ def main() -> None:
                                           include_boundary=not args.exclude_boundary,
                                           zone_name="Crushbone", filename_prefix="crushbone")
             print(json.dumps({**source_info, **asdict(scene)}, indent=2))
+    elif args.build_later_zone_candidate_scene is not None:
+        zone = args.build_later_zone_candidate_scene
+        asset_root = DATA_ROOT / "client-data" / "retail-full" / "assets"
+        destination = DATA_ROOT / "nav-candidates"
+        if (not asset_root.resolve().is_relative_to(DATA_ROOT.resolve()) or
+                not destination.resolve().is_relative_to(DATA_ROOT.resolve())):
+            parser.error("Candidate scene sources and destination must stay in the approved EQL store")
+        expected = LATER_ZONE_ARCHIVES[zone]
+        archives = {name: PFSArchive(asset_root / name) for name in expected}
+        if any(archives[name].sha256 != digest for name, digest in expected.items()):
+            parser.error("Copied zone archive hash changed; audit the owner-client source again")
+        members = ((f"{zone}.s3d", f"{zone}.wld"),
+                   (f"{zone}.s3d", "objects.wld"),
+                   (f"{zone}_obj.s3d", f"{zone}_obj.wld"))
+        wlds = tuple(WLDInventory(archives[name].read_member(member))
+                     for name, member in members)
+        scene = write_candidate_scene(
+            destination, wlds[0], wlds[1], wlds[2:],
+            include_boundary=not args.exclude_boundary,
+            zone_name=zone.capitalize(), filename_prefix=zone)
+        print(json.dumps({"zone": zone,
+                          "archive_sha256": {name: archive.sha256
+                                              for name, archive in archives.items()},
+                          "wld_sha256": {member: wld.sha256
+                                         for (_, member), wld in zip(members, wlds)},
+                          **asdict(scene), "offline_only": True,
+                          "real_client_accepted": False}, indent=2))
     elif args.audit_zone_regions is not None:
         zone = args.audit_zone_regions
         source = DATA_ROOT / "client-data" / "retail-full" / "assets" / f"{zone}.s3d"

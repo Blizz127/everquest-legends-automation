@@ -35,7 +35,9 @@ The owner's Cauldron and Unrest zone/object archives have now been copied
 read-only into the private data store with remote/local hash matches. Their
 BSP, raw terrain meshes and static object placements parse and compose
 provisional solid-face scenes, but no collision-verified navmesh or route
-has been accepted. See [FINDINGS.md](FINDINGS.md) for exact source hashes.
+has been accepted. Project 0.41.31 reproduces those scenes from pinned
+copied archives with an offline command; see [HOWTO.md](HOWTO.md) and
+[FINDINGS.md](FINDINGS.md) for usage and exact source hashes.
 
 ## What unlocks the first playable leg
 

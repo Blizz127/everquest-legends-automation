@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.30 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.31 / owner preview 0.39.4
 
 ## Current availability
 
@@ -188,6 +188,11 @@ the entire strip before even an offline geometry candidate is reported. The
 loaded devbox stopped a Butcherblock rerun at its external timeout before it
 wrote evidence, so that route is still unaccepted. This release does not
 change the owner's assist controls.
+Version 0.41.31 adds a hash-pinned offline scene builder for the copied
+Cauldron and Unrest archives needed later in the 1–20 plan. The command
+reproduces provisional static geometry outside git and refuses changed
+archives until their source is audited again. It does not bake a navmesh,
+accept a route or change owner-run controls.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -697,6 +702,22 @@ The copied-data audit found 178 exact-name-matched object placements and
 22,513 faces respectively. Offline bakes and one sampled query per variant
 are recorded in `FINDINGS.md`. Water, dynamic doors, terrain clearance,
 actual client movement, and the private server target remain unverified.
+
+The copied Cauldron and Unrest archives have a reproducible scene command.
+Run on the devbox with the approved private client copies already present:
+
+```bash
+python3 -m eql_automation --build-later-zone-candidate-scene cauldron --exclude-boundary
+python3 -m eql_automation --build-later-zone-candidate-scene unrest
+```
+
+Both emit provisional WLD-XYZ OBJs under
+`~/.local/share/eql-automation/nav-candidates/`, alongside archive/member
+hashes and `real_client_accepted: false`. Omit `--exclude-boundary` to retain
+Cauldron's copied Boundary faces for a sensitivity comparison. Unrest has no
+Boundary faces; its unclassified material modes and the zones' water and
+door behavior remain unresolved. These are offline geometry commands, not
+an Alienware launch step or an F11 travel command.
 
 `--audit-zone-regions ZONE` checks copied WLD BSP tree and region-label
 references for `butcher`, `crushbone`, or `gfaydark`. It reports water and

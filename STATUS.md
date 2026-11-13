@@ -11,9 +11,13 @@ Updated 2026-11-13 16:20 CST for coordinator task `829a00229b29`.
   composed outside git. A material audit identified 2,442 Cauldron
   `Boundary` terrain faces and unclassified Unrest material modes; a second
   Cauldron scene excludes only those Boundary faces for later sensitivity
-  comparison. No verified collision behavior, navmesh, route,
+  comparison. Project 0.41.31 now reproduces all three copied-source scene
+  variants through a hash-pinned offline CLI; each matches the previously
+  recorded scene hash. No verified collision behavior, navmesh, route,
   water-safe crossing or real-client arrival has been accepted. Next source
-  step is a low-load candidate bake and static hazard review.
+  step is a bounded 256 × 256 candidate tile bake near the copied
+  Cauldron→Unrest label when CPU pressure eases, followed by BSP hazard review.
+  The baker has no water/zone area tags and cannot establish a walkable route.
 - Level-7 route focus: the existing guide's GFay orc camps are a same-zone
   fallback while the Crushbone Slaver corridor remains unaccepted. From the
   owner-run G0 spot, a copied-mesh dry route around two steep polygons has

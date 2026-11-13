@@ -1,5 +1,34 @@
 # FINDINGS
 
+## Reproducible later-zone scene command — 2026-11-13 16:23 CST
+
+**VERIFIED offline, no game input:** Project 0.41.31 adds
+`--build-later-zone-candidate-scene cauldron|unrest`. It checks all four copied
+archive hashes against the owner-client hashes below before composing the
+terrain and exact-name placed objects. On the approved private copies, the
+Cauldron included and Boundary-excluded commands reproduced the previously
+recorded OBJ SHA-256 values `eaa99ae692ce6b1842721ebe774178b4c63b1e9b6b6223f8f0b0e3bbf0d68496`
+and `fd88af2865e07a33c057f8cefe729a308b13bcf5b78abbead0d94338d2308bb5`.
+Unrest with Boundary included reproduced
+`bf136a77bf8df60920ed39991f7edf06cf28efbbc8d1b328902ecd78f40ba64d`.
+The Unrest exclude-Boundary option produced identical 32,818-face geometry
+with a different comment header and hash
+`9572e69924b2e1f3f29571286499a46b6eee03c801c7430e73f3f1e06630260c`.
+These commands do not determine collision, water or safe movement. F11 and
+the level 13–20 route remain unavailable.
+
+**OBSERVED read-only bake plan, not run:** The retained bounded local baker
+`~/.local/share/eql-automation/toolchains/eql-bake-local` has SHA-256
+`9e068f54a1a98c0f9ad55b4e2580f811aec581bb6e73022fc57234b27119eb57`.
+A 128-unit half-extent (256 × 256 cell) trial around the copied Cauldron map's
+Unrest-exit label at WLD XYZ `(-2046.01, -626.98, 89.35)` intersects about
+98 provisional OBJ faces. The reciprocal Unrest entrance label near
+`(50.16, 325.75, -0.8)` intersects about 159. A future low-load run should
+cap one bake at 30 seconds and 1 GiB and compare the Cauldron Boundary
+variants before using any tile. The baker lacks BSP water and zoneline area
+tagging; its output would still be geometry-only evidence. At 22:23 UTC the
+devbox load was 201.94 on 48 CPUs with swap full, so no bake was run.
+
 ## Dagnor's Cauldron and Unrest client source — 2026-11-13 16:17 CST
 
 **VERIFIED read-only owner-client copy:** Four archives were copied from the
