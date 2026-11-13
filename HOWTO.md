@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.23 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.24 / owner preview 0.39.4
 
 ## Current availability
 
@@ -130,8 +130,16 @@ owner-run preview or enable F11.
 On the copied Crushbone ground graph, both available directed crossings
 through a two-edge cut fail sampled turn checks at diagnostic grade 1.2.
 There is no accepted alternate Slaver route under the current geometry audit.
-The client's traversability and the character's movement limits are still
-unknown.
+The copied WLD terrain at four rejected samples is flat grass at Z=0 while
+the included-Boundary bake's detail rises nearby. That discrepancy is under
+review; the client's traversability and the character's movement limits are
+still unknown.
+Version 0.41.24 records an offline rebake comparison using the original
+baker, original object placements and copied BSP classifier. Removing the
+Boundary sky faces did not change either Crushbone cut's rejected turn
+samples. A finer detail setting passed one cut's sampled turns, but still
+failed the other and produced Recast warnings. It does not add a runnable
+travel route; F11 remains disabled.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

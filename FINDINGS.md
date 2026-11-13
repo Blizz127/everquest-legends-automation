@@ -1,5 +1,62 @@
 # FINDINGS
 
+## Isolated Crushbone Boundary and detail sensitivity — 2026-11-13 15:04 CST
+
+**VERIFIED copied-data offline bakes, no game input:** The retained November
+`eqlnav_bake` binary SHA-256
+`072f9b06935ef76d870219e4e2812146006d0c86fdca4bb6c78b70eed4383d44`
+matches the original mesh's embedded baker hash. The copied archives yielded
+the original 26,570 triangles and 5,586 BSP classifier nodes. An exact
+ordered subset of the Boundary-excluded OBJ's terrain triangles selected
+16,863 of the original 20,920 terrain triangles; 4,057 Boundary faces were
+removed while all 5,650 original placed-object triangles were retained.
+This avoids the provisional OBJ's different object placement convention.
+The same original parameters and one low-priority thread produced a
+55-tile, 5,142-polygon Boundary-excluded mesh SHA-256
+`0602118e61708bfc7312f8f7e82ba908b05f85362b2e5fdf5c830c63b5b1cccf`
+with zero Recast warnings. At both cut edges its exact XY detail heights and
+all 13 grade-1.2 turn results matched the original included-Boundary mesh.
+Boundary sky faces alone did not cause these sampled grade failures.
+
+**VERIFIED sensitivity, not acceptance:** Reducing only
+`detail_sample_max_error` from 1.0 to 0.5 with Boundary included left the
+first cut's failed offset at Z=0.944 and passed zero of 13 sampled turns;
+that mesh SHA-256 is
+`f3294a5b2c0c27e7137a34b766aa7f737d53dbd00cea201391626af5fffe0893`
+and emitted 13 Recast warnings. At error 0.25, the same offset was Z=0.163
+and all 13 sampled turns on 3248→3247 passed with Boundary included and
+excluded; those meshes have SHA-256
+`ba544e96700b51777d81c522c3dd6eba27c4d4a1af387852bf70729086158e56`
+(21 warnings) and
+`a99f2b7c2fd8465cd5f87d70bbd28a4de01b876579cdb43347fb97cb028b4130`
+(20 warnings). The 658→623 cut passed zero of 13 turns in all five variants.
+The full comparison artifact outside git
+`~/.local/share/eql-automation/nav-candidates/crushbone-boundary-detail-sensitivity-20261113T2103Z.json`
+has SHA-256 `6f223b5aa21a1f1cf34f27fca9dc521b95ac9b6116bc3e84c0dd2dd0b8c0f4c1`.
+The finer bakes' warnings are not yet classified. No variant has accepted
+strip/camp travel, dynamic obstacles, client height, zone arrival or real
+movement. F11 remains disabled.
+
+## Crushbone cut-edge source and bake height mismatch — 2026-11-13 14:56 CST
+
+**VERIFIED copied data, offline:** At the midpoint and first rejected
+0.6-unit turn offset of both cut edges, the included provisional WLD OBJ has
+two covering terrain faces: flat Z=0 `Diffuse` / `CLOVEGRASS_MDF` and a
+Z≈624–626 `Boundary` / `CRUSHSKY_MDF` face. The two flat faces map to copied
+`crushbone.wld` SHA-256
+`ce43cea4ea9a83cc0db0b25a666cfbe538543dcc451c34ee3bc984227ef1f9d1`.
+The Boundary-excluded OBJ SHA-256
+`8dd77042278bd9821d3d95ed2cefd4440070e4617201d5eb9cba1818794d372b`
+has exactly one covering face, Z=0, at each of those four XY points. The
+current included-Boundary navmesh detail rises from 0.163 to 0.944 on
+3248→3247 and from 0.350 to 1.117 on 658→623 over the sampled 0.6-unit
+offset. The diagnostic artifact outside git
+`~/.local/share/eql-automation/nav-candidates/crushbone-cut-source-height-20261113T2055Z.json`
+has SHA-256 `587bae81e4bbb6729b975d5714aafd4f328006eed51cbf4143f8d02fb82592d8`.
+The source-to-bake discrepancy is a concrete reason to review the bake; the
+OBJ remains provisional collision input, and these four samples do not
+establish playable grade or client position. F11 remains disabled.
+
 ## Crushbone copied-ground two-edge cut — 2026-11-13 14:53 CST
 
 **VERIFIED offline, no game input:** On copied `crushbone.npz` SHA-256
