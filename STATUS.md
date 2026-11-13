@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-13 17:16 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:20 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Low-level route progress: a bounded select-only run saved the 249-ground-
@@ -27,10 +27,13 @@ Updated 2026-11-13 17:16 CST for coordinator task `829a00229b29`.
   remains 0.39.4 and F11 remains disabled.
 - Read-only UI progress: the installed Legira layout puts the HP gauge at
   `(1966,693,330,17)` at 2560×1600; the saved HP crop starts 32 pixels too
-  high and spans 51 pixels. This is a likely calibration cause, not a live HP
-  fix. Source 0.41.35 adds a pinned, owner-run, focused-window crop tool that
+  high and spans 51 pixels. The 0.39.4 reader explicitly rejects its height
+  before reading pixels; that explains `hp=None` but is not a live HP fix.
+  Source 0.41.35 adds a pinned, owner-run, focused-window crop tool that
   saves private player/target/chat images with all G2 safety flags unknown.
-  Its help and import smoke passed; no live observation has been captured.
+  Source 0.41.38 adds a hash-pinned, read-only HP-crop analyzer that never
+  enables healing or movement. Its local metadata/traversal tests passed;
+  no live observation has been captured.
   The copied Unrest BSP marks sampled entrance ground as water, so no dry
   continuation from its locally passable 3083 crossing is established.
 - Level-13–20 source dependency: the owner's Cauldron and Unrest zone/object

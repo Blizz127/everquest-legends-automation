@@ -1,5 +1,25 @@
 # FINDINGS
 
+## HP crop evidence reader — 2026-11-13 17:20 CST
+
+**VERIFIED source diagnosis, live pixels still missing:** The owner preview
+0.39.4 saved HP crop is `[1963,661,2301,712]` at 2560×1600, 51 pixels high.
+Its `WindowGate.read_gauges` rejects HP crops taller than 24 pixels before
+reading their pixels, producing `hp_recalibrate_inner_bar` and `hp=None`.
+The installed UI layout resolves `Player_HP` to `(1966,693,330,17)` and
+the client XML defines that control as a red-tinted gauge. This is a
+source-backed candidate, not proof of the active live bar.
+
+Project 0.41.38 adds a read-only analyzer for the private owner-created
+`PlayerWindow__Player_HP.png` crop. It checks the exact capture metadata,
+source/crop hashes, rectangle and current client layout; then uses the
+hash-pinned 0.39.4 red-bar reader. Its report never enables healing or G2.
+Five focused metadata/traversal checks passed locally. A separate synthetic
+check on Alienware's installed Python and pinned reader returned 1.0 for a
+full 330×17 red band, 0.5 for a half band and unknown for a tiny, blue or
+ambiguous band. No actual owner UI capture has arrived, so a live HP reading,
+full-health calibration and smart heal are unverified.
+
 ## Copied low-level camp spokes — 2026-11-13 17:16 CST
 
 **VERIFIED offline, no game input:** The pinned 12-unit GFay orc-camp ring

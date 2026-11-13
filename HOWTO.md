@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.37 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.38 / owner preview 0.39.4
 
 ## Current availability
 
@@ -19,8 +19,8 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.37 are privately staged on Alienware under
-`~/.local/share/eql-automation/owner-tools/0.41.37/source`; they do not
+Source tools 0.41.38 are privately staged on Alienware under
+`~/.local/share/eql-automation/owner-tools/0.41.38/source`; they do not
 replace the owner-run 0.39.4 assist preview.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
@@ -224,6 +224,10 @@ Version 0.41.37 adds an optional offline `--audit-local` check to that camp
 ring tool. Five GFay orc-camp spokes and all 12 short Butcher yard spokes pass
 copied local strip/BSP checks. Their guide markers, mobs and live movement
 remain unverified, so this release does not enable F11 or change assist.
+Version 0.41.38 adds a read-only analyzer for the owner-created HP crop. It
+checks the saved crop and source hashes and reports an **unverified** red-bar
+fraction. It does not authorize smart heals or G2. The owner-run UI capture
+below is still needed; no live HP pixels have been observed.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -329,9 +333,22 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.37/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.38/source
 python3 tools/capture_owner_ui.py --label idle
 ```
+
+After the tool prints its observation directory, the read-only HP analyzer
+can check that capture without opening chat or sending game input:
+
+```bash
+cd ~/.local/share/eql-automation/owner-tools/0.41.38/source
+python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
+```
+
+Its numeric result remains unverified until the owner confirms the live
+screen state at full HP and a second known HP state. The current 0.39.4
+preview still requires manual **Calibrate HP** on the inner red band at full
+health for its own smart-heal setting; do not use the old 51-pixel saved crop.
 
 The tool prints its private output directory. It requires the reviewed 0.39.4
 preview files and exactly one focused game process. It does not turn on F11 or
