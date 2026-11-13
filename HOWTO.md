@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.20 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.21 / owner preview 0.39.4
 
 ## Current availability
 
@@ -103,6 +103,12 @@ Version 0.41.20 also retains an optional `/location` printed within 30 seconds
 before loading. It labels that coordinate as an unverified preloading point;
 the destination reading still has no certified spawn or route. The owner-run
 watcher command below uses 0.41.20.
+Version 0.41.21 retries bounded alternate portal crossings when an offline
+polygon strip fails even though its initial turn disks pass. It rechecks the
+entire selected ground route and never grants F11 travel. On the copied
+Crushbone Slaver corridor, the selector still stops at polygon 3248 because
+none of the checked portal fractions passed its turn-disk audit. A different
+corridor or verified clearance model is needed there.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

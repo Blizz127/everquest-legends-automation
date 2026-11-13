@@ -1,5 +1,32 @@
 # FINDINGS
 
+## Bounded strip-failure portal repair — 2026-11-13 14:35 CST
+
+**VERIFIED offline, no game input, project 0.41.21:** The copied-mesh portal
+selector now tries an alternate at a portal adjacent to the first failed
+polygon strip, reruns the layered route search, and keeps one shared time,
+turn-check, strip-check, sample and repair-round budget. It tries each newly
+passing alternative before testing another and retains the final whole-route
+strip audit. Fifteen focused selector, strip and turn tests passed; synthetic
+cases recovered a corridor where both initial midpoint turn disks passed but
+the midpoint strip failed. The selector still returns
+`route_accepted=false` and `real_client_accepted=false`.
+
+**VERIFIED copied Crushbone mesh, not client movement:** Against the saved
+80-polygon Slaver corridor and `crushbone.npz` SHA-256
+`bee5a1893ab0e2ffd9c83d0d64a1d7392993b21661f59095b0e2e304b0588793`,
+the selector stopped before strip search at polygon 3248 with
+`no_sampled_turn_disk_candidate` after 42 turn checks and 0 strip checks.
+The bounded probe took 1.117 seconds. Its outside-git artifact is
+`~/.local/share/eql-automation/nav-candidates/crushbone-strip-repair-probe-20261113T2034Z.json`
+SHA-256 `14743f2ed8c5fa39fe3c24be942962f23adf920bfb2eb2863bc8997316465360`.
+The source corridor artifact SHA-256 is
+`8a4a659cc0effd3bf2c93afe47660f07e7fd6a077`. This repair does not solve
+the Crushbone route; no F11 edge was accepted. NumPy was installed in an
+isolated devbox environment under the private EQL data store for this offline
+probe; no client data or binaries were added to git.
+
+
 ## Optional preloading location in owner watcher — 2026-11-13 14:30 CST
 
 **VERIFIED offline, no game input, project 0.41.20:** The destination watcher

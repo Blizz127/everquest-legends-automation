@@ -82,6 +82,67 @@ def test_layered_search_recovers_when_adjacent_nearest_choices_conflict(monkeypa
     assert set(result.fractions) <= {0.55, 0.6}
 
 
+def test_strip_failure_expands_midpoint_safe_portal_under_bound(monkeypatch):
+    real_strip = selector.audit_segment_strip
+
+    def reject_midpoint_strip(mesh, poly, start, end, **kwargs):
+        if poly == 0 and end == (10.0, 5.0):
+            return LateralStripCheck(False, "synthetic_midpoint_obstacle")
+        return real_strip(mesh, poly, start, end, **kwargs)
+
+    monkeypatch.setattr(selector, "audit_segment_strip", reject_midpoint_strip)
+    result = select_ground_portals(FlatMesh(), (0, 1), (1.0, 5.0),
+                                   (19.0, 5.0), alternates=(0.6,))
+    assert result.candidate and result.fractions == (0.6,)
+    assert result.turn_checks == 2 and result.strip_checks > 2
+    assert not result.route_accepted and not result.real_client_accepted
+
+    no_retry = select_ground_portals(FlatMesh(), (0, 1), (1.0, 5.0),
+                                     (19.0, 5.0), alternates=(0.6,),
+                                     max_strip_repair_rounds=0)
+    assert not no_retry.candidate
+    assert no_retry.reason == "strip_repair_round_budget_exceeded"
+
+
+def test_middle_polygon_can_repair_either_adjacent_portal(monkeypatch):
+    real_strip = selector.audit_segment_strip
+
+    def reject_midpoint_pair(mesh, poly, start, end, **kwargs):
+        if poly == 1 and start[1] == end[1] == 5.0:
+            return LateralStripCheck(False, "synthetic_midpoint_obstacle")
+        return real_strip(mesh, poly, start, end, **kwargs)
+
+    monkeypatch.setattr(selector, "audit_segment_strip", reject_midpoint_pair)
+    result = select_ground_portals(FlatMesh(3), (0, 1, 2),
+                                   (1.0, 5.0), (29.0, 5.0),
+                                   alternates=(0.55,))
+    assert result.candidate and result.fractions in ((0.5, 0.55), (0.55, 0.5))
+    assert result.turn_checks >= 3 and result.strip_checks > 3
+    assert not result.route_accepted and not result.real_client_accepted
+
+
+def test_first_repair_choice_is_tried_before_later_budget_failure(monkeypatch):
+    real_strip = selector.audit_segment_strip
+    real_turn = selector.audit_turn_disk
+
+    def reject_midpoint_strip(mesh, poly, start, end, **kwargs):
+        if poly == 0 and end == (10.0, 5.0):
+            return LateralStripCheck(False, "synthetic_midpoint_obstacle")
+        return real_strip(mesh, poly, start, end, **kwargs)
+
+    def later_choice_exhausts_budget(mesh, a, b, xy, **kwargs):
+        if xy == (10.0, 4.0):
+            return TurnDiskCheck(False, "synthetic_budget_exceeded")
+        return real_turn(mesh, a, b, xy, **kwargs)
+
+    monkeypatch.setattr(selector, "audit_segment_strip", reject_midpoint_strip)
+    monkeypatch.setattr(selector, "audit_turn_disk", later_choice_exhausts_budget)
+    result = select_ground_portals(FlatMesh(), (0, 1), (1.0, 5.0),
+                                   (19.0, 5.0), alternates=(0.55, 0.6))
+    assert result.candidate and result.fractions == (0.55,)
+    assert result.turn_checks == 2
+
+
 def test_missing_portal_and_exhausted_turn_budget_fail_closed(monkeypatch):
     mesh = FlatMesh()
     mesh.links[0] = []
