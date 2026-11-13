@@ -1,6 +1,7 @@
-"""Offline EverQuest Legends automation planning prototype.
+"""EverQuest Legends automation prototype and offline planning library.
 
-No module in this package connects to or sends input to the game.
+The optional uinput watchdog requires a supplied device descriptor; the
+current owner preview does not import or use it.
 """
 
-__version__ = "0.34.0"
+__version__ = "0.40.7"

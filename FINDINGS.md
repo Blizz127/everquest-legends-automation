@@ -1,5 +1,23 @@
 # FINDINGS
 
+## Same-device pulse release timer — 2026-11-13 10:46 CST
+
+**VERIFIED offline:** `eql_automation/uinput_watchdog.py` is an optional
+building block for a later owner-run G2 check. A separate process inherits the
+caller's existing input descriptor and writes one timed key DOWN/UP pair to
+that same descriptor. It releases on its own deadline, STOP or parent-pipe
+closure; the parent sends an additional UP after child exit. Five focused
+pipe-only checks passed, including a stalled caller and a killed caller.
+An Alienware pipe-only smoke reported a 0.100-second hold and the expected
+DOWN/SYN/UP/SYN sequence. The staged module outside the game install and
+devbox source both hash to SHA-256
+`f19248cffe3d37f70de20fe1a6503c0b205ab2fff3e3c811e9f068f097c51cb7`.
+It has not been tried with EverQuest or a real uinput descriptor, and a
+stalled/killed watchdog child itself would still need the parent to release.
+The release deadline is best effort under OS scheduling; integration must
+exclude concurrent pulses for the same key and descriptor.
+It is not wired into the owner preview; G0/G2 and F11 remain unverified/off.
+
 ## GFay G2 geometry preflight — 2026-11-13 10:42 CST
 
 **VERIFIED offline:** `eql_automation/g2_probe_geometry.py` performs a bounded,
