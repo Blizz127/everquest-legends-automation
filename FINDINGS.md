@@ -1,5 +1,89 @@
 # FINDINGS
 
+## First-step result — 2026-11-13 00:38 CST (current)
+
+**VERIFIED:** The owner's installed EverQuest Legends client is on the Alienware
+(`alienware-bazzite`, host `bazzite`) and points to Daybreak's official, live,
+commercial service. It is not an EQEmu/private-server setup. No client was
+launched, no character was logged in, and no existing character log was read.
+The older material below is retained as handover history; its statements that
+the client/server were not found are superseded by this section.
+
+### Alienware install and service evidence
+
+Read-only checks over the `alienware-bazzite` SSH alias found:
+
+| Item | Alienware path or value | SHA-256 |
+| --- | --- | --- |
+| Lutris configuration | `/home/blizz/.local/share/lutris/games/everquest-legends-1782570403.yml` | `d7a430f39a38b1d088e56ada053b0c454a08a5cb1490418cca4a66b1a6dfb481` |
+| Desktop shortcut | `/home/blizz/Games/everquest-legends/drive_c/users/blizz/Desktop/EverQuest Legends.lnk` | `b6c054bcf8043f57e2a60635e7931bf59c3929a97d6e3d4327480b05c50c7259` |
+| Login host | `<game root>/eqhost.txt` | `e8682ae8189d2082de41e87ce6fe82a9e055e6fe16c12ffa1a09bb84127395d8` |
+| Login client configuration | `<game root>/eqlsClient.ini` | `83c1bd98a27cdc4355d479e59070e6ef9de862388279571d50afee64a2482446` |
+| LaunchPad configuration | `<game root>/LaunchPad.ini` | `e727a7e04a0f1f86247461f1490c11a5abb68ca5019dc5ed2252fbc01eda6743` |
+| Zone names | `<game root>/Resources/ZoneNames.txt` | `840b61b01deb4dfb8f49cf13e007364a629ce380c165aad5bb37adba6e52cd39` |
+| Spell catalog | `<game root>/spells_us.txt` | `8db5548696635075f982a20a8afae13b57346637f5edae3c8d93432c848524de` |
+| Spell strings | `<game root>/spells_us_str.txt` | `9ce629ec15a7625ff1156256e71a3c954a1cb2fa9bf701692a7529e9b3bf3dab` |
+| Example map | `<game root>/maps/fieldofbone.txt` | `5e475aa926ab0eb176e04ebaa9f5264cacc02848e294f7b2ad402f6d5aaf1d85` |
+| Example map | `<game root>/maps/freeportwest.txt` | `4e1fdfc54a99f5a9b5cb8903fb08430ea9752b2645ad58809f7c4299b80e0706` |
+
+`<game root>` is
+`/home/blizz/Games/everquest-legends/drive_c/users/Public/Daybreak Game Company/Installed Games/EverQuest Legends`.
+The Lutris prefix is `/home/blizz/Games/everquest-legends` (about 13 GB).
+The shortcut targets `C:\\users\\Public\\Daybreak Game Company\\Installed Games\\EverQuest Legends\\LaunchPad.exe`.
+`eqhost.txt` says `[LoginServer] Host=lvseqns-livl01.everquestlegends.com:15900`;
+that name resolved to `69.174.201.2` at the check. `eqlsClient.ini` refers to
+`https://account.daybreakgames.com` and `http://www.everquestlegends.com`.
+There are 448 `maps/` files and 701 zone-name lines. The map example uses
+`L x,y,z,x,y,z,R,G,B` records. These observations establish the installed
+client's configuration, not a witnessed connection: the client was not run.
+
+**VERIFIED policy conflict:** [Daybreak's EverQuest Legends Rules of Conduct](https://help.daybreakgames.com/hc/en-us/articles/53818164365843-What-are-the-EverQuest-Legends-Rules-of-Conduct)
+prohibit unauthorized servers/emulators in rules 13–14, and their play-nice
+policy prohibits AFK/unattended gameplay. [Daybreak EULA §4.6](https://www.daybreakgames.com/eula?locale=en_US)
+bars bots or macros that allow unattended play or otherwise affect gameplay;
+[Daybreak Terms of Service §10](https://www.daybreakgames.com/terms-of-service?locale=en_us)
+also forbids unauthorized software or macros that modify gameplay or give an
+advantage. **INFERRED:** The requested full-auto level 50 run and rotation-only
+assist on this live service fall within these prohibitions absent Daybreak's
+express written authorization. A private/EQEmu EQL server is also not a clear
+fallback under rules 13–14. This conflict was reported to the coordinator for
+task `829a00229b29`. Live automation and private-server testing are held;
+offline simulation and read-only analysis can continue.
+
+### Earlier October rotation tool
+
+**VERIFIED read-only review:** `/home/blizz/Projects/everquest-legends-rotation/`
+is a Paladin/Cleric assist prototype. `rotation_core.py` parses the client's
+spell catalog, filters a fresh `/outputfile spellbook` export, chooses 1–50
+spell profiles, tails logs, and chooses healing, buff, ability and damage
+actions. `rotation_engine.py` gates XWayland/uinput commands on game focus and
+uses F6 to prepare, F8 to toggle combat, F9 to stop and F10 to heal.
+`eql_rotation.py` supplies a PySide6 GUI. The tool has no pathing, camps,
+vendor, looting, death recovery or unattended login. Its `server="freeport"`
+setting names a log file and is not evidence of a private server.
+
+| Prior file | SHA-256 |
+| --- | --- |
+| `HANDOFF.md` | `af18a1d72b5414564a76803fce73b13dc8c70efe2bf560cfe26815bc17bfd5fa` |
+| `README.md` | `9fd2f3c8741e16ddf9087f146d62a7789417316ab57fe9afafc0b89b276135aa` |
+| `CODEX_PROMPT.txt` | `26e274960b2483f71211822dfba1a5eb67901ac542604f8c4ecaee32e0f0f244` |
+| `remote-runtime-check.json` | `347b4b481aa3451c105a9b5417346c87f0751463bab7fa8c0b3dcf7752206249` |
+| `eql_rotation.py` | `95b4251558ecd1a5c31d9e12f2d71c2a0492de1e3df52592745fa7e8fc517adc` |
+| `rotation_core.py` | `bdd5203bbf87563039799f7dd228480a517fca8dd4550d53b6559506a56875fa` |
+| `rotation_engine.py` | `8e32a72eb7f87dae9901f84841679fdb628c46fab7458de216bfdff9fe567683` |
+| `test_rotation.py` | `cfb79d8e661ad67d55623ba6888a604708197289b2a8e723a7debeffded72c99` |
+
+The devbox mirror has no `artifacts/` evidence. `HANDOFF.md` reports 17 tests
+passed on Alienware historically, but live spell preparation and combat were
+never verified; the tests were not rerun in this first-step review.
+`install_launchers.py` writes character INIs and must not be run against the
+protected Alienware prefix. Missing pieces for the level 50 proof are a
+Daybreak-authorized test path, a fresh test character, and an end-to-end run.
+Devbox/Banshee server searches were skipped because the installed client points
+to an official service and unauthorized EQL servers are prohibited.
+
+## Superseded handover notes
+
 Written 2026-11-13 ~12:40 AM CST by the Claude lead (claude-everquest-legends, Fable 5.2) at handover
 to the Codex lead (coordinator task 28e5398a1701). The Claude lead ran for only a few minutes; the
 FIRST STEP search is **incomplete**. Labels: VERIFIED = ran it and saw it, INFERRED = guess from evidence.

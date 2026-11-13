@@ -1,24 +1,22 @@
 # STATUS
 
-Updated 2026-11-13 ~12:40 AM CST. Lane handed from the Claude lead to the Codex lead
-(coordinator task 28e5398a1701, Blizz 12:31 AM CST Nov 13).
+Updated 2026-11-13 00:43 CST for coordinator task `829a00229b29`.
 
-- Level: n/a. No character, no client run, nothing launched.
+- Current level: n/a. No automated character login or live run.
 - XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Code: none written yet. Repo holds only AGENTS.md, FINDINGS.md, STATUS.md.
-- Current blocker: the EverQuest Legends client and server have **not been located** (search was
-  only partly done; see FINDINGS.md "Not searched").
-
-## Exact next steps for the Codex lead
-
-1. Read `~/Projects/everquest-legends-rotation/HANDOFF.md`, `README.md`, `CODEX_PROMPT.txt`,
-   `remote-runtime-check.json` (unread; best lead on where the client runs and what it connects to).
-2. Finish the FIRST STEP search: `/data`, deeper `~/dev`, Wine/Proton prefixes, `docker ps -a`,
-   listening ports, Banshee (`banshee-ax41`), then the Alienware (light, read-only). Record paths
-   and sha256 hashes in FINDINGS.md.
-3. Decide and state plainly whether the target is a live commercial/public service; if a ToS or
-   no-botting rule conflicts with the goal, send the coordinator one clear note.
-4. Send the FIRST STEP findings report to the coordinator (not yet sent).
-5. Start client-independent work: map-file to nav-graph tooling (store under
-   `~/.local/share/eql-automation/`), spell/class data model, log-tail state reader, bot core with
-   a simulated test harness.
+- Build: offline prototype 0.2.0. Mode boundary, prior rotation planner reuse,
+  synthetic nav graph and stall monitor, incremental log-state adapter, hourly
+  status writer, spell progression and camp decision models, simulator CLI.
+- Verification: `python3 -m pytest -q tests/test_offline.py` — 7 passed;
+  `python3 -m eql_automation --demo` — all expected checks true;
+  `python3 -m compileall -q eql_automation` and offline mode shell smoke —
+  passed. No game or account used.
+- Current blocker: installed client points to Daybreak's official live service;
+  Daybreak rules prohibit unattended gameplay and bots/macros. No
+  Daybreak-authorized route for the requested live full-auto or assist tests is
+  documented. An unauthorized EQL private server is not an available fallback
+  under the published rules.
+- Next step: continue offline planning and verification; ask the coordinator to
+  obtain or identify Daybreak's express written authorization before any live
+  automation or in-game validation. The existing October assist tool's live
+  preparation and combat also remain unverified.
