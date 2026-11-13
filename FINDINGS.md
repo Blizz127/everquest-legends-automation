@@ -1,5 +1,41 @@
 # FINDINGS
 
+## Private-target clarification and retail data check — 2026-11-13 01:39 CST
+
+**USER-STATED:** The intended automation target is a private EverQuest Legends
+server, location unknown; use the retail client for now. **VERIFIED:** The sole
+EverQuest Legends Lutris client found in likely Alienware locations still has
+`eqhost.txt` pointing to Daybreak's official
+`lvseqns-livl01.everquestlegends.com:15900`. No separate private client/login
+configuration was found in bounded Alienware Lutris, Games, Projects or Desktop
+checks. Bounded devbox `~/dev`, `~/gbsw`, Docker and listener checks found no
+private EQ/EQEmu candidate. `banshee-ax41` was offline; the reachable Tailscale
+peer `Banshee` had no candidate in its likely project paths, Docker containers,
+services or common EQ listeners. These are bounded negative searches, not proof
+that no private server exists elsewhere. **Exact missing piece:** the private
+server endpoint or a separate client/login configuration that points to it.
+No official service was contacted and no character was used.
+
+**VERIFIED retail read-only copy:** From the Alienware client, two map text
+files, `Resources/ZoneNames.txt`, `spells_us.txt`, and `eqhost.txt` were copied
+to `/home/blizz/.local/share/eql-automation/client-data/retail-sample/`.
+Their SHA-256 hashes match the source values already recorded below; the
+`eqhost.txt` copy hashes to
+`e8682ae8189d2082de41e87ce6fe82a9e055e6fe16c12ffa1a09bb84127395d8`.
+No remote install/prefix file was modified. Import results in the untracked
+`~/.local/share/eql-automation/map-store/`:
+
+- `fieldofbone.txt`: 5,238 drawing lines, 11 labels, 0 skipped records.
+- `freeportwest.txt`: 16,992 drawing lines, 8 labels, 0 skipped records.
+- Zone-name list: 701 entries.
+- October Paladin/Cleric parser: 198 spells, all level 1–50 profiles valid.
+- **Navigability is unverified:** map `L` records are drawing geometry, not
+  proven walkable edges; `P` labels are candidate places, not confirmed zone
+  transitions/vendors. No nav graph is generated automatically from them.
+- A read-only target inspector classifies this copied `eqhost.txt` as official
+  and rejects it as a private target. Future input must match a separately
+  reviewed private host, port and `eqhost.txt` hash.
+
 ## First-step result — 2026-11-13 00:38 CST (current)
 
 **VERIFIED:** The owner's installed EverQuest Legends client is on the Alienware

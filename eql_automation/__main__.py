@@ -4,10 +4,13 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+from dataclasses import asdict
 
 from .modes import Action, ActionKind, Mode, ModeController
 from .sim import SimSink, run_demo, synthetic_graph
 from .synthetic_run import default_output_dir, run_synthetic_1_50
+from .client_ingest import import_retail_copy
+from .target import inspect_eqhost
 
 
 def shell() -> None:
@@ -49,13 +52,28 @@ def main() -> None:
     group.add_argument("--shell", action="store_true", help="switch simulated modes without restarting")
     group.add_argument("--synthetic-1-50", action="store_true",
                        help="run a closed-loop synthetic level 1–50 scenario; not real-client proof")
+    group.add_argument("--ingest-retail-copy", action="store_true",
+                       help="read copied client text files into the untracked local map store")
+    group.add_argument("--inspect-target", action="store_true",
+                       help="inspect a copied eqhost.txt without connecting to its server")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
+    parser.add_argument("--source", type=Path,
+                        help="copied retail client text directory for --ingest-retail-copy")
     args = parser.parse_args()
     if args.demo:
         print(json.dumps(run_demo(), indent=2))
     elif args.synthetic_1_50:
         print(json.dumps(run_synthetic_1_50(args.output or default_output_dir()), indent=2))
+    elif args.ingest_retail_copy:
+        if args.source is None:
+            parser.error("--ingest-retail-copy requires --source")
+        print(json.dumps(import_retail_copy(args.source, args.output) if args.output
+                         else import_retail_copy(args.source), indent=2))
+    elif args.inspect_target:
+        if args.source is None:
+            parser.error("--inspect-target requires --source pointing to eqhost.txt")
+        print(json.dumps(asdict(inspect_eqhost(args.source)), indent=2))
     else:
         shell()
 

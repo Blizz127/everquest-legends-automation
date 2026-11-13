@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.4.0
+# EverQuest Legends automation — current build 0.5.0
 
 ## Current availability
 
@@ -9,7 +9,9 @@ installed client points to Daybreak's live service. Its published
 [EULA](https://www.daybreakgames.com/eula?locale=en_US), and
 [Terms of Service](https://www.daybreakgames.com/terms-of-service?locale=en_us)
 prohibit the requested unattended bot and appear to prohibit a rotation assist
-on the live service without Daybreak authorization. No live mode is enabled.
+on the live service without Daybreak authorization. The owner says the target
+is a private server, but its endpoint has not been found; the installed retail
+client still points to Daybreak. No live mode is enabled.
 
 ## Start the offline prototype
 
@@ -19,6 +21,8 @@ From this project directory:
 python3 -m eql_automation --demo
 python3 -m eql_automation --shell
 python3 -m eql_automation --synthetic-1-50
+python3 -m eql_automation --inspect-target --source /path/to/copied/eqhost.txt
+python3 -m eql_automation --ingest-retail-copy --source /path/to/copied/client-text
 ```
 
 The demo prints a synthetic route and mode-permission results. The shell stays
@@ -47,6 +51,16 @@ Trace, summary and a synthetic status file go under
 `~/.local/share/eql-automation/runs/synthetic-1-50-<UTC timestamp>/`.
 Use `--output DIRECTORY` to choose a different trace directory. These files
 are test evidence only; they do not show an EverQuest Legends character at 50.
+
+`--inspect-target` reads a copied `eqhost.txt` and reports its host, port,
+hash, and whether it is a Daybreak official domain. It does not connect.
+`--ingest-retail-copy` reads copied map, zone-name and spell text files and
+writes parsed geometry and Paladin/Cleric spell metadata beneath
+`~/.local/share/eql-automation/map-store/`. It does not change the client.
+Map drawing lines are **not** automatically treated as walkable routes;
+navigation still needs observed traversable paths. The retail sample copy is
+at `~/.local/share/eql-automation/client-data/retail-sample/` and is kept out
+of git.
 
 | Simulated mode | Actions permitted by the planner |
 | --- | --- |
