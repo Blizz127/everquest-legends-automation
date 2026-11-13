@@ -1,5 +1,28 @@
 # FINDINGS
 
+## November helper target evidence and read-only hint reader — 2026-11-13 09:25 CST
+
+**OBSERVED source:** The current Alienware November 12 engine, SHA-256
+`1e1e6e3e021619471f9d954e86c9af81363315a66a7b8771b766acea53ea4731`,
+parses `Targeted (kind): name` and `/consider` faction reactions. Neither
+contains a unique entity ID. Its own comment says the client can auto-select
+an add without a `Targeted` line. Same-name target changes can therefore
+carry prior approval in the legacy helper. Its input sender infers chat draft
+ownership from sent keys and physical Enter/Escape, without a verified game
+chat-focus or draft-content signal. F9 disarms and releases held keys, but
+native `/attack off` can be deferred when focus or input is unavailable.
+These are source observations, not a lead-run live test.
+
+**VERIFIED offline:** `TargetLogMonitor` now uses the non-replaying log tail
+to emit only newly logged selection hints. It invalidates on zoning, death,
+targetless lines, unsupported/malformed selections, unparsed lines, log
+replacement and time rollback. It never mints a unique target token or marks
+a selection verified; its explicit event count cannot cover unlogged
+retargets. Six focused synthetic tests passed. No owner-character log was
+read and no game input was sent. Strict ASSIST remains disarmed until a live
+observer can distinguish every selection, including same-name targets, and
+verify chat state before each input event.
+
 ## Alienware source switched; owner F8 path rechecked — 2026-11-13 09:17 CST
 
 **VERIFIED read-only:** The Alienware rotation folder currently contains a

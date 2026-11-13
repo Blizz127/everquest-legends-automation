@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.37.1
+# EverQuest Legends automation — current build 0.38.0
 
 ## Current availability
 
@@ -207,6 +207,15 @@ identity is re-established. Only a log path known to be absent for a **fresh
 test character** should opt in with `fresh_test_character=True` to retain its
 first newly written event. This is a read-only library, not a client login or
 live telemetry feed.
+
+The read-only `TargetLogMonitor` can record **newly logged target hints** from
+a specified character/server log. It skips existing history and clears its
+last hint on zoning, death, targetless messages, log reset, malformed lines or
+time regression. Two logged selections with the same display name get
+different explicit event counts. The client can also retarget without a
+`Targeted` line, and the log gives no entity ID; the monitor never claims a
+verified current target or supplies an ASSIST target token. It sends no game
+input. It is not a reason to turn on strict live ASSIST.
 
 For a **read-only historical geometry audit**, a filtered file containing only
 the owner's own timestamped zone, loading and `/loc` system lines can be kept
@@ -461,13 +470,10 @@ polygons and a 24-polygon offline Detour query path. Its data stays under
 `~/.local/share/eql-automation/nav-candidates/`. No query is an accepted bot
 route or proof of game movement; the active bot still has no verified nav edge.
 
-The prior October Paladin/Cleric prototype remains at
-`/home/blizz/Projects/everquest-legends-rotation/`. Its historical controls
-were F6 prepare, F8 assist toggle, F9 stop, and F10 heal. They have not been
-live-verified and are **not** controls for this build. Its prepare action also
-changes spell gems, and its combat action can toggle autoattack, so that code
-cannot be used unchanged for strict ASSIST. Do not run its installer:
-it writes character INIs in the protected Alienware prefix.
+The separate Alienware helper at `~/Projects/everquest-legends-rotation` is
+the supervised owner-run F8/F9 test path described above. Its current November
+source is not this build's strict ASSIST implementation. Do not run its
+installer: it writes character INIs in the protected Alienware prefix.
 
 ## Verification
 
@@ -478,6 +484,7 @@ python3 -m pytest -q tests/test_control.py
 python3 -m pytest -q tests/test_spell_catalog.py tests/test_assist.py
 python3 -m pytest -q tests/test_ui_schema.py
 python3 -m pytest -q tests/test_screen_observer.py
+python3 -m pytest -q tests/test_target_log.py
 python3 -m pytest -q tests/test_nav_evidence.py
 python3 -m compileall -q eql_automation
 ```

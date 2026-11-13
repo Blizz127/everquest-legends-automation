@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 09:18 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 09:25 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
-- Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype plus guarded owner-run preview 0.37.1. Mode boundary, prior rotation planner reuse,
+- Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no run). Camp: none.
+- Build: offline prototype 0.38.0; the 0.37.0 guarded owner-run preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -183,6 +183,12 @@ Updated 2026-11-13 09:18 CST for coordinator task `829a00229b29`.
   `--dry-run --level 4` passed. HOWTO now documents only its supervised
   F8/F9 owner test. F11/F12 are excluded because movement gates are unrun
   and a prior continued-walking report remains unresolved.
+  The November helper's `Targeted` and `/consider` lines lack a unique entity
+  ID, and its source documents auto-retargets without a `Targeted` line.
+  Its sender infers chat ownership rather than observing the game draft.
+  A read-only target log monitor now emits only new hints from a specified
+  character/server file, revokes them on unsafe state changes, and never
+  grants a unique target token or authorizes strict ASSIST.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -323,6 +329,8 @@ Updated 2026-11-13 09:18 CST for coordinator task `829a00229b29`.
   `python3 -m pytest -q tests/test_owner_live_adapter.py tests/test_key_bridge.py tests/test_assist.py tests/test_control.py`
   — 39 focused checks passed; the adapted October engine no-device smoke
   blocked F8 before F6; the owner entry's dry run passed on copied spell data.
+  `python3 -m pytest -q tests/test_target_log.py` — 6 focused synthetic
+  checks passed; no owner-character log or input was used.
 - Current blocker: owner-run supervised F8/F9 legacy rotation testing is
   available, but the new attack-free preview refuses the changed Alienware
   source and
@@ -342,7 +350,8 @@ Updated 2026-11-13 09:18 CST for coordinator task `829a00229b29`.
   launcher/server publication destination is configured; this build is local.
 - Next step: keep the changed Alienware helper source read-only, collect the
   owner's F8/F9 live observations without touching
-  his character, and build a strict rotation-only owner-run variant that does
+  his character, validate a unique selection signal and chat-open/draft signal
+  on an isolated client view, then build a strict rotation-only owner-run variant that does
   not toggle autoattack or prepare gems during combat. Obtain the intended private endpoint or separate client config,
   then verify target identity before any live test. Review copied client
   Boundary collision, water region shapes and dynamic-door rules; compare
