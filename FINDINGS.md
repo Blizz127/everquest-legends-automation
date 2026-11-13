@@ -1,5 +1,28 @@
 # FINDINGS
 
+## Butcherblock old-format mesh arrays — 2026-11-13 05:24 CST
+
+**VERIFIED copied-client decoding:** A read-only `0x36` decoder for the
+client's WLD version `0x00015500` parsed all 1,925 Butcherblock terrain and
+object mesh records with bounded arrays and valid polygon indices. The terrain
+`butcher.wld` contains 1,850 meshes, 64,230 encoded vertices and 52,695
+triangles. Its polygon flags are 51,827 `0` and 868 `0x10`; no exact
+zero-area triangles were found in the raw terrain mesh coordinates.
+`butcher_obj.wld` contains 73 meshes, 7,092 vertices and 5,615 triangles
+(4,682 flag `0`, 933 flag `0x10`, 65 exact zero-area triangles).
+`butcher_2_obj.wld` contains 2 meshes, 1,011 vertices and 1,248 triangles
+(1,224 flag `0`, 24 flag `0x10`, no exact zero-area triangles). The decoder
+uses the [EQEmu WLD mesh format](https://docs.eqemu.dev/client/guides/file-formats/wld-by-windcatcher/),
+where flag `0x10` denotes pass-through surfaces, and verifies the actual
+copied files. Two synthetic mesh checks and the copied-data CLI audit passed.
+The untracked `butcher-meshes.audit.json` manifest SHA-256 is
+`043e827eafb1760c632ae43dc678b109666b9a5836ac44cf779abdd1899a4f21`.
+Mesh centers, raw vertices and polygon flags are now decoded in memory;
+actor-to-mesh references and placement transforms have not been composed.
+**No collision mesh, navmesh, conservative clearance, or real-client movement
+is yet verified.** The historical 18,292-vertex/10,694-polygon mesh was a
+different reported composition and has not been reproduced.
+
 ## Butcherblock WLD fragment and placement provenance — 2026-11-13 05:21 CST
 
 **VERIFIED copied-client structure:** A bounded read-only WLD inventory of the

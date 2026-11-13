@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 05:21 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 05:24 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.17.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.18.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -44,12 +44,16 @@ Updated 2026-11-13 05:21 CST for coordinator task `829a00229b29`.
   store; it never promotes a route from a historical hash alone. Three
   Butcherblock PFS/S3D archives have been copied read-only from Alienware to
   the untracked client-data store; a bounded archive inspector inventories
-  their WLD members and hashes. Collision geometry remains undecoded.
+  their WLD members and hashes.
   A bounded WLD inventory now reads all four copied Butcherblock WLDs and a
   placement audit resolves all 1,884 object locations to exact model names;
   22 tree locations have the documented Z sentinel, leaving 1,862
   non-sentinel locations. This reproduces the historical placement counts but
   neither composes collision geometry nor accepts a route.
+  The old-format `0x36` mesh decoder now reads 1,925 terrain/object mesh
+  records with 72,333 encoded vertices and 59,558 triangles total. It records
+  pass-through flags and zero-area raw triangles, while leaving actor-to-mesh
+  composition, clearance and navigability unverified.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -86,6 +90,9 @@ Updated 2026-11-13 05:21 CST for coordinator task `829a00229b29`.
   to 75 exact model definitions and reported 22 dropped-tree sentinels,
   with collision and navigability false. Four copied WLD members were
   structurally inventoried without client input.
+  `python3 -m pytest -q tests/test_mesh_geometry.py` — 2 passed;
+  `--audit-butcher-meshes` decoded all 1,925 copied mesh records with valid
+  triangle indices and reported `collision_composed: false`.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -96,9 +103,9 @@ Updated 2026-11-13 05:21 CST for coordinator task `829a00229b29`.
   remain unresolved. No actual client acceptance is ready. No private
   launcher/server publication destination is configured; this build is local.
 - Next step: obtain the intended private endpoint or separate client config,
-  then verify target identity before any live test. Decode the copied
-  Butcherblock `0x36` terrain and object meshes, compose them with the now
-  decoded static placements and build a new collision bake in this project's
+  then verify target identity before any live test. Trace exact actor-to-mesh
+  references, compose decoded Butcherblock meshes with the decoded static
+  placements and build a new collision bake in this project's
   approved data store;
   check conservative clearance, GFay height alignment, dynamic doors, water,
   zone transitions and actual movement before accepting a route. Review

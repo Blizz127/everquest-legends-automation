@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.17.0
+# EverQuest Legends automation — current build 0.18.0
 
 ## Current availability
 
@@ -34,6 +34,7 @@ python3 -m eql_automation --audit-butcherblock
 python3 -m eql_automation --inspect-s3d --source ~/.local/share/eql-automation/client-data/retail-full/assets/butcher.s3d
 python3 -m eql_automation --inspect-wld --source ~/.local/share/eql-automation/client-data/retail-full/assets/butcher.s3d --member objects.wld
 python3 -m eql_automation --audit-butcher-placements
+python3 -m eql_automation --audit-butcher-meshes
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 python3 -m eql_automation --index-ui-widgets
@@ -206,6 +207,9 @@ sentinels among 1,884 copied Butcherblock locations. Both are read-only.
 The audit does not compose collision geometry, create a navmesh, accept a
 route, or send game input. Its derived JSON files stay outside git in the
 untracked `assets/manifests/` directory described above.
+`--audit-butcher-meshes` decodes copied old-format terrain and object mesh
+vertex/triangle arrays, checks indices, and counts solid and pass-through
+polygon flags. It does not apply object placements or validate movement.
 
 The prior October Paladin/Cleric prototype remains at
 `/home/blizz/Projects/everquest-legends-rotation/`. Its historical controls

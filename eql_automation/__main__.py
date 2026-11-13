@@ -23,6 +23,7 @@ from .nav_evidence import DATA_ROOT, audit_butcherblock
 from .pfs_archive import PFSArchive
 from .wld_inventory import WLDInventory
 from .placement_audit import audit_object_locations
+from .mesh_geometry import read_meshes, summarize_meshes
 
 
 def shell() -> None:
@@ -120,6 +121,8 @@ def main() -> None:
                        help="inventory fragments in a WLD member of a copied S3D")
     group.add_argument("--audit-butcher-placements", action="store_true",
                        help="match copied Butcherblock object locations to exact actor definitions")
+    group.add_argument("--audit-butcher-meshes", action="store_true",
+                       help="decode copied Butcherblock 0x36 mesh arrays without accepting a route")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
@@ -299,6 +302,25 @@ def main() -> None:
                                          "butcher_obj.wld": model1.sha256,
                                          "butcher_2_obj.wld": model2.sha256},
                           **asdict(audit)}, indent=2))
+    elif args.audit_butcher_meshes:
+        asset_root = DATA_ROOT / "client-data" / "retail-full" / "assets"
+        pairs = (("butcher.s3d", "butcher.wld"),
+                 ("butcher_obj.s3d", "butcher_obj.wld"),
+                 ("butcher_2_obj.s3d", "butcher_2_obj.wld"))
+        if any(not (asset_root / source).resolve().is_relative_to(DATA_ROOT.resolve())
+               for source, _ in pairs):
+            parser.error("Butcherblock source must stay inside the approved EQL data store")
+        inventories = []
+        for source, member in pairs:
+            archive = PFSArchive(asset_root / source)
+            wld = WLDInventory(archive.read_member(member))
+            meshes = read_meshes(wld)
+            inventories.append({"archive": source, "archive_sha256": archive.sha256,
+                                "member": member, "wld_sha256": wld.sha256,
+                                **asdict(summarize_meshes(meshes))})
+        print(json.dumps({"inventories": inventories,
+                          "collision_composed": False,
+                          "navigability_verified": False}, indent=2))
     else:
         shell()
 
