@@ -1,5 +1,41 @@
 # FINDINGS
 
+## Bounded G2 pulse policy and wider GFay route audit — 2026-11-13 10:57 CST
+
+**VERIFIED offline:** `eql_automation/g2_pulse_budget.py` is a recording-only
+policy for a future supervised movement check. It requires explicit current
+geometry and owner-confirmed G0 gates, two stationary fixes, safe scene flags,
+a measured speed, a freshly verified conservative speed upper bound of at
+least 60 units/s, and a clear-radius budget. It permits at most three
+0.15-second forward requests, checks each reported hold and new fix, requires
+a delayed stillness fix before every subsequent pulse, then two delayed
+still fixes at the end. Each new position fix must advance a log-epoch-bound
+sequence, and delayed hold reports or final fixes are rejected. Any unsafe
+scene, exceeded time/radius, implausible displacement or drift latches halt.
+Eight focused checks passed. A code review reproduced and then resolved the
+missing inter-pulse stillness, underestimated-speed and stale-timing permits.
+The earlier 8-unit GFay geometry preflight is
+too small for this conservative bound; it does not authorize even one pulse.
+It neither reads the game nor sends input; callers cannot treat its result as
+real-client acceptance. The required scene signals and same-device sender are
+not yet integrated, so G2 is not offered to Blizz and F11 stays disabled.
+The caller must recheck a generation-bound permit immediately before key-down
+and cancel queued work on OFF; this is an integration requirement, not a
+capability of the current recording-only policy.
+
+**OBSERVED bounded copied-mesh search:** A GFay polygon-center corridor from
+Legira's last logged location toward the Crushbone trigger has 188 polygons,
+6,864.7 units of length and 3.47 units minimum clearance across 3,715
+surface-height samples, all on allowed ground/trigger areas. Its maximum
+polygon slope is 89.19 degrees; 55 samples disagree with the standard
+interpolated-Z locator by up to 9.8 units. The current path-quality gate
+rejects it. The ordinary funnel path remains narrower/blocked. In the copied
+Crushbone mesh, a 3-unit clearance and 6-unit portal-width filter visits 550
+of 5,150 polygons before disconnecting the arrival from Slaver Caves west;
+the default centroid line narrows to 0.2 units. These are offline query
+observations, not a runnable route or client movement result. No game input
+was sent.
+
 ## Location poll clock rollback — 2026-11-13 10:49 CST
 
 **VERIFIED offline:** The location reader already dropped same-poll fixes

@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 10:49 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 10:57 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Owner feedback check: at 10:36 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware, and Legira's log had not changed since 09:31:50 CST. No 0.39.3 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.40.8 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.40.9 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -406,6 +406,16 @@ Updated 2026-11-13 10:49 CST for coordinator task `829a00229b29`.
   The read-only location reader now invalidates its zone and fix on caller
   clock rollback; 13 focused location checks passed. Same-poll loading and
   zone transitions were already handled before this increment.
+  A recording-only G2 pulse policy now caps pulse count, hold time, total
+  window and observed displacement, requires a fresh verified upper speed
+  bound, checks stillness after each pulse, and requires two final still
+  fixes; eight focused checks passed. It rejects stale hold reports, final
+  fixes and reused log fix sequences. The earlier 8-unit geometry preflight
+  cannot authorize a pulse under this bound. It is not connected to game input.
+  A bounded copied-mesh search found a wider GFay candidate with 3.47-unit
+  minimum sampled clearance but an 89.19-degree slope flag and 55 standard
+  locator mismatches. The filtered Crushbone arrival-to-Slaver route remains
+  disconnected. Neither is accepted for live travel.
 - Current blocker: 0.39.3 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.40.8 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.40.9 / owner preview 0.39.3
 
 ## Current availability
 
@@ -18,8 +18,9 @@ validated. The owner chose to test rotation himself on live.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
 separate-process same-device release timer tested only with a pipe. Version
-0.40.8 also rejects location fixes after an observation-clock rollback. These
-changes are not in the owner preview or accepted for real-client movement.
+0.40.8 also rejects location fixes after an observation-clock rollback.
+Version 0.40.9 adds a recording-only short-pulse budget. These changes are
+not in the owner preview or accepted for real-client movement.
 F11 remains disabled.
 The owner launch steps below are still for 0.39.3.
 
@@ -534,6 +535,8 @@ python3 -m pytest -q tests/test_owner_nov12_adapter.py tests/test_owner_nov12_en
 python3 -m pytest -q tests/test_nav_evidence.py
 python3 -m pytest -q tests/test_melee_stop.py
 python3 -m pytest -q tests/test_nov12_path_quality.py
+python3 -m pytest -q tests/test_g2_probe_geometry.py tests/test_g2_pulse_budget.py
+python3 -m pytest -q tests/test_uinput_watchdog.py tests/test_location_log.py
 python3 tools/summarize_owner_nov12_trace.py /path/to/copied/owner-trace.jsonl
 python3 -m compileall -q eql_automation
 ```
