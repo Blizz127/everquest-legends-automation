@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Iterable
 import json
 import re
 import time
@@ -58,6 +59,24 @@ class Spell:
     def busy_seconds(self) -> float:
         # Base client timings are conservative when motes shorten your spells.
         return (self.cast_ms + self.recovery_ms) / 1000 + 0.35
+
+
+def normalize_rotation_classes(class_name: str | None = None,
+                               class_names: Iterable[str] | None = None) -> frozenset[str]:
+    """Require an explicit Cleric/Paladin identity; never infer a hybrid."""
+    if (class_name is None) == (class_names is None):
+        raise ValueError("Specify exactly one class name or class set")
+    if class_names is None:
+        class_names = (class_name,)
+    if isinstance(class_names, str):
+        raise ValueError("Class set must contain complete class names")
+    entries = tuple(class_names)
+    if not entries or any(not isinstance(name, str) for name in entries):
+        raise ValueError("A nonempty class set is required")
+    normalized = frozenset(name.casefold() for name in entries)
+    if not normalized <= {"cleric", "paladin"}:
+        raise ValueError("Legacy rotation supports only Cleric or Paladin")
+    return normalized
 
 
 class Catalog:
@@ -122,26 +141,26 @@ class Catalog:
                     known.add(spell.id)
         return known
 
-    def profile(self, level: int, *, class_name: str,
+    def profile(self, level: int, *, class_name: str | None = None,
+                class_names: Iterable[str] | None = None,
                 known: set[int] | None = None) -> dict[str, Spell]:
         if not 1 <= level <= 50:
             raise ValueError("Level must be between 1 and 50")
-        class_name = class_name.casefold()
-        if class_name not in {"cleric", "paladin"}:
-            raise ValueError("Legacy rotation supports only Cleric or Paladin")
+        active_names = normalize_rotation_classes(class_name, class_names)
         result = {}
-        for role, names in FAMILIES.items():
-            candidates = [self.by_name[name.casefold()] for name in names if name.casefold() in self.by_name]
-            candidates = [s for s in candidates if 1 <= s.level_for(class_name) <= level
+        for role, family_names in FAMILIES.items():
+            candidates = [self.by_name[name.casefold()] for name in family_names
+                          if name.casefold() in self.by_name]
+            candidates = [s for s in candidates if 1 <= min(s.level_for(name) for name in active_names) <= level
                           and (known is None or s.id in known)]
             if candidates:
                 if role == "stun":
                     # Cleric Stun (L2, 4 seconds) is stronger control than the
                     # later Paladin Cease/Desist; do not downgrade by level.
-                    result[role] = max(candidates, key=lambda s: names.index(s.name))
+                    result[role] = max(candidates, key=lambda s: family_names.index(s.name))
                 else:
                     result[role] = max(candidates, key=lambda s: (
-                        s.level_for(class_name), names.index(s.name)))
+                        min(s.level_for(name) for name in active_names), family_names.index(s.name)))
         # Before the Echo line, the fast heal uses the same heal as the large
         # heal. EQ cannot memorize a spell twice; leave gem 2 unused then.
         if "quick_heal" not in result and "heal" in result:

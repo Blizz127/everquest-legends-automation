@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 12:02 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 12:31 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
-- Owner feedback check: at 11:44 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware; Legira's log had last been checked at 11:16 CST and had not changed since 09:31:50 CST. No 0.39.3 live result is available.
+- Owner feedback check: at 12:24 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware; Legira's real-client log still had the 09:31:50 CST last-modified time. No 0.39.3/0.39.4 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.41.8 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.41.9 plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Version 0.41.9 adds an explicit verified Paladin+Cleric profile to the offline assist planner; 0.39.4 exposes unknown-HP reasons in the owner UI without changing its input policy. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -467,7 +467,7 @@ Updated 2026-11-13 12:02 CST for coordinator task `829a00229b29`.
   minimum sampled clearance but an 89.19-degree slope flag and 55 standard
   locator mismatches. The filtered Crushbone arrival-to-Slaver route remains
   disconnected. Neither is accepted for live travel.
-- Current blocker: 0.39.3 owner-supervised F8/F9 HP and attack-free rotation
+- Current blocker: 0.39.4 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee
   stop, G0/G2 movement-stop/follower acceptance, validated runtime mesh-store binding,
@@ -482,9 +482,9 @@ Updated 2026-11-13 12:02 CST for coordinator task `829a00229b29`.
   Butcherblock navmesh/recipe is absent from the approved retained store, and
   the reported GFay vertical mismatch on its historical route and
   conservative clearance failure remain unresolved. No actual client
-  acceptance is ready. The 0.39.3 assist/G0 preview is privately staged on
+  acceptance is ready. The 0.39.4 assist/G0 preview is privately staged on
   Alienware outside the game install; full auto has no playable release yet.
-- Next step: collect the owner's 0.39.3 HP/F8/F9 observations and supervised
+- Next step: collect the owner's 0.39.4 HP/F8/F9 observations and supervised
   G0 movement-stop result without touching Legira. Build a bounded owner-run
   G2 straight-motion measurement program using the isolated pulse bridge,
   fresh client scene observer and bounded stop guards; the geometry

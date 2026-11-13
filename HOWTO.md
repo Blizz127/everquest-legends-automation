@@ -1,9 +1,9 @@
-# EverQuest Legends automation — project 0.41.8 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.41.9 / owner preview 0.39.4
 
 ## Current availability
 
 This project's full-auto bot remains an **offline simulator and planning
-library**. An isolated, owner-run rotation preview 0.39.3 is staged on the
+library**. An isolated, owner-run rotation preview 0.39.4 is staged on the
 Alienware outside the game install. Blizz runs the game and helper himself;
 the lead has not logged in or sent game input. The installed client points to
 Daybreak's live service. Its published
@@ -36,19 +36,23 @@ local adjustment moves the first rejection to polygon 3248, with no verified
 short local crossing there. Version 0.41.8 checks the longer copied-mesh
 bypass and finds a required portal with clearance below the current 3-unit
 diagnostic threshold. F11 stays disabled.
-These changes are not in the owner preview or accepted
-for real-client movement.
+Version 0.41.9 adds explicit Paladin+Cleric class-set eligibility to the
+offline strict rotation planner, gated by a verified spellbook and matching
+class observation. Owner preview 0.39.4 shows HP calibration failures in
+its window without changing input permissions.
+The navigation and strict class-set changes are not in the owner preview
+or accepted for real-client movement.
 F11 remains disabled.
-The owner launch steps below are still for 0.39.3.
+The owner launch steps below are for 0.39.4.
 
-## Owner-run rotation test on Alienware today: preview 0.39.3
+## Owner-run rotation test on Alienware today: preview 0.39.4
 
 Close any already running Solo Assist window. Blizz starts the game through
 Lutris and logs in himself. In an Alienware terminal, start the isolated
 preview:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.3
+cd ~/.local/share/eql-automation/owner-assist/0.39.4
 EQL_ROTATION_TRACE="$HOME/eql-assist-trace.jsonl" ./launch.sh
 ```
 
@@ -60,6 +64,9 @@ the Combat tab shows a plausible full HP reading before combat. If HP remains
 unknown or falls below 10%, heal manually; the preview treats those readings
 as unknown rather than guessing. The trace is saved in
 `~/eql-assist-trace.jsonl` for owner feedback.
+If HP remains unknown, the gauge now says whether to select the 5–24px
+inner red bar, restore the calibrated window size, or recalibrate because
+the red fill was not recognized. It never fills in a missing HP value.
 **F6** explicitly refreshes and memorizes the spell bar while out of combat.
 He selects and moves to the target himself. **F8** arms the spell and ability
 rotation on that target; **F9** stops it; **F7** toggles; **F10** requests a heal.
@@ -94,14 +101,14 @@ not a runnable owner test. The active legacy helper source was not changed.
 
 ## Owner-run G0 movement-stop check (optional after assist test)
 
-Preview 0.39.3 also allows the **Check movement stop** button in measurement
+Preview 0.39.4 also allows the **Check movement stop** button in measurement
 mode. This is the first supervised movement gate, not a route or F11 grind.
 Blizz first stops native melee with the game's own control, stands on open,
 flat, dry ground with full HP and no target, and enables `/log on`. Close any
 other helper, then launch:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.3
+cd ~/.local/share/eql-automation/owner-assist/0.39.4
 EQL_ROTATION_TRACE="$HOME/eql-g0-trace.jsonl" ./launch.sh --measure-navigation
 ```
 
@@ -533,7 +540,7 @@ polygons and a 24-polygon offline Detour query path. Its data stays under
 `~/.local/share/eql-automation/nav-candidates/`. No query is an accepted bot
 route or proof of game movement; the active bot still has no verified nav edge.
 
-The owner-run 0.39.3 preview above is built from a pinned copy of the November
+The owner-run 0.39.4 preview above is built from a pinned copy of the November
 helper plus the source patch in `patches/`. Its original working tree at
 `~/Projects/everquest-legends-rotation` was not edited. Do not run the old
 tool's installer: it writes character INIs in the protected Alienware prefix.
@@ -561,7 +568,7 @@ python3 -m compileall -q eql_automation
 The staged owner preview also supports a no-input Alienware check:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.3
+cd ~/.local/share/eql-automation/owner-assist/0.39.4
 /usr/bin/python3 -B owner_nov12_smoke.py
 ./launch.sh --dry-run --level 7
 ```

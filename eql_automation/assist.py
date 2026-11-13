@@ -11,7 +11,9 @@ from math import isfinite
 
 from .control import ControlPlane, QueuedAction
 from .modes import Action, Mode, action_from_prior_rotation
-from .prior_rotation_core import Catalog, Rotation, SLOTS, Action as RotationAction
+from .prior_rotation_core import (
+    Catalog, Rotation, SLOTS, Action as RotationAction, normalize_rotation_classes,
+)
 from .screen_observer import GaugeReading
 
 
@@ -46,6 +48,7 @@ class AssistObservation:
     available_abilities: frozenset[str] = frozenset()
     target_relation: TargetRelation = TargetRelation.UNKNOWN
     target_is_undead: bool | None = None
+    class_names: frozenset[str] | None = None
 
     @classmethod
     def from_gauges(cls, reading: GaugeReading, *, character_name: str,
@@ -55,7 +58,8 @@ class AssistObservation:
                     memorized: dict[int, int] | None,
                     available_abilities: frozenset[str] = frozenset(),
                     target_relation: TargetRelation = TargetRelation.UNKNOWN,
-                    target_is_undead: bool | None = None) -> "AssistObservation":
+                    target_is_undead: bool | None = None,
+                    class_names: frozenset[str] | None = None) -> "AssistObservation":
         return cls(observed_at=reading.observed_at,
                    character_name=character_name, class_name=class_name,
                    level=level, game_focused=game_focused, chat_open=chat_open,
@@ -63,7 +67,8 @@ class AssistObservation:
                    target_token=target_token, hp=reading.hp, mana=reading.mana,
                    memorized=memorized, available_abilities=available_abilities,
                    target_relation=target_relation,
-                   target_is_undead=target_is_undead)
+                   target_is_undead=target_is_undead,
+                   class_names=class_names)
 
 
 @dataclass(frozen=True)
@@ -80,6 +85,7 @@ class AssistAdvisor:
     def __init__(self, catalog: Catalog, *, character_name: str,
                  class_name: str, level: int,
                  known_spells: set[int], control: ControlPlane,
+                 class_names: frozenset[str] | None = None,
                  verified_self_heal_spell_ids: frozenset[int] = frozenset(),
                  verified_self_buff_spell_ids: frozenset[int] = frozenset(),
                  verified_self_lay_hands: bool = False) -> None:
@@ -87,13 +93,21 @@ class AssistAdvisor:
             raise ValueError("Character identity is required")
         if not known_spells:
             raise ValueError("A freshly verified spellbook is required")
-        profile = catalog.profile(level, class_name=class_name, known=known_spells)
+        if not isinstance(class_name, str):
+            raise ValueError("Primary class name is required")
+        active_names = normalize_rotation_classes(
+            class_name=class_name if class_names is None else None,
+            class_names=class_names)
+        if class_name.casefold() not in active_names:
+            raise ValueError("Primary class must belong to the verified class set")
+        profile = catalog.profile(level, class_names=active_names, known=known_spells)
         if not profile:
             raise ValueError("No known class-eligible rotation spells")
         self.rotation = Rotation(profile, level)
         self.control = control
         self.character_name = character_name.casefold()
         self.class_name = class_name.casefold()
+        self.class_names = active_names
         # Empty by default: the copied spell table alone does not establish
         # how target type 51 or class abilities behave in the live client.
         self.verified_self_heal_spell_ids = frozenset(verified_self_heal_spell_ids)
@@ -154,6 +168,17 @@ class AssistAdvisor:
                 observation.character_name.casefold() != self.character_name or
                 observation.class_name.casefold() != self.class_name or
                 observation.level != self.rotation.level):
+            return False
+        # A hybrid must be observed as the same explicit set. A single-class
+        # observation can keep the earlier class_name-only form.
+        try:
+            observed_names = normalize_rotation_classes(
+                class_name=observation.class_name if observation.class_names is None else None,
+                class_names=observation.class_names)
+        except (TypeError, ValueError):
+            return False
+        if (observed_names != self.class_names or
+                observation.class_name.casefold() not in observed_names):
             return False
         if not observation.game_focused or observation.chat_open:
             return False

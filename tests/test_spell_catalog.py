@@ -77,3 +77,25 @@ def test_prior_rotation_profile_uses_the_characters_class_level():
     assert catalog.profile(1, class_name="cleric")["yaulp"].id == 210
     assert "yaulp" not in catalog.profile(1, class_name="paladin")
     assert catalog.profile(9, class_name="paladin")["yaulp"].id == 210
+
+
+def test_verified_hybrid_profile_uses_each_active_class_and_known_book():
+    catalog = Catalog([
+        Spell(14, "Strike", 1, 1, 1000, 500, 0, 10, 0, 5),
+        Spell(15, "Furor", 5, 255, 1000, 500, 0, 10, 0, 5),
+        Spell(200, "Minor Healing", 1, 1, 1500, 500, 0, 10, 0, 51),
+        Spell(17, "Light Healing", 5, 255, 1500, 500, 0, 10, 0, 51),
+        Spell(210, "Yaulp", 1, 9, 1000, 500, 0, 10, 0, 6),
+    ])
+    known = {14, 15, 17, 200, 210}
+    hybrid = catalog.profile(7, class_names={"Paladin", "Cleric"}, known=known)
+    assert {role: spell.id for role, spell in hybrid.items()} == {
+        "quick_heal": 17, "nuke": 15, "yaulp": 210,
+    }
+    assert "yaulp" not in catalog.profile(7, class_name="Paladin", known=known)
+    assert catalog.profile(7, class_names={"Paladin", "Cleric"},
+                           known=known - {210}).get("yaulp") is None
+    with pytest.raises(ValueError, match="exactly one"):
+        catalog.profile(7, class_name="Paladin", class_names={"Cleric"}, known=known)
+    with pytest.raises(ValueError, match="nonempty"):
+        catalog.profile(7, class_names=set(), known=known)

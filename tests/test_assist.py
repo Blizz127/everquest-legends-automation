@@ -164,3 +164,26 @@ def test_assist_rejects_unverified_ability_and_target_type_mismatch():
     assist.rotation.profile["nuke"] = replace(assist.rotation.profile["nuke"],
                                                 target_type=51)
     assert assist.propose(ready(), 10.0) is None
+
+
+def test_hybrid_assist_requires_matching_observed_class_set_and_gem():
+    catalog = Catalog([
+        Spell(14, "Strike", 1, 1, 1000, 500, 0, 10, 0, 5),
+        Spell(15, "Furor", 5, 255, 1000, 500, 0, 10, 0, 5),
+        Spell(200, "Minor Healing", 1, 1, 1500, 500, 0, 10, 0, 51),
+        Spell(210, "Yaulp", 1, 9, 1000, 500, 0, 1, 0, 6),
+    ])
+    control = ControlPlane()
+    assist = AssistAdvisor(catalog, character_name="SyntheticTester",
+                           class_name="Paladin", class_names=frozenset({"Paladin", "Cleric"}),
+                           level=7, known_spells={14, 15, 200, 210}, control=control)
+    control.switch(Mode.ASSIST)
+    observed = replace(ready(), level=7, class_names=frozenset({"Paladin", "Cleric"}),
+                       memorized={1: 200, 3: 15, 7: 210})
+    assert assist.rotation.profile["nuke"].id == 15
+    assert assist.rotation.profile["yaulp"].id == 210
+    assert assist.propose(replace(observed, class_names=None), 10.0) is None
+    assert assist.propose(replace(observed, class_names=frozenset({"Paladin"})), 10.0) is None
+    assert assist.propose(replace(observed, memorized={1: 200, 3: 14}), 10.0) is None
+    proposal = assist.propose(observed, 10.0)
+    assert proposal is not None and proposal.queued.action.detail == "/cast 3"

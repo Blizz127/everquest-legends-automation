@@ -1,0 +1,53 @@
+--- a/rotation_engine.py
++++ b/rotation_engine.py
+@@ -692,7 +692,9 @@
+                    "profile": self.profile, "prepared": self.prepared,
+                    "known": len(self.known) if self.known is not None else None,
+                    "stance_keys_verified": self.settings.stance_keys_verified,
+-                   "hp": self.hp, "mana": self.mana, "autopilot": self.autopilot_payload()}
++                   "hp": self.hp, "mana": self.mana,
++                   "gauge_reason": self.last_gauge_reason,
++                   "autopilot": self.autopilot_payload()}
+         # The periodic refresh repeats unchanged state; the GUI only needs
+         # changes (profile/known are replaced, never mutated in place).
+         if payload != self.last_payload:
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -10,6 +10,22 @@
+ 
+ from rotation_core import (Catalog, DEFAULT_GAME, FAMILIES, LABELS, LOC_KEYS, Settings,
+                            SLOTS, STATE_FILE, bar_fraction, profile_report)
++
++
++def gauge_label(name, value, reason=None):
++    """Keep an unreadable gauge unknown and tell the owner how to fix HP."""
++    if value is not None:
++        return f"{name} · {round(value * 100)}%"
++    if name == "HP":
++        if reason == "hp_recalibrate_inner_bar":
++            return "HP · recalibrate inner red bar (5–24px high)"
++        if isinstance(reason, str) and reason.startswith("size_mismatch:"):
++            return "HP · game window size changed; recalibrate"
++        if reason == "rejected":
++            return "HP · red fill not recognized; recalibrate"
++        if reason == "no_window":
++            return "HP · game window not found"
++    return f"{name} · no calibrated reading"
+ 
+ 
+ def main():
+@@ -733,9 +749,12 @@
+                 self.level.blockSignals(False)
+             self.settings.level = state["level"]
+             self.render_profile(state["profile"])
+-            for bar, value, name in [(self.hp, state["hp"], "HP"), (self.mana, state["mana"], "Mana")]:
++            reasons = state.get("gauge_reason") or ()
++            for index, (bar, value, name) in enumerate(
++                    [(self.hp, state["hp"], "HP"), (self.mana, state["mana"], "Mana")]):
+                 bar.setValue(round(value * 100) if value is not None else 0)
+-                bar.setFormat(f"{name} · {round(value * 100)}%" if value is not None else f"{name} · no calibrated reading")
++                reason = reasons[index] if index < len(reasons) else None
++                bar.setFormat(gauge_label(name, value, reason))
+             for widget in [self.level, self.character, self.mode, self.interval,
+                            self.smart_heal, self.stuns, self.bash]:
+                 widget.setEnabled(not measurement_only and not preparing)
