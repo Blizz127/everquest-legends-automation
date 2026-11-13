@@ -1,5 +1,69 @@
 # FINDINGS
 
+## Butcherblock collision-evidence reconciliation — 2026-11-13 04:53 CST
+
+**OBSERVED coordinator report, historical and not independently reproduced:**
+The Nov 6 desktop task reported a Butcherblock terrain-plus-static-object
+Recast/Detour bake with 1,884 instance records, 1,862 applicable placements,
+22 rejected dropped-tree sentinels, corrected exact-name matching for duplicate
+`btent`/`orctent`/`hgflag` placements, and 179 removed zero-area faces. The
+reported composed mesh had 18,292 vertices and 10,694 polygons, serialized
+SHA-256 `d1b57d2dab7b975e8d62821725bf992634136774720707fa103af10e238aad85`.
+The reported closed-fayhouse ray hit a barrier at `t=0.1888`, while a
+Yard↔South Kaladim route remained. Historical pinned sources were Lantern
+`bb4cdba64c1f0453568f3a11f158a38ee1659d0c` and Recast
+`9f4ce64458dfae86e1239c525ddc219c4e9e06f1`; a later local `bnav_query`
+report described a complete 24-polygon/10-point path. The later overlay review
+and classification of 23 detail-cleanup warnings is likewise historical.
+These reports are **not** current retained proof or real-client acceptance.
+
+**VERIFIED scoped reconciliation:** No Recast/Detour navmesh, placement table,
+bake recipe, `bnav_query`, overlay audit or matching historical hash was found
+in this project or `~/.local/share/eql-automation/`. A SHA-256 scan of 559
+current code/store/release/run files (26,463,952 bytes, excluding copied client
+data) found no serialized mesh hash; local release archives contain no
+navmesh-named members. The removed historical working copy was not accessed,
+recreated or touched. Thus the historical mesh **cannot currently be reused
+or reproduced from retained inputs in this project/store**. The only retained
+Butcherblock/Crushbone map artifacts are client drawing geometry and labels,
+explicitly marked `navigability_verified=false`.
+
+**VERIFIED client-map provenance:** Active snapshot `e36ee7fd32a5c4b42f45`
+contains `butcher.txt` (24,225 drawing lines, 0 labels, source SHA-256
+`04db2b25ebc89a44aaf685899cdb781da68fe3106b09c445bcc526c261d4029c`)
+and `crushbone.txt` (5,469 lines, 0 labels, source SHA-256
+`e22f714cbd7733918b7f0fd0c6a9b0592974ff9b5e497841e9dc69202396b313`).
+The thin label layers are `butcher_1.txt` (1 line, 4 labels, SHA-256
+`a1cea4378673518b5d3d63fa43bfa42d62bbbbec2a58d15fe7e3ad907b60bcb0`)
+and `crushbone_1.txt` (0 lines, 1 label, SHA-256
+`43704aa2af7de192cdbd7b61920278bdc7fe88bd80b1e603eac9c95aa450c87c`).
+Client zone IDs are 68 Butcherblock Mountains, 54 Greater Faydark, 58 Clan
+Crushbone. Labels suggest **review only** Butcherblock→Greater Faydark→Crushbone;
+no zone transition has been traversed or accepted as a graph edge. The
+reported Greater Faydark label vertical mismatch of about 236.82 units is
+unresolved. Reported agent dimensions `(6,3,3,50)` routed while conservative
+`(8,5,2,45)` disconnected; current clearance acceptance is absent. Dynamic
+doors, water, zone transitions, mob levels, camp safety, XP/hour, and actual
+movement are unverified.
+
+**Result:** Butcherblock is the first navigation/camp review target and
+Crushbone the next, followed by camps chosen from a character's observed
+level and suitability. The current bot has no accepted real-client route.
+Actual client acceptance is **not ready**: the private endpoint/separate login
+config remains unknown; a fresh test character has not logged in; and no
+retained collision mesh/recipe plus clearance and live movement evidence is
+available. ASSIST remains movement-free.
+
+**VERIFIED offline audit tool:** `python3 -m eql_automation --audit-butcherblock`
+reads the active snapshot, rehashes the four copied client maps, and reports
+their verified source hashes, historical
+mesh absent, all collision/live acceptance flags false, and six missing
+evidence classes. An optional artifact can be hashed only inside
+`~/.local/share/eql-automation/`; a matching hash is provenance only and
+never creates graph edges. Eleven focused navigation/evidence tests passed,
+including refusal of artifact and copied-map symlinks outside that store and
+detection of a changed copied map.
+
 ## Offline player gauge reader — 2026-11-13 04:22 CST
 
 **VERIFIED copied client XML:** Default PlayerHP has red FillTint

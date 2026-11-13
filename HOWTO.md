@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.14.0
+# EverQuest Legends automation — current build 0.15.0
 
 ## Current availability
 
@@ -30,6 +30,7 @@ python3 -m eql_automation --index-pois
 python3 -m eql_automation --query-pois Merchant --map fieldofbone --limit 5
 python3 -m eql_automation --index-zone-candidates
 python3 -m eql_automation --query-zone-candidates East_Cabilis --map fieldofbone
+python3 -m eql_automation --audit-butcherblock
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 python3 -m eql_automation --index-ui-widgets
@@ -176,6 +177,19 @@ contains only synthetic zones. The campaign planner pauses on unknown health,
 mana or bag state, GM presence, or an attack with no verified current target.
 No live pause hotkey or in-game indicator is available yet.
 
+Butcherblock is the first planned navigation and camp review target;
+Crushbone follows through Greater Faydark only after real zone transitions
+and suitable character levels are observed. The copied client maps contain
+drawing lines and unverified exit labels, not walkable collision data. A
+historical Butcherblock Recast/Detour proof was reported, but its mesh and bake
+recipe are absent from this project's retained store. Greater Faydark height
+alignment, conservative collision clearance, doors, water and real movement
+remain unverified. No route from that historical proof is active in this build.
+`--audit-butcherblock` prints current map hashes and missing collision/client
+evidence with `actual_client_acceptance_ready: false`. Optional `--mesh PATH`
+checks a retained artifact only inside `~/.local/share/eql-automation/`.
+A hash match alone cannot accept a route; the audit creates no graph edges.
+
 The prior October Paladin/Cleric prototype remains at
 `/home/blizz/Projects/everquest-legends-rotation/`. Its historical controls
 were F6 prepare, F8 assist toggle, F9 stop, and F10 heal. They have not been
@@ -192,6 +206,7 @@ python3 -m pytest -q tests/test_control.py
 python3 -m pytest -q tests/test_spell_catalog.py tests/test_assist.py
 python3 -m pytest -q tests/test_ui_schema.py
 python3 -m pytest -q tests/test_screen_observer.py
+python3 -m pytest -q tests/test_nav_evidence.py
 python3 -m compileall -q eql_automation
 ```
 

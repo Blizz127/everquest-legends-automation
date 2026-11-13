@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 04:22 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 04:53 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.14.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.15.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -34,7 +34,13 @@ Updated 2026-11-13 04:22 CST for coordinator task `829a00229b29`.
   copied client UI XML files yielded 557 static widget IDs in an untracked
   index; live UI values and active skin are unknown. A pure-Python player
   gauge reader now requires full-bar calibration, focus, exact window size and
-  matching layout; unreadable values remain unknown.
+  matching layout; unreadable values remain unknown. Butcherblock collision
+  evidence was reconciled as historical coordinator-reported proof: no mesh,
+  bake recipe or placement inputs were retained in this project/approved store.
+  Butcherblock is the first route/camp review target, Crushbone next; neither
+  has a verified nav edge or suitable camp yet. An offline Butcherblock audit
+  now rehashes the copied maps and refuses artifacts outside the approved
+  store; it never promotes a route from a historical hash alone.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -60,16 +66,25 @@ Updated 2026-11-13 04:22 CST for coordinator task `829a00229b29`.
   1439 trace events, no game/account input. Trace:
   `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T073156Z/`.
   `python3 -m compileall -q eql_automation` — passed.
+  `python3 -m pytest -q tests/test_nav_evidence.py tests/test_navigator.py`
+  — 11 passed; `--audit-butcherblock` verified the four copied map hashes and
+  reported all acceptance flags false.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
   be sent to that host. Daybreak rules prohibit unattended play and unauthorized
-  servers; no Daybreak-authorized live test route is documented. No private
+  servers; no Daybreak-authorized live test route is documented. The historical
+  Butcherblock mesh/recipe is also absent from the approved retained store,
+  and the reported GFay vertical mismatch and conservative clearance failure
+  remain unresolved. No actual client acceptance is ready. No private
   launcher/server publication destination is configured; this build is local.
 - Next step: obtain the intended private endpoint or separate client config,
-  then verify target identity before any live test. Build a read-only runtime
-  UI observer against the identified widget structure on an isolated client
-  view. Candidate zone lines need
-  real traversal evidence before they can become graph edges. Continue offline
-  map and planner work meanwhile. The October assist tool's live preparation
-  and combat remain unverified.
+  then verify target identity before any live test. Locate retained terrain,
+  static-object placements and an authorized bake recipe, or build and verify
+  a new Butcherblock collision bake in this project's approved data store;
+  check conservative clearance, GFay height alignment, dynamic doors, water,
+  zone transitions and actual movement before accepting a route. Review
+  Crushbone next, then select camps from observed level and safety. Build a
+  read-only runtime UI observer on an isolated client view. ASSIST keeps
+  movement manual. The October assist tool's live preparation/combat remain
+  unverified.

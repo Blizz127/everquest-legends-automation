@@ -18,6 +18,7 @@ from .nav import MAP_STORE
 from .zone_candidates import build_zone_candidates
 from .spell_catalog import build_spell_level_index
 from .ui_schema import index_ui_widgets
+from .nav_evidence import audit_butcherblock
 
 
 def shell() -> None:
@@ -107,6 +108,8 @@ def main() -> None:
                        help="index static client UI widget names; no live values")
     group.add_argument("--query-ui-widgets", metavar="TEXT",
                        help="search static default UI widget names")
+    group.add_argument("--audit-butcherblock", action="store_true",
+                       help="audit retained Butcherblock mesh evidence without accepting routes")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
@@ -115,6 +118,8 @@ def main() -> None:
     parser.add_argument("--limit", type=int, default=20, help="maximum POI query results")
     parser.add_argument("--class-name", help="filter client spell candidates by class name")
     parser.add_argument("--level", type=int, help="filter client spell candidates unlocked by this level")
+    parser.add_argument("--mesh", type=Path,
+                        help="optional retained mesh inside ~/.local/share/eql-automation for --audit-butcherblock")
     args = parser.parse_args()
     if args.demo:
         print(json.dumps(run_demo(), indent=2))
@@ -210,6 +215,9 @@ def main() -> None:
                               "results": [asdict(item) for item in schema.search(
                                   args.query_ui_widgets, args.limit)],
                               "runtime_values_verified": False}, indent=2))
+    elif args.audit_butcherblock:
+        print(json.dumps(audit_butcherblock(store=args.output or MAP_STORE,
+                                           mesh_path=args.mesh).to_dict(), indent=2))
     else:
         shell()
 
