@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 11:40 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 11:45 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Owner feedback check: at 11:16 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware, and Legira's log still had not changed since 09:31:50 CST. No 0.39.3 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.41.4 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.41.5 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -440,6 +440,11 @@ Updated 2026-11-13 11:40 CST for coordinator task `829a00229b29`.
   rejects the five-fraction sampled chain at polygon 4322; this does not
   establish that no alternate portal positions or route can pass. Polygon
   4320 is off the actual path. Sixteen focused portal/corridor tests pass.
+  One bounded extra sample on the 4197→4322 portal yields an 81-point
+  offline centerline/seam chain across the historical 80-polygon Crushbone
+  path, with 1,484 local checks. Its hash-pinned route artifact is outside git.
+  Seventeen focused checks pass; the result expressly excludes travel-strip,
+  live-position and real-client movement acceptance, so F11 remains off.
   A bounded copied-mesh search found a wider GFay candidate with 3.47-unit
   minimum sampled clearance but an 89.19-degree slope flag and 55 standard
   locator mismatches. The filtered Crushbone arrival-to-Slaver route remains
@@ -475,6 +480,9 @@ Updated 2026-11-13 11:40 CST for coordinator task `829a00229b29`.
   Explore alternate portal samples or corridors around 4197→4322→4321 with
   strict work budgets, then audit the resulting travel strip; the current
   five-fraction fixed corridor has no connected candidate.
+  The 0.41.5 single-link override supplies one centerline candidate; audit
+  its full travel strip and source-to-bake height alignment before any
+  supervised movement trial.
   Integrate the already tested reachable-camp
   fallback for level 9; resolve the level-11 camp using measured XP and route safety.
   Validate a unique selection signal and chat-open/draft signal on an isolated

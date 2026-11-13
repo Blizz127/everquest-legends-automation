@@ -55,3 +55,21 @@ def test_invalid_budget_is_refused_without_querying_mesh():
                                   (1.0, 5.0), (19.0, 5.0),
                                   max_polygons="many")
     assert not result.candidate and result.reason == "invalid_corridor_limits"
+
+
+def test_bounded_link_override_can_sample_a_clear_portal_position():
+    mesh = TwoTileMesh()
+    mesh.wall_clearance = lambda x, y: 8.0 if abs(y - 5.0) < 1.0 else 2.0
+    blocked = audit_fixed_corridor(mesh, (0, 1), (1.0, 5.0),
+                                   (19.0, 5.0), fractions=(0.1,))
+    assert not blocked.candidate and blocked.reason == "no_sampled_portal_crossing"
+    clear = audit_fixed_corridor(mesh, (0, 1), (1.0, 5.0),
+                                 (19.0, 5.0), fractions=(0.1,),
+                                 fractions_by_link={(0, 1): (0.5,)})
+    assert clear.candidate and not clear.real_client_accepted
+    invalid = audit_fixed_corridor(mesh, (0, 1), (1.0, 5.0),
+                                   (19.0, 5.0), fractions_by_link={(0, 1): (True,)})
+    assert invalid.reason == "invalid_corridor_limits"
+    typo = audit_fixed_corridor(mesh, (0, 1), (1.0, 5.0),
+                                (19.0, 5.0), fractions_by_link={(1, 0): (0.5,)})
+    assert not typo.candidate and typo.reason == "override_not_on_corridor"

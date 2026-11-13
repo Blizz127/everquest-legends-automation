@@ -1,5 +1,30 @@
 # FINDINGS
 
+## Full fixed-corridor geometry candidate — 2026-11-13 11:45 CST
+
+**VERIFIED offline, no game input:** A bounded override added one portal
+sample at fraction 0.7 on the 4197→4322 link of the historical Crushbone
+route. With the five default fractions elsewhere, the copied, hash-matched
+80-polygon arrival-to-Slaver path now has an 81-point sampled centerline and
+seam chain. `audit_fixed_corridor` checked 1,484 local segments within a
+40-second work limit and returned
+`fixed_corridor_geometry_candidate_only`; its `real_client_accepted` flag is
+false. The reproducible route points, polygon IDs, raw and snapped endpoints,
+mesh/manifest hashes and audit parameters are stored **outside git** at
+`~/.local/share/eql-automation/nav-candidates/crushbone-slaver-offline-candidate-20261113T1745Z.json`,
+SHA-256 `8a4a659cc0effd3bf2c93afe476bf3360d8b303c384997c47660f07e7fd6a077`.
+Devbox and Alienware copies match, and a second run after rejecting unused
+portal overrides reproduced the same 81 points and 1,484 segment checks.
+The source-only auditor staged outside the client at
+`~/.local/share/eql-automation/nav-work/0.41.5/eql_automation/portal_corridor_audit.py`
+matches SHA-256 `7c54be40b573804542193c3a87c900c4c4fff00b9395a5e12efbef4aeefa170d`.
+Seventeen focused portal/corridor tests pass, including the override's
+fail-closed bounds. This supersedes only the five-fraction negative result
+below: the candidate remains an offline centerline diagnostic. The travel
+strip, complete geometry provenance, source-to-bake height offset, dynamic
+doors, water, aggro, current position, cross-zone arrival, measured follower
+error and actual client movement are unverified. F11 remains disabled.
+
 ## Fixed-corridor Crushbone audit — 2026-11-13 11:40 CST
 
 **VERIFIED offline, no game input:** The source-only

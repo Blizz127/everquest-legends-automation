@@ -30,6 +30,7 @@ class PortalCorridorCheck:
 def audit_fixed_corridor(mesh, corridor: tuple[int, ...],
                          start_xy: tuple[float, float], goal_xy: tuple[float, float], *,
                          fractions: tuple[float, ...] = (0.1, 0.3, 0.5, 0.75, 0.9),
+                         fractions_by_link: dict[tuple[int, int], tuple[float, ...]] | None = None,
                          required_clearance: float = 3.0,
                          sample_spacing: float = 0.5,
                          maximum_grade: float = 1.0,
@@ -54,6 +55,19 @@ def audit_fixed_corridor(mesh, corridor: tuple[int, ...],
                 not math.isfinite(v) or v <= 0
                 for v in (required_clearance, sample_spacing, maximum_grade, max_seconds))):
         return PortalCorridorCheck(False, "invalid_corridor_limits")
+    if fractions_by_link is None:
+        fractions_by_link = {}
+    if (not isinstance(fractions_by_link, dict) or
+            any(not isinstance(key, tuple) or len(key) != 2 or
+                any(not isinstance(p, int) or isinstance(p, bool) or p < 0 for p in key) or
+                not isinstance(values, tuple) or not values or len(values) > 16 or
+                any(not isinstance(t, (int, float)) or isinstance(t, bool) or
+                    not math.isfinite(t) or not 0 < t < 1 for t in values)
+                for key, values in fractions_by_link.items())):
+        return PortalCorridorCheck(False, "invalid_corridor_limits")
+    corridor_links = set(zip(corridor, corridor[1:]))
+    if any(key not in corridor_links for key in fractions_by_link):
+        return PortalCorridorCheck(False, "override_not_on_corridor")
     started = time.monotonic()
     seam_checks = 0
     portal_layers = []
@@ -66,7 +80,7 @@ def audit_fixed_corridor(mesh, corridor: tuple[int, ...],
                                        failing_polygon=source_poly)
         left, right = link
         candidates = []
-        for fraction in fractions:
+        for fraction in fractions_by_link.get((source_poly, target_poly), fractions):
             if seam_checks >= max_checks or time.monotonic() - started > max_seconds:
                 return PortalCorridorCheck(False, "corridor_work_budget_exceeded",
                                            failing_polygon=source_poly)
