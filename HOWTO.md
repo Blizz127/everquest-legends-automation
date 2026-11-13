@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.22.0
+# EverQuest Legends automation — current build 0.23.0
 
 ## Current availability
 
@@ -43,6 +43,10 @@ python3 -m eql_automation --audit-butcher-materials
 python3 -m eql_automation --audit-crushbone
 python3 -m eql_automation --build-crushbone-candidate-scene
 python3 -m eql_automation --build-crushbone-candidate-scene --exclude-boundary
+python3 -m eql_automation --audit-zone-regions butcher
+python3 -m eql_automation --audit-zone-regions crushbone
+python3 -m eql_automation --audit-zone-regions gfaydark
+python3 -m eql_automation --audit-map-alignment gfaydark
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 python3 -m eql_automation --index-ui-widgets
@@ -249,6 +253,18 @@ The copied-data audit found 178 exact-name-matched object placements and
 are recorded in `FINDINGS.md`. Water, dynamic doors, terrain clearance,
 actual client movement, and the private server target remain unverified.
 
+`--audit-zone-regions ZONE` checks copied WLD BSP tree and region-label
+references for `butcher`, `crushbone`, or `gfaydark`. It reports water and
+zoneline **region ID candidates**. It does not decode region shapes, accept
+water-free paths, or turn zoneline labels into graph edges.
+`--audit-map-alignment ZONE` compares map drawing endpoints with copied WLD
+terrain vertices under eight XY transforms. In all three copied zones the
+best transform is `map → WLD = (-map_y, -map_x, map_z)`. It also probes
+label XY positions against flag-zero terrain triangles; multiple surfaces
+can overlap there. Four Greater Faydark exit labels are about 0.8013–0.8014
+units below the nearest candidate surface, not evidence of a general height
+correction or a working zone transition. Neither audit sends game input.
+
 For bounded **offline** navmesh experiments, place the upstream
 [RecastNavigation source](https://github.com/recastnavigation/recastnavigation)
 at `~/.local/share/eql-automation/toolchains/recastnavigation`, check out
@@ -257,6 +273,10 @@ commit `9f4ce64458dfae86e1239c525ddc219c4e9e06f1`, then run
 `eql-bake-local` and `eql-query-local` outside git. The baker takes a copied
 candidate OBJ, an output `.nav` path, WLD center X/Y, half-extent, min/max Z
 and label. It uses the offline height/radius/climb/slope profile `(8,5,2,45)`.
+Four optional final numbers override that profile in the same order for
+bounded sensitivity checks, for example `6 3 3 50`. The query tool now
+reports each endpoint's distance to its nearest nav polygon; a complete
+Detour corridor can still start several units from the requested point.
 One local Butcherblock FAYHOUSE 256×256 bake produced 156 provisional nav
 polygons and a 24-polygon offline Detour query path. Its data stays under
 `~/.local/share/eql-automation/nav-candidates/`. No query is an accepted bot

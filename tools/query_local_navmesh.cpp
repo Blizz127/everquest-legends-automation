@@ -13,9 +13,19 @@
 
 namespace {
 float read_float(const char* text) {
-    const float value = std::stof(text);
-    if (!std::isfinite(value)) throw std::runtime_error("nonfinite query coordinate");
+    std::size_t used = 0;
+    const std::string source(text);
+    const float value = std::stof(source, &used);
+    if (used != source.size() || !std::isfinite(value))
+        throw std::runtime_error("invalid query coordinate");
     return value;
+}
+
+float point_distance(const float* a, const float* b) {
+    const float dx = a[0] - b[0];
+    const float dy = a[1] - b[1];
+    const float dz = a[2] - b[2];
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
 }
 }
 
@@ -91,6 +101,13 @@ int main(int argc, char** argv) {
                               corridor_count > 0 && corridor[corridor_count - 1] == end_ref;
         std::cout << "{\"start_poly_found\":" << (start_ref ? "true" : "false")
                   << ",\"end_poly_found\":" << (end_ref ? "true" : "false")
+                  << ",\"start_snap_distance\":";
+        if (start_ref) std::cout << point_distance(start, nearest_start);
+        else std::cout << "null";
+        std::cout << ",\"end_snap_distance\":";
+        if (end_ref) std::cout << point_distance(end, nearest_end);
+        else std::cout << "null";
+        std::cout
                   << ",\"corridor_polygons\":" << corridor_count
                   << ",\"straight_points\":" << straight_count
                   << ",\"offline_path_complete\":" << (complete ? "true" : "false")

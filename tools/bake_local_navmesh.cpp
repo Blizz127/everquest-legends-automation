@@ -21,17 +21,20 @@ constexpr int kMaxVertices = 2000000;
 constexpr int kMaxFaces = 2000000;
 constexpr float kCellSize = 1.0f;
 constexpr float kCellHeight = 0.5f;
-constexpr float kAgentHeight = 8.0f;
-constexpr float kAgentRadius = 5.0f;
-constexpr float kAgentClimb = 2.0f;
-constexpr float kSlopeDegrees = 45.0f;
+constexpr float kDefaultAgentHeight = 8.0f;
+constexpr float kDefaultAgentRadius = 5.0f;
+constexpr float kDefaultAgentClimb = 2.0f;
+constexpr float kDefaultSlopeDegrees = 45.0f;
 
 struct Vertex { float x, y, z; }; // WLD XYZ, Z up.
 struct Face { int a, b, c; };
 
 float read_float(const char* text) {
-    const float value = std::stof(text);
-    if (!std::isfinite(value)) throw std::runtime_error("nonfinite argument");
+    std::size_t used = 0;
+    const std::string source(text);
+    const float value = std::stof(source, &used);
+    if (used != source.size() || !std::isfinite(value))
+        throw std::runtime_error("invalid numeric argument");
     return value;
 }
 
@@ -87,9 +90,9 @@ bool overlaps(const Face& face, const std::vector<Vertex>& vertices,
 
 int main(int argc, char** argv) {
     try {
-        if (argc != 9) {
+        if (argc != 9 && argc != 13) {
             throw std::runtime_error(
-                "usage: bake_local_navmesh INPUT.obj OUTPUT.nav CENTER_X CENTER_Y HALF_EXTENT MIN_Z MAX_Z LABEL");
+                "usage: bake_local_navmesh INPUT.obj OUTPUT.nav CENTER_X CENTER_Y HALF_EXTENT MIN_Z MAX_Z LABEL [AGENT_HEIGHT AGENT_RADIUS AGENT_CLIMB SLOPE_DEGREES]");
         }
         const std::string input_path = argv[1];
         const std::string output_path = argv[2];
@@ -99,12 +102,20 @@ int main(int argc, char** argv) {
         const float min_z = read_float(argv[6]);
         const float max_z = read_float(argv[7]);
         const std::string label = argv[8];
+        const float agent_height = argc == 13 ? read_float(argv[9]) : kDefaultAgentHeight;
+        const float agent_radius = argc == 13 ? read_float(argv[10]) : kDefaultAgentRadius;
+        const float agent_climb = argc == 13 ? read_float(argv[11]) : kDefaultAgentClimb;
+        const float slope_degrees = argc == 13 ? read_float(argv[12]) : kDefaultSlopeDegrees;
         const bool label_valid = !label.empty() && label.size() <= 64 &&
             std::all_of(label.begin(), label.end(), [](unsigned char value) {
                 return std::isalnum(value) || value == '-' || value == '_';
             });
         if (half_extent < 16 || half_extent > 512 || max_z <= min_z ||
-            max_z - min_z > 1000 || !label_valid) {
+            max_z - min_z > 1000 || !label_valid ||
+            agent_height < 1 || agent_height > 20 ||
+            agent_radius < 0.25f || agent_radius > 15 ||
+            agent_climb < 0 || agent_climb > 10 ||
+            slope_degrees < 1 || slope_degrees >= 89) {
             throw std::runtime_error("invalid bounded-bake parameters");
         }
         std::vector<Vertex> source_vertices;
@@ -130,10 +141,10 @@ int main(int argc, char** argv) {
         rcConfig config{};
         config.cs = kCellSize;
         config.ch = kCellHeight;
-        config.walkableSlopeAngle = kSlopeDegrees;
-        config.walkableHeight = static_cast<int>(std::ceil(kAgentHeight / config.ch));
-        config.walkableClimb = static_cast<int>(std::floor(kAgentClimb / config.ch));
-        config.walkableRadius = static_cast<int>(std::ceil(kAgentRadius / config.cs));
+        config.walkableSlopeAngle = slope_degrees;
+        config.walkableHeight = static_cast<int>(std::ceil(agent_height / config.ch));
+        config.walkableClimb = static_cast<int>(std::floor(agent_climb / config.ch));
+        config.walkableRadius = static_cast<int>(std::ceil(agent_radius / config.cs));
         config.maxEdgeLen = static_cast<int>(12.0f / config.cs);
         config.maxSimplificationError = 1.3f;
         config.minRegionArea = 8 * 8;
@@ -224,9 +235,9 @@ int main(int argc, char** argv) {
         params.detailVertsCount = detail->nverts;
         params.detailTris = detail->tris;
         params.detailTriCount = detail->ntris;
-        params.walkableHeight = kAgentHeight;
-        params.walkableRadius = kAgentRadius;
-        params.walkableClimb = kAgentClimb;
+        params.walkableHeight = agent_height;
+        params.walkableRadius = agent_radius;
+        params.walkableClimb = agent_climb;
         rcVcopy(params.bmin, poly_mesh->bmin);
         rcVcopy(params.bmax, poly_mesh->bmax);
         params.cs = config.cs;
@@ -251,10 +262,10 @@ int main(int argc, char** argv) {
                   << ",\"nav_vertices\":" << poly_mesh->nverts
                   << ",\"nav_polygons\":" << poly_mesh->npolys
                   << ",\"nav_bytes\":" << nav_size
-                  << ",\"agent_height\":" << kAgentHeight
-                  << ",\"agent_radius\":" << kAgentRadius
-                  << ",\"agent_climb\":" << kAgentClimb
-                  << ",\"slope_degrees\":" << kSlopeDegrees
+                  << ",\"agent_height\":" << agent_height
+                  << ",\"agent_radius\":" << agent_radius
+                  << ",\"agent_climb\":" << agent_climb
+                  << ",\"slope_degrees\":" << slope_degrees
                   << ",\"collision_verified\":false,\"navigability_verified\":false}\n";
         return 0;
     } catch (const std::exception& error) {

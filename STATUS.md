@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 05:47 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 05:57 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.22.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.23.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -76,6 +76,19 @@ Updated 2026-11-13 05:47 CST for coordinator task `829a00229b29`.
   faces; sampled bounded tiles have 269 and 270 nav polygons, respectively.
   Both sampled offline queries completed. No real movement or collision
   acceptance follows from those samples.
+  Copied Greater Faydark terrain archives now support a read-only map/WLD
+  frame check. Map endpoints align to WLD terrain under XY sign/swap
+  `(-map_y,-map_x)` in Butcherblock (1,557 matches), Crushbone (3,787),
+  and Greater Faydark (8,163), all at 0.1-unit rounding. Four GFay exit
+  labels are about 0.8013–0.8014 below nearby candidate terrain surfaces;
+  the historical ~236.82 vertical mismatch was not reproduced there.
+  Bounded BSP audits mark 163 Butcherblock and 263 Crushbone water-labelled
+  region IDs, plus 5/3/9 zoneline-labelled IDs in Butcherblock/Crushbone/GFay;
+  region shapes and live transitions remain unknown. The local baker now
+  accepts explicit agent dimensions and the query reports endpoint snap
+  distances. Compact and conservative Crushbone samples all produced
+  corridors, but conservative start snapped 5.41 units, so this does not
+  resolve the historical clearance disconnect or prove movement.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -142,23 +155,29 @@ Updated 2026-11-13 05:47 CST for coordinator task `829a00229b29`.
   — 5 passed. `python3 -m compileall -q eql_automation` and
   `git diff --check` passed. `--audit-crushbone` CLI smoke confirmed
   178 exact placements, 4,057 Boundary faces, and live acceptance false.
+  `python3 -m pytest -q tests/test_map_alignment.py tests/test_region_audit.py
+  tests/test_candidate_scene.py tests/test_material_audit.py` — 8 passed;
+  three copied-zone region and map-alignment CLI audits passed, with
+  manifests and hashes in `FINDINGS.md`. Four bounded Crushbone profile
+  bakes and Detour queries ran offline. No real client/account input.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
   be sent to that host. Daybreak rules prohibit unattended play and unauthorized
   servers; no Daybreak-authorized live test route is documented. The historical
   Butcherblock navmesh/recipe is absent from the approved retained store, and
-  the reported GFay vertical mismatch and conservative clearance failure
-  remain unresolved. No actual client acceptance is ready. No private
+  the reported GFay vertical mismatch on its historical route and
+  conservative clearance failure remain unresolved. No actual client
+  acceptance is ready. No private
   launcher/server publication destination is configured; this build is local.
 - Next step: obtain the intended private endpoint or separate client config,
   then verify target identity before any live test. Review copied client
-  Boundary collision, water and dynamic-door rules; compare more offline
-  clearance variants without promoting edges. Check GFay
-  height alignment, dynamic doors, water,
-  zone transitions and actual movement before accepting a route. Review
-  Additional Crushbone navigation and camps still require client evidence;
-  select later camps from observed level and safety. Build a
+  Boundary collision, water region shapes and dynamic-door rules; compare
+  more offline clearance variants without promoting edges. Trace the
+  historical GFay height mismatch. Inspect dynamic doors, water, zone
+  transitions and actual movement before accepting a route. Crushbone camps
+  still require client evidence; select later camps from observed level and
+  safety. Build a
   read-only runtime UI observer on an isolated client view. ASSIST keeps
   movement manual. The October assist tool's live preparation/combat remain
   unverified.

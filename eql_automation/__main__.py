@@ -12,7 +12,7 @@ from .modes import Action, ActionKind
 from .sim import (SimSink, run_assist_demo, run_demo, run_gauge_demo,
                   run_navigation_demo, synthetic_graph)
 from .synthetic_run import default_output_dir, run_synthetic_1_50
-from .client_ingest import import_retail_copy
+from .client_ingest import import_retail_copy, parse_map, sha256_file
 from .target import inspect_eqhost
 from .poi_index import build_poi_index, current_summary
 from .nav import MAP_STORE
@@ -28,6 +28,8 @@ from .model_links import combine_model_links
 from .instance_geometry import summarize_instances
 from .candidate_scene import write_candidate_scene
 from .material_audit import summarize_zone_materials
+from .region_audit import audit_bsp_regions
+from .map_alignment import audit_map_alignment
 
 
 def shell() -> None:
@@ -139,6 +141,10 @@ def main() -> None:
                        help="inventory copied Crushbone placements, meshes and materials offline")
     group.add_argument("--build-crushbone-candidate-scene", action="store_true",
                        help="write provisional Crushbone solid-flag OBJ outside git")
+    group.add_argument("--audit-zone-regions", choices=("butcher", "crushbone", "gfaydark"),
+                       metavar="ZONE", help="audit copied WLD water/zone region labels offline")
+    group.add_argument("--audit-map-alignment", choices=("butcher", "crushbone", "gfaydark"),
+                       metavar="ZONE", help="cross-check copied map points/labels with WLD terrain")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
@@ -449,6 +455,33 @@ def main() -> None:
                                           include_boundary=not args.exclude_boundary,
                                           zone_name="Crushbone", filename_prefix="crushbone")
             print(json.dumps({**source_info, **asdict(scene)}, indent=2))
+    elif args.audit_zone_regions is not None:
+        zone = args.audit_zone_regions
+        source = DATA_ROOT / "client-data" / "retail-full" / "assets" / f"{zone}.s3d"
+        if not source.resolve().is_relative_to(DATA_ROOT.resolve()):
+            parser.error("Zone archive must stay inside the approved EQL data store")
+        archive = PFSArchive(source)
+        wld = WLDInventory(archive.read_member(f"{zone}.wld"))
+        print(json.dumps({"zone": zone, "archive_sha256": archive.sha256,
+                          **audit_bsp_regions(wld)}, indent=2))
+    elif args.audit_map_alignment is not None:
+        zone = args.audit_map_alignment
+        root = DATA_ROOT / "client-data" / "retail-full"
+        archive_path = root / "assets" / f"{zone}.s3d"
+        map_path = root / "maps" / f"{zone}.txt"
+        label_path = root / "maps" / f"{zone}_1.txt"
+        if any(not path.resolve().is_relative_to(DATA_ROOT.resolve())
+               for path in (archive_path, map_path, label_path)):
+            parser.error("Alignment sources must stay inside the approved EQL data store")
+        archive = PFSArchive(archive_path)
+        wld = WLDInventory(archive.read_member(f"{zone}.wld"))
+        document = parse_map(map_path.read_text(encoding="latin-1"))
+        labels = parse_map(label_path.read_text(encoding="latin-1"))
+        print(json.dumps({"zone": zone, "archive_sha256": archive.sha256,
+                          "wld_sha256": wld.sha256,
+                          "map_sha256": sha256_file(map_path),
+                          "label_map_sha256": sha256_file(label_path),
+                          **audit_map_alignment(document, read_meshes(wld), labels)}, indent=2))
     else:
         shell()
 

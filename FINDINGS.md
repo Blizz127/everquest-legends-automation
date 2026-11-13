@@ -1,5 +1,68 @@
 # FINDINGS
 
+## Copied-client map frame, BSP labels and profile sensitivity — 2026-11-13 05:55 CST
+
+**VERIFIED read-only GFay source:** Alienware's `gfaydark.s3d` and
+`gfaydark_obj.s3d` were copied to the approved untracked client-data store
+with source/local SHA-256 matches
+`ea95f51a2d4645410223d24cc7da9eb0e7095310c6e9f8756e8c51d67df13d9f`
+and `3439c59e9c6c1623e85b29694d6a6161b924b0a9ece39751b0234ab5c6f71892`.
+The copied `gfaydark.wld` is SHA-256
+`3f9a479ea46a3fb8f826ccfb608d0f69a5876e1cab5fa38ea86712e8fdabe138`.
+No Alienware install or prefix write, login, or game input occurred.
+
+**VERIFIED offline map frame:** A bounded audit compared unique top-level
+client map-line endpoints with decoded WLD terrain vertices, rounded to
+0.1 unit, across all eight XY sign/swap transforms. `map → WLD = (-map_y,
+-map_x, map_z)` matched 1,557 Butcherblock, 3,787 Crushbone and 8,163
+Greater Faydark vertices. The next-best transform matched 0, 49 and 2,
+respectively; raw map XY matched 0, 8 and 0. This strongly supports the
+frame transform for these copied assets, **not** a walkable map edge. Label
+surface probing requires at least 5% of unique map points (minimum three)
+to match and a threefold margin over the next transform, so one coincidental
+vertex cannot establish a frame. The map audit manifests under
+`~/.local/share/eql-automation/nav-candidates/`
+have SHA-256 `f96642d193df59984c158167c67d8213f8acb11bbfab1e5f23dd1e3a5d1c25ba`
+(Butcherblock), `2847766145022db7405acfebe5c0a4c5b1cb55845cbaf17a4d5011a8b7a8645d`
+(Crushbone), and `c3f9fb5ffdf8dc740d145c119b2c3522e22cb5f36617e575417176932620901f`
+(Greater Faydark).
+
+**VERIFIED offline GFay label surface probe:** After that XY transform,
+all four client exit labels intersect nearby flag-zero terrain triangles.
+Their nearest surface Z minus label Z is about 0.8014, 0.8014, 0.8014 and
+0.8013 units for Butcherblock, Crushbone, Lesser Faydark and Northern
+Felwithe exits. Some XY points intersect multiple surface levels, so the
+nearest height is only a candidate. The historical ~236.82-unit vertical
+mismatch is **not reproduced at these four exits**; no global Z correction
+has been applied. Actual player coordinates, collision surfaces and zone-line
+transitions remain unobserved.
+
+**VERIFIED copied BSP label audit:** Using [Lantern's 0x29 region parser](https://github.com/LanternEQ/LanternExtractor/blob/main/LanternExtractor/EQ/Wld/Fragments/BspRegionType.cs)
+and [0x21 BSP tree parser](https://github.com/LanternEQ/LanternExtractor/blob/main/LanternExtractor/EQ/Wld/Fragments/BspTree.cs),
+the bounded read-only audit validated all region IDs and tree references.
+Butcherblock has 163 water-labelled and 5 zoneline-labelled region IDs;
+Crushbone has 263 water-labelled and 3 zoneline-labelled IDs; Greater
+Faydark has 9 zoneline-labelled IDs and no water-labelled IDs in these
+records. Manifests under the untracked client-data store have SHA-256
+`586f8b0aa230a9a574c53968889d40dbd20ecf0a88b74d74972c891b64a0594e`,
+`7f172ebf532746483fb3618583759d5943d20b1c84a5ec3ad097ff5ff35c884f`,
+and `bcf320e410ae558bb21e639ab45ee54650a5825a550f5a17b2afa99067f35acb`.
+The region shapes/PVS are not decoded, and labels do not prove where the
+client allows swimming or a transition.
+
+**VERIFIED offline profile sensitivity:** The local baker now accepts
+explicit height/radius/climb/slope after its original arguments. In the
+same bounded Crushbone tile, compact `(6,3,3,50)` baked 290 polygons with
+Boundary included or 289 excluded; conservative `(8,5,2,45)` baked 269 or
+270. All four sampled Detour corridors completed, but the query now reports
+start-to-nearest-polygon snap distances of about 3.04 units for compact and
+5.41 for conservative (end snap 0.49). The comparison manifest SHA-256 is
+`c11a97fc9045d531293a751c96a63b4300da01e6d8a723c7b04f79d6379a8031`.
+The existing Butcherblock FAYHOUSE complete sample snapped by 0.65/0.30
+units; a different sample stayed partial despite 1.53/0.65-unit snaps.
+These different samples do **not** resolve the historical conservative
+profile disconnect. No profile or corridor is real-client accepted.
+
 ## Crushbone copied-client audit and Boundary variants — 2026-11-13 05:47 CST
 
 **VERIFIED copied data, read-only:** Alienware client archives in
