@@ -4,6 +4,7 @@ from eql_automation.assist import AssistAdvisor, AssistObservation
 from eql_automation.control import ControlPlane
 from eql_automation.modes import ActionKind, Mode
 from eql_automation.prior_rotation_core import Catalog, Spell
+from eql_automation.sim import run_assist_demo
 
 
 def advisor() -> tuple[AssistAdvisor, ControlPlane]:
@@ -60,3 +61,12 @@ def test_assist_only_uses_observed_abilities_and_commits_after_check():
     assert not assist.still_allowed(proposal, ready(), 10.0)
     assert assist.committed(proposal, observed, 10.0)
     assert assist.rotation.busy_until > 10.0
+
+
+def test_assist_cli_demo_cancels_proposal_without_game_input():
+    result = run_assist_demo()
+    assert result["simulation_only"] and result["no_game_input"]
+    assert result["proposed_action"] == "/cast 3"
+    assert result["paladin_level_1_yaulp_excluded"]
+    assert result["allowed_before_stop"]
+    assert not result["old_proposal_allowed_after_stop"]

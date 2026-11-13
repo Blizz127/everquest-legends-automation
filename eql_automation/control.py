@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections import deque
 from dataclasses import dataclass
-from threading import Lock
+from threading import Lock, RLock
 from typing import Callable
 
 from .modes import Action, Mode, ModeController, Permit
@@ -44,6 +44,7 @@ class ControlPlane:
         self.controller = ModeController()
         self.notify = notify
         self._lock = Lock()
+        self._transition_lock = RLock()
         self._queued: deque[QueuedAction] = deque()
         self._safety_latched = False
         self.indicator = ModeIndicator(Mode.OFF, 0, "MODE OFF · generation 0 · startup")
@@ -52,21 +53,35 @@ class ControlPlane:
 
     @property
     def safety_latched(self) -> bool:
-        return self._safety_latched
+        with self._transition_lock:
+            return self._safety_latched
 
-    def _announce(self, permit: Permit, reason: str) -> ModeIndicator:
+    def _indicator(self, permit: Permit, reason: str) -> ModeIndicator:
         indicator_text = f"MODE {permit.mode.value.upper()} · generation {permit.generation} · {reason}"
         self.indicator = ModeIndicator(permit.mode, permit.generation, indicator_text,
                                        self._safety_latched)
-        if self.notify:
-            self.notify(self.indicator)
         return self.indicator
+
+    def _publish(self, indicator: ModeIndicator) -> ModeIndicator:
+        if self.notify:
+            try:
+                self.notify(indicator)
+            except Exception as exc:
+                # Active mode without its advertised indicator is unsafe.
+                with self._transition_lock:
+                    permit = self.controller.switch(Mode.OFF)
+                    self._safety_latched = True
+                    self._indicator(permit, "SAFETY STOP: mode indicator failed")
+                raise RuntimeError("Mode indicator failed; safety stop latched OFF") from exc
+        return indicator
 
     def switch(self, mode: Mode, *, reason: str = "command") -> ModeIndicator:
         mode = Mode(mode)
-        if self._safety_latched and mode != Mode.OFF:
-            raise RuntimeError("Safety stop is latched; use 'reset safety' while OFF")
-        return self._announce(self.controller.switch(mode), reason)
+        with self._transition_lock:
+            if self._safety_latched and mode != Mode.OFF:
+                raise RuntimeError("Safety stop is latched; use 'reset safety' while OFF")
+            indicator = self._indicator(self.controller.switch(mode), reason)
+        return self._publish(indicator)
 
     def handle_command(self, command: str) -> ModeIndicator:
         normalized = " ".join(command.strip().casefold().split())
@@ -75,12 +90,15 @@ class ControlPlane:
         if normalized == "stop":
             return self.switch(Mode.OFF)
         if normalized == "reset safety":
-            if self.controller.mode != Mode.OFF:
-                raise RuntimeError("Switch OFF before resetting a safety stop")
-            self._safety_latched = False
-            return self._announce(self.controller.permit(), "safety reset")
+            with self._transition_lock:
+                if self.controller.mode != Mode.OFF:
+                    raise RuntimeError("Switch OFF before resetting a safety stop")
+                self._safety_latched = False
+                indicator = self._indicator(self.controller.permit(), "safety reset")
+            return self._publish(indicator)
         if normalized == "status":
-            return self.indicator
+            with self._transition_lock:
+                return self.indicator
         raise ValueError("Use mode full, mode assist, mode off, stop, reset safety, or status")
 
     def handle_hotkey(self, key: str) -> ModeIndicator:
@@ -93,9 +111,11 @@ class ControlPlane:
         if not reason.strip():
             raise ValueError("Safety stop needs a reason")
         # Cancel outstanding permits before touching the queued-action lock.
-        permit = self.controller.switch(Mode.OFF)
-        self._safety_latched = True
-        return self._announce(permit, f"SAFETY STOP: {reason.strip()}")
+        with self._transition_lock:
+            permit = self.controller.switch(Mode.OFF)
+            self._safety_latched = True
+            indicator = self._indicator(permit, f"SAFETY STOP: {reason.strip()}")
+        return self._publish(indicator)
 
     def queue(self, action: Action) -> bool:
         permit = self.controller.permit()

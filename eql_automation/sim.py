@@ -9,6 +9,9 @@ from .prior_rotation_core import Rotation, Spell
 from .world_nav import WorldNav, ZoneTransition
 from .campaign import Camp, CampaignPlanner, WorldSnapshot
 from .navigator import NavigationObservation, WorldNavigator
+from .assist import AssistAdvisor, AssistObservation
+from .control import ControlPlane
+from .prior_rotation_core import Catalog
 
 
 @dataclass
@@ -90,6 +93,38 @@ def run_demo() -> dict:
         "zone_route_kinds": [step.kind for step in zone_route],
         "unknown_health_stops_full_mode": controller.mode == Mode.OFF,
     }
+
+
+def run_assist_demo() -> dict:
+    """Show strict current-target rotation gating without sending any input."""
+
+    catalog = Catalog([
+        Spell(14, "Strike", 1, 1, 1000, 500, 0, 10, 0, 0),
+        Spell(200, "Minor Healing", 1, 1, 1500, 500, 0, 10, 0, 0),
+        Spell(210, "Yaulp", 1, 9, 1000, 500, 0, 1, 0, 0),
+    ])
+    control = ControlPlane()
+    advisor = AssistAdvisor(catalog, character_name="SyntheticTester",
+                            class_name="Paladin", level=1,
+                            known_spells={14, 200, 210}, control=control)
+    observation = AssistObservation(
+        observed_at=10.0, character_name="SyntheticTester",
+        class_name="Paladin", level=1, game_focused=True, chat_open=False,
+        current_target_verified=True, hp=1.0, mana=1.0,
+        memorized={1: 200, 3: 14})
+    control.handle_command("mode assist")
+    proposal = advisor.propose(observation, now=10.0)
+    if proposal is None:
+        raise AssertionError("Synthetic assist supplied no action")
+    allowed_before_stop = advisor.still_allowed(proposal, observation, now=10.0)
+    control.handle_command("stop")
+    return {"simulation_only": True, "no_game_input": True,
+            "mode_after_stop": control.indicator.mode.value,
+            "proposed_action": proposal.queued.action.detail,
+            "paladin_level_1_yaulp_excluded": "yaulp" not in advisor.rotation.profile,
+            "allowed_before_stop": allowed_before_stop,
+            "old_proposal_allowed_after_stop": advisor.still_allowed(
+                proposal, observation, now=10.0)}
 
 
 def run_navigation_demo() -> dict:

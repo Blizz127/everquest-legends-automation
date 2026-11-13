@@ -1,6 +1,8 @@
 """Focused safety checks for the offline mode control layer."""
 
 import pytest
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 
 from eql_automation.control import ControlPlane
 from eql_automation.modes import Action, ActionKind, Mode
@@ -91,3 +93,46 @@ def test_invalid_request_preserves_current_permit():
         control.handle_command("mode invalid")
     assert control.indicator.generation == generation
     assert len(control.drain().ready) == 1
+
+
+def test_concurrent_activation_cannot_override_emergency_stop():
+    control = ControlPlane()
+    barrier = Barrier(3)
+
+    def activate():
+        barrier.wait()
+        try:
+            control.handle_command("mode assist")
+        except RuntimeError:
+            pass  # Emergency stop won the transition lock.
+
+    def emergency():
+        barrier.wait()
+        control.emergency_stop("synthetic danger")
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        activation = executor.submit(activate)
+        stop = executor.submit(emergency)
+        barrier.wait()
+        activation.result()
+        stop.result()
+    assert control.indicator.mode == Mode.OFF
+    assert control.safety_latched
+    assert not control.queue(intent(ActionKind.CAST))
+
+
+def test_failed_mode_indicator_latches_off():
+    calls = 0
+
+    def notify(_indicator):
+        nonlocal calls
+        calls += 1
+        if calls > 1:
+            raise OSError("synthetic display failure")
+
+    control = ControlPlane(notify)
+    with pytest.raises(RuntimeError, match="Mode indicator failed"):
+        control.handle_command("mode assist")
+    assert control.indicator.mode == Mode.OFF
+    assert control.safety_latched
+    assert not control.queue(intent(ActionKind.CAST))

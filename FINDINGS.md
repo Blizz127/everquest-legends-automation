@@ -1,5 +1,27 @@
 # FINDINGS
 
+## Default client UI widget inventory — 2026-11-13 04:04 CST
+
+**VERIFIED read-only client data:** The Alienware's `eqclient.ini` has `Log=1`
+and `UIScale=1` (SHA-256
+`a10560ba3301c411f1b9eb05b5ad2627b4577222b430a7acf59687341356c7fc`).
+Seven default `uifiles/default/EQUI*.xml` definitions were copied read-only
+to the untracked local client-data store and their source hashes checked.
+`EQUI.xml` includes the player, target, spell gem, chat, inventory and options
+windows. A validated index contains 557 static widget IDs. Representative
+widgets are PlayerHP EQType 1, PlayerMana 2, ExpGauge 4, LevelLabel 2,
+TargetHP 6, Target_Class 1000, Target_Level 1001, spell gems
+`CSPW_Spell0`–`CSPW_Spell13`, and editable `CW_ChatInput`. The keyboard
+assignment list is present in OptionsWindow. The derived index is
+`~/.local/share/eql-automation/map-store/indices/ui-widgets-446c8657ad6284caf128.json`.
+
+**LIMIT:** Static XML does not identify the active skin, runtime positions or
+values, current target, character identity, gem IDs, chat focus, XP/hour, or
+valid hotkey bindings. The client was not launched and no character/log was
+read. The offline assist demo proposed `/cast 3` for a synthetic level-1
+Paladin and rejected the proposal after OFF. Concurrent emergency stop and
+mode-indicator failure tests leave the controller latched OFF. No game input.
+
 ## Strict offline assist proposal — 2026-11-13 04:00 CST
 
 **VERIFIED synthetic only:** `AssistAdvisor` wraps the inherited Paladin/Cleric

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.12.0
+# EverQuest Legends automation — current build 0.13.0
 
 ## Current availability
 
@@ -22,6 +22,7 @@ python3 -m eql_automation --demo
 python3 -m eql_automation --shell
 python3 -m eql_automation --synthetic-1-50
 python3 -m eql_automation --demo-navigation
+python3 -m eql_automation --demo-assist
 python3 -m eql_automation --inspect-target --source /path/to/copied/eqhost.txt
 python3 -m eql_automation --ingest-retail-copy --source /path/to/copied/client-text
 python3 -m eql_automation --index-pois
@@ -30,6 +31,8 @@ python3 -m eql_automation --index-zone-candidates
 python3 -m eql_automation --query-zone-candidates East_Cabilis --map fieldofbone
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
+python3 -m eql_automation --index-ui-widgets
+python3 -m eql_automation --query-ui-widgets Target_Level
 ```
 
 The demo prints a synthetic route and mode-permission results. The shell stays
@@ -130,6 +133,14 @@ proposes abilities observed as available. The proposal keeps a cancellable
 mode permit; focus, target, observations and permit must be checked again
 before each future key. This is a code-level contract with synthetic tests,
 not a running in-game rotation. There is no live observer or input sender.
+`--demo-assist` prints a synthetic proposal and shows that OFF invalidates it.
+
+`--index-ui-widgets` reads copied default client UI XML and stores a searchable
+widget index outside git. `--query-ui-widgets TEXT` searches names and EQType
+codes. The index includes player health/mana/XP and level labels, target
+gauges, spell gems, chat input and keyboard assignment widgets. It describes
+the **default static UI only**: the active skin, screen positions, live values,
+character identity, chat focus and working hotkeys have not been verified.
 
 | Simulated mode | Actions permitted by the planner |
 | --- | --- |
@@ -168,6 +179,7 @@ it writes character INIs in the protected Alienware prefix.
 python3 -m pytest -q tests/test_offline.py
 python3 -m pytest -q tests/test_control.py
 python3 -m pytest -q tests/test_spell_catalog.py tests/test_assist.py
+python3 -m pytest -q tests/test_ui_schema.py
 python3 -m compileall -q eql_automation
 ```
 
