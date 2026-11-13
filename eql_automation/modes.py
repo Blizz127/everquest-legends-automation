@@ -8,6 +8,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 from threading import Event, Lock
+import re
 
 
 class Mode(str, Enum):
@@ -31,11 +32,19 @@ class ActionKind(str, Enum):
     ZONE = "zone"
     LOGIN = "login"
     RECOVER = "recover"
+    PAUSE = "pause"
 
 
 ASSIST_ACTIONS = frozenset({
     ActionKind.CAST, ActionKind.ABILITY, ActionKind.HEAL, ActionKind.BUFF,
 })
+
+COMMAND_KINDS = (
+    (re.compile(r"/cast [1-8]"), frozenset({ActionKind.CAST, ActionKind.HEAL, ActionKind.BUFF})),
+    (re.compile(r"/doability (?:Bash|Smite)"), frozenset({ActionKind.ABILITY})),
+    (re.compile(r"/alt activate 6001"), frozenset({ActionKind.ABILITY, ActionKind.HEAL})),
+    (re.compile(r"/attack (?:on|off)"), frozenset({ActionKind.ATTACK})),
+)
 
 
 @dataclass(frozen=True)
@@ -67,6 +76,7 @@ class ModeController:
             return self._mode
 
     def switch(self, mode: Mode) -> Permit:
+        mode = Mode(mode)  # An invalid request must not cancel the current mode.
         # Signal the old permit before waiting for the short metadata lock.
         self._cancelled.set()
         with self._lock:
@@ -84,6 +94,12 @@ class ModeController:
     def allows(self, permit: Permit, action: Action) -> bool:
         if permit.cancelled.is_set():
             return False
+        # Command strings are never accepted merely because their claimed kind
+        # is permitted. A live bridge would also recheck per emitted key.
+        if action.detail.startswith("/") and not any(
+                pattern.fullmatch(action.detail) and action.kind in kinds
+                for pattern, kinds in COMMAND_KINDS):
+            return False
         with self._lock:
             if permit.generation != self._generation or permit.mode != self._mode:
                 return False
@@ -95,14 +111,14 @@ class ModeController:
 def action_from_prior_rotation(role: str, command: str) -> Action:
     """Classify one action from the October Paladin/Cleric rotation planner."""
 
-    if command.startswith("/cast "):
+    if re.fullmatch(r"/cast [1-8]", command):
         if role in {"quick_heal", "heal", "hot", "lay_hands"}:
             return Action(ActionKind.HEAL, command)
         if role in {"yaulp", "proc"}:
             return Action(ActionKind.BUFF, command)
         return Action(ActionKind.CAST, command)
-    if command.startswith(("/doability ", "/alt activate ")):
+    if re.fullmatch(r"/(?:doability (?:Bash|Smite)|alt activate 6001)", command):
         return Action(ActionKind.ABILITY, command)
-    if command.startswith("/attack "):
+    if re.fullmatch(r"/attack (?:on|off)", command):
         return Action(ActionKind.ATTACK, command)
     raise ValueError(f"Unknown prior rotation command: {command!r}")

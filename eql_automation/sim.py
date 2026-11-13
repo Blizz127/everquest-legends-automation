@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from .modes import Action, ActionKind, Mode, ModeController, action_from_prior_rotation
 from .nav import NavGraph, Point
 from .prior_rotation_core import Rotation, Spell
+from .world_nav import WorldNav, ZoneTransition
+from .campaign import Camp, CampaignPlanner, WorldSnapshot
 
 
 @dataclass
@@ -36,6 +38,20 @@ def synthetic_graph() -> NavGraph:
     return graph
 
 
+def synthetic_world() -> WorldNav:
+    first = synthetic_graph()
+    second = NavGraph()
+    second.add_point("entry", Point(0, 0))
+    second.add_point("next_camp", Point(5, 0))
+    second.connect("entry", "next_camp")
+    world = WorldNav()
+    world.add_zone("synthetic_one", first)
+    world.add_zone("synthetic_two", second)
+    world.add_transition(ZoneTransition("synthetic_one", "camp",
+                                        "synthetic_two", "entry"))
+    return world
+
+
 def run_demo() -> dict:
     controller = ModeController()
     sink = SimSink(controller)
@@ -53,7 +69,15 @@ def run_demo() -> dict:
     off_rejects_old_permit = not sink.submit(heal, assist_permit)
     full_permit = controller.switch(Mode.FULL_AUTO)
     full_route = synthetic_graph().route("start", "camp")
+    zone_route = synthetic_world().route("synthetic_one", "start",
+                                         "synthetic_two", "next_camp", level=1)
     full_move = sink.submit(move, full_permit)
+    planner = CampaignPlanner([Camp("synthetic_camp", 1, 10, 100)])
+    pause = planner.decide(WorldSnapshot(level=1, hp=None, mana=1,
+                                        bag_fullness=0))
+    if pause is None or pause.kind != ActionKind.PAUSE:
+        raise AssertionError("Unknown health did not pause the campaign")
+    controller.switch(Mode.OFF)
     return {
         "simulation_only": True,
         "prior_rotation_role": choice.role,
@@ -62,4 +86,6 @@ def run_demo() -> dict:
         "off_invalidates_queued_action": off_rejects_old_permit,
         "full_move_allowed": full_move,
         "safe_route": full_route,
+        "zone_route_kinds": [step.kind for step in zone_route],
+        "unknown_health_stops_full_mode": controller.mode == Mode.OFF,
     }

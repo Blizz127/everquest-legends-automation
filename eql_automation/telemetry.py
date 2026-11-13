@@ -104,6 +104,11 @@ class ClientLogReader:
     def __init__(self, path: Path, state: RunState) -> None:
         self.tail = LogTail(path)
         self.state = state
+        # If the file does not exist yet, its first content is new activity,
+        # not historical content to skip. The prior LogTail defaults to
+        # skipping on its first successful stat().
+        if not path.exists():
+            self.tail.initialized = True
         self.tail.poll()
 
     def poll(self) -> list[str]:

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.2.0
+# EverQuest Legends automation — current build 0.3.0
 
 ## Current availability
 
@@ -55,6 +55,12 @@ buy, scribe, and memorize tasks. It does not buy anything. A campaign planner
 uses supplied camp scores and observations to suggest rest, recovery, selling,
 target selection, or a camp change. These are unexecuted intents, not verified
 game behavior.
+
+The zone planner accepts verified zone graphs and zone-line endpoints and can
+route across zones while respecting water, aggro and level limits. This build
+contains only synthetic zones. The campaign planner pauses on unknown health,
+mana or bag state, GM presence, or an attack with no verified current target.
+No live pause hotkey or in-game indicator is available yet.
 
 The prior October Paladin/Cleric prototype remains at
 `/home/blizz/Projects/everquest-legends-rotation/`. Its historical controls

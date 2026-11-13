@@ -2,12 +2,13 @@ from pathlib import Path
 
 import pytest
 
-from eql_automation.modes import Action, ActionKind, Mode, ModeController
+from eql_automation.modes import Action, ActionKind, Mode, ModeController, action_from_prior_rotation
 from eql_automation.nav import NavGraph, Point, ProgressMonitor, RouteNotFound
 from eql_automation.sim import run_demo, synthetic_graph
 from eql_automation.spells import SpellPlanner, SpellSpec
 from eql_automation.campaign import Camp, CampaignPlanner, WorldSnapshot
 from eql_automation.telemetry import ClientLogReader, RunState, StatusWriter
+from eql_automation.world_nav import WorldNav, ZoneTransition
 
 
 def test_mode_boundary_and_immediate_stop():
@@ -24,6 +25,18 @@ def test_mode_boundary_and_immediate_stop():
     full = controller.switch(Mode.FULL_AUTO)
     assert controller.allows(full, move)
     assert not controller.allows(assist, cast)
+
+
+def test_invalid_mode_preserves_current_permit_and_spoofed_command_is_denied():
+    controller = ModeController()
+    assist = controller.switch(Mode.ASSIST)
+    with pytest.raises(ValueError):
+        controller.switch("bad-mode")
+    assert controller.allows(assist, Action(ActionKind.CAST, "/cast 1"))
+    assert not controller.allows(assist, Action(ActionKind.CAST, "/target arbitrary"))
+    assert not controller.allows(assist, Action(ActionKind.CAST, "/attack on"))
+    with pytest.raises(ValueError):
+        action_from_prior_rotation("nuke", "/cast 1; /target arbitrary")
 
 
 def test_route_avoids_water_and_replans_around_blocked_edge(tmp_path: Path):
@@ -67,13 +80,24 @@ def test_log_tail_ignores_history_and_status_tracks_only_new_events(tmp_path: Pa
     assert not writer.maybe_write(state, now=71)
 
 
+def test_log_created_after_reader_start_keeps_first_event(tmp_path: Path):
+    log = tmp_path / "new.log"
+    state = RunState()
+    reader = ClientLogReader(log, state)
+    log.write_text("[now] You have gained a level! Welcome to level 2!\n")
+    assert len(reader.poll()) == 1
+    assert state.level == 2
+
+
 def test_demo_is_offline_and_exercises_prior_rotation():
     result = run_demo()
     assert result["simulation_only"] is True
     assert result["prior_rotation_role"] == "quick_heal"
     assert all(result[key] for key in (
         "assist_heal_allowed", "assist_move_denied",
-        "off_invalidates_queued_action", "full_move_allowed"))
+        "off_invalidates_queued_action", "full_move_allowed",
+        "unknown_health_stops_full_mode"))
+    assert "zone" in result["zone_route_kinds"]
 
 
 def test_spell_progression_orders_acquisition_from_supplied_facts():
@@ -105,3 +129,52 @@ def test_campaign_prioritizes_recovery_and_switches_poor_camp():
                                         bag_fullness=0, dead=True)).kind == ActionKind.RECOVER
     assert planner.decide(WorldSnapshot(level=5, hp=0.4, mana=1,
                                         bag_fullness=0)).kind == ActionKind.REST
+    leveled = CampaignPlanner([Camp("old", 1, 5, 100), Camp("new", 6, 10, 80)])
+    assert leveled.decide(WorldSnapshot(level=6, hp=1, mana=1, bag_fullness=0,
+                                        camp="old")) == Action(ActionKind.CAMP, "new")
+
+
+def test_campaign_pauses_on_unknown_or_unsafe_state_and_loots_only_when_safe():
+    planner = CampaignPlanner([Camp("synthetic", 1, 10, 100)])
+    base = dict(level=5, hp=1.0, mana=1.0, bag_fullness=0.0,
+                camp="synthetic", target_present=True)
+    assert planner.decide(WorldSnapshot(**{**base, "hp": None})).kind == ActionKind.PAUSE
+    assert planner.decide(WorldSnapshot(**{**base, "gm_present": True})).kind == ActionKind.PAUSE
+    assert planner.decide(WorldSnapshot(**{**base, "under_attack": True,
+                                          "target_present": False})).kind == ActionKind.PAUSE
+    assert planner.decide(WorldSnapshot(**{**base, "loot_available": True})).kind == ActionKind.LOOT
+    assert planner.decide(WorldSnapshot(**{**base, "loot_available": True,
+                                          "under_attack": True})) is None
+
+
+def test_world_route_crosses_verified_zone_line_and_replans():
+    start = NavGraph()
+    for name, x in (("spawn", 0), ("exit", 10), ("water", 5)):
+        start.add_point(name, Point(x, 0))
+    start.connect("spawn", "exit")
+    start.connect("spawn", "water", water=True)
+    start.connect("water", "exit", water=True)
+    destination = NavGraph()
+    destination.add_point("entry", Point(0, 0))
+    destination.add_point("camp", Point(4, 0))
+    destination.connect("entry", "camp")
+    world = WorldNav()
+    world.add_zone("one", start)
+    world.add_zone("two", destination)
+    world.add_transition(ZoneTransition("one", "exit", "two", "entry", min_level=2))
+    with pytest.raises(RouteNotFound):
+        world.route("one", "spawn", "two", "camp", level=1)
+    route = world.route("one", "spawn", "two", "camp", level=2)
+    assert [step.kind for step in route] == ["move", "zone", "move"]
+    with pytest.raises(RouteNotFound):
+        world.route("one", "spawn", "two", "camp", level=2,
+                    blocked_edges={("one", "spawn", "exit")})
+    alternate = world.route("one", "spawn", "two", "camp", level=2,
+                            avoid_water=False, blocked_edges={("one", "spawn", "exit")})
+    assert [step.to_node for step in alternate[:2]] == ["water", "exit"]
+    world.transitions.clear()
+    world.add_transition(ZoneTransition("one", "exit", "two", "entry", risk=1))
+    with pytest.raises(RouteNotFound):
+        world.route("one", "spawn", "two", "camp", level=2)
+    assert any(step.kind == "zone" for step in world.route(
+        "one", "spawn", "two", "camp", level=2, max_aggro=1))
