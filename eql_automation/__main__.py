@@ -30,6 +30,7 @@ from .candidate_scene import write_candidate_scene
 from .material_audit import summarize_zone_materials
 from .region_audit import audit_bsp_regions
 from .map_alignment import audit_map_alignment
+from .bsp_probe import BspPointLookup, nearby_zoneline_candidate
 
 
 def shell() -> None:
@@ -145,6 +146,8 @@ def main() -> None:
                        metavar="ZONE", help="audit copied WLD water/zone region labels offline")
     group.add_argument("--audit-map-alignment", choices=("butcher", "crushbone", "gfaydark"),
                        metavar="ZONE", help="cross-check copied map points/labels with WLD terrain")
+    group.add_argument("--probe-zone-labels", choices=("butcher", "crushbone", "gfaydark"),
+                       metavar="ZONE", help="sample copied BSP zoneline labels near client map hints offline")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
@@ -482,6 +485,36 @@ def main() -> None:
                           "map_sha256": sha256_file(map_path),
                           "label_map_sha256": sha256_file(label_path),
                           **audit_map_alignment(document, read_meshes(wld), labels)}, indent=2))
+    elif args.probe_zone_labels is not None:
+        zone = args.probe_zone_labels
+        root = DATA_ROOT / "client-data" / "retail-full"
+        archive_path = root / "assets" / f"{zone}.s3d"
+        map_path = root / "maps" / f"{zone}.txt"
+        label_path = root / "maps" / f"{zone}_1.txt"
+        if any(not path.resolve().is_relative_to(DATA_ROOT.resolve())
+               for path in (archive_path, map_path, label_path)):
+            parser.error("Zone-label sources must stay inside the approved EQL data store")
+        archive = PFSArchive(archive_path)
+        wld = WLDInventory(archive.read_member(f"{zone}.wld"))
+        document = parse_map(map_path.read_text(encoding="latin-1"))
+        labels = parse_map(label_path.read_text(encoding="latin-1"))
+        alignment = audit_map_alignment(document, read_meshes(wld), labels)
+        if not alignment["frame_supported_by_rounded_vertex_matches"]:
+            parser.error("Copied map frame lacks enough terrain matches for a label probe")
+        lookup = BspPointLookup(wld)
+        results = []
+        for label, surface in zip(labels.labels, alignment["label_surface_candidates"]):
+            results.append({"text": label.text,
+                            "nearest_candidate_surface_z": surface["nearest_surface_z"],
+                            **nearby_zoneline_candidate(
+                                lookup, label.point, surface["nearest_surface_z"],
+                                transform=alignment["best_map_to_wld_xy_transform"])})
+        print(json.dumps({"zone": zone, "archive_sha256": archive.sha256,
+                          "wld_sha256": wld.sha256,
+                          "map_sha256": sha256_file(map_path),
+                          "label_map_sha256": sha256_file(label_path),
+                          "frame_transform": alignment["best_map_to_wld_xy_transform"],
+                          "label_probes": results, "real_client_accepted": False}, indent=2))
     else:
         shell()
 

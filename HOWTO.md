@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.23.0
+# EverQuest Legends automation — current build 0.24.0
 
 ## Current availability
 
@@ -47,6 +47,9 @@ python3 -m eql_automation --audit-zone-regions butcher
 python3 -m eql_automation --audit-zone-regions crushbone
 python3 -m eql_automation --audit-zone-regions gfaydark
 python3 -m eql_automation --audit-map-alignment gfaydark
+python3 -m eql_automation --probe-zone-labels butcher
+python3 -m eql_automation --probe-zone-labels crushbone
+python3 -m eql_automation --probe-zone-labels gfaydark
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 python3 -m eql_automation --index-ui-widgets
@@ -264,6 +267,13 @@ label XY positions against flag-zero terrain triangles; multiple surfaces
 can overlap there. Four Greater Faydark exit labels are about 0.8013–0.8014
 units below the nearest candidate surface, not evidence of a general height
 correction or a working zone transition. Neither audit sends game input.
+`--probe-zone-labels ZONE` applies the supported copied-map frame, checks
+each label against the copied WLD BSP tree, then searches a 5-unit XY grid
+within 100 units at three candidate heights for nearby tagged zoneline
+regions. It reports unknown when a BSP branch is missing or ambiguous.
+Results are sampled review hints only: no transition, route edge, or safe
+water-free path is accepted. The Greater Faydark labels do not themselves
+fall in tagged zoneline regions in this copied client.
 
 For bounded **offline** navmesh experiments, place the upstream
 [RecastNavigation source](https://github.com/recastnavigation/recastnavigation)

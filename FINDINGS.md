@@ -1,5 +1,35 @@
 # FINDINGS
 
+## Offline BSP point and zone-label probes — 2026-11-13 06:03 CST
+
+**VERIFIED copied-data algorithm and CLI:** A bounded WLD-XYZ point lookup
+uses the 0x21 BSP plane test, one-based child/leaf references, and positive
+left/negative right branch from [EQEmu's water-map implementation](https://github.com/EQEmu/EQEmu/blob/master/zone/water_map_v1.cpp#L493-L537).
+The API takes raw WLD XYZ; map labels first use the copied-data XY frame
+verified above. On a plane, a missing child, a cycle, excessive depth, or a
+nonfinite distance it returns unknown. This matters in Crushbone, where the
+copied tree has missing-child branches. Synthetic branch/unknown tests and
+copied-data CLI probes passed. A lookup only reports the copied WLD's region
+label; it does not establish client collision or a server transition.
+
+**VERIFIED sampled label review:** None of the four Greater Faydark exit
+labels falls inside a tagged zoneline region at its exact transformed point.
+A bounded 5-unit XY grid within 100 units, sampled at label Z, nearest
+flag-zero terrain Z and that surface plus 1, found a tagged candidate
+40 units from the Butcherblock label, 30 from Crushbone, and 45 each from
+Lesser Faydark and Northern Felwithe. The Butcherblock labels for Greater
+Faydark, Dagnor's Cauldron and South Kaladim had sampled candidates 30, 20
+and 20 units away; its Ocean of Tears boat/translocator label had none in
+that search. Crushbone's Greater Faydark label landed in a missing BSP
+branch and had a sampled tagged candidate 25 units away. These are nearest
+**on the sampled grid and Z levels only**, and no candidate is an accepted
+graph edge or actionable crossing. The untracked probe manifests under
+`~/.local/share/eql-automation/nav-candidates/` have SHA-256
+`7e7eec1a04a3cbbdc80e336524222b02bf0d4b80ec771f5782318c0bade3c9c9`
+(Butcherblock), `0a0dd76cf3efa43ddbfbbab3a1fc99fa9f1af310218f1e9e72cc2f2ba9435235`
+(Crushbone), and `141cd82a03648d7929a8a9e46a78a21d11cc651e99bdafe14d19a466011898ff`
+(Greater Faydark). No movement, zone change, or client acceptance was run.
+
 ## Copied-client map frame, BSP labels and profile sensitivity — 2026-11-13 05:55 CST
 
 **VERIFIED read-only GFay source:** Alienware's `gfaydark.s3d` and

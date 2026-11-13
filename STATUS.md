@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 05:57 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 06:04 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.23.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.24.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -89,6 +89,14 @@ Updated 2026-11-13 05:57 CST for coordinator task `829a00229b29`.
   distances. Compact and conservative Crushbone samples all produced
   corridors, but conservative start snapped 5.41 units, so this does not
   resolve the historical clearance disconnect or prove movement.
+  A fail-closed copied-WLD BSP point lookup now marks candidate water and
+  zoneline regions at raw WLD XYZ; missing children, cycles, plane hits,
+  depth limits and nonfinite distances return unknown. All four GFay exit
+  labels are outside tagged zoneline regions at their exact coordinates;
+  a bounded sampled grid found tagged candidates 30–45 XY units away.
+  Butcherblock's GFay label has a candidate 30 units away; Crushbone's
+  GFay label has a candidate 25 units away but hits a missing BSP child at
+  the label itself. These hints add no accepted route or transition.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -160,6 +168,11 @@ Updated 2026-11-13 05:57 CST for coordinator task `829a00229b29`.
   three copied-zone region and map-alignment CLI audits passed, with
   manifests and hashes in `FINDINGS.md`. Four bounded Crushbone profile
   bakes and Detour queries ran offline. No real client/account input.
+  `python3 -m pytest -q tests/test_region_audit.py tests/test_map_alignment.py`
+  — 4 passed after BSP lookup hardening; `--probe-zone-labels` CLI passed
+  against all three copied zones. Sample manifests/hashes are in
+  `FINDINGS.md`; `python3 -m compileall -q eql_automation` and
+  `git diff --check` passed.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -175,7 +188,8 @@ Updated 2026-11-13 05:57 CST for coordinator task `829a00229b29`.
   Boundary collision, water region shapes and dynamic-door rules; compare
   more offline clearance variants without promoting edges. Trace the
   historical GFay height mismatch. Inspect dynamic doors, water, zone
-  transitions and actual movement before accepting a route. Crushbone camps
+  transitions and actual movement before accepting a route. The new BSP
+  candidates require observed traversal; Crushbone camps
   still require client evidence; select later camps from observed level and
   safety. Build a
   read-only runtime UI observer on an isolated client view. ASSIST keeps

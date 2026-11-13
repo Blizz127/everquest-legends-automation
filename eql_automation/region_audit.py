@@ -8,6 +8,7 @@ establish a client's movement, collision, or an actionable zone transition.
 from __future__ import annotations
 
 from collections import Counter
+from math import isfinite
 from struct import unpack_from
 
 from .wld_inventory import WLDInventory, XOR_KEY
@@ -60,6 +61,9 @@ def audit_bsp_regions(wld: WLDInventory) -> dict:
         raise ValueError("WLD BSP node count or length is invalid")
     referenced_tree_regions: set[int] = set()
     for index in range(node_count):
+        if not all(isfinite(value) for value in
+                   unpack_from("<4f", body, 4 + index * 28)):
+            raise ValueError("WLD BSP tree plane is nonfinite")
         region_ref, left_ref, right_ref = unpack_from("<3I", body, 4 + index * 28 + 16)
         if region_ref > region_count or left_ref > node_count or right_ref > node_count:
             raise ValueError("WLD BSP tree reference is out of range")
