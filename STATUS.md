@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 03:57 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 04:00 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.11.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.12.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -26,9 +26,13 @@ Updated 2026-11-13 03:57 CST for coordinator task `829a00229b29`.
   mapping is not wired to the game; the October tool already uses those keys.
   Read-only client class strings now identify all 16 classes; an untracked
   spell/skill index holds 1,450 client level 1–50 candidates. The inherited
-  Paladin/Cleric profile now checks each class's own unlock level.
-- Verification: `python3 -m pytest -q tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
-  — 37 passed; CLI queue/switch/drain smoke dropped 2 stale synthetic actions;
+  Paladin/Cleric profile now checks each class's own unlock level. A strict
+  offline assist advisor requires verified character, target, focus, gauges,
+  gems and abilities before proposing a permitted rotation action; it does
+  not send input.
+- Verification: `python3 -m pytest -q tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
+  — 39 passed; CLI
+  queue/switch/drain smoke dropped 2 stale synthetic actions;
   complete retail import found 224 maps, 1,057,974 drawing
   lines, 1,445 labels, 701 zone names and 198 Paladin/Cleric spells;
   all 1–50 Cleric and Paladin profiles class-valid after correction. Active

@@ -1,5 +1,19 @@
 # FINDINGS
 
+## Strict offline assist proposal — 2026-11-13 04:00 CST
+
+**VERIFIED synthetic only:** `AssistAdvisor` wraps the inherited Paladin/Cleric
+rotation without calling its preparation, autoattack or input path. It
+requires an explicit character/class/level, currently verified target,
+focused game with chat closed, health/mana and gem observations at most one
+second old, and an observed available ability before proposing that ability.
+It emits only a typed action with a cancellable ASSIST permit. The proposal
+becomes invalid when mode is OFF, focus/target/observations change, or a
+required ability disappears; cooldowns advance only after a confirmed send.
+The rotation's hardcoded Bash/Smite/Lay Hands choices are now filtered by an
+explicit observed ability set. 39 focused tests passed. **No live observer,
+sender, in-game hotkey, character login or combat run was performed.**
+
 ## Client class levels and rotation eligibility — 2026-11-13 03:56 CST
 
 **VERIFIED read-only client data:** Alienware `<game root>/dbstr_us.txt`

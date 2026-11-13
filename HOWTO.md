@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.11.0
+# EverQuest Legends automation — current build 0.12.0
 
 ## Current availability
 
@@ -122,6 +122,15 @@ separate observed spellbook and vendor facts before proposing an acquisition.
 The old Paladin/Cleric rotation profile now checks each class's own level;
 it will not offer Paladin Yaulp at level 1 when the client requires level 9.
 
+The offline `AssistAdvisor` can propose a Paladin/Cleric combat action using
+the corrected profile. It requires the same character/class/level, a verified
+current target, focused game with chat closed, health and mana readings less
+than one second old, and observed gem IDs matching the profile. It only
+proposes abilities observed as available. The proposal keeps a cancellable
+mode permit; focus, target, observations and permit must be checked again
+before each future key. This is a code-level contract with synthetic tests,
+not a running in-game rotation. There is no live observer or input sender.
+
 | Simulated mode | Actions permitted by the planner |
 | --- | --- |
 | Off | None |
@@ -158,6 +167,7 @@ it writes character INIs in the protected Alienware prefix.
 ```bash
 python3 -m pytest -q tests/test_offline.py
 python3 -m pytest -q tests/test_control.py
+python3 -m pytest -q tests/test_spell_catalog.py tests/test_assist.py
 python3 -m compileall -q eql_automation
 ```
 

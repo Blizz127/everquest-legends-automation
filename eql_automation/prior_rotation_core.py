@@ -253,10 +253,13 @@ class Rotation:
         return Action(role, f"/cast {SLOTS[role]}", spell.busy_seconds,
                       max(cooldown, spell.recast_ms / 1000, spell.busy_seconds))
 
-    def choose(self, now: float, hp: float | None, mana: float | None) -> Action | None:
+    def choose(self, now: float, hp: float | None, mana: float | None,
+               available_abilities: set[str] | None = None) -> Action | None:
         if now < self.busy_until:
             return None
-        if self.smart_heal and hp is not None and 0 < hp <= 0.25 and now >= self.loh_ready_at:
+        if (self.smart_heal and hp is not None and 0 < hp <= 0.25 and
+                now >= self.loh_ready_at and
+                (available_abilities is None or "/alt activate 6001" in available_abilities)):
             return Action("lay_hands", "/alt activate 6001", 0.2, 900)
         if self.smart_heal and hp is not None and 0 < hp <= 0.65:
             heal = self.spell_action("quick_heal") or self.spell_action("heal")
@@ -272,13 +275,15 @@ class Rotation:
                 buff = self.spell_action(role)
                 if buff and (mana is None or mana > 0.35):
                     return buff
-        if self.level >= 9 and (mana is None or mana > 0.35):
+        if (self.level >= 9 and (mana is None or mana > 0.35) and
+                (available_abilities is None or "/doability Smite" in available_abilities)):
             smite = Action("smite_ability", "/doability Smite", 0.2, 15)
             if self.ready(smite, now):
                 return smite
-        bash = Action("bash", "/doability Bash", 0.2, 8)
-        if self.ready(bash, now):
-            return bash
+        if available_abilities is None or "/doability Bash" in available_abilities:
+            bash = Action("bash", "/doability Bash", 0.2, 8)
+            if self.ready(bash, now):
+                return bash
         if self.use_stuns and (mana is None or mana > 0.35):
             stun = self.spell_action("stun", 20)
             if stun and self.ready(stun, now):
