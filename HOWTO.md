@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.28.0
+# EverQuest Legends automation — current build 0.29.0
 
 ## Current availability
 
@@ -173,8 +173,8 @@ to heal. The default UI XML and existing log reader do not provide a unique
 target token or reliable hostile/friendly relation, so **no live assist action
 is ready**.
 `--demo-assist` prints a synthetic proposal and shows that OFF invalidates it.
-`--demo-gauges` uses Pillow to read fabricated red HP and blue mana bars. It
-does not capture the game.
+`--demo-gauges` uses Pillow to read fabricated red HP, blue mana, and orange
+current-level XP bars. It does not capture the game or supply raw XP.
 
 The offline `GaugeReader` accepts only explicitly calibrated inner bars from
 a focused game-window image at the same window size and active layout. Its
@@ -183,6 +183,18 @@ unfocused window, unreadable fill or empty-looking bar yields **unknown**;
 it never treats an unreadable bar as zero HP or mana. Default client XML uses
 red for both player and target HP, so color alone cannot identify the player
 bar. Live crop coordinates and the active skin have not been verified.
+
+The copied default UI defines `PW_ExpGauge` (EQType 4, orange) and a separate
+green AA gauge (EQType 5). The offline `XpGaugeReader` requires an active-skin
+crop calibrated against a **same-frame verified numeric XP label**, then
+checks focus, layout and window size on every read. An empty bar or label/bar
+disagreement yields unknown. No active-skin crop, live label reader or normal
+XP allocation check has been verified, so no real XP fraction is reported.
+`RunState` can track that fraction as current-level progress and percentage
+points per hour only while the confirmed level stays the same and normal XP
+allocation is verified. A level change, fraction drop or uncertain allocation
+resets the rate. This fraction is never fed into raw cumulative XP/hour or
+camp scoring, which still need a separate verified absolute XP source.
 
 `--index-ui-widgets` reads copied default client UI XML and stores a searchable
 widget index outside git. `--query-ui-widgets TEXT` searches names and EQType

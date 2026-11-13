@@ -2,7 +2,7 @@
 
 The caller must provide a focused game-window frame and a verified active
 layout fingerprint. No target, spell, class, level, or chat state is inferred
-from gauge colors. A zero-looking bar is unknown, not zero health/mana.
+from gauge colors. An empty-looking bar is unknown without a verified label.
 """
 from __future__ import annotations
 
@@ -79,3 +79,70 @@ class GaugeReader:
         if hp is None or mana is None:
             return GaugeReading(observed_at, None, None, "player gauge unreadable")
         return GaugeReading(observed_at, hp, mana, None)
+
+
+@dataclass(frozen=True)
+class XpGaugeCalibration:
+    """One active-skin XP crop matched to a same-frame numeric XP label."""
+
+    window_size: tuple[int, int]
+    xp_box: Box
+    layout_fingerprint: str
+
+    @classmethod
+    def from_reference_frame(cls, frame: "Image", *, xp_box: Box,
+                             layout_fingerprint: str,
+                             displayed_percent: float) -> "XpGaugeCalibration":
+        if not isinstance(layout_fingerprint, str) or not layout_fingerprint.strip():
+            raise ValueError("Active layout fingerprint is required")
+        if (not isinstance(xp_box, (tuple, list)) or len(xp_box) != 4 or
+                not all(isinstance(value, int) and not isinstance(value, bool)
+                        for value in xp_box) or
+                not (0 <= xp_box[0] < xp_box[2] <= frame.width and
+                     0 <= xp_box[1] < xp_box[3] <= frame.height)):
+            raise ValueError("XP gauge box is outside the captured window")
+        if (not isinstance(displayed_percent, (int, float)) or
+                isinstance(displayed_percent, bool) or
+                not isfinite(displayed_percent) or
+                not 0 < displayed_percent <= 100):
+            raise ValueError("A verified nonempty XP label percent is required")
+        fraction = bar_fraction(frame.crop(xp_box), "amber")
+        if fraction is None or abs(fraction - displayed_percent / 100) > 0.05:
+            raise ValueError("XP crop does not match the same-frame XP label")
+        return cls(frame.size, tuple(xp_box), layout_fingerprint)
+
+
+@dataclass(frozen=True)
+class XpGaugeReading:
+    observed_at: float
+    level_fraction: float | None
+    reason: str | None
+
+
+class XpGaugeReader:
+    def __init__(self, calibration: XpGaugeCalibration) -> None:
+        self.calibration = calibration
+
+    def read(self, frame: "Image", *, observed_at: float,
+             focused_game_window: bool, layout_fingerprint: str,
+             displayed_percent: float | None = None) -> XpGaugeReading:
+        if (not isinstance(observed_at, (int, float)) or
+                isinstance(observed_at, bool) or not isfinite(observed_at)):
+            raise ValueError("Capture time must be finite")
+        if not focused_game_window:
+            return XpGaugeReading(observed_at, None, "game window not focused")
+        if frame.size != self.calibration.window_size:
+            return XpGaugeReading(observed_at, None, "window size changed")
+        if layout_fingerprint != self.calibration.layout_fingerprint:
+            return XpGaugeReading(observed_at, None, "active UI layout changed")
+        fraction = bar_fraction(frame.crop(self.calibration.xp_box), "amber")
+        if fraction is None:
+            return XpGaugeReading(observed_at, None, "XP gauge empty or unreadable")
+        if displayed_percent is not None:
+            if (not isinstance(displayed_percent, (int, float)) or
+                    isinstance(displayed_percent, bool) or
+                    not isfinite(displayed_percent) or
+                    not 0 <= displayed_percent <= 100 or
+                    abs(fraction - displayed_percent / 100) > 0.05):
+                return XpGaugeReading(observed_at, None, "XP label and gauge disagree")
+        return XpGaugeReading(observed_at, fraction, None)

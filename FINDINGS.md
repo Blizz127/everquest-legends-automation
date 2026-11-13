@@ -1,5 +1,30 @@
 # FINDINGS
 
+## Offline current-level XP observation — 2026-11-13 07:03 CST
+
+**VERIFIED copied client UI:** `uifiles/default/EQUI_PlayerWindow.xml`,
+SHA-256 `2ebd1af9bb330606c4b604c02b78c6f40fab39f316b1bc7edd839c1568125869`,
+defines `PW_ExpGauge` as EQType 4 with orange fill `(220,150,0)` and blue
+line fill, plus `PW_ExpLabel` EQType 26. It separately defines a green
+`PW_AltAdvGauge` EQType 5. Copied `EQUI_InventoryWindow.xml`, SHA-256
+`a1f61d925e4254bcbe35729d8dc2a009a26a9810d7ef702c90ad3a3304bc35f1`,
+also has distinct XP and AA gauges and an adjacent percent label. These are
+static default-skin definitions, not proof of the active skin, runtime label
+format, screen crop, normal XP allocation or cumulative XP.
+
+**VERIFIED synthetic only:** A separate amber `XpGaugeReader` requires a
+nonempty reference crop matching a verified same-frame XP percentage, then
+checks focus, layout, dimensions and optional later label agreement. Empty
+or ambiguous bars remain unknown. `RunState` tracks current-level fraction
+and percentage points per hour only for the same confirmed level, resetting
+on a level change, fraction drop, stale/nonmonotonic sample or unverified normal
+XP allocation. Raw `observe_xp` now requires an integer cumulative value;
+the gauge fraction cannot enter raw XP/hour or absolute camp scoring.
+`python3 -m pytest -q tests/test_screen_observer.py tests/test_offline.py`
+passed 20 focused tests. `--demo-gauges` read fabricated HP 0.5, mana 1.0,
+current-level XP fraction 0.25 and explicitly left raw XP unknown. No live
+client screenshot, account or server was used. The real XP/hour remains n/a.
+
 ## Full copied-BSP centerline intervals — 2026-11-13 06:29 CST
 
 **VERIFIED offline:** `BspPointLookup.trace_segment` now partitions a finite

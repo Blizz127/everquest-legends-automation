@@ -12,7 +12,9 @@ from .navigator import NavigationObservation, WorldNavigator
 from .assist import AssistAdvisor, AssistObservation, TargetRelation
 from .control import ControlPlane
 from .prior_rotation_core import Catalog
-from .screen_observer import GaugeCalibration, GaugeReader
+from .screen_observer import (
+    GaugeCalibration, GaugeReader, XpGaugeCalibration, XpGaugeReader,
+)
 
 
 @dataclass
@@ -139,20 +141,31 @@ def run_gauge_demo() -> dict:
     full = Image.new("RGB", (120, 30), (20, 20, 20))
     full.paste((200, 20, 20), (0, 0, 100, 8))
     full.paste((20, 20, 200), (0, 12, 100, 20))
+    full.paste((220, 150, 0), (0, 22, 50, 30))
     calibration = GaugeCalibration.from_full_frame(
         full, hp_box=(0, 0, 100, 8), mana_box=(0, 12, 100, 20),
         layout_fingerprint="synthetic-layout")
     reader = GaugeReader(calibration)
+    xp_reader = XpGaugeReader(XpGaugeCalibration.from_reference_frame(
+        full, xp_box=(0, 22, 100, 30), layout_fingerprint="synthetic-layout",
+        displayed_percent=50))
     half = full.copy()
     half.paste((20, 20, 20), (50, 0, 100, 8))
+    half.paste((20, 20, 20), (25, 22, 50, 30))
     reading = reader.read(half, observed_at=10.0,
                           focused_game_window=True,
                           layout_fingerprint="synthetic-layout")
     unfocused = reader.read(half, observed_at=10.1,
                             focused_game_window=False,
                             layout_fingerprint="synthetic-layout")
+    xp = xp_reader.read(half, observed_at=10.0,
+                        focused_game_window=True,
+                        layout_fingerprint="synthetic-layout",
+                        displayed_percent=25)
     return {"simulation_only": True, "no_game_input": True,
             "hp": reading.hp, "mana": reading.mana,
+            "current_level_xp_fraction": xp.level_fraction,
+            "raw_xp_unknown": True,
             "unfocused_values_unknown": not unfocused.complete}
 
 

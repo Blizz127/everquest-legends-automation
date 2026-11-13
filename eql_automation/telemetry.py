@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections import deque
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from math import isfinite
 from pathlib import Path
 import re
 import time
@@ -30,10 +31,17 @@ class RunState:
     blocker: str = "Private server endpoint/client configuration not verified"
     next_step: str = "Continue offline validation; verify private target before client input"
     xp_samples: deque[tuple[float, int]] = field(default_factory=deque)
+    level_progress_level: int | None = None
+    level_progress_fraction: float | None = None
+    level_progress_samples: deque[tuple[float, float]] = field(default_factory=deque)
 
     def observe_log(self, line: str) -> None:
         level = level_from_message(line)
         if level is not None:
+            if level != self.level:
+                self.level_progress_level = None
+                self.level_progress_fraction = None
+                self.level_progress_samples.clear()
             self.level = level
         body = message_body(line)
         if DEATH.match(body):
@@ -44,8 +52,9 @@ class RunState:
     def observe_xp(self, total_xp: int, now: float | None = None) -> None:
         """Accept a verified cumulative XP value supplied by an adapter."""
 
-        if total_xp < 0:
-            raise ValueError("XP must be nonnegative")
+        if (not isinstance(total_xp, int) or isinstance(total_xp, bool) or
+                total_xp < 0):
+            raise ValueError("Cumulative raw XP must be a nonnegative integer")
         now = time.monotonic() if now is None else now
         if self.xp is not None and total_xp < self.xp:
             self.xp_samples.clear()  # A reset or changed character needs a new rate window.
@@ -62,6 +71,52 @@ class RunState:
         end_time, end_xp = self.xp_samples[-1]
         elapsed = end_time - start_time
         return max(0.0, (end_xp - start_xp) * 3600 / elapsed) if elapsed > 0 else None
+
+    def observe_level_progress(self, *, level: int, fraction: float | None,
+                               normal_xp_allocation_verified: bool,
+                               now: float | None = None) -> bool:
+        """Track percent of this level; never substitute it for cumulative XP."""
+        if not isinstance(level, int) or isinstance(level, bool) or not 1 <= level <= 50:
+            raise ValueError("Confirmed level must be 1–50")
+        if fraction is not None and (
+                not isinstance(fraction, (int, float)) or isinstance(fraction, bool) or
+                not isfinite(fraction) or not 0 <= fraction <= 1):
+            raise ValueError("Level progress fraction must be between 0 and 1")
+        now = time.monotonic() if now is None else now
+        if not isinstance(now, (int, float)) or isinstance(now, bool) or not isfinite(now):
+            raise ValueError("Progress sample time must be finite")
+        if (self.level != level or fraction is None or
+                normal_xp_allocation_verified is not True):
+            self.level_progress_level = None
+            self.level_progress_fraction = None
+            self.level_progress_samples.clear()
+            return False
+        if self.level_progress_samples:
+            previous_time, previous_fraction = self.level_progress_samples[-1]
+            if now <= previous_time:
+                self.level_progress_level = None
+                self.level_progress_fraction = None
+                self.level_progress_samples.clear()
+                return False
+            if fraction < previous_fraction:
+                self.level_progress_samples.clear()
+        self.level_progress_level = level
+        self.level_progress_fraction = fraction
+        self.level_progress_samples.append((now, fraction))
+        while (len(self.level_progress_samples) > 1 and
+               now - self.level_progress_samples[0][0] > 3600):
+            self.level_progress_samples.popleft()
+        return True
+
+    @property
+    def level_progress_percent_per_hour(self) -> float | None:
+        if self.level_progress_level != self.level or len(self.level_progress_samples) < 2:
+            return None
+        start_time, start_fraction = self.level_progress_samples[0]
+        end_time, end_fraction = self.level_progress_samples[-1]
+        elapsed = end_time - start_time
+        return (max(0.0, end_fraction - start_fraction) * 360000 / elapsed
+                if elapsed > 0 else None)
 
 class StatusWriter:
     def __init__(self, path: Path, interval: float = 3600.0) -> None:
@@ -85,11 +140,16 @@ class StatusWriter:
 def render_status(state: RunState) -> str:
     updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     rate = state.xp_per_hour
+    level_rate = state.level_progress_percent_per_hour
+    level_progress = (state.level_progress_fraction
+                      if state.level_progress_level == state.level else None)
     return (
         f"# STATUS\n\nUpdated {updated}.\n\n"
         f"- Level: {state.level if state.level is not None else 'n/a'}\n"
         f"- XP: {state.xp if state.xp is not None else 'n/a'}\n"
         f"- XP/hour: {f'{rate:.1f}' if rate is not None else 'n/a'}\n"
+        f"- Current-level XP progress: {f'{level_progress * 100:.1f}%' if level_progress is not None else 'n/a'}\n"
+        f"- Current-level progress/hour: {f'{level_rate:.1f} percentage points/hour' if level_rate is not None else 'n/a'}\n"
         f"- Deaths: {state.deaths}\n"
         f"- Camp: {state.camp or 'none'}\n"
         f"- Zone: {state.zone or 'unknown'}\n"

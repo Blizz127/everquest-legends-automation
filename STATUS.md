@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 06:30 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 07:04 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
-- Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.28.0. Mode boundary, prior rotation planner reuse,
+- Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: 0. Camp: none.
+- Build: offline prototype 0.29.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -125,6 +125,12 @@ Updated 2026-11-13 06:30 CST for coordinator task `829a00229b29`.
   Bounded static target-command searches found no usable unique target ID;
   this is not proof none exists. REA deep providers are unavailable here
   because Java/JDK 21 and other engines are absent.
+  The copied default UI identifies an orange normal-XP gauge and separate
+  green AA gauge. A separate offline reader now requires same-frame numeric
+  label calibration and rejects uncertain crops. A current-level progress
+  tracker can report percentage points/hour within one confirmed level;
+  raw XP/hour remains n/a without an absolute cumulative XP source. Neither
+  live crop nor runtime label/normal-XP allocation has been verified.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -216,6 +222,9 @@ Updated 2026-11-13 06:30 CST for coordinator task `829a00229b29`.
   Two added exact-segment checks in `tests/test_region_audit.py` passed;
   both copied-zone span audits ran offline. The synthetic status text now
   names the missing private target rather than suggesting a live Daybreak test.
+  `python3 -m pytest -q tests/test_screen_observer.py tests/test_offline.py`
+  — 20 passed; `--demo-gauges` returned synthetic HP 0.5, mana 1.0,
+  current-level XP fraction 0.25, raw XP unknown. Compile and diff checks passed.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -233,7 +242,8 @@ Updated 2026-11-13 06:30 CST for coordinator task `829a00229b29`.
   historical GFay height mismatch. Inspect dynamic doors, water, zone
   transitions and actual movement before accepting a route. Validate a unique
   target-selection epoch, target relationship and type-51 healing behavior
-  on the intended private client before wiring assist input. The new BSP
+  on the intended private client before wiring assist input. The XP reader
+  needs a real active-skin crop and same-frame label confirmation. BSP
   candidates require observed traversal; Crushbone camps
   still require client evidence; select later camps from observed level and
   safety. Build a

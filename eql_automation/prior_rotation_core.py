@@ -308,13 +308,13 @@ class Rotation:
 
 
 def bar_fraction(image, channel: str) -> float | None:
-    """Estimate a calibrated, flat red/blue gauge; reject noisy/non-gauge images.
+    """Estimate a calibrated, flat red/blue/amber gauge; reject unrelated pixels.
 
     No reading is preferable to guessing HP from an unrelated window/skin.
     The calibration UI requires the inner gauge at full health/mana.
     """
-    if channel not in {"red", "blue"}:
-        raise ValueError("Gauge channel must be red or blue")
+    if channel not in {"red", "blue", "amber"}:
+        raise ValueError("Gauge channel must be red, blue or amber")
     pixels = image.convert("RGB")
     width, height = pixels.size
     if width < 20 or height < 2:
@@ -325,9 +325,14 @@ def bar_fraction(image, channel: str) -> float | None:
         hits = 0
         for y in range(height):
             red, green, blue = image_pixels[x, y]
-            dominant = red if channel == "red" else blue
-            other = max(green, blue if channel == "red" else red)
-            if dominant >= 80 and dominant > other * 1.35 + 8:
+            if channel == "amber":
+                colored = (red >= 100 and green >= 50 and
+                           red > green * 1.15 and green > blue * 1.4)
+            else:
+                dominant = red if channel == "red" else blue
+                other = max(green, blue if channel == "red" else red)
+                colored = dominant >= 80 and dominant > other * 1.35 + 8
+            if colored:
                 hits += 1
         columns.append(hits / height >= 0.20)
     hits = [index for index, colored in enumerate(columns) if colored]

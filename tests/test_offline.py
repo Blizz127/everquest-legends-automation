@@ -8,7 +8,7 @@ from eql_automation.nav import NavGraph, Point, ProgressMonitor, RouteNotFound
 from eql_automation.sim import run_demo, synthetic_graph
 from eql_automation.spells import SpellPlanner, SpellSpec
 from eql_automation.campaign import Camp, CampaignPlanner, WorldSnapshot
-from eql_automation.telemetry import ClientLogReader, RunState, StatusWriter
+from eql_automation.telemetry import ClientLogReader, RunState, StatusWriter, render_status
 from eql_automation.world_nav import WorldNav, ZoneTransition
 from eql_automation.synthetic_run import SyntheticEnvironment, run_synthetic_1_50
 
@@ -104,6 +104,33 @@ def test_log_created_after_reader_start_keeps_first_event(tmp_path: Path):
     log.write_text("[now] You have gained a level! Welcome to level 2!\n")
     assert len(reader.poll()) == 1
     assert state.level == 2
+
+
+def test_current_level_progress_is_not_raw_xp_and_resets_on_level_or_drop():
+    state = RunState(level=5)
+    assert state.observe_level_progress(level=5, fraction=0.20,
+                                        normal_xp_allocation_verified=True, now=0)
+    assert state.observe_level_progress(level=5, fraction=0.35,
+                                        normal_xp_allocation_verified=True, now=1800)
+    assert state.level_progress_percent_per_hour == pytest.approx(30.0)
+    assert state.xp is None and state.xp_per_hour is None
+    with pytest.raises(ValueError, match="Cumulative raw XP"):
+        state.observe_xp(0.35, now=1800)
+    assert "Current-level progress/hour: 30.0 percentage points/hour" in render_status(state)
+    assert state.observe_level_progress(level=5, fraction=0.10,
+                                        normal_xp_allocation_verified=True, now=1900)
+    assert state.level_progress_percent_per_hour is None
+    state.observe_log("[now] You have gained a level! Welcome to level 6!")
+    assert state.level == 6 and state.level_progress_fraction is None
+    assert not state.observe_level_progress(level=5, fraction=0.5,
+                                            normal_xp_allocation_verified=True, now=2000)
+    assert not state.observe_level_progress(level=6, fraction=0.5,
+                                            normal_xp_allocation_verified=False, now=2100)
+    assert state.observe_level_progress(level=6, fraction=0.4,
+                                        normal_xp_allocation_verified=True, now=2200)
+    state.level = 7  # A different trusted level adapter may update directly.
+    assert state.level_progress_percent_per_hour is None
+    assert "Current-level XP progress: n/a" in render_status(state)
 
 
 def test_demo_is_offline_and_exercises_prior_rotation():
