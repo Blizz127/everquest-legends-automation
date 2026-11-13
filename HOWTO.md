@@ -1,9 +1,9 @@
-# EverQuest Legends automation — current build 0.39.1
+# EverQuest Legends automation — project 0.40.0 / owner preview 0.39.2
 
 ## Current availability
 
 This project's full-auto bot remains an **offline simulator and planning
-library**. An isolated, owner-run rotation preview 0.39.1 is staged on the
+library**. An isolated, owner-run rotation preview 0.39.2 is staged on the
 Alienware outside the game install. Blizz runs the game and helper himself;
 the lead has not logged in or sent game input. The installed client points to
 Daybreak's live service. Its published
@@ -16,14 +16,14 @@ is a private server, but its endpoint has not been found; the installed retail
 client still points to Daybreak. Strict live ASSIST and FULL AUTO are not yet
 validated. The owner chose to test rotation himself on live.
 
-## Owner-run rotation test on Alienware today: preview 0.39.1
+## Owner-run rotation test on Alienware today: preview 0.39.2
 
 Close any already running Solo Assist window. Blizz starts the game through
 Lutris and logs in himself. In an Alienware terminal, start the isolated
 preview:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.1
+cd ~/.local/share/eql-automation/owner-assist/0.39.2
 ./launch.sh
 ```
 
@@ -59,6 +59,29 @@ The 0.37.0 attack-free wrapper was staged outside the game install, but its
 source hash guard **refused** the changed November helper. It was moved to
 `~/.local/share/eql-automation/owner-assist/0.37.0-source-mismatch` and is
 not a runnable owner test. The active legacy helper source was not changed.
+
+## Owner-run G0 movement-stop check (optional after assist test)
+
+Preview 0.39.2 also allows the **Check movement stop** button in measurement
+mode. This is the first supervised movement gate, not a route or F11 grind.
+Blizz first stops native melee with the game's own control, stands on open,
+flat, dry ground with full HP and no target, and enables `/log on`. Close any
+other helper, then launch:
+
+```bash
+cd ~/.local/share/eql-automation/owner-assist/0.39.2
+EQL_ROTATION_TRACE="$HOME/eql-g0-trace.jsonl" ./launch.sh --measure-navigation
+```
+
+Click **Check movement stop** in the helper and focus EverQuest within four
+seconds. The source requests one 0.15-second forward pulse, then checks four
+`/location` fixes; it sends no combat or target command in this preview.
+**F11** cancels the check; watch the character and use the game's own controls
+if movement persists. G0 passes only when the helper reports **observed stop
+after release**, the trace contains `ap_stop_check_result` with
+`outcome=observed_stop`, and Blizz sees the character stop. A dry-run or log
+line alone does not pass G0. The 2026-11-06 continued-walking report remains
+unresolved until this check passes. F11 travel/grinding remains disabled.
 
 ## Start the offline prototype
 
@@ -476,7 +499,7 @@ polygons and a 24-polygon offline Detour query path. Its data stays under
 `~/.local/share/eql-automation/nav-candidates/`. No query is an accepted bot
 route or proof of game movement; the active bot still has no verified nav edge.
 
-The owner-run 0.39.1 preview above is built from a pinned copy of the November
+The owner-run 0.39.2 preview above is built from a pinned copy of the November
 helper plus the source patch in `patches/`. Its original working tree at
 `~/Projects/everquest-legends-rotation` was not edited. Do not run the old
 tool's installer: it writes character INIs in the protected Alienware prefix.
@@ -499,7 +522,7 @@ python3 -m compileall -q eql_automation
 The staged owner preview also supports a no-input Alienware check:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.1
+cd ~/.local/share/eql-automation/owner-assist/0.39.2
 /usr/bin/python3 -B owner_nov12_smoke.py
 ./launch.sh --dry-run --level 7
 ```

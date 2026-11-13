@@ -14,6 +14,7 @@ class FakeNovemberEngine:
         self.native_attack_off_pending = True
         self.attack_started = True
         self.command_recovery_pending = False
+        self.measurement_only = False
 
     def send(self, command):
         self.calls.append(("send", command))
@@ -65,12 +66,27 @@ def test_movement_route_and_attack_off_jobs_never_reach_base():
                 "nav_stop_check", "record_point", "route_delete", "attack_off"):
         engine.handle_job(job, 1)
     assert engine.calls == []
-    assert "F11 movement" in engine.status
+    assert "F11 travel" in engine.status
     engine.handle_job("arm", 1)
     assert engine.calls == [("job", "arm", 1)]
     assert engine.flush_native_attack_off()
     assert not engine.native_attack_off_pending
     assert not engine.attack_started
+
+
+def test_measurement_mode_only_allows_g0_posture_location_and_stop_check():
+    engine = make_owner_nov12_engine(FakeNovemberEngine)()
+    engine.measurement_only = True
+    engine.send("/stand")
+    engine.send("/location")
+    with pytest.raises(ValueError):
+        engine.send("/cast 3")
+    engine.handle_job("nav_stop_check_later", 1)
+    engine.handle_job("autopilot_start", 1)
+    assert engine.calls == [
+        ("send", "/stand"), ("send", "/location"),
+        ("job", "nav_stop_check_later", 1),
+    ]
 
 
 def test_stop_indicator_and_uncertain_draft_fail_closed():

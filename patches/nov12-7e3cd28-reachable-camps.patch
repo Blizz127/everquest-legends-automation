@@ -1,0 +1,165 @@
+--- a/leveling_guide.py
++++ b/leveling_guide.py
+@@ -12,6 +12,7 @@
+ import json
+ from pathlib import Path
+ import re
++from typing import Callable
+ 
+ from rotation_core import message_body, valid_target_name
+ 
+@@ -157,7 +158,8 @@
+ 
+     def select_camp(self, level: int, *, zone: str | None = None, current: Camp | None = None,
+                     indoor: bool = False, override: str = "",
+-                    extra_targets: dict[str, list[str]] | None = None) -> tuple[Camp | None, str]:
++                    extra_targets: dict[str, list[str]] | None = None,
++                    eligible: Callable[[Camp], bool] | None = None) -> tuple[Camp | None, str]:
+         """The camp the autopilot should use now, and why (or why none)."""
+         extra_targets = extra_targets or {}
+         if override:
+@@ -168,14 +170,19 @@
+                 return None, f"{camp.name}: {camp.manual_reason}"
+             if not camp.hunt_names(extra_targets.get(camp.id, ())):
+                 return None, f"{camp.name} has no known target names; add the names you see there."
++            if eligible is not None and eligible(camp) is not True:
++                return None, f"{camp.name} has no verified route from here."
+             return camp, f"Owner-selected camp: {camp.name}"
+         allowed = {"good", "poor"} if indoor else {"good"}
+-        pool = [camp for camp in self.camps
+-                if camp.automation in allowed and camp.min_level <= level <= camp.max_level
+-                and camp.hunt_names(extra_targets.get(camp.id, ()))]
++        candidates = [camp for camp in self.camps
++                      if camp.automation in allowed and camp.min_level <= level <= camp.max_level
++                      and camp.hunt_names(extra_targets.get(camp.id, ()))]
++        pool = [camp for camp in candidates if eligible is None or eligible(camp) is True]
+         if current is not None and current in pool:
+             return current, f"Staying at {current.name} until level {current.max_level + 1}."
+         if not pool:
++            if candidates:
++                return None, f"Level {level}: no camp has a verified route from here."
+             return None, self.no_camp_reason(level, indoor, extra_targets)
+ 
+         def rank(camp):
+--- a/autopilot.py
++++ b/autopilot.py
+@@ -806,9 +806,9 @@
+             return
+         if (yield from self.errands()):
+             return
+-        camp = self.choose_camp()
+         if self.loc is None:
+             yield from self.fix()
++        camp = self.choose_camp()
+         anchor = yield from self.resolve_anchor(camp)
+         if self.settled != camp.id:
+             # Walk all the way to the camp first: the leash only applies once there.
+@@ -833,12 +833,44 @@
+         yield AwaitEvent(frozenset({"incoming"}), self.seq, 2.0)
+ 
+     def choose_camp(self):
+-        camp, reason = self.guide.select_camp(
+-            self.view.level, zone=self.view.zone, current=self.camp,
++        def eligible(camp):
++            if self.loc is None or self.view.zone is None:
++                return False
++            if (self.adopt_allowed and camp.zone == self.view.zone and
++                    camp.loc is not None and
++                    distance2d(self.loc, Loc(*camp.loc)) <= ADOPT_RADIUS):
++                # The owner is already standing at this camp. This preserves
++                # the existing local-camp start without inventing a route.
++                return True
++            if plan_route(self.routes, self.view.zone, self.loc,
++                          camp.zone, f"camp:{camp.id}") is not None:
++                return True  # An owner-recorded path can remain eligible.
++            if self.world is None or camp.loc is None:
++                return False
++            return self.world.camp_reachable(
++                camp.zone, camp.loc, from_zone=self.view.zone,
++                from_loc=self.loc)
++
++        options = dict(
++            zone=self.view.zone, current=self.camp,
+             indoor=bool(setting(self.settings, "indoor", False)),
+             override=str(setting(self.settings, "camp", "")),
+             extra_targets=setting(self.settings, "targets", {}) or {})
++        camp, reason = self.guide.select_camp(
++            self.view.level, **options, eligible=eligible)
+         if camp is None:
++            if "no camp has a verified route" in reason:
++                proposed, _ = self.guide.select_camp(self.view.level, **options)
++                if proposed is not None:
++                    if (self.world is not None and proposed.loc is not None and
++                            self.world.has_mesh(proposed.zone) and
++                            not self.world.camp_reachable(
++                                proposed.zone, proposed.loc,
++                                from_zone=self.view.zone,
++                                from_loc=self.loc)):
++                        raise Halt(f"{proposed.name} is on disconnected mesh ground; no verified camp route.")
++                    raise Halt(missing_route_reason(
++                        self.guide, self.routes, self.view.zone, proposed))
+             raise Halt(reason)
+         if camp != self.camp:
+             self.camp = camp
+--- a/eqnav/world.py
++++ b/eqnav/world.py
+@@ -353,6 +353,59 @@
+         found = snap_camp(mesh, (x, y, z), travel_component(mesh, self.store.zone_lines(zone)), radius=radius)
+         return None if found is None else self._out(found)
+ 
++    def camp_reachable(self, zone, loc, *, from_zone, from_loc=None) -> bool:
++        """Require a camp and its origin/entrance on the same dry component.
++
++        This is copied-mesh evidence only. Doors, trigger volumes and actual
++        movement still need a supervised client test before travel is enabled.
++        """
++        mesh = self._mesh(zone)
++        route = self.route(from_zone, zone)
++        if mesh is None or loc is None or route is None:
++            return False
++        snapped = self.snap(zone, loc)
++        if snapped is None:
++            return False
++        target = mesh.locate(self._in(snapped), radius=8.0)
++        if target is None:
++            return False
++        dry = dry_components(mesh)
++        component = int(dry[target[0]])
++        if component < 0:
++            return False
++        if from_zone == zone and from_loc is not None:
++            origin = mesh.locate(self._in(from_loc), radius=15.0)
++            return origin is not None and int(dry[origin[0]]) == component
++        if route:
++            if from_loc is None:
++                return False
++            start_mesh = self._mesh(from_zone)
++            if start_mesh is None:
++                return False
++            origin = start_mesh.locate(self._in(from_loc), radius=15.0)
++            if origin is None:
++                return False
++            start_component = int(dry_components(start_mesh)[origin[0]])
++            if start_component not in line_approaches(start_mesh, route[0]):
++                return False
++            for incoming, outgoing in zip(route, route[1:]):
++                middle_mesh = self._mesh(outgoing.zone)
++                if middle_mesh is None:
++                    return False
++                incoming_components = set()
++                for entry in self.store.zone_lines(outgoing.zone):
++                    if entry.to_zone == incoming.zone:
++                        incoming_components.update(line_approaches(middle_mesh, entry))
++                if not incoming_components.intersection(
++                        line_approaches(middle_mesh, outgoing)):
++                    return False
++            # Require dry ground beside a reciprocal entrance to this zone.
++            return any(
++                component in line_approaches(mesh, entry)
++                for entry in self.store.zone_lines(zone)
++                if entry.to_zone == route[-1].zone)
++        return component == travel_component(mesh, self.store.zone_lines(zone))
++
+     def route(self, start, goal):
+         """Zone lines to cross from start to goal, [] when already there, None when unknown."""
+         if not start or not goal:

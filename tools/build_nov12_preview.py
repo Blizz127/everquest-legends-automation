@@ -69,12 +69,12 @@ def build(source: Path, output: Path) -> None:
         shutil.copy2(PROJECT / "tools/owner_nov12_launch.sh", work / "launch.sh")
         (work / "launch.sh").chmod(0o755)
         (work / "BUILD_INFO.json").write_text(json.dumps({
-            "version": "0.39.1",
+            "version": "0.39.2",
             "base_revision": "7e3cd28d24770299314fd9775cef7b460a94ee3d",
             "base_hashes": BASE_HASHES,
             "preview_hashes": PREVIEW_HASHES,
             "patch_sha256": sha256(patch),
-            "mode": "owner-run supervised attack-free assist; F11/F12 disabled",
+            "mode": "owner-run attack-free assist; G0 stop check in measurement mode; F11 travel/F12 disabled",
             "real_client_acceptance": False,
         }, indent=2) + "\n")
         work.rename(output)

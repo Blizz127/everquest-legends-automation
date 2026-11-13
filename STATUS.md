@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 09:43 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 09:55 CST for coordinator task `829a00229b29`.
 
 - Real-client level: 7 for Legira in Greater Faydark, **owner-reported**; no lead-controlled login or automated level gain verified.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.39.1 plus an isolated owner-run assist preview staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.40.0 plus an isolated owner-run assist/G0 preview 0.39.2 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -201,6 +201,15 @@ Updated 2026-11-13 09:43 CST for coordinator task `829a00229b29`.
   store; an existing 37-zone store has an offline GFay→Crushbone→Slaver
   corridor on the relevant dry components. Live movement/stop/zone gates
   are still unrun; the level-9 Trainer Hill primary camp is disconnected.
+  The 0.39.2 preview adds a measurement-only G0 stop check: only `/stand`,
+  `/location` and the existing bounded forward pulse are available there;
+  F11 travel and F12 remain disabled. Its offscreen GUI and no-device smoke
+  passed, but no owner G0 result has been observed. A separate offline
+  November source patch now filters camps by dry-mesh reachability and
+  recorded-route eligibility, then preserves a clear halt when no reachable
+  camp exists. A copied-mesh audit from Legira's last position selects
+  Slaver Caves for levels 7–8, GFay Orc Camps for 9–10 and halts at 11;
+  this is not real XP or live route acceptance.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -349,11 +358,16 @@ Updated 2026-11-13 09:43 CST for coordinator task `829a00229b29`.
   `./launch.sh --dry-run --level 7` exited 0. The legacy 0.39.0 working
   preview's packaged test import was incomplete and its staging directory
   was renamed `0.39.0-smoke-incomplete`; it was never handed to the owner.
-- Current blocker: 0.39.1 owner-supervised F8/F9 HP and attack-free rotation
+  The 0.39.2 preview passed five adapter/guard checks, no-device smoke,
+  level-7 dry-run and an offscreen measurement GUI smoke on Alienware.
+  The isolated reachable-camp patch passed 19 focused camp/travel checks;
+  a copied-mesh query accepted GFay→Slaver and Slaver→GFay Orc candidates,
+  rejected Slaver→Trainer Hill, and stopped the offline sequence at level 11.
+- Current blocker: 0.39.2 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee
   stop, G0/G2 movement-stop/follower acceptance, runtime mesh-store binding,
-  and a level-aware reachable-camp policy; real-client acceptance also lacks the intended
+  integration of the offline reachable-camp patch and a level-11 camp; real-client acceptance also lacks the intended
   private endpoint/client configuration. Owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -364,10 +378,10 @@ Updated 2026-11-13 09:43 CST for coordinator task `829a00229b29`.
   Butcherblock navmesh/recipe is absent from the approved retained store, and
   the reported GFay vertical mismatch on its historical route and
   conservative clearance failure remain unresolved. No actual client
-  acceptance is ready. The 0.39.1 assist preview is privately staged on
+  acceptance is ready. The 0.39.2 assist/G0 preview is privately staged on
   Alienware outside the game install; full auto has no release channel yet.
-- Next step: collect the owner's 0.39.1 HP/F8/F9 observations without touching
-  Legira. Build an observed autoattack state/stop acknowledgment gate for
+- Next step: collect the owner's 0.39.2 HP/F8/F9 observations and supervised
+  G0 movement-stop result without touching Legira. Build an observed autoattack state/stop acknowledgment gate for
   full auto, then bind the existing mesh store in a separate owner-run route
   trial after G0/G2 checks. Add reachable-camp fallback before level 9.
   Validate a unique selection signal and chat-open/draft signal on an isolated
@@ -390,5 +404,5 @@ Updated 2026-11-13 09:43 CST for coordinator task `829a00229b29`.
   A spell-gem click path would also need a private-client screenshot, active
   hitbox calibration, unique target selection and bounded native mouse sender.
   ASSIST keeps
-  movement manual. The new 0.39.1 preview's live HP and stop behavior remain
+  movement manual. The new 0.39.2 preview's live HP and stop behavior remain
   unverified.

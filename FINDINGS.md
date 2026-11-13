@@ -1,5 +1,38 @@
 # FINDINGS
 
+## G0 owner preview and level-aware mesh camp filter — 2026-11-13 09:56 CST
+
+**VERIFIED no-input owner preview 0.39.2:** A versioned copy is staged at
+`~/.local/share/eql-automation/owner-assist/0.39.2` on Alienware. Its
+attack-free adapter now permits only `/stand` and `/location` in measurement
+mode and only the existing **Check movement stop** job; F11 travel/grinding,
+F12 recording, targeting and other movement jobs remain blocked. F9 does not
+send the helper's unconfirmed `/attack off`. The pinned source guard, thin HP
+band and F11 block passed `owner_nov12_smoke.py`; `./launch.sh --dry-run
+--level 7` passed; an offscreen measurement-mode GUI smoke rendered an
+85,715-byte image without opening input devices. Five focused adapter/guard
+tests passed on devbox. The private archive
+`~/.local/share/eql-automation/releases/eql-owner-assist-preview-0.39.2.tar.gz`
+has SHA-256
+`b4eccbb786dd55fdc891338e89496ab04b13c543407363d6dd134b5c84a2552f`.
+Blizz has not yet reported a 0.39.2 live test. G0 is still **NOT_RUN**:
+the observed stop trace and Blizz's visual confirmation are both required.
+
+**VERIFIED offline camp filter:** A separate pinned-source patch under
+`patches/nov12-7e3cd28-reachable-camps.patch` adds an eligibility predicate
+to the November guide and a copied-mesh dry-component/zone-entry check to
+the November `World`. The autopilot now obtains a position fix before camp
+choice, keeps an owner-recorded path or a camp already occupied by the owner,
+and rejects disconnected mesh camps. The patch applied cleanly to the
+0.39.1 runtime copy; 19 focused camp/travel checks passed in an isolated
+Alienware source copy. Against the original helper's hashed mesh store, a
+read-only query returned Slaver Caves reachable from Legira's last GFay fix,
+Trainer Hill disconnected from Slaver, and GFay Orc Camps reachable from
+Slaver. A synthetic guide/mesh progression chooses Slaver at levels 7–8,
+GFay Orc Camps at 9–10, then stops at 11 with **no verified camp route**.
+This patch is not in the owner-run preview; G0/G2 and a level-11 camp remain
+open before F11 can be offered. No game movement was performed by the lead.
+
 ## Owner live test and isolated assist preview — 2026-11-13 09:43 CST
 
 **OBSERVED owner test, read-only trace review:** Blizz ran the November Solo

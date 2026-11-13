@@ -1,0 +1,63 @@
+--- a/test_leveling_guide.py
++++ b/test_leveling_guide.py
+@@ -66,6 +66,21 @@
+     current = guide.camp("crushbone-trainer-hill")
+     assert guide.select_camp(13, zone="crushbone", current=current)[0] is current
+     assert guide.select_camp(14, zone="crushbone", current=current)[0].id == "unrest-yard"
++
++
++def test_unreachable_primary_camp_falls_back_without_retaining_or_forcing_it(guide):
++    reachable = lambda camp: camp.id != "crushbone-trainer-hill"
++    camp, reason = guide.select_camp(9, zone="crushbone", eligible=reachable)
++    assert camp.id == "gfaydark-orc-camps", reason
++    previous = guide.camp("crushbone-trainer-hill")
++    camp, reason = guide.select_camp(9, zone="crushbone", current=previous,
++                                     eligible=reachable)
++    assert camp.id == "gfaydark-orc-camps", reason
++    camp, reason = guide.select_camp(9, zone="crushbone",
++                                     override="crushbone-trainer-hill", eligible=reachable)
++    assert camp is None and "no verified route" in reason
++    camp, reason = guide.select_camp(9, zone="crushbone", eligible=lambda camp: False)
++    assert camp is None and "no camp has a verified route" in reason
+ 
+ 
+ def test_indoor_camps_need_the_owner_opt_in(guide):
+--- a/test_autopilot_mesh.py
++++ b/test_autopilot_mesh.py
+@@ -5,11 +5,25 @@
+ 
+ import pytest
+ 
+-from ap_core import Hold, Target, Travel, TravelResult
++from ap_core import Hold, Target, Travel, TravelResult, View
++from autopilot import Autopilot, Halt
+ from navigation import Loc, distance2d
+ from test_autopilot import CAL, GUIDE, Mob, World, fight_lines, settings
+ 
+ CAMP = GUIDE.camp("butcher-kaladim-yards")
++
++
++def test_level_nine_skips_disconnected_trainer_and_level_eleven_halts():
++    mesh = FakeWorld(zones=("crushbone", "gfaydark"))
++    mesh.camp_reachable = lambda zone, loc, **kwargs: zone == "gfaydark"
++    pilot = Autopilot(GUIDE, [], CAL, settings(), world=mesh)
++    pilot.loc = Loc(74, 426, -14)
++    pilot.adopt_allowed = False
++    pilot.view = View(level=9, zone="crushbone")
++    assert pilot.choose_camp().id == "gfaydark-orc-camps"
++    pilot.view = View(level=11, zone="crushbone")
++    with pytest.raises(Halt, match="disconnected mesh ground"):
++        pilot.choose_camp()
+ 
+ 
+ @dataclass(frozen=True)
+@@ -47,6 +61,9 @@
+             path.append(step)
+             zone = step.to_zone
+         return path
++
++    def camp_reachable(self, zone, loc, *, from_zone, from_loc=None):
++        return zone in self.zones and self.route(from_zone, zone) is not None
+ 
+     def crossing(self, zone, line, here=None):
+         return (line.point[0], line.point[1], line.point[2])

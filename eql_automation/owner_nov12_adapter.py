@@ -33,9 +33,14 @@ def make_owner_nov12_engine(base_engine: type) -> type:
                 return None  # The owner alone controls native melee.
             if not isinstance(command, str):
                 raise ValueError("Rotation command must be text")
-            permitted = (command == "/consider" or
-                         bool(_PREP.fullmatch(command)) and self.preparing or
-                         bool(_ROTATION.fullmatch(command)))
+            if getattr(self, "measurement_only", False):
+                # G0 uses only posture and position reads plus one bounded
+                # forward key pulse in the inherited stop-check routine.
+                permitted = command in {"/stand", "/location"}
+            else:
+                permitted = (command == "/consider" or
+                             bool(_PREP.fullmatch(command)) and self.preparing or
+                             bool(_ROTATION.fullmatch(command)))
             if not permitted:
                 raise ValueError("Command is outside this owner's rotation scope")
             if self.sender is not None and self.sender.unfinished:
@@ -50,8 +55,11 @@ def make_owner_nov12_engine(base_engine: type) -> type:
             return True
 
         def handle_job(self, name, value):
+            if (name in {"nav_stop_check", "nav_stop_check_later"} and
+                    getattr(self, "measurement_only", False)):
+                return super().handle_job(name, value)
             if name in _ROUTE_JOBS or name in _AUTOPILOT_JOBS:
-                self.emit("Rotation only · F11 movement and F12 routes disabled in this preview")
+                self.emit("F11 travel and F12 routes disabled; only the supervised G0 stop check is available")
                 return None
             if name == "attack_off":
                 return None  # F9 stops rotation; melee remains owner-controlled.
