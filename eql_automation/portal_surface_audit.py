@@ -228,13 +228,13 @@ def audit_portal_surface(mesh, poly: int, entry_xy: tuple[float, float],
         x = entry_xy[0] + (exit_xy[0] - entry_xy[0]) * fraction
         y = entry_xy[1] + (exit_xy[1] - entry_xy[1]) * fraction
         if not _contains_with_physical_tolerance(mesh, poly, x, y):
-            return PortalSurfaceCheck(False, "sample_left_polygon", index)
+            return PortalSurfaceCheck(False, "sample_left_polygon", index + 1)
         z = _supported_detail_height(mesh, poly, x, y)
         if z is None:
-            return PortalSurfaceCheck(False, "unsupported_detail_surface", index)
+            return PortalSurfaceCheck(False, "unsupported_detail_surface", index + 1)
         clearance = float(mesh.clearance(x, y, z, limit=required_clearance + 1))
         if not math.isfinite(clearance):
-            return PortalSurfaceCheck(False, "invalid_clearance", index)
+            return PortalSurfaceCheck(False, "invalid_clearance", index + 1)
         lowest = min(lowest, clearance)
         if lowest < sampled_clearance_floor:
             return PortalSurfaceCheck(False, "clearance_below_budget", index + 1,

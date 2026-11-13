@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.21 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.22 / owner preview 0.39.4
 
 ## Current availability
 
@@ -109,6 +109,20 @@ entire selected ground route and never grants F11 travel. On the copied
 Crushbone Slaver corridor, the selector still stops at polygon 3248 because
 none of the checked portal fractions passed its turn-disk audit. A different
 corridor or verified clearance model is needed there.
+Version 0.41.22 treats a crowded copied-mesh surface at one portal fraction
+as a local rejection, so it can try another fraction under the same work
+budget. It also exposes an explicit grade limit consistently across turns,
+strips and the final whole-route audit for offline sensitivity checks. The
+sample budget now counts centerline, lateral-strip and turn-disk locations,
+including a final route recheck. Earlier reported strip-sample totals omit
+centerline samples and should be treated as historical counts. A copied GFay
+ground-corridor recheck passed the offline sampled geometry checks under
+corrected accounting; its zone crossing and client traversal are still
+unverified. Standalone strip audits also reject a result when the last
+geometry query runs beyond their time limit. The
+80-polygon Crushbone route still fails at polygon 3248; a 176-polygon bypass
+fails at later turn disks even with a more permissive diagnostic grade. These
+checks do not establish playable slopes or enable F11.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

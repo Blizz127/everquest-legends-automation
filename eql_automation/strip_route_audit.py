@@ -33,6 +33,7 @@ def audit_route_strips(mesh, polygons: tuple[int, ...],
                        max_total_samples: int = 20000,
                        max_seconds: float = 20.0,
                        half_width: float = 1.2,
+                       maximum_grade: float = 1.0,
                        sample_spacing: float = 0.5,
                        max_segment_samples: int = 512,
                        max_segment_seconds: float = 3.0) -> StripRouteCheck:
@@ -48,6 +49,8 @@ def audit_route_strips(mesh, polygons: tuple[int, ...],
             max_segment_seconds <= 0 or
             not isinstance(half_width, (int, float)) or isinstance(half_width, bool) or
             not math.isfinite(half_width) or half_width <= 0 or
+            not isinstance(maximum_grade, (int, float)) or isinstance(maximum_grade, bool) or
+            not math.isfinite(maximum_grade) or maximum_grade <= 0 or
             not isinstance(sample_spacing, (int, float)) or isinstance(sample_spacing, bool) or
             not math.isfinite(sample_spacing) or sample_spacing <= 0 or
             not isinstance(polygons, tuple) or not polygons or len(polygons) > max_segments or
@@ -82,8 +85,10 @@ def audit_route_strips(mesh, polygons: tuple[int, ...],
                                        index, total_samples, index, poly)
         result = audit_segment_strip(mesh, poly, points[index], points[index + 1],
                                      half_width=half_width,
+                                     maximum_cross_grade=maximum_grade,
                                      sample_spacing=sample_spacing,
-                                     max_samples=max_segment_samples,
+                                     max_samples=min(max_segment_samples,
+                                                     max_total_samples - total_samples),
                                      max_seconds=min(remaining, max_segment_seconds))
         total_samples += result.samples
         if total_samples > max_total_samples:
@@ -92,5 +97,9 @@ def audit_route_strips(mesh, polygons: tuple[int, ...],
         if not result.candidate:
             return StripRouteCheck(False, "segment_" + result.reason,
                                    index + 1, total_samples, index, poly, result)
+    if time.monotonic() - started > max_seconds:
+        return StripRouteCheck(False, "route_work_budget_exceeded",
+                               len(polygons), total_samples,
+                               len(polygons) - 1, polygons[-1])
     return StripRouteCheck(True, "sampled_strip_candidate_only",
                            len(polygons), total_samples)

@@ -96,7 +96,9 @@ def audit_segment_strip(mesh, poly: int, start_xy: tuple[float, float],
     if not math.isfinite(distance) or distance <= 1e-6:
         return LateralStripCheck(False, "degenerate_segment")
     steps = math.ceil(distance / sample_spacing)
-    if 3 * (steps + 1) > max_samples:
+    # Each point is checked once along the centerline and again as the
+    # center plus two lateral points in the strip pass.
+    if 4 * (steps + 1) > max_samples:
         return LateralStripCheck(False, "strip_sample_budget_exceeded")
     nx, ny = -dy / distance, dx / distance
     vertical_window = half_width * maximum_cross_grade + 0.5
@@ -105,20 +107,21 @@ def audit_segment_strip(mesh, poly: int, start_xy: tuple[float, float],
                                   required_clearance=center_clearance,
                                   maximum_grade=maximum_cross_grade,
                                   sample_spacing=sample_spacing,
-                                  max_samples=max_samples // 3)
+                                  max_samples=max_samples // 4)
     if not center.candidate:
-        return LateralStripCheck(False, "centerline_" + center.reason)
+        return LateralStripCheck(False, "centerline_" + center.reason,
+                                 center.samples)
     side_clearance_floor = edge_clearance + distance / steps / 2
-    samples = 0
+    samples = center.samples
     for index in range(steps + 1):
         if time.monotonic() - started > max_seconds:
             return LateralStripCheck(False, "strip_time_budget_exceeded", samples, index)
         t = index / steps
         x, y = start_xy[0] + t * dx, start_xy[1] + t * dy
+        samples += 1
         if not _contains_with_physical_tolerance(mesh, poly, x, y):
             return LateralStripCheck(False, "center_left_polygon", samples, index)
         center_z = _supported_detail_height(mesh, poly, x, y)
-        samples += 1
         if center_z is None:
             return LateralStripCheck(False, "center_surface_unknown", samples, index)
         for side in (-1, 1):
@@ -135,4 +138,7 @@ def audit_segment_strip(mesh, poly: int, start_xy: tuple[float, float],
             if not math.isfinite(clearance) or clearance < side_clearance_floor:
                 return LateralStripCheck(False, "side_clearance_below_budget",
                                          samples, index, side, center_z, side_z)
+    if time.monotonic() - started > max_seconds:
+        return LateralStripCheck(False, "strip_time_budget_exceeded", samples,
+                                 steps)
     return LateralStripCheck(True, "one_segment_strip_candidate_only", samples)

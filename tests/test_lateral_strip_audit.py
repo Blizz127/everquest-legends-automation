@@ -1,3 +1,6 @@
+from types import SimpleNamespace
+
+from eql_automation import lateral_strip_audit as strip
 from eql_automation.lateral_strip_audit import audit_segment_strip
 
 
@@ -36,7 +39,7 @@ class StripMesh:
 def test_flat_strip_is_only_one_segment_candidate():
     result = audit_segment_strip(StripMesh(), 0, (1.0, 5.0), (9.0, 5.0))
     assert result.candidate and not result.real_client_accepted
-    assert result.samples == 51
+    assert result.samples == 68  # 17 centerline + 17 center + 34 lateral.
 
 
 def test_lateral_grade_rejects_a_centerline_that_looks_flat():
@@ -64,3 +67,18 @@ def test_unsupported_overlapping_forbidden_surface_rejects():
     result = audit_segment_strip(mesh, 0, (1.0, 5.0), (9.0, 5.0))
     assert not result.candidate
     assert result.reason == "offset_in_forbidden_or_other_component"
+
+
+def test_final_strip_sample_cannot_pass_after_elapsed_limit(monkeypatch):
+    calls = 0
+
+    def tick():
+        nonlocal calls
+        calls += 1
+        return 1.0 if calls >= 19 else 0.0
+
+    monkeypatch.setattr(strip, "time", SimpleNamespace(monotonic=tick))
+    result = audit_segment_strip(StripMesh(), 0, (1.0, 5.0), (9.0, 5.0),
+                                 max_seconds=0.5)
+    assert not result.candidate and result.reason == "strip_time_budget_exceeded"
+    assert result.samples == 68

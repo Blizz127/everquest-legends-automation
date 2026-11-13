@@ -1,3 +1,6 @@
+from types import SimpleNamespace
+
+from eql_automation import strip_route_audit as route
 from eql_automation.strip_route_audit import audit_route_strips
 
 
@@ -86,3 +89,19 @@ def test_long_ground_strip_needs_explicit_bounded_sample_budget():
     invalid = audit_route_strips(LongTileMesh(), (0,), points,
                                  max_segment_samples=True)
     assert not invalid.candidate and invalid.reason == "invalid_route_limits"
+
+
+def test_final_route_segment_cannot_pass_after_elapsed_limit(monkeypatch):
+    calls = 0
+
+    def tick():
+        nonlocal calls
+        calls += 1
+        return 1.0 if calls >= 3 else 0.0
+
+    monkeypatch.setattr(route, "time", SimpleNamespace(monotonic=tick))
+    result = audit_route_strips(LongTileMesh(), (0,),
+                                ((1.0, 5.0), (9.0, 5.0)),
+                                max_seconds=0.5)
+    assert not result.candidate and result.reason == "route_work_budget_exceeded"
+    assert result.checked_segments == 1

@@ -51,6 +51,7 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
                           max_strip_repair_rounds: int = 8,
                           sample_spacing: float = 1.0,
                           half_width: float = 1.2,
+                          maximum_grade: float = 1.0,
                           max_segment_samples: int = 2048,
                           max_segment_seconds: float = 10.0) -> PortalSelection:
     """Find a sampled strip-connected portal sequence, then recheck it whole.
@@ -58,7 +59,9 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
     Midpoints that pass the conservative disk start as a single candidate.
     When a polygon strip fails, adjacent portals get bounded alternative
     crossings and the layered search retries. All alternatives pass their
-    turn disks before entering the search.
+    turn disks before entering the search. ``max_total_samples`` counts turn
+    and strip sample locations, including the final route recheck; bounded
+    seam checks are counted by their turn/segment limits instead.
     """
     coords = (*start_xy, *standoff_xy) if (isinstance(start_xy, tuple) and
                                         isinstance(standoff_xy, tuple)) else ()
@@ -81,7 +84,7 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
             not 0 <= max_strip_repair_rounds <= 16 or
             any(not isinstance(n, (int, float)) or isinstance(n, bool) or
                 not math.isfinite(n) or n <= 0
-                for n in (max_seconds, sample_spacing, half_width,
+                for n in (max_seconds, sample_spacing, half_width, maximum_grade,
                           max_segment_seconds))):
         return PortalSelection(False, "invalid_selection_limits")
     started = time.monotonic()
@@ -112,7 +115,8 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
             if t in tried:
                 continue
             tried.add(t)
-            if turns >= max_turn_checks or time.monotonic() - started >= max_seconds:
+            if (turns >= max_turn_checks or samples + 64 > max_total_samples or
+                    time.monotonic() - started >= max_seconds):
                 return PortalSelection(False, "selection_work_budget_exceeded",
                                        turn_checks=turns, failed_polygon=a)
             x = float((1 - t) * left[0] + t * right[0])
@@ -123,8 +127,10 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
             remaining = max_seconds - (time.monotonic() - started)
             turns += 1
             disk = audit_turn_disk(mesh, a, b, (x, y),
+                                   maximum_grade=maximum_grade,
                                    max_seconds=min(remaining, 3.0))
-            if disk.reason.endswith("budget_exceeded"):
+            samples += disk.samples
+            if samples > max_total_samples or disk.reason == "turn_work_budget_exceeded":
                 return PortalSelection(False, "selection_work_budget_exceeded",
                                        turn_checks=turns, failed_polygon=a)
             if disk.candidate:
@@ -138,7 +144,7 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
         tried_by_portal.append(tried)
 
     def expand_portal(index: int) -> tuple[bool, str | None]:
-        nonlocal turns
+        nonlocal turns, samples
         a, b = polygons[index:index + 2]
         left, right = links[index]
         added = False
@@ -148,7 +154,8 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
             if t in tried_by_portal[index]:
                 continue
             tried_by_portal[index].add(t)
-            if turns >= max_turn_checks or time.monotonic() - started >= max_seconds:
+            if (turns >= max_turn_checks or samples + 64 > max_total_samples or
+                    time.monotonic() - started >= max_seconds):
                 return added, "selection_work_budget_exceeded"
             x = float((1 - t) * left[0] + t * right[0])
             y = float((1 - t) * left[1] + t * right[1])
@@ -157,8 +164,10 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
             remaining = max_seconds - (time.monotonic() - started)
             turns += 1
             disk = audit_turn_disk(mesh, a, b, (x, y),
+                                   maximum_grade=maximum_grade,
                                    max_seconds=min(remaining, 3.0))
-            if disk.reason.endswith("budget_exceeded"):
+            samples += disk.samples
+            if samples > max_total_samples or disk.reason == "turn_work_budget_exceeded":
                 return added, "selection_work_budget_exceeded"
             if disk.candidate:
                 layers[index].append(PortalChoice(float(t), (x, y)))
@@ -189,10 +198,12 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
                     result = audit_segment_strip(
                         mesh, poly, entry.xy, exit_choice.xy,
                         sample_spacing=sample_spacing, half_width=half_width,
-                        max_samples=max_segment_samples,
+                        maximum_cross_grade=maximum_grade,
+                        max_samples=min(max_segment_samples,
+                                        max_total_samples - samples),
                         max_seconds=min(remaining, max_segment_seconds))
                     samples += result.samples
-                    if samples > max_total_samples or result.reason.endswith("budget_exceeded"):
+                    if samples > max_total_samples or result.reason == "strip_time_budget_exceeded":
                         return PortalSelection(False, "selection_work_budget_exceeded",
                                                turn_checks=turns, strip_checks=strips,
                                                failed_polygon=poly)
@@ -249,6 +260,7 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
         mesh, polygons, points, max_segments=max_polygons,
         max_total_samples=remaining_samples, max_seconds=remaining,
         sample_spacing=sample_spacing, half_width=half_width,
+        maximum_grade=maximum_grade,
         max_segment_samples=max_segment_samples,
         max_segment_seconds=max_segment_seconds)
     if time.monotonic() - started > max_seconds:

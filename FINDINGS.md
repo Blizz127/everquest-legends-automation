@@ -1,5 +1,65 @@
 # FINDINGS
 
+## Local surface ambiguity and Crushbone grade sensitivity — 2026-11-13 14:40 CST
+
+**VERIFIED offline, no game input, project 0.41.22:** The selector now treats
+`spatial_candidate_budget_exceeded` and a seam's local sample limit as
+rejected portal fractions rather than global exhaustion. Only the turn's
+elapsed-time cap aborts that phase. A segment's local spatial/sample limit
+also remains a rejected candidate; the global sample/time/check caps still
+fail closed. An explicit `maximum_grade` now reaches the turn-disk check,
+candidate polygon strips and final whole-route strip audit. Seventeen focused
+selector/strip/turn tests passed, including a synthetic 1.05-grade corridor
+that fails at the default 1.0 but passes an explicit 1.2 while remaining
+`route_accepted=false` and `real_client_accepted=false`.
+
+**VERIFIED budget correction:** An independent review reproduced a false
+sample-cap pass: centerline locations were missing from strip counts, turn
+locations were missing from the selector total, and three early surface
+failures were off by one. The current code counts all tested centerline,
+center/side and turn-disk locations, reserves each turn's 64-point maximum,
+and constrains each strip call by its remaining shared budget. Seams are
+bounded separately by turn/segment counts. Thirty-five focused portal,
+strip, turn and surface tests passed. Earlier GFay artifact sample totals
+were computed by the older undercounting code; their sampled geometry
+claims required a recheck under this accounting. A hash-matched copied GFay
+ground corridor recheck completed in 88.897 seconds with 243 turn checks and
+270 candidate strip checks; it again returned a sampled candidate only. Its
+outside-git artifact
+`~/.local/share/eql-automation/nav-candidates/gfay-selector-sample-accounting-20261113T2044Z.json`
+has SHA-256 `9375be63e37a322ade3a3789810682afd82949ca4169a5ae40d970a383512354`.
+The source corridor artifact has SHA-256
+`41b01005b619c37a1170bc657af2ef829031d584978fe28bae98953193d98477`
+and the copied mesh SHA-256 is
+`5f8e16c5bcd2221ba273f681750ca480349780524d23609c059a3e817df6abd9`.
+This recheck began before the final pre-call sample-cap guard was added, but
+the new guard only constrains work when close to the shared cap. The
+GFay→Crushbone trigger, arrival and client movement are still unverified.
+
+**VERIFIED deadline correction:** A read-only review found that standalone
+segment and whole-route strip audits could finish their last clearance query
+after the time limit and still return a sampled candidate. Both now check
+elapsed time immediately before a positive return. Two deterministic
+deadline regressions and the other focused geometry checks passed (37 total).
+
+**VERIFIED copied Crushbone mesh:** On the saved 80-polygon corridor, the
+selector still finds no sampled turn-disk crossing at polygon 3248 under
+maximum grade 1.2 after 42 turn checks. The diagnostic artifact outside git
+`~/.local/share/eql-automation/nav-candidates/crushbone-grade-1p2-selector-20261113T2040Z.json`
+has SHA-256 `291ed6a6fa9b2281c695650c236727dc2e96be57da02a45cf51201d7fe28ddf5`.
+Blocking 3248 leaves a 176-polygon connected ground graph, but the bounded
+selector on that bypass stops at polygon 441 with grade 1.2 after 129 turn
+checks, then at polygon 468 with grade 2.0 after 142 turn checks. Both stop
+before strip search. Their artifacts have SHA-256
+`4f1df4a1130ac8d8c391bdc09a794275e3bd90292426153e68381ea919734e2`
+and `10c91b323696a59c6bef536cbc59e0aedaa360cfd93115a823f6c60181eb0908`.
+The mesh SHA-256 remains
+`bee5a1893ab0e2ffd9c83d0d64a1d7392993b21661f59095b0e2e304b0588793`.
+Grade 2.0 is a sensitivity parameter, not a measured safe player slope.
+The actual follower error and current character position remain unknown;
+neither route is accepted and F11 stays disabled.
+
+
 ## Bounded strip-failure portal repair — 2026-11-13 14:35 CST
 
 **VERIFIED offline, no game input, project 0.41.21:** The copied-mesh portal
