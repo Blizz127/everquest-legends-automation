@@ -1,5 +1,42 @@
 # FINDINGS
 
+## GFay to Butcherblock ground approach — 2026-11-13 15:15 CST
+
+**VERIFIED copied-data offline, no game input:** The copied GFay map label for
+Butcherblock and the hash-matched GFay mesh produced a 55-polygon dry query
+from Legira's **historical**, not current, `/location` (raw log
+`Y=-1807.35, X=1786.14, Z=66.45`) toward a sampled area-5 trigger point.
+The first 52 ground polygons end at standoff
+`(2669.644124, -1653.812419)` in WLD XY, before the three area-5 polygons.
+The dry-query artifact is
+`~/.local/share/eql-automation/nav-candidates/gfay-butcher-dry-route-20261113T2108Z.json`
+SHA-256 `5761ec6d3a9b8676a6ca676d302276c0c28cff0351c9c7ffe0614727b6466bc0`.
+The ground prefix passed 87 sampled turn checks, 103 sampled strip checks and
+the final whole-route recheck in 43.42 seconds with 1.2-unit half-width and
+grade limit 1.0. Its selector artifact SHA-256 is
+`a32246bd1a848e62329fb8372102b638734144094b2893ac5d1eb6fbabfce4b4`.
+The earlier 10-second per-segment run stopped on a work limit at polygon
+33468; this bounded extended run resolved that limit, not a client traversal.
+
+**VERIFIED copied BSP diagnostic:** Strict detail-triangle heights existed at
+both ends of all 52 ground segments. Tracing them through the copied GFay BSP
+at ground height and one unit above yielded 57 spans at each height, with no
+labelled water/zoneline spans and no unknown spans. The private artifact
+`~/.local/share/eql-automation/nav-candidates/gfay-butcher-bsp-audit-20261113T2114Z.json`
+is SHA-256 `d073c2e03ee85c1b288b028569c9986e026e7cf462a16d8d526f3ffe76843591`.
+It binds the selector, dry route, mesh, archive and WLD hashes. This checks
+only copied static BSP labels along the sampled ground path. Current position,
+doors, mobs, follower error, motion stop, trigger entry, Butcherblock arrival
+and real-client movement are unverified. No F11 edge is accepted.
+
+**VERIFIED bounded bake attempt:** A one-thread, low-priority full
+Butcherblock bake from copied archives was stopped by its 120-second timeout
+under measured heavy devbox load. It produced no mesh under
+`~/.local/share/eql-automation/navmesh/butcher-full-provisional-20261113T2107Z`.
+This is a resource/time limit, not evidence that Butcherblock terrain is
+unroutable. A small FAYHOUSE tile remains the only retained provisional
+Butcherblock navmesh sample. No install or game input was changed.
+
 ## Isolated Crushbone Boundary and detail sensitivity — 2026-11-13 15:04 CST
 
 **VERIFIED copied-data offline bakes, no game input:** The retained November

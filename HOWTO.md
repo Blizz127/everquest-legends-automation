@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.24 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.25 / owner preview 0.39.4
 
 ## Current availability
 
@@ -15,6 +15,10 @@ on the live service without Daybreak authorization. The owner says the target
 is a private server, but its endpoint has not been found; the installed retail
 client still points to Daybreak. Strict live ASSIST and FULL AUTO are not yet
 validated. The owner chose to test rotation himself on live.
+
+The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
+Butcherblock, then Crushbone and Unrest as the character's observed level
+allows. These are planned camps; no leg is accepted for F11 yet.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
 separate-process same-device release timer tested only with a pipe. Version
@@ -140,6 +144,12 @@ Boundary sky faces did not change either Crushbone cut's rejected turn
 samples. A finer detail setting passed one cut's sampled turns, but still
 failed the other and produced Recast warnings. It does not add a runnable
 travel route; F11 remains disabled.
+Version 0.41.25 records a copied GFay ground approach to Butcherblock that
+passes bounded sampled turns, strips and a copied BSP label scan at ground
+and ground+1 height. It ends before the zone trigger, and the start came from
+a historical Legira log line. It is not a current or playable route. The
+owner trace summarizer now reports the G0 hold, displacement and post-release
+drift without printing character coordinates. F11 remains disabled.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -223,6 +233,18 @@ line alone does not pass G0. The 2026-11-06 continued-walking report remains
 unresolved until this check passes. F11 travel/grinding remains disabled. The
 copied GFay and Crushbone mesh paths are connected offline but include narrow
 clearance and steep polygons, so they are not accepted movement routes.
+
+After the check, the owner can send `~/eql-g0-trace.jsonl` or summarize it
+without printing the `/location` coordinates from the trace:
+
+```bash
+cd ~/.local/share/eql-automation/owner-tools/0.41.25
+python3 tools/summarize_owner_nov12_trace.py "$HOME/eql-g0-trace.jsonl"
+```
+
+`g0_last_trace_result` includes the hold, displacement and post-release
+drift. A trace result alone does not verify the character visibly stopped;
+the owner's observation is still required.
 
 ## Owner-run GFay→Crushbone zone observation (during normal play)
 

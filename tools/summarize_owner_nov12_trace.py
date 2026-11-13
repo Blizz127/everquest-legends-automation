@@ -16,9 +16,17 @@ from pathlib import Path
 
 
 def _stamp(value: object) -> str | None:
-    if not isinstance(value, (int, float)) or not math.isfinite(value):
+    if (not isinstance(value, (int, float)) or isinstance(value, bool) or
+            not math.isfinite(value)):
         return None
     return datetime.fromtimestamp(value, timezone.utc).isoformat()
+
+
+def _measurement(value: object) -> float | None:
+    if (not isinstance(value, (int, float)) or isinstance(value, bool) or
+            not math.isfinite(value) or value < 0):
+        return None
+    return float(value)
 
 
 def summarize(path: Path) -> dict:
@@ -29,6 +37,8 @@ def summarize(path: Path) -> dict:
     first_time = last_time = None
     malformed = 0
     g0_outcomes: Counter[str] = Counter()
+    g0_fix_stages: Counter[str] = Counter()
+    last_g0_result: dict | None = None
     keys: Counter[str] = Counter()
     with path.open("rb") as stream:
         for raw in stream:
@@ -56,6 +66,20 @@ def summarize(path: Path) -> dict:
                         missing[channel] += 1
             elif event == "ap_stop_check_result":
                 g0_outcomes[str(row.get("outcome", "unknown"))] += 1
+                last_g0_result = {
+                    "trace_time_utc": _stamp(row.get("time")),
+                    "outcome": str(row.get("outcome", "unknown")),
+                    "reason": row.get("reason") if isinstance(row.get("reason"), str) else None,
+                    "held_seconds": _measurement(row.get("held")),
+                    "displacement": _measurement(row.get("displacement")),
+                    "final_displacement": _measurement(row.get("final_displacement")),
+                    "post_release_xy": _measurement(row.get("post_release_xy")),
+                    "post_release_z": _measurement(row.get("post_release_z")),
+                }
+            elif event == "ap_stop_check_fix":
+                if row.get("stage") in {"preflight_first", "preflight_second",
+                                        "post_release_first", "post_release_second"}:
+                    g0_fix_stages[row["stage"]] += 1
             elif event == "key" and row.get("value") == 1:
                 name = {65: "F7", 66: "F8", 67: "F9", 68: "F10", 87: "F11"}.get(row.get("code"))
                 if name:
@@ -75,6 +99,8 @@ def summarize(path: Path) -> dict:
             for channel, values in gauges.items()
         },
         "g0_trace_outcomes": dict(sorted(g0_outcomes.items())),
+        "g0_fix_stages": dict(sorted(g0_fix_stages.items())),
+        "g0_last_trace_result": last_g0_result,
         "owner_visual_stop_confirmed": None,
         "native_melee_stop_confirmed": None,
         "level_50_run_confirmed": None,
