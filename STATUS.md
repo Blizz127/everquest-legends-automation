@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-13 17:55 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:56 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Future G2 start-area preflight now converts the calibrated raw-WLD point
@@ -64,14 +64,14 @@ Updated 2026-11-13 17:55 CST for coordinator task `829a00229b29`.
   the sixth still needs a portal choice. Their live camps remain unaccepted. The
   guide markers are not client-certified positions. Current level remains
   last observed 7; XP/hour and deaths remain unavailable, and F11 is off.
-- Private publish: source-only project 0.41.40 commit `ce05c2c` is staged
-  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.40`,
+- Private publish: source-only project 0.41.41 commit `3ade1fd` is staged
+  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.41`,
   outside the game install. Local/remote archive SHA-256 matched
-  `881c750240072698281532432969f32b424896052ba0c910382fdcb8a55d9674`.
+  `26fbe175bfbe06ae428c974cc6f6dcd468d9c8aa88a782acca6a46c0f71e870d`.
   Remote offline navigation startup returned `ARRIVED` with `no_game_input=true`,
-  and all four changed diagnostic CLI help checks passed. This release
-  corrects the helper-mesh/raw-WLD BSP frame and supersedes source 0.41.39.
-  No live screenshot, character input or movement was run for 0.41.40.
+  and both owner UI CLI help checks passed. This release corrects the
+  future G2 start-area mesh frame and supersedes source 0.41.40.
+  No live screenshot, character input or movement was run for 0.41.41.
   Owner-run assist/G0 preview remains 0.39.4; F11 remains disabled.
 - Read-only UI progress: the installed Legira layout puts the HP gauge at
   `(1966,693,330,17)` at 2560×1600; the saved HP crop starts 32 pixels too
