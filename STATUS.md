@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 05:39 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 05:47 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.21.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.22.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -68,6 +68,14 @@ Updated 2026-11-13 05:39 CST for coordinator task `829a00229b29`.
   built locally. A bounded provisional FAYHOUSE region now bakes to 323 nav
   vertices and 156 polygons; one 24-polygon offline Detour query completes.
   No route has been accepted into the bot graph or tested in the client.
+  A Boundary-excluded Butcherblock OBJ removed 6,443 faces, but the sampled
+  FAYHOUSE tile remained byte-identical at 156 polygons. Two copied Crushbone
+  archives now support a read-only audit: 178 exact matched placements,
+  2,694 terrain meshes, 44 object meshes, and 4,057 Boundary terrain faces.
+  Included and excluded provisional Crushbone OBJs have 26,570 and 22,513
+  faces; sampled bounded tiles have 269 and 270 nav polygons, respectively.
+  Both sampled offline queries completed. No real movement or collision
+  acceptance follows from those samples.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -127,6 +135,13 @@ Updated 2026-11-13 05:39 CST for coordinator task `829a00229b29`.
   `6347c67693d782d4643b5a45c15b13c9415606aecd678cf6e50b1df1e4db3863`.
   A sampled 24-polygon query completed offline; another was partial. The
   current active graph still has zero verified Butcherblock edges.
+  The Crushbone tile is also offline only, with zero verified live edges.
+  Copied archive, scene and tile hashes are in `FINDINGS.md`; copied data
+  and candidate nav files remain outside git.
+  `python3 -m pytest -q tests/test_candidate_scene.py tests/test_material_audit.py`
+  — 5 passed. `python3 -m compileall -q eql_automation` and
+  `git diff --check` passed. `--audit-crushbone` CLI smoke confirmed
+  178 exact placements, 4,057 Boundary faces, and live acceptance false.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -138,11 +153,12 @@ Updated 2026-11-13 05:39 CST for coordinator task `829a00229b29`.
   launcher/server publication destination is configured; this build is local.
 - Next step: obtain the intended private endpoint or separate client config,
   then verify target identity before any live test. Review copied client
-  Boundary collision, water and dynamic-door rules; compare offline navmesh
-  variants and conservative clearance without promoting edges. Check GFay
+  Boundary collision, water and dynamic-door rules; compare more offline
+  clearance variants without promoting edges. Check GFay
   height alignment, dynamic doors, water,
   zone transitions and actual movement before accepting a route. Review
-  Crushbone next, then select camps from observed level and safety. Build a
+  Additional Crushbone navigation and camps still require client evidence;
+  select later camps from observed level and safety. Build a
   read-only runtime UI observer on an isolated client view. ASSIST keeps
   movement manual. The October assist tool's live preparation/combat remain
   unverified.

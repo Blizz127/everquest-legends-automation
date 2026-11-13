@@ -90,8 +90,8 @@ def mesh_face_materials(wld: WLDInventory,
     return tuple(result)
 
 
-def summarize_butcher_materials(terrain: WLDInventory, objects: WLDInventory,
-                                libraries: tuple[WLDInventory, ...]) -> dict:
+def summarize_zone_materials(terrain: WLDInventory, objects: WLDInventory,
+                             libraries: tuple[WLDInventory, ...]) -> dict:
     terrain_counts: Counter[tuple[int, str]] = Counter()
     model_counts: Counter[tuple[int, str]] = Counter()
     model_faces = {}
@@ -131,3 +131,7 @@ def summarize_butcher_materials(terrain: WLDInventory, objects: WLDInventory,
         "water_regions_verified": False,
         "navigability_verified": False,
     }
+
+
+# Preserve the original caller while the CLI gains other zones.
+summarize_butcher_materials = summarize_zone_materials

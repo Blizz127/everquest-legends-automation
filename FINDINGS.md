@@ -1,5 +1,54 @@
 # FINDINGS
 
+## Crushbone copied-client audit and Boundary variants — 2026-11-13 05:47 CST
+
+**VERIFIED copied data, read-only:** Alienware client archives in
+`/home/blizz/Games/everquest-legends/drive_c/users/Public/Daybreak Game Company/Installed Games/EverQuest Legends/`:
+`crushbone.s3d`
+(SHA-256 `a2591482aac0a478caec1d79bf662a3f0f93d4ef2dc423be8f7591fe6d45e36f`)
+and `crushbone_obj.s3d`
+(SHA-256 `d80521fdb69c53497d3070b4869dd33ecbdeafdca9ee5f6a3010a93e228f14a5`)
+were copied into `~/.local/share/eql-automation/client-data/retail-full/assets/`;
+remote and local hashes matched. The install and prefix were not changed.
+The copied `crushbone.wld`, `objects.wld`, and `crushbone_obj.wld` hashes are
+`ce43cea4ea9a83cc0db0b25a666cfbe538543dcc451c34ee3bc984227ef1f9d1`,
+`fc7535a0c3ade7a4e3e76733d301acee697dddbf0d2db9ae41718009a29bb8c8`,
+and `efe378db3c69b1f2d8b362bc3c32b997bf0d8cec9eac418f893c1ec897b3be95`.
+The offline audit found 178 placements, all exact-name matched to copied
+actor models; 44 model definitions exist, with two door definitions unused
+by static placements. It decoded 2,694 terrain meshes and 44 object meshes.
+All 2,738 mesh material chains resolved, including 4,057 flag-zero terrain
+faces labelled Boundary. Some raw material types remain unknown; their
+collision meaning has not been inferred.
+
+**VERIFIED provisional scene and bake:** The included-Boundary Crushbone OBJ
+has 47,268 vertices and 26,570 faces, SHA-256
+`806b40d87e1810bc1bba549fc4468fd585e7402a1e812a1be0a8d67ae7793e3d`.
+The excluded variant has 39,405 vertices and 22,513 faces, SHA-256
+`8dd77042278bd9821d3d95ed2cefd4440070e4617201d5eb9cba1818794d372b`.
+The difference is the 4,057 Boundary faces. An independent OBJ scan checked
+finite coordinates, face indices, counts, and hashes. A bounded 256×256
+offline tile near the copied `TIKIBAM_ACTORDEF` placement baked with the
+candidate `(8,5,2,45)` profile to 269 polygons with Boundary included
+(nav SHA-256 `364a0f9cc85bf23cb11609c1f40fe7511884821b955be67a473ee572511371b4`)
+and 270 polygons when excluded
+(nav SHA-256 `3c6ca8e4d2345e7ee2a40ec7d3083eaaef6513fee80feb30550e50417f36548b`).
+Both sampled offline Detour queries completed through seven corridor polygons
+and three straight points. Artifacts and JSON provenance stay under
+`~/.local/share/eql-automation/`, outside git.
+
+**VERIFIED Butcherblock comparison:** Excluding its 6,443 Boundary faces
+produced a 105,860-vertex, 98,233-face OBJ, SHA-256
+`553b7b61ab09c784484d04b3f8de522e95eab9bbe50c890d21ba417e4359f0d1`.
+The two sampled FAYHOUSE tile bakes were byte-identical, SHA-256
+`6347c67693d782d4643b5a45c15b13c9415606aecd678cf6e50b1df1e4db3863`.
+This local equality does not establish Boundary behavior elsewhere;
+Crushbone's differing polygons show that filtering can matter. **No actual
+client acceptance is ready.** Neither zone has a verified movement edge,
+water/door rule, zone transition, suitable camp, or XP measurement. The
+private server endpoint/separate client config is still missing, and the
+only located login target is Daybreak live. No real login/input was attempted.
+
 ## Bounded provisional Recast/Detour bake — 2026-11-13 05:39 CST
 
 **VERIFIED offline toolchain and synthetic smoke:** `tools/build_local_nav_tools.sh`

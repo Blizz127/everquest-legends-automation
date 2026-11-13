@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.21.0
+# EverQuest Legends automation — current build 0.22.0
 
 ## Current availability
 
@@ -38,7 +38,11 @@ python3 -m eql_automation --audit-butcher-meshes
 python3 -m eql_automation --audit-butcher-model-links
 python3 -m eql_automation --audit-butcher-instances
 python3 -m eql_automation --build-butcher-candidate-scene
+python3 -m eql_automation --build-butcher-candidate-scene --exclude-boundary
 python3 -m eql_automation --audit-butcher-materials
+python3 -m eql_automation --audit-crushbone
+python3 -m eql_automation --build-crushbone-candidate-scene
+python3 -m eql_automation --build-crushbone-candidate-scene --exclude-boundary
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 python3 -m eql_automation --index-ui-widgets
@@ -229,6 +233,21 @@ the current OBJ. The current winding-corrected OBJ has SHA-256
 Boundary handling and water need real-client validation before a route is
 usable. A pinned Recast/Detour library build is local under
 `~/.local/share/eql-automation/toolchains/`.
+The `--exclude-boundary` variant omits faces with the copied client's
+Boundary material label; it does not assert that the client ignores those
+faces. Its Butcherblock FAYHOUSE sample baked to the same 156-polygon nav
+tile as the included variant, while the sampled Crushbone tile changed from
+269 to 270 polygons. Neither is a verified traversal route.
+
+`--audit-crushbone` reads the two copied Crushbone archives from the same
+approved untracked asset store and prints placement, mesh, instance, and
+material counts. `--build-crushbone-candidate-scene` writes a provisional
+WLD-XYZ OBJ outside git; `--exclude-boundary` produces a second variant.
+The copied-data audit found 178 exact-name-matched object placements and
+4,057 Boundary terrain faces. The two candidate scenes contain 26,570 and
+22,513 faces respectively. Offline bakes and one sampled query per variant
+are recorded in `FINDINGS.md`. Water, dynamic doors, terrain clearance,
+actual client movement, and the private server target remain unverified.
 
 For bounded **offline** navmesh experiments, place the upstream
 [RecastNavigation source](https://github.com/recastnavigation/recastnavigation)

@@ -27,7 +27,7 @@ from .mesh_geometry import read_meshes, summarize_meshes
 from .model_links import combine_model_links
 from .instance_geometry import summarize_instances
 from .candidate_scene import write_candidate_scene
-from .material_audit import summarize_butcher_materials
+from .material_audit import summarize_zone_materials
 
 
 def shell() -> None:
@@ -135,11 +135,17 @@ def main() -> None:
                        help="write provisional solid-flag Butcherblock OBJ outside git; no route acceptance")
     group.add_argument("--audit-butcher-materials", action="store_true",
                        help="trace copied Butcherblock polygon material chains without accepting collision")
+    group.add_argument("--audit-crushbone", action="store_true",
+                       help="inventory copied Crushbone placements, meshes and materials offline")
+    group.add_argument("--build-crushbone-candidate-scene", action="store_true",
+                       help="write provisional Crushbone solid-flag OBJ outside git")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
                         help="copied retail client text directory for --ingest-retail-copy")
     parser.add_argument("--member", help="WLD member name for --inspect-wld")
+    parser.add_argument("--exclude-boundary", action="store_true",
+                        help="for candidate scenes, omit Boundary material faces")
     parser.add_argument("--map", dest="map_name", help="filter POI query by map file stem")
     parser.add_argument("--limit", type=int, default=20, help="maximum POI query results")
     parser.add_argument("--class-name", help="filter client spell candidates by class name")
@@ -389,7 +395,8 @@ def main() -> None:
         destination = DATA_ROOT / "nav-candidates"
         if not destination.resolve().is_relative_to(DATA_ROOT.resolve()):
             parser.error("Candidate scene destination must stay inside the approved EQL data store")
-        scene = write_candidate_scene(destination, wlds[0], wlds[1], wlds[2:])
+        scene = write_candidate_scene(destination, wlds[0], wlds[1], wlds[2:],
+                                      include_boundary=not args.exclude_boundary)
         print(json.dumps({"archive_sha256": {name: archive.sha256
                                               for name, archive in archives.items()},
                           "wld_sha256": {member: wld.sha256
@@ -407,10 +414,41 @@ def main() -> None:
         archives = {source: PFSArchive(asset_root / source) for source, _ in pairs}
         wlds = tuple(WLDInventory(archives[source].read_member(member))
                      for source, member in pairs)
-        summary = summarize_butcher_materials(wlds[0], wlds[1], wlds[2:])
+        summary = summarize_zone_materials(wlds[0], wlds[1], wlds[2:])
         print(json.dumps({"wld_sha256": {member: wld.sha256
                                          for (_, member), wld in zip(pairs, wlds)},
                           **summary}, indent=2))
+    elif args.audit_crushbone or args.build_crushbone_candidate_scene:
+        asset_root = DATA_ROOT / "client-data" / "retail-full" / "assets"
+        pairs = (("crushbone.s3d", "crushbone.wld"),
+                 ("crushbone.s3d", "objects.wld"),
+                 ("crushbone_obj.s3d", "crushbone_obj.wld"))
+        if any(not (asset_root / source).resolve().is_relative_to(DATA_ROOT.resolve())
+               for source, _ in pairs):
+            parser.error("Crushbone source must stay inside the approved EQL data store")
+        archives = {source: PFSArchive(asset_root / source) for source, _ in pairs}
+        wlds = tuple(WLDInventory(archives[source].read_member(member))
+                     for source, member in pairs)
+        source_info = {"archive_sha256": {name: archive.sha256
+                                          for name, archive in archives.items()},
+                       "wld_sha256": {member: wld.sha256
+                                      for (_, member), wld in zip(pairs, wlds)}}
+        if args.audit_crushbone:
+            print(json.dumps({**source_info,
+                              "placement_audit": asdict(audit_object_locations(wlds[1], wlds[2:])),
+                              "terrain_meshes": asdict(summarize_meshes(read_meshes(wlds[0]))),
+                              "object_meshes": asdict(summarize_meshes(read_meshes(wlds[2]))),
+                              "instances": asdict(summarize_instances(wlds[1], wlds[2:])),
+                              "materials": summarize_zone_materials(wlds[0], wlds[1], wlds[2:]),
+                              "real_client_accepted": False}, indent=2))
+        else:
+            destination = DATA_ROOT / "nav-candidates"
+            if not destination.resolve().is_relative_to(DATA_ROOT.resolve()):
+                parser.error("Candidate scene destination must stay inside the approved EQL data store")
+            scene = write_candidate_scene(destination, wlds[0], wlds[1], wlds[2:],
+                                          include_boundary=not args.exclude_boundary,
+                                          zone_name="Crushbone", filename_prefix="crushbone")
+            print(json.dumps({**source_info, **asdict(scene)}, indent=2))
     else:
         shell()
 
