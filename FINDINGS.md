@@ -1,5 +1,21 @@
 # FINDINGS
 
+## GFay G2 geometry preflight — 2026-11-13 10:42 CST
+
+**VERIFIED offline:** `eql_automation/g2_probe_geometry.py` performs a bounded,
+read-only check of every tested direction around a proposed short movement
+probe: dry ground, walkable ray, sampled mesh membership, slope, height change
+and at least 3 units of local clearance. Four focused synthetic checks passed.
+The staged copy outside the Alienware game install has the same SHA-256 as the
+devbox source: `f2debaeaa7f44d060e0ac264735ea16edc4c11cd006262042a1e5568e4299c09`.
+Against the copied November GFay mesh at the historical owner `/loc`
+`(-1807.35, 1786.14, 66.45)`, the 8-unit, 36-direction check returned
+`offline_open_area_candidate`, 324 samples, with a clearance lower bound of
+4 units (the query caps its measurement at 4). This is a candidate around an
+old position, not a current-position or real-client acceptance. Dynamic
+obstacles, facing, movement-stop behavior, G0 and G2 are unobserved. No game
+input was sent. F11 stays disabled.
+
 ## Isolated November follower clearance guard — 2026-11-13 10:20 CST
 
 **VERIFIED offline:** `patches/nov12-7e3cd28-follower-clearance-guard.patch`
