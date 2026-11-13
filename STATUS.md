@@ -1,8 +1,16 @@
 # STATUS
 
-Updated 2026-11-13 16:44 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 16:46 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
+- Private publish: source-only project 0.41.35 commit `1bd3c39` is staged
+  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.35`,
+  outside the game install. Local/remote archive SHA-256 matched
+  `d29bf7951bc281c168c540508791bd4d4b7a14e3e32231dfe572394ced981b6c`.
+  Remote offline navigation startup, UI-capture CLI help and syntax checks
+  passed; no live screenshot, character input or movement was run. This
+  supersedes the staged 0.41.34 source archive. Owner preview remains 0.39.4
+  and F11 remains disabled.
 - Read-only UI progress: the installed Legira layout puts the HP gauge at
   `(1966,693,330,17)` at 2560×1600; the saved HP crop starts 32 pixels too
   high and spans 51 pixels. This is a likely calibration cause, not a live HP
@@ -180,7 +188,7 @@ Updated 2026-11-13 16:44 CST for coordinator task `829a00229b29`.
   game input. It supersedes 0.41.32 as the current source build; owner assist
   preview 0.39.4 and disabled F11 are unchanged.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp. The copied owner log reports one item did not fit and food/drink out; a later belt sale does not prove bag capacity was restored.
-- Build: local source 0.41.33 (bounded earlier-portal repair plus hash-pinned Cauldron and Unrest scene/mesh diagnostics) plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Earlier source releases and historical build details are recorded above. Mode boundary, prior rotation planner reuse,
+- Build: local source 0.41.35 (bounded earlier-portal repair, hash-pinned Cauldron and Unrest diagnostics, and private read-only UI crop capture) plus an isolated owner-run assist/G0 preview 0.39.4 staged outside the Alienware game install. Earlier source releases and historical build details are recorded above. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
