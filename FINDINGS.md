@@ -1,5 +1,70 @@
 # FINDINGS
 
+## Dagnor's Cauldron and Unrest client source — 2026-11-13 16:17 CST
+
+**VERIFIED read-only owner-client copy:** Four archives were copied from the
+Alienware's installed EverQuest Legends game root into the approved private
+devbox store `~/.local/share/eql-automation/client-data/retail-full/assets/`.
+The remote and local SHA-256 values match: `cauldron.s3d`
+`a035788d5df592e313d7b2a7998a3ceae300ebe68cf9e837c2509a2cd98b4409`,
+`cauldron_obj.s3d`
+`b4d59143a630c81b9a9b39156a27854df5c72641e7ad3d93e5fe49ecdc89a686`,
+`unrest.s3d`
+`e34c4b636d731dbf67dcb5ac028a75ac4e68c9a45a4a6cabd1cdce0f6793df1f`,
+and `unrest_obj.s3d`
+`5756a96a0c7b4d57f5fac25533871024fdef3eea4eb9ec12b2da655f53f8aaa1`.
+Only the approved private copy was written; the Alienware install and prefix
+were read only.
+
+**VERIFIED copied WLD inventory:** `cauldron.wld` SHA-256
+`031f85a34831af9dc9eddf54e787e8ad07b94945404136271b49ba262adcda33`
+has 1,988 BSP regions, 3,975 BSP nodes, 1 water and 3 zoneline type
+records. Its 1,043 terrain mesh fragments encode 29,607 vertices and 24,989
+triangles, with zero raw degenerate triangles. `unrest.wld` SHA-256
+`1516ec497e32e19242a0c89ab4e5ab593e9c2945f4b30637c0c628beb186826c`
+has 4,058 BSP regions, 10,585 nodes, 25 water and 1 zoneline type records.
+Its 3,198 terrain mesh fragments encode 48,631 vertices and 26,291 triangles,
+two raw degenerate. The private region and terrain inventory artifacts have
+SHA-256 `9237fcd205058d3ca27b77524182d067efa1ddeb36f010542958d00ce5cafb09`
+and `b829198289f7a33ac6e325e9d2bbae0e703c16645cb9a6da5383fb3f402b45c1`.
+The copied Cauldron map labels exits to Butcherblock and Unrest; the Unrest
+map labels the reciprocal Cauldron exit. These are drawing/label evidence,
+not walkable transitions.
+
+**VERIFIED static placement composition, provisional only:** Cauldron's
+`objects.wld` has 211 placements, 203 after rejecting 8 dropped-tree Z
+sentinels; all 211 exact actor references match 19 model definitions.
+Unrest has 164 placements and no sentinels; all 164 match 38 definitions.
+Instanced model summaries count 5,035 Cauldron and 9,507 Unrest triangles,
+with 4,303 and 7,045 solid-flag faces, respectively. The private placement
+and instance audit artifacts have SHA-256
+`4cc0d453a79b6b3ad74d3e91bc2e541f806b616f0675b4b8b2b4638efa56e3ef`
+and `33b5e60772be481025235c048a09cb4d688b1e9628e75eaa85d94d11519fcb30`.
+The provisional Cauldron WLD-XYZ solid-face OBJ has 34,560 used vertices,
+28,758 faces and SHA-256
+`eaa99ae692ce6b1842721ebe774178b4c63b1e9b6b6223f8f0b0e3bbf0d68496`;
+Unrest has 56,951 used vertices, 32,818 faces and SHA-256
+`bf136a77bf8df60920ed39991f7edf06cf28efbbc8d1b328902ecd78f40ba64d`.
+Both OBJs are outside git under `~/.local/share/eql-automation/nav-candidates/`.
+They include Boundary material faces, skip pass-through and zero-area faces,
+and have **no verified collision-material behavior**. No Recast/Detour
+navmesh, water avoidance, dynamic doors, current camp, transition or actual
+client movement has been accepted for these zones. No 13–20 route is ready.
+
+**VERIFIED material sensitivity source:** A copied WLD material audit found
+2,442 Cauldron terrain solid-flag faces labelled `Boundary`, with no such
+placed-object faces. An otherwise identical provisional Cauldron scene that
+excludes exactly those labelled terrain faces has 30,396 used vertices,
+26,316 faces and SHA-256
+`fd88af2865e07a33c057f8cefe729a308b13bcf5b78abbead0d94338d2308bb5`.
+Unrest has no `Boundary` faces but has 7,025 solid-flag terrain faces with
+unclassified `Unknown:0x80000002` material and 272 solid-flag placed-object
+faces with other unknown material values. The private material audit artifact
+SHA-256 is `4e48cfeefc3d2d02a99ed22cb3ce5dcd91745f4e7a09e822b92e78a0f9576878`.
+The material names and flags do not establish what the real client collides
+with. Both Cauldron variants and Unrest remain unaccepted bake inputs, not
+walkable routes.
+
 ## Butcherblock complex-polygon detour — 2026-11-13 15:58 CST
 
 **VERIFIED copied-data offline, no client input:** Rerunning the 234-ground

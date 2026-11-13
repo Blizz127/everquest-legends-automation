@@ -11,7 +11,7 @@ use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 | 5–8 | Crushbone Slaver Caves (west) | Butcherblock → GFay → Crushbone → safe spot | Copied GFay ground approaches toward Butcherblock and Crushbone pass separate offline strip checks. Crushbone arrival and its Slaver route are unaccepted; two copied-mesh crossings fail the current grade-1.2 turn audit. |
 | 6–10 | GFay orc camps, alternate for Legira | Current GFay position → guide marker, then observed pull area | The existing guide lists this outdoor camp and the owner's log confirms relevant `/con` mobs. A copied dry path from the G0 test position avoids water and two steep polygons; its 155 ground segments passed sampled turns, walking-width strips, whole-route and static BSP checks. The actual camp, current position and live movement are unverified. |
 | 8–13 | Crushbone Trainer Hill | Slaver Caves → Trainer Hill | The prior guide lists this range; no camp route, con sample or real movement has been accepted. |
-| 13–17 | Unrest yard | Crushbone → GFay → Butcherblock → Dagnor's Cauldron → Unrest | Copied client map labels name these zone lines. Dagnor's terrain descent and the Unrest arrival are not baked or traversed. |
+| 13–17 | Unrest yard | Crushbone → GFay → Butcherblock → Dagnor's Cauldron → Unrest | Copied client map labels name these zone lines. The owner's Cauldron and Unrest archives are hash-matched in the private store; raw terrain and exact-name placed objects now compose provisional static scenes. Collision behavior, navmesh, water, arrival and movement are unverified. |
 | 17–20 | Unrest first floor, subject to observed difficulty and XP | Yard → first floor | The prior guide marks this indoor camp as poor for automation; no safe pull route or live XP rate is observed. |
 
 The level bands are **candidate priorities from the existing Alienware
@@ -31,6 +31,11 @@ Unrest. The copied map-file SHA-256 hashes, in that order, are
 `a1cea4378673518b5d3d63fa43bfa42d62bbbbec2a58d15fe7e3ad907b60bcb0`
 and `2afc6ef37116bf69d5fed39cb1f4b126cc0648214ea01750947b9adaf0c7e383`.
 Labels identify possible exits, not traversable routes or arrival points.
+The owner's Cauldron and Unrest zone/object archives have now been copied
+read-only into the private data store with remote/local hash matches. Their
+BSP, raw terrain meshes and static object placements parse and compose
+provisional solid-face scenes, but no collision-verified navmesh or route
+has been accepted. See [FINDINGS.md](FINDINGS.md) for exact source hashes.
 
 ## What unlocks the first playable leg
 
