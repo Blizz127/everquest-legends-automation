@@ -71,8 +71,8 @@ class SyntheticEnvironment:
         self.death_injected = False
         self.disconnect_injected = False
         self.metrics = RunState(
-            level=1, xp=0, blocker="Synthetic simulation only; live Daybreak policy gate",
-            next_step="Real-client validation requires Daybreak authorization")
+            level=1, xp=0, blocker="Synthetic simulation only; private target not verified",
+            next_step="Verify private server endpoint/client configuration before real-client validation")
         self.metrics.observe_xp(0, now=0.0)
         self.counts: dict[str, int] = defaultdict(int)
         self.trace: list[dict] = []

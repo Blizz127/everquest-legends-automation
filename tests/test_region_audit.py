@@ -89,6 +89,45 @@ def test_bsp_point_lookup_labels_branches_and_fails_closed():
     assert nearby["navigation_edge_accepted"] is False
 
 
+def test_bsp_segment_traversal_classifies_crossings_and_uncertainty():
+    lookup = BspPointLookup(point_wld())
+    spans = lookup.trace_segment((1, -1, 0), (1, 1, 0))
+    assert [span.labels for span in spans] == [("zoneline",), ("water",)]
+    assert spans[0].start_fraction == 0 and spans[-1].end_fraction == 1
+    assert spans[0].end_fraction == spans[1].start_fraction == 0.5
+    assert lookup.trace_segment((1, 1, 0), (1, 1, 0))[0].labels == ("water",)
+    assert lookup.trace_segment((0, -1, 0), (1, -1, 0))[0].region_id is None
+    assert lookup.trace_segment((0, -1, 0), (0, 1, 0))[0].reason == "endpoint on BSP plane"
+    assert BspPointLookup(point_wld(root_left=0)).trace_segment(
+        (1, 1, 0), (1, 2, 0))[0].reason == "missing BSP child"
+    assert BspPointLookup(point_wld(root_left=1)).trace_segment(
+        (1, 1, 0), (1, 2, 0))[0].reason == "cycle"
+    assert lookup.trace_segment((1, -1, 0), (1, 1, 0),
+                                max_visits=1)[0].reason == "BSP segment budget exceeded"
+
+
+def test_bsp_segment_finds_narrow_water_between_sparse_samples():
+    lookup = BspPointLookup(point_wld())
+    # Root x=0, then x=0.1: only 0<x<0.1 is labelled water.
+    lookup.nodes = (
+        (1, 0, 0, 0, 0, 2, 4),
+        (1, 0, 0, -0.1, 0, 3, 5),
+        (0, 0, 0, 0, 2, 0, 0),
+        (0, 0, 0, 0, 2, 0, 0),
+        (0, 0, 0, 0, 1, 0, 0),
+    )
+    lookup.labels_by_region = {0: {"water"}}
+    audit = audit_path_hazards(lookup, [(-1, 0, 0), (1, 0, 0)],
+                               requested_start=(-1, 0, 0),
+                               requested_end=(1, 0, 0), spacing=2,
+                               query_complete=True)
+    assert audit["sample_count"] == 2
+    assert audit["label_sample_counts"] == {}
+    assert audit["bsp_label_span_counts_by_segment_kind"]["corridor"] == {"water": 1}
+    assert audit["bsp_unknown_span_counts_by_segment_kind"]["corridor"] == 0
+    assert audit["route_accepted"] is False
+
+
 def test_bounded_path_sampling_flags_water_zone_and_unknown_without_acceptance():
     lookup = BspPointLookup(point_wld())
     audit = audit_path_hazards(lookup, [(1, -1, 0), (1, 1, 0)],
@@ -104,6 +143,8 @@ def test_bounded_path_sampling_flags_water_zone_and_unknown_without_acceptance()
         "start_connector": 1, "corridor": 1, "end_connector": 0}
     assert audit["label_counts_by_segment_kind"]["start_connector"] == {"zoneline": 1}
     assert audit["label_counts_by_segment_kind"]["corridor"] == {"water": 1}
+    assert audit["bsp_label_span_counts_by_segment_kind"]["corridor"] == {
+        "water": 1, "zoneline": 1}
     assert audit["first_unknown_sample"]["segment_kind"] == "start_connector"
     assert audit["requested_start_connector_length"] == 1
     assert audit["route_accepted"] is False

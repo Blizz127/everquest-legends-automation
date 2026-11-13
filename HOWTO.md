@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.27.0
+# EverQuest Legends automation — current build 0.28.0
 
 ## Current availability
 
@@ -305,6 +305,13 @@ movement acceptance false. Its output now separates sample, unknown, and
 label counts for the start connector, Detour corridor, and end connector.
 The sampled Crushbone path has one unknown BSP result in each connector;
 the corridor itself has none. Both gaps require review before movement.
+The audit now also partitions each straight WLD segment at copied BSP planes
+and reports every labelled or unknown **centerline interval**, including a
+narrow interval between sample points. This checks the copied region tree more
+fully than sparse sampling, but still does not verify character width, doors,
+aggro, real collision or zone transitions. Plane endpoints, missing children,
+cycles and traversal limits remain unknown. The route acceptance flag stays
+false even when no label or unknown interval appears.
 
 For bounded **offline** navmesh experiments, place the upstream
 [RecastNavigation source](https://github.com/recastnavigation/recastnavigation)

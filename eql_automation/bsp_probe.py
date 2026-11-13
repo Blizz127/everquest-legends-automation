@@ -27,6 +27,15 @@ class BspProbe:
     live_transition_verified: bool = False
 
 
+@dataclass(frozen=True)
+class BspSegmentSpan:
+    start_fraction: float
+    end_fraction: float
+    region_id: int | None
+    labels: tuple[str, ...]
+    reason: str
+
+
 class BspPointLookup:
     def __init__(self, wld: WLDInventory) -> None:
         audit = audit_bsp_regions(wld)
@@ -67,6 +76,96 @@ class BspPointLookup:
             if node_number == 0:
                 return BspProbe(None, (), steps, "missing BSP child", False)
         return BspProbe(None, (), min(len(self.nodes), 256), "depth limit", False)
+
+    def trace_segment(self, start: tuple[float, float, float],
+                      end: tuple[float, float, float], *,
+                      max_visits: int = 4096) -> tuple[BspSegmentSpan, ...]:
+        """Partition one copied BSP centerline; uncertain intervals stay unknown.
+
+        This does not establish collision clearance or client movement. A plane
+        endpoint is conservatively unknown because it has no unique BSP side.
+        """
+        if (not isinstance(start, (tuple, list)) or len(start) != 3 or
+                not isinstance(end, (tuple, list)) or len(end) != 3 or
+                not all(isinstance(value, (int, float)) and
+                        not isinstance(value, bool) and isfinite(value)
+                        for value in (*start, *end))):
+            raise ValueError("BSP segment needs finite WLD XYZ endpoints")
+        if not isinstance(max_visits, int) or isinstance(max_visits, bool) or not 1 <= max_visits <= 4096:
+            raise ValueError("BSP segment visit cap is outside bounds")
+        first = tuple(float(value) for value in start)
+        last = tuple(float(value) for value in end)
+        def unknown(left: float, right: float, reason: str) -> BspSegmentSpan:
+            return BspSegmentSpan(left, right, None, (), reason)
+
+        if first == last:
+            probe = self.probe(*first)
+            return (BspSegmentSpan(0.0, 1.0, probe.region_id, probe.labels,
+                                   probe.reason),)
+        if not self.nodes:
+            return (unknown(0.0, 1.0, "empty tree"),)
+        # LIFO entries are pushed in reverse path order to preserve intervals.
+        stack = [(1, 0.0, 1.0, first, last, frozenset())]
+        spans: list[BspSegmentSpan] = []
+        visits = 0
+        while stack:
+            if visits >= max_visits or len(stack) + len(spans) > 1024:
+                return (unknown(0.0, 1.0, "BSP segment budget exceeded"),)
+            node_number, t0, t1, a, b, seen = stack.pop()
+            visits += 1
+            if node_number == 0:
+                spans.append(unknown(t0, t1, "missing BSP child"))
+                continue
+            if node_number < 1 or node_number > len(self.nodes):
+                spans.append(unknown(t0, t1, "BSP child out of range"))
+                continue
+            if node_number in seen:
+                spans.append(unknown(t0, t1, "cycle"))
+                continue
+            if len(seen) >= 256:
+                spans.append(unknown(t0, t1, "depth limit"))
+                continue
+            nx, ny, nz, split, region_ref, left, right = self.nodes[node_number - 1]
+            if left == 0 and right == 0:
+                if region_ref == 0:
+                    spans.append(unknown(t0, t1, "leaf has no region"))
+                else:
+                    region_id = region_ref - 1
+                    labels = tuple(sorted(self.labels_by_region.get(region_id, ())))
+                    spans.append(BspSegmentSpan(
+                        t0, t1, region_id, labels,
+                        "labelled leaf" if labels else "unlabelled leaf"))
+                continue
+            d0 = a[0] * nx + a[1] * ny + a[2] * nz + split
+            d1 = b[0] * nx + b[1] * ny + b[2] * nz + split
+            if not isfinite(d0) or not isfinite(d1):
+                spans.append(unknown(t0, t1, "nonfinite BSP distance"))
+                continue
+            if abs(d0) <= 1e-6 or abs(d1) <= 1e-6:
+                spans.append(unknown(t0, t1, "endpoint on BSP plane"))
+                continue
+            next_seen = seen | {node_number}
+            if (d0 > 0) == (d1 > 0):
+                stack.append((left if d0 > 0 else right,
+                              t0, t1, a, b, next_seen))
+                continue
+            denominator = d0 - d1
+            if not isfinite(denominator) or denominator == 0:
+                spans.append(unknown(t0, t1, "unstable BSP split"))
+                continue
+            fraction = d0 / denominator
+            midpoint = tuple(a[index] + (b[index] - a[index]) * fraction
+                             for index in range(3))
+            tm = t0 + (t1 - t0) * fraction
+            if (not 0 < fraction < 1 or not t0 < tm < t1 or
+                    not all(isfinite(value) for value in midpoint)):
+                spans.append(unknown(t0, t1, "unstable BSP split"))
+                continue
+            stack.append((left if d1 > 0 else right,
+                          tm, t1, midpoint, b, next_seen))
+            stack.append((left if d0 > 0 else right,
+                          t0, tm, a, midpoint, next_seen))
+        return tuple(spans)
 
 
 def nearby_zoneline_candidate(lookup: BspPointLookup, map_label: Point,

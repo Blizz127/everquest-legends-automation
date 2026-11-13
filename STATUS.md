@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 06:26 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 06:30 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.27.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.28.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -114,6 +114,11 @@ Updated 2026-11-13 06:26 CST for coordinator task `829a00229b29`.
   Hands remain disabled. Low self HP with another target selected pauses
   assist. Current UI/log interfaces do not supply the required unique token
   or target relationship, so this is an offline contract only.
+  Full copied-BSP centerline traversal now splits provisional path segments
+  at plane crossings and catches a synthetic 0.1-unit water region missed by
+  sparse sampling. Butcherblock sample has no labelled or unknown spans;
+  Crushbone has no labelled spans but unknown intervals of 0.026010 and
+  0.002449 WLD units in start/end connectors. Both routes remain unaccepted.
   A read-only copy of the Alienware `eqgame.exe` now resides outside git,
   matching source SHA-256
   `65b8a28b2df70a256746567c4203c47f91696813865cba97f7151a5f4952503a`.
@@ -208,6 +213,9 @@ Updated 2026-11-13 06:26 CST for coordinator task `829a00229b29`.
   `python3 -m pytest -q tests/test_region_audit.py` — 4 passed for segmented
   path sampling; Butcherblock and Crushbone copied-zone hazard CLI audits
   passed with counts above. `compileall` and `git diff --check` passed.
+  Two added exact-segment checks in `tests/test_region_audit.py` passed;
+  both copied-zone span audits ran offline. The synthetic status text now
+  names the missing private target rather than suggesting a live Daybreak test.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will

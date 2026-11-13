@@ -79,12 +79,39 @@ def audit_path_hazards(lookup: BspPointLookup,
     labels_by_segment = {kind: Counter() for kind in SEGMENT_KINDS}
     samples_by_segment = Counter({kind: 0 for kind in SEGMENT_KINDS})
     unknown_by_segment = Counter({kind: 0 for kind in SEGMENT_KINDS})
+    bsp_spans_by_segment = Counter({kind: 0 for kind in SEGMENT_KINDS})
+    bsp_unknown_by_segment = Counter({kind: 0 for kind in SEGMENT_KINDS})
+    bsp_labels_by_segment = {kind: Counter() for kind in SEGMENT_KINDS}
+    bsp_unknown_length_by_segment = Counter({kind: 0.0 for kind in SEGMENT_KINDS})
+    first_bsp_unknown = None
+    first_bsp_labelled = None
     unknown = 0
     labelled = 0
     first_labelled = None
     first_unknown = None
     for segment_index, (start, end) in enumerate(zip(sampled_points, sampled_points[1:])):
         kind = segment_kinds[segment_index]
+        length = dist(start, end)
+        for span in lookup.trace_segment(start, end):
+            bsp_spans_by_segment[kind] += 1
+            if span.region_id is None or "unknown" in span.labels:
+                bsp_unknown_by_segment[kind] += 1
+                bsp_unknown_length_by_segment[kind] += (
+                    length * (span.end_fraction - span.start_fraction))
+                if first_bsp_unknown is None:
+                    first_bsp_unknown = {
+                        "segment_kind": kind, "polyline_segment": segment_index,
+                        "start_fraction": span.start_fraction,
+                        "end_fraction": span.end_fraction,
+                        "reason": span.reason}
+            if span.labels:
+                bsp_labels_by_segment[kind].update(span.labels)
+                if first_bsp_labelled is None:
+                    first_bsp_labelled = {
+                        "segment_kind": kind, "polyline_segment": segment_index,
+                        "start_fraction": span.start_fraction,
+                        "end_fraction": span.end_fraction,
+                        "region_id": span.region_id, "labels": span.labels}
         steps = segment_steps[segment_index]
         for step in range(0 if segment_index == 0 else 1, steps + 1):
             samples_by_segment[kind] += 1
@@ -121,6 +148,16 @@ def audit_path_hazards(lookup: BspPointLookup,
         "label_counts_by_segment_kind": {
             kind: dict(sorted(labels_by_segment[kind].items()))
             for kind in SEGMENT_KINDS},
+        "bsp_span_counts_by_segment_kind": dict(bsp_spans_by_segment),
+        "bsp_unknown_span_counts_by_segment_kind": dict(bsp_unknown_by_segment),
+        "bsp_unknown_length_by_segment_kind": {
+            kind: round(bsp_unknown_length_by_segment[kind], 6)
+            for kind in SEGMENT_KINDS},
+        "bsp_label_span_counts_by_segment_kind": {
+            kind: dict(sorted(bsp_labels_by_segment[kind].items()))
+            for kind in SEGMENT_KINDS},
+        "first_bsp_unknown_span": first_bsp_unknown,
+        "first_bsp_labelled_span": first_bsp_labelled,
         "labelled_region_sample_count": labelled,
         "unknown_region_sample_count": unknown,
         "first_labelled_sample": first_labelled,

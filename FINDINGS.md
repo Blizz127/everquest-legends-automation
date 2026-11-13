@@ -1,5 +1,30 @@
 # FINDINGS
 
+## Full copied-BSP centerline intervals — 2026-11-13 06:29 CST
+
+**VERIFIED offline:** `BspPointLookup.trace_segment` now partitions a finite
+WLD-XYZ line at every crossed copied BSP plane and returns region/label
+intervals. It fails closed on a plane endpoint, missing child, cycle,
+nonfinite split, depth or work limit. A synthetic 0.1-unit water-labelled
+strip between two point samples was detected by the segment traversal while
+the five-unit point sampler reported no water. Six focused region-audit tests
+passed. This is an exact classification of the **copied BSP centerline**
+within its numeric tolerance, not proof of game collision or character
+clearance.
+
+The current Butcherblock FAYHOUSE path has zero labelled and zero unknown BSP
+intervals across its start connector, corridor and end connector. The
+Crushbone TIKIBAM path has no labelled interval and two unknown intervals:
+0.026010 WLD units in the start connector and 0.002449 in the end connector,
+both due to copied BSP uncertainty. No route or movement was accepted. New
+untracked audit JSON SHA-256 hashes under
+`~/.local/share/eql-automation/nav-candidates/` are
+`b6fa48b38ec789d413c6b548a77b7ef33daf4c40f6a5ae6518c06d273f797b19`
+(Butcherblock) and
+`829cd3e63af69b788d99b7a98aec7adf3e954723e6b830fa9831edceeab47637`
+(Crushbone). Real client alignment, dynamic doors, aggro, water effects and
+zone transitions remain untested. No client/server input occurred.
+
 ## Copied client executable and segmented path audit — 2026-11-13 06:25 CST
 
 **VERIFIED read-only source copy:** The Alienware retail client executable at

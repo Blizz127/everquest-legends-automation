@@ -27,8 +27,8 @@ class RunState:
     deaths: int = 0
     camp: str | None = None
     zone: str | None = None
-    blocker: str = "No authorized live automation path"
-    next_step: str = "Continue offline validation; obtain Daybreak authorization for live tests"
+    blocker: str = "Private server endpoint/client configuration not verified"
+    next_step: str = "Continue offline validation; verify private target before client input"
     xp_samples: deque[tuple[float, int]] = field(default_factory=deque)
 
     def observe_log(self, line: str) -> None:
