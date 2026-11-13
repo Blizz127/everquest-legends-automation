@@ -1,5 +1,45 @@
 # FINDINGS
 
+## Butcherblock material chains and OBJ winding — 2026-11-13 05:34 CST
+
+**VERIFIED copied-client material audit:** All 1,925 `0x36` meshes have valid
+`0x36 → 0x31 → 0x30` material references; their polygon texture groups cover
+every triangle exactly. Of the terrain's flag-zero faces, 45,384 use Diffuse
+material parameters and **6,443 use Boundary** parameters. Its 868 flag-`0x10`
+faces use Diffuse. Across the 1,862 non-sentinel object instances, all 53,028
+flag-zero faces use Diffuse or Diffuse6, and all 28,655 flag-`0x10` faces use
+Diffuse or transparent classes. The bounded audit manifest SHA-256 is
+`79884f2e18dd69178b500a87a85ecf283177e6a4b41b390febd308779eef33e3`.
+The current provisional OBJ includes the 6,443 Boundary faces as candidate
+obstacles. The [Lantern OBJ writer](https://github.com/LanternEQ/LanternExtractor/blob/main/LanternExtractor/EQ/Wld/Exporters/MeshObjWriter.cs)
+has an option that excludes Boundary/Invisible geometry; no live evidence yet
+establishes which choice matches this client's movement. Water regions and
+door state are likewise unverified. Two focused synthetic material tests and
+the copied-data audit passed.
+
+**VERIFIED OBJ orientation correction:** A normal check found that 41,501
+flag-zero terrain faces in the copied WLD's original index order point in
+negative Z, versus 1,561 positive and 8,765 zero projected Z normals.
+Following the Lantern writer, the provisional OBJ now writes each face in
+reverse index order. An independent scan of the regenerated 115,411-vertex,
+104,676-face OBJ found 41,501 terrain faces with positive projected Z normals,
+1,561 negative, and 8,765 zero. Its current SHA-256 is
+`1ec7706037c35c06205c026c4ed56c1b4032fd2fb7a8e2dbe0cf2490d18a1bc3`;
+the manifest SHA-256 is
+`aebc4fd5866ac890c30278b9e1eca2567de68ccb99f2075b96f904fdfe5a73f9`.
+The previous `c4faf0...` OBJ remains as a historical local artifact and is
+superseded for future bakes. **Neither orientation nor material inspection
+establishes a walkable route.**
+
+**VERIFIED local toolchain:** The upstream RecastNavigation source was cloned
+outside git to `~/.local/share/eql-automation/toolchains/recastnavigation`,
+checked out at the historical pin
+`9f4ce64458dfae86e1239c525ddc219c4e9e06f1`, and built with CMake/Ninja
+into local Recast and Detour static libraries. Demo, examples and upstream
+tests were disabled. No navmesh bake or Detour query has yet run. The full
+Butcherblock scene spans thousands of coordinate units, so a bounded local
+bake is the next offline check; its output will remain provisional.
+
 ## Butcherblock provisional composed scene — 2026-11-13 05:29 CST
 
 **VERIFIED copied-client model links:** All 75 type `0x14` actor definitions
@@ -23,6 +63,8 @@ zero-area instance triangles, and 22 dropped-tree instances. A separate
 read-only OBJ scan confirmed its hash, all face indices, finite coordinates,
 counts and bounds. The untracked provenance manifest SHA-256 is
 `1f6f07433e07b9368c06fbfdf39d4e41b144785340386936a387695fce61865c`.
+This was the initial 0.19.0 artifact; the 0.20.0 winding-corrected artifact
+and manifest above supersede it for future bakes.
 The output and source client data are outside git and outside the release
 archive. Focused synthetic tests checked exact model linking, uniform scale,
 rotation axis/order and face filtering.

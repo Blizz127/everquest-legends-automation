@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.19.0
+# EverQuest Legends automation — current build 0.20.0
 
 ## Current availability
 
@@ -38,6 +38,7 @@ python3 -m eql_automation --audit-butcher-meshes
 python3 -m eql_automation --audit-butcher-model-links
 python3 -m eql_automation --audit-butcher-instances
 python3 -m eql_automation --build-butcher-candidate-scene
+python3 -m eql_automation --audit-butcher-materials
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 python3 -m eql_automation --index-ui-widgets
@@ -221,6 +222,13 @@ terrain and static-object triangles. Client-derived geometry stays outside git.
 This OBJ is an input for later collision review. Material/shader collision,
 water, dynamic doors, clearance, navmesh routes and actual movement have not
 been accepted.
+`--audit-butcher-materials` traces mesh polygon groups through the copied
+client's material fragments. It identifies 6,443 terrain Boundary faces in
+the current OBJ. The current winding-corrected OBJ has SHA-256
+`1ec7706037c35c06205c026c4ed56c1b4032fd2fb7a8e2dbe0cf2490d18a1bc3`.
+Boundary handling and water need real-client validation before a route is
+usable. A pinned Recast/Detour library build is local under
+`~/.local/share/eql-automation/toolchains/`; no navmesh has been accepted.
 
 The prior October Paladin/Cleric prototype remains at
 `/home/blizz/Projects/everquest-legends-rotation/`. Its historical controls

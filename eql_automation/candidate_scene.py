@@ -60,7 +60,9 @@ def _append_solid_mesh(output: TextIO, mesh: MeshGeometry,
         vertex = mesh.vertex(source) if location is None else projected_vertex(mesh, location, source)
         output.write("v {:.9g} {:.9g} {:.9g}\n".format(*vertex))
     for face in faces:
-        output.write("f {} {} {}\n".format(mapping[face.a], mapping[face.b], mapping[face.c]))
+        # The client WLD face order points most ground normals downward;
+        # LanternExtractor's OBJ writer emits vertex3, vertex2, vertex1.
+        output.write("f {} {} {}\n".format(mapping[face.c], mapping[face.b], mapping[face.a]))
     return len(used), len(faces), pass_through, degenerate
 
 

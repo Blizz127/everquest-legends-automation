@@ -27,6 +27,7 @@ from .mesh_geometry import read_meshes, summarize_meshes
 from .model_links import combine_model_links
 from .instance_geometry import summarize_instances
 from .candidate_scene import write_candidate_scene
+from .material_audit import summarize_butcher_materials
 
 
 def shell() -> None:
@@ -132,6 +133,8 @@ def main() -> None:
                        help="count copied Butcherblock instanced mesh geometry without accepting collision")
     group.add_argument("--build-butcher-candidate-scene", action="store_true",
                        help="write provisional solid-flag Butcherblock OBJ outside git; no route acceptance")
+    group.add_argument("--audit-butcher-materials", action="store_true",
+                       help="trace copied Butcherblock polygon material chains without accepting collision")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
@@ -392,6 +395,22 @@ def main() -> None:
                           "wld_sha256": {member: wld.sha256
                                          for (_, member), wld in zip(pairs, wlds)},
                           **asdict(scene)}, indent=2))
+    elif args.audit_butcher_materials:
+        asset_root = DATA_ROOT / "client-data" / "retail-full" / "assets"
+        pairs = (("butcher.s3d", "butcher.wld"),
+                 ("butcher.s3d", "objects.wld"),
+                 ("butcher_obj.s3d", "butcher_obj.wld"),
+                 ("butcher_2_obj.s3d", "butcher_2_obj.wld"))
+        if any(not (asset_root / source).resolve().is_relative_to(DATA_ROOT.resolve())
+               for source, _ in pairs):
+            parser.error("Butcherblock source must stay inside the approved EQL data store")
+        archives = {source: PFSArchive(asset_root / source) for source, _ in pairs}
+        wlds = tuple(WLDInventory(archives[source].read_member(member))
+                     for source, member in pairs)
+        summary = summarize_butcher_materials(wlds[0], wlds[1], wlds[2:])
+        print(json.dumps({"wld_sha256": {member: wld.sha256
+                                         for (_, member), wld in zip(pairs, wlds)},
+                          **summary}, indent=2))
     else:
         shell()
 

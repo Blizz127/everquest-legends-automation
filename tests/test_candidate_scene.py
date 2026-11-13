@@ -14,4 +14,4 @@ def test_candidate_writer_keeps_only_solid_nonzero_faces():
     counts = _append_solid_mesh(output, mesh, None, 0)
     assert counts == (3, 1, 1, 1)
     assert output.getvalue().splitlines() == [
-        "v 10 20 30", "v 11 20 30", "v 10 21 30", "f 1 2 3"]
+        "v 10 20 30", "v 11 20 30", "v 10 21 30", "f 3 2 1"]
