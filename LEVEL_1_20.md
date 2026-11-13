@@ -9,7 +9,7 @@ use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 | --- | --- | --- | --- |
 | 1–5 | Butcherblock Kaladim gate yards | South Kaladim → Butcherblock, then local camp | The prior Alienware guide cites Legira's `/con` log for the low-level mobs. A retained current-helper Butcherblock mesh now loads with source hashes checked; the camp position, source arrival and movement remain unverified. |
 | 5–8 | Crushbone Slaver Caves (west) | Butcherblock → GFay → Crushbone → safe spot | Copied GFay ground approaches toward Butcherblock and Crushbone pass separate offline strip checks. Crushbone arrival and its Slaver route are unaccepted; two copied-mesh crossings fail the current grade-1.2 turn audit. |
-| 6–10 | GFay orc camps, alternate for Legira | Current GFay position → guide marker, then observed pull area | The existing guide lists this outdoor camp and the owner's log confirms relevant `/con` mobs. A dry path from the G0 test position avoids water and, after penalizing two steep polygons, has 155 ground polygons with maximum polygon slope 74.74° and minimum center clearance 7.64 units. Its sampled turns/strips, actual camp location and live movement are unverified. |
+| 6–10 | GFay orc camps, alternate for Legira | Current GFay position → guide marker, then observed pull area | The existing guide lists this outdoor camp and the owner's log confirms relevant `/con` mobs. A copied dry path from the G0 test position avoids water and two steep polygons; its 155 ground segments passed sampled turns, walking-width strips, whole-route and static BSP checks. The actual camp, current position and live movement are unverified. |
 | 8–13 | Crushbone Trainer Hill | Slaver Caves → Trainer Hill | The prior guide lists this range; no camp route, con sample or real movement has been accepted. |
 | 13–17 | Unrest yard | Crushbone → GFay → Butcherblock → Dagnor's Cauldron → Unrest | Copied client map labels name these zone lines. Dagnor's terrain descent and the Unrest arrival are not baked or traversed. |
 | 17–20 | Unrest first floor, subject to observed difficulty and XP | Yard → first floor | The prior guide marks this indoor camp as poor for automation; no safe pull route or live XP rate is observed. |
@@ -66,15 +66,22 @@ to polygon 14525 (index 155 of 234) in the same 180-second window. A larger,
 still bounded recheck completed its portal search after 240 turns and 260
 unique strips, but its final whole-route pass hit the per-segment time limit
 at polygon 49153. This is a work limit, not a geometry pass. None of these
-results is an F11 route.
+results is an F11 route. A second selector run on the same corridor stopped
+at that polygon during an individual turn check under the loaded devbox. A
+new 249-ground-polygon dry detour avoids it and the prior penalized polygons;
+one 420-second selector pass completed its portal search but had no time for
+the mandatory final whole-route audit. Its sampled candidate remains
+unaccepted; a diagnostic rerun is underway to separate that final audit.
 
 The same-zone GFay orc-camp fallback uses the existing guide's approximate
 marker. The first dry route from the G0 test position had two polygons over
 75° slope. Penalizing those two found a 155-ground-polygon alternative with
-no polygon detail-triangle slope over 75° or center clearance under 3 units. This is copied
-mesh evidence only; the guide marker, actual mob/pull site and live path are
-unverified. A bounded full-width route check is underway. Artifacts and
-hashes are in [FINDINGS.md](FINDINGS.md).
+no polygon detail-triangle slope over 75° or center clearance under 3 units.
+Its bounded selector passed 169 sampled turns, 175 unique strips and the
+whole-route recheck; a copied BSP scan at two heights found no labelled or
+unknown spans across 155 segments. This is copied static evidence only. The
+guide marker, actual mob/pull site, current position and live path remain
+unverified. Artifacts and hashes are in [FINDINGS.md](FINDINGS.md).
 
 At the G0 test spot in GFay, all four fresh `/location` XY points landed on
 copied ground with zero XY snap distance and consistent 2.065–2.085-unit

@@ -1,5 +1,38 @@
 # FINDINGS
 
+## Butcherblock complex-polygon detour — 2026-11-13 15:58 CST
+
+**VERIFIED copied-data offline, no client input:** Rerunning the 234-ground
+camp→GFay bypass through the reusable selector with a 10-second per-turn and
+30-second per-segment cap stopped at polygon 49153 after 22 turn checks and
+zero strips. Its global 360-second cap was not reached; this was a local
+work-limit result, not a terrain rejection. The private artifact
+`~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-bypass-selector-20261113T2156Z.json`
+has SHA-256 `6340edceed564ad88f6d631a87856fe255e5b6f4050f0af26037840b0105fe95`.
+The earlier final whole-route pass also timed out at the same polygon,
+making it an expensive audit location under current devbox load.
+
+**VERIFIED dry detour only:** Penalizing polygon 49153 in addition to the
+nine earlier steep/narrow or failed-turn polygons found a 249-ground-polygon
+path from the approximate Kaladim-yard guide camp to the GFay ground
+standoff. It excludes 49153 and has no copied detail-triangle slope above
+75 degrees or polygon-center clearance below 3 units; its maximum slope is
+73.92 degrees and minimum center clearance is 3.79 units. The outside-git
+artifact
+`~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-complex-bypass-20261113T2157Z.json`
+has SHA-256 `4f026d28558afa0f898980d6b30f74decd75f0ceb74ac5c8b937fdbb6602f9a5`.
+A bounded selector is running on that detour; no lateral/BSP/live acceptance
+follows from the dry path. Its first 420-second pass completed the portal
+search after 320 turn and 355 unique strip checks, but had no time left for
+the mandatory final whole-route audit. It returned
+`selection_work_budget_exceeded`, with no accepted points. The private
+artifact
+`~/.local/share/eql-automation/nav-candidates/butcher-kaladim-to-gfay-complex-bypass-selector-20261113T2158Z.json`
+has SHA-256 `dc15a6989b6a04ec253c88a28de99fadfbf8058394e0d291a90108aa0e0cbbc2`.
+A bounded diagnostic rerun is underway with source rehash and explicit
+unverified-point retention if the final pass again runs out of work. F11
+remains disabled.
+
 ## G2 owner-preview input gate — 2026-11-13 15:53 CST
 
 **OBSERVED source inspection, no game input:** Isolated owner-assist 0.39.4
@@ -36,9 +69,24 @@ dry path, length 4,095.75 units, with maximum polygon slope 74.74 degrees
 and minimum polygon-center clearance 7.64 units. Its private artifact
 `~/.local/share/eql-automation/nav-candidates/gfay-g0-to-orc-camp-repair-20261113T2145Z.json`
 has SHA-256 `18fdc7d2b051d0920bd25259fea259acf7034816d5547cf2d3dec460ed47e20a`.
-The G0 position is no longer a fresh position for a movement command. The
-sampled turns/strips, copied BSP labels, actual camp and live movement have
-not been accepted. A bounded selector is running; F11 remains disabled.
+**VERIFIED sampled static corridor:** A bounded rerun of the repaired GFay
+path passed 169 portal-turn checks, 175 unique polygon-strip checks and its
+final whole-route recheck in 224.827 seconds, using a 1.2-unit half-width
+and grade limit 1.0. Its private selector artifact
+`~/.local/share/eql-automation/nav-candidates/gfay-g0-to-orc-camp-selector-20261113T2150Z.json`
+has SHA-256 `ecc62e51b9b16a2fee2e0050bda864e77ab73d74a6bdcd18f347a477c148b36f`.
+The earlier 3-second per-turn setting stopped at polygon 28793 on a work
+limit, not a terrain rejection; its artifact SHA-256 is
+`46c29a3dc80fa19d577620482c7ae1858c93a95ff528f484852c375a1d520901`.
+Tracing the 155 selected ground segments at copied mesh height and height+1
+through the copied GFay BSP yielded 366 spans and no labelled, unknown or
+unsupported-height intervals. The private BSP artifact
+`~/.local/share/eql-automation/nav-candidates/gfay-g0-to-orc-camp-bsp-20261113T2154Z.json`
+has SHA-256 `7673e2bd887d9997981cb4accb588e8a5c0732fc3e541e5e408d73926dfbd499`.
+This is an offline static candidate from the G0 position, not proof of a
+current live route. The G0 position is no longer fresh; the actual camp,
+dynamic obstacles, aggro, follower error and real movement remain unverified.
+F11 remains disabled.
 
 **VERIFIED bounded work limit:** On the earlier 234-ground-polygon Butcherblock
 camp→GFay bypass, the cached selector reached its final whole-route pass

@@ -228,6 +228,9 @@ def test_sample_budget_and_final_whole_route_refusal_cannot_promote(monkeypatch)
     refused = select_ground_portals(FlatMesh(), (0, 1), (1.0, 5.0), (19.0, 5.0))
     assert not refused.candidate
     assert refused.reason == "whole_route_synthetic_final_refusal"
+    assert refused.points == () and refused.fractions == ()
+    assert len(refused.unverified_points) == 3
+    assert refused.unverified_fractions == (0.5,)
     assert not refused.route_accepted and not refused.real_client_accepted
 
 

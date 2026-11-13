@@ -77,6 +77,8 @@ def main() -> None:
                 not output.is_relative_to((DATA_ROOT / "nav-candidates").resolve()) or
                 output.suffix != ".json" or output.exists()):
             raise ValueError("mesh, helper or output path is outside the approved private store")
+        source_hash = digest(source)
+        endpoints_hash = digest(endpoints)
         route = json.loads(source.read_text(encoding="utf-8"))
         end = json.loads(endpoints.read_text(encoding="utf-8"))
         if not isinstance(route, dict) or not isinstance(end, dict):
@@ -106,7 +108,9 @@ def main() -> None:
         from eqnav.world import MeshStore
         mesh = MeshStore(store).load(args.zone)
         mesh_path = store / f"{args.zone}.npz"
+        manifest_path = store / f"{args.zone}.json"
         mesh_hash = digest(mesh_path)
+        manifest_hash = digest(manifest_path)
         if route.get("mesh_sha256") != mesh_hash or (
                 end.get("mesh_sha256") not in (None, mesh_hash)):
             raise ValueError("route artifact and copied mesh hashes disagree")
@@ -120,10 +124,15 @@ def main() -> None:
             max_turn_seconds=args.max_turn_seconds,
             max_segment_seconds=args.max_segment_seconds,
             half_width=args.half_width, maximum_grade=args.maximum_grade)
+        if (digest(source) != source_hash or digest(endpoints) != endpoints_hash or
+                digest(mesh_path) != mesh_hash or
+                digest(manifest_path) != manifest_hash):
+            raise ValueError("a copied route or mesh source changed during selection")
         record = {
             "format": "eql-copied-ground-selector-v1", "zone": args.zone,
-            "source_sha256": digest(source), "endpoints_sha256": digest(endpoints),
-            "mesh_sha256": mesh_hash, "ground_polygons": len(polygons),
+            "source_sha256": source_hash, "endpoints_sha256": endpoints_hash,
+            "mesh_sha256": mesh_hash, "manifest_sha256": manifest_hash,
+            "ground_polygons": len(polygons),
             "limits": {"max_seconds": args.max_seconds,
                        "max_turn_seconds": args.max_turn_seconds,
                        "max_segment_seconds": args.max_segment_seconds,
@@ -134,6 +143,8 @@ def main() -> None:
             "failed_polygon": result.failed_polygon,
             "turn_checks": result.turn_checks, "strip_checks": result.strip_checks,
             "fractions": result.fractions, "points": result.points,
+            "unverified_fractions": result.unverified_fractions,
+            "unverified_points": result.unverified_points,
             "offline_only": True, "route_accepted": False,
             "real_client_accepted": False,
         }

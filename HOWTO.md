@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.28 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.29 / owner preview 0.39.4
 
 ## Current availability
 
@@ -165,13 +165,22 @@ repair. It counts only newly sampled work, keeps the global time/sample
 limits, and still rechecks the final selected route. A different Butcherblock
 dry corridor avoids the first rejected turn, but its whole-route lateral
 pass reached a per-segment time limit; it has not passed. A same-zone GFay
-orc-camp dry path avoids two steep polygons in copied terrain, but its full
-walking-width check, guide marker and live movement are not accepted. This
+orc-camp dry path avoids two steep polygons and passes sampled turns, walking
+width, whole-route and copied static BSP checks. Its guide marker, current
+position and live movement are not accepted. This
 version does not change owner-run input.
 Version 0.41.28 makes the offline portal-turn time limit configurable while
 retaining the global work bound. It adds a hash-checked tool to rerun a saved
 copied-ground corridor and record its sampled result outside git. It does not
 send input or enable F11.
+Version 0.41.29 also rehashes the saved route and mesh sources after an
+offline selector run; a source changed during the check cannot be recorded
+as a candidate. If portal search finishes but the final whole-route check
+runs out of work, it preserves explicitly unverified diagnostic points for
+a separate, hash-bound full-strip recheck. Failed routes remain unavailable
+to F11. The 155-polygon GFay orc-camp approach passed copied static
+geometry and BSP checks, but its live position, camp and movement have not
+been accepted. Owner-run input and F11 availability are unchanged.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

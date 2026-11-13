@@ -32,6 +32,10 @@ class PortalSelection:
     failed_polygon: int | None = None
     route_accepted: bool = False
     real_client_accepted: bool = False
+    # A chosen portal sequence whose final whole-route audit has not passed.
+    # It is diagnostic evidence only; ``points`` stays empty on every failure.
+    unverified_points: tuple[tuple[float, float], ...] = ()
+    unverified_fractions: tuple[float, ...] = ()
 
 
 DEFAULT_ALTERNATES = (0.55, 0.45, 0.60, 0.40, 0.65, 0.35,
@@ -271,7 +275,9 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
     remaining_samples = max_total_samples - samples
     if remaining <= 0 or remaining_samples < 1:
         return PortalSelection(False, "selection_work_budget_exceeded",
-                               turn_checks=turns, strip_checks=strips)
+                               turn_checks=turns, strip_checks=strips,
+                               unverified_points=points,
+                               unverified_fractions=fractions)
     complete = audit_route_strips(
         mesh, polygons, points, max_segments=max_polygons,
         max_total_samples=remaining_samples, max_seconds=remaining,
@@ -281,10 +287,14 @@ def select_ground_portals(mesh, polygons: tuple[int, ...],
         max_segment_seconds=max_segment_seconds)
     if time.monotonic() - started > max_seconds:
         return PortalSelection(False, "selection_work_budget_exceeded",
-                               turn_checks=turns, strip_checks=strips)
+                               turn_checks=turns, strip_checks=strips,
+                               unverified_points=points,
+                               unverified_fractions=fractions)
     if not complete.candidate:
         return PortalSelection(False, "whole_route_" + complete.reason,
                                turn_checks=turns, strip_checks=strips,
-                               failed_polygon=complete.failed_polygon)
+                               failed_polygon=complete.failed_polygon,
+                               unverified_points=points,
+                               unverified_fractions=fractions)
     return PortalSelection(True, "sampled_ground_approach_candidate_only",
                            points, fractions, turns, strips)
