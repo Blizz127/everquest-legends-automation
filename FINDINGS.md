@@ -1,5 +1,27 @@
 # FINDINGS
 
+## Owner-run destination capture seam — 2026-11-13 14:27 CST
+
+**VERIFIED offline, no game input, project 0.41.19:** A read-only
+`DestinationLogReader` now skips Legira's existing log history and can capture
+a newly appended exact `LOADING, PLEASE WAIT...` → `You have entered Clan
+Crushbone.` sequence within 60 seconds, followed by the **first** valid
+`Your Location is ...` within 30 seconds. It works even when launched while
+Legira is already standing in GFay, because it does not require an earlier
+source-zone entry. It invalidates on log replacement, malformed/other entry,
+location during loading, late first fix and timestamp regression. The owner
+CLI additionally refuses a destination log timestamp more than 45 seconds
+from the Alienware local clock or multiple arrivals in one poll; output is a
+0600 JSON file under the private data store, outside the game install. The
+copied client `ZoneNames.txt` resolves Clan Crushbone uniquely to ID 58; the
+installed file was observed at SHA-256
+`0a5c0ff78c452a1895af2ac3014254d29aee996a36a2d4e907e717e2180c422d`.
+Eleven focused destination/transition tests passed, including the owner CLI
+on temporary files. The CLI has not been run against Blizz's logged-in
+character. It records raw destination coordinates and explicitly sets source
+zone, crossing method, spawn, route and real movement acceptance false.
+
+
 ## G2 start-area provenance and radius gate — 2026-11-13 14:20 CST
 
 **VERIFIED offline, no game input, project 0.41.18:** `check_g2_start()`

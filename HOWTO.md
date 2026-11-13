@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.18 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.19 / owner preview 0.39.4
 
 ## Current availability
 
@@ -95,6 +95,10 @@ sample budget and radius cover the pulse's speed upper bound, then reports a
 sampled geometry candidate only. No live alignment record exists, so it cannot
 pass for the current character. It does not authorize G2, F11 or any game
 input.
+Version 0.41.19 adds a read-only owner-run destination watcher. It can capture
+the first timely Clan Crushbone `/location` after Blizz's manual crossing,
+even when started mid-zone in GFay. It writes only an observation file outside
+the game install and does not send client input or certify a route.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -181,16 +185,31 @@ clearance and steep polygons, so they are not accepted movement routes.
 
 ## Owner-run GFay→Crushbone zone observation (during normal play)
 
+Optional watcher, staged on Alienware outside the game install:
+
+```bash
+cd ~/.local/share/eql-automation/owner-tools/0.41.19
+python3 -m eql_automation.watch_destination --character Legira --server freeport
+```
+
+Start it before crossing. It watches for up to 15 minutes and can be stopped
+with Ctrl-C. Its terminal output names a private JSON file under
+`~/.local/share/eql-automation/owner-traces/` if it captures one timely
+destination reading. No file is written on timeout. It reads only Legira's
+specified client log and the installed `Resources/ZoneNames.txt`; it never
+sends `/location` or other input.
+
 When Blizz is already near the Crushbone entrance in Greater Faydark, leave
 F11 off and enable `/log on`. While standing near the zone line, type
 `/location`, then walk across himself within 30 seconds. After Clan Crushbone
 loads, stop moving and type `/location` within 30 seconds. Tell the
-coordinator the approximate crossing time; the lead can read those new log
-lines without touching the character. This is a short before/after
-observation, not a hand-recorded route. The destination fix may be after some
-movement, and the log alone cannot prove the crossing method. It does not by
-itself certify the exact spawn position or enable
-F11.
+coordinator the approximate crossing time or the watcher output path; the lead
+can read those new log lines without touching the character. This is a short
+before/after observation, not a hand-recorded route. The destination fix may
+be after some movement, and the log alone cannot prove the crossing method.
+The watcher records the destination only; the earlier `/location` remains in
+the client log for separate review. Neither result certifies the exact spawn
+position or enables F11.
 
 ## Start the offline prototype
 
