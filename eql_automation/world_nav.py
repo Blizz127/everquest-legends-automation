@@ -61,6 +61,7 @@ class WorldNav:
               goal_zone: str, goal_node: str, *, level: int,
               avoid_water: bool = True, max_aggro: float = 0.0,
               blocked_edges: set[tuple[str, str, str]] | None = None,
+              blocked_transitions: set[tuple[str, str, str, str]] | None = None,
               risk_weight: float = 10.0) -> list[RouteStep]:
         if not 1 <= level <= 50:
             raise ValueError("Level must be 1–50")
@@ -75,6 +76,7 @@ class WorldNav:
             transitions_by_source.setdefault((transition.source_zone,
                                                transition.exit_node), []).append(transition)
         blocked_edges = blocked_edges or set()
+        blocked_transitions = blocked_transitions or set()
         best = {start: 0.0}
         previous: dict[tuple[str, str], tuple[tuple[str, str], RouteStep]] = {}
         todo = [(0.0, start)]
@@ -101,6 +103,10 @@ class WorldNav:
                     previous[next_state] = (state, RouteStep("move", zone, node, zone, edge.target))
                     heappush(todo, (next_cost, next_state))
             for transition in transitions_by_source.get(state, []):
+                transition_key = (transition.source_zone, transition.exit_node,
+                                  transition.destination_zone, transition.entry_node)
+                if transition_key in blocked_transitions:
+                    continue
                 if not transition.min_level <= level <= transition.max_level:
                     continue
                 if transition.risk > max_aggro:

@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Offline navigation controller — 2026-11-13 03:21 CST
+
+**VERIFIED synthetic only:** A `WorldNavigator` now requires an observed start
+position, explicit allowlists of traversed movement edges and zone lines, and
+observed waypoint/zone arrivals. A stall at the confirmed source quarantines
+both directions of that edge and replans; a mid-edge stall, unknown start,
+unexpected zone, failed zone transition, missing verified route or exhausted
+retry budget pauses. It emits intents only and has no game input transport.
+The retail map drawing lines and POI candidates remain outside the verified
+edge allowlists. A CLI synthetic demo replanned from `short` to `alternate`
+and arrived; 29 focused tests passed. No real-client path was traversed.
+
 ## Zone-line review candidates — 2026-11-13 02:53 CST
 
 **VERIFIED offline:** Cross-referencing the 1,445 map labels with the client's

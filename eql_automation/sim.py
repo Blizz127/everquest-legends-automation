@@ -8,6 +8,7 @@ from .nav import NavGraph, Point
 from .prior_rotation_core import Rotation, Spell
 from .world_nav import WorldNav, ZoneTransition
 from .campaign import Camp, CampaignPlanner, WorldSnapshot
+from .navigator import NavigationObservation, WorldNavigator
 
 
 @dataclass
@@ -89,3 +90,32 @@ def run_demo() -> dict:
         "zone_route_kinds": [step.kind for step in zone_route],
         "unknown_health_stops_full_mode": controller.mode == Mode.OFF,
     }
+
+
+def run_navigation_demo() -> dict:
+    """Show a stalled synthetic edge being quarantined and replanned."""
+
+    graph = NavGraph()
+    for name, point in {"start": Point(0, 0), "short": Point(2, 0),
+                        "alternate": Point(0, 3), "goal": Point(4, 0)}.items():
+        graph.add_point(name, point)
+    for left, right in (("start", "short"), ("short", "goal"),
+                        ("start", "alternate"), ("alternate", "goal")):
+        graph.connect(left, right)
+    world = WorldNav()
+    world.add_zone("synthetic", graph)
+    verified = {("synthetic", name, edge.target)
+                for name, edges in graph.edges.items() for edge in edges}
+    navigator = WorldNavigator(
+        world, start_zone="synthetic", start_node="start",
+        goal_zone="synthetic", goal_node="goal", level=1,
+        verified_moves=verified, verified_zones=set(),
+        stall_timeout=5, arrival_radius=0.25, min_progress=0.2)
+    original = navigator.observe(NavigationObservation("synthetic", Point(0, 0), 0)).node
+    alternate = navigator.observe(NavigationObservation("synthetic", Point(0, 0), 5)).node
+    navigator.observe(NavigationObservation("synthetic", Point(0, 3), 6))
+    final = navigator.observe(NavigationObservation("synthetic", Point(4, 0), 7))
+    return {"simulation_only": True, "no_game_input": True,
+            "initial_waypoint": original, "replanned_waypoint": alternate,
+            "quarantined_directed_edges": len(navigator.quarantined),
+            "final_directive": final.kind}

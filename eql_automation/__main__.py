@@ -7,7 +7,7 @@ from pathlib import Path
 from dataclasses import asdict
 
 from .modes import Action, ActionKind, Mode, ModeController
-from .sim import SimSink, run_demo, synthetic_graph
+from .sim import SimSink, run_demo, run_navigation_demo, synthetic_graph
 from .synthetic_run import default_output_dir, run_synthetic_1_50
 from .client_ingest import import_retail_copy
 from .target import inspect_eqhost
@@ -52,6 +52,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="EverQuest Legends offline planning prototype")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--demo", action="store_true", help="run one synthetic scenario")
+    group.add_argument("--demo-navigation", action="store_true",
+                       help="show offline stuck detection and replanning")
     group.add_argument("--shell", action="store_true", help="switch simulated modes without restarting")
     group.add_argument("--synthetic-1-50", action="store_true",
                        help="run a closed-loop synthetic level 1–50 scenario; not real-client proof")
@@ -76,6 +78,8 @@ def main() -> None:
     args = parser.parse_args()
     if args.demo:
         print(json.dumps(run_demo(), indent=2))
+    elif args.demo_navigation:
+        print(json.dumps(run_navigation_demo(), indent=2))
     elif args.synthetic_1_50:
         print(json.dumps(run_synthetic_1_50(args.output or default_output_dir()), indent=2))
     elif args.ingest_retail_copy:

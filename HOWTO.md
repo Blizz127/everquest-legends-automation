@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.8.0
+# EverQuest Legends automation — current build 0.9.0
 
 ## Current availability
 
@@ -21,6 +21,7 @@ From this project directory:
 python3 -m eql_automation --demo
 python3 -m eql_automation --shell
 python3 -m eql_automation --synthetic-1-50
+python3 -m eql_automation --demo-navigation
 python3 -m eql_automation --inspect-target --source /path/to/copied/eqhost.txt
 python3 -m eql_automation --ingest-retail-copy --source /path/to/copied/client-text
 python3 -m eql_automation --index-pois
@@ -55,6 +56,11 @@ Trace, summary and a synthetic status file go under
 `~/.local/share/eql-automation/runs/synthetic-1-50-<UTC timestamp>/`.
 Use `--output DIRECTORY` to choose a different trace directory. These files
 are test evidence only; they do not show an EverQuest Legends character at 50.
+
+`--demo-navigation` shows a synthetic blocked edge being quarantined and a
+route changing to a safe alternate. The pure navigation controller waits for
+an observed start position, uses only explicitly verified graph edges, and
+pauses on uncertain movement or zoning. It does not press movement keys.
 
 `--inspect-target` reads a copied `eqhost.txt` and reports its host, port,
 hash, and whether it is a Daybreak official domain. It does not connect.
