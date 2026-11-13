@@ -1,5 +1,39 @@
 # FINDINGS
 
+## Assist target continuity and spell targeting — 2026-11-13 06:19 CST
+
+**VERIFIED synthetic only:** Assist proposals now bind a unique target-selection
+token, target relation (`self`, `friendly`, `hostile_npc`, or `hostile_player`),
+and observed undead status. A newer observation with the same values and the
+same memorized spell or available ability is required before a proposed key.
+OFF, a target swap, relation/kind change, or gem change cancels the proposal
+without advancing its cooldown. A forged queued action inconsistent with the
+source role is rejected. No key sender exists in this build.
+
+**VERIFIED copied client data:** `spells_us.txt`, SHA-256
+`8db5548696635075f982a20a8afae13b57346637f5edae3c8d93432c848524de`,
+lists the selected Paladin/Cleric direct heals and HoTs with target type 51,
+damage/stun with 5, undead damage with 10, and selected Yaulp/proc buffs with
+6. [EQEmu's target type enum](https://raw.githubusercontent.com/EQEmu/EQEmu/master/common/spdat.h)
+does not define 51. Its EverQuest Legends behavior is **unverified**. The
+advisor therefore permits type-5 attack/stun only for an observed hostile NPC,
+type-10 damage only when that NPC is also observed undead, and blocks self
+heals, buffs, and Lay Hands until each is explicitly confirmed on the intended
+private client. At self HP ≤65% with another target selected, assist pauses.
+
+**VERIFIED static UI audit:** Copied `EQUI_TargetWindow.xml`, SHA-256
+`d556f3a9cfe85301f4e4309012ce940f60ebb3f5c3ef2f88098d27cebaea0385`,
+defines target HP/class/level widgets but no unique target ID or selection
+epoch. Its con-color fill animation is commented out. The current gauge reader
+reads player HP/mana only; the log reader tracks level, death and zone.
+No supported static signal found here can prove same-name target switches or
+hostile/friendly relation. **No live assist acceptance is ready.**
+
+`python3 -m pytest -q tests/test_assist.py tests/test_screen_observer.py`
+passed 9 focused tests; `--demo-assist` produced one synthetic `/cast 3` and
+rejected it after OFF; `compileall` and `git diff --check` passed. No client,
+server, account, or character was contacted.
+
 ## Provisional Detour path sampling against copied BSP labels — 2026-11-13 06:06 CST
 
 **VERIFIED offline query and sampling:** The pinned Detour query tool now

@@ -3,7 +3,7 @@ import pytest
 
 from eql_automation.prior_rotation_core import bar_fraction
 from eql_automation.screen_observer import GaugeCalibration, GaugeReader
-from eql_automation.assist import AssistObservation
+from eql_automation.assist import AssistObservation, TargetRelation
 
 
 def full_frame() -> Image.Image:
@@ -33,8 +33,11 @@ def test_calibrated_gauges_read_half_hp_and_full_mana():
     assist = AssistObservation.from_gauges(
         reading, character_name="SyntheticTester", class_name="Paladin",
         level=1, game_focused=True, chat_open=False,
-        current_target_verified=True, memorized={1: 200, 3: 14})
+        current_target_verified=True,
+        target_token="synthetic-target-selection-1",
+        memorized={1: 200, 3: 14})
     assert assist.observed_at == 10.0 and assist.hp == 0.5 and assist.mana == 1.0
+    assert assist.target_relation == TargetRelation.UNKNOWN
 
 
 def test_gauge_reader_fails_closed_on_focus_layout_size_or_empty_bar():

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.25.0
+# EverQuest Legends automation — current build 0.26.0
 
 ## Current availability
 
@@ -149,13 +149,29 @@ The old Paladin/Cleric rotation profile now checks each class's own level;
 it will not offer Paladin Yaulp at level 1 when the client requires level 9.
 
 The offline `AssistAdvisor` can propose a Paladin/Cleric combat action using
-the corrected profile. It requires the same character/class/level, a verified
-current target, focused game with chat closed, health and mana readings less
-than one second old, and observed gem IDs matching the profile. It only
-proposes abilities observed as available. The proposal keeps a cancellable
-mode permit; focus, target, observations and permit must be checked again
-before each future key. This is a code-level contract with synthetic tests,
-not a running in-game rotation. There is no live observer or input sender.
+the corrected profile. It requires the same character/class/level, a unique
+token for the **current target selection**, a verified target relationship,
+a focused game with chat closed, health and mana readings at most one second
+old, and the selected spell in its observed gem. The token must change on
+every target selection, including same-name switches and away/back switches.
+It only proposes abilities observed as available. A proposal needs a **newer**
+observation with the same token, relationship and target kind immediately
+before each future key; the mode permit is checked again too. This is a
+code-level contract with synthetic tests, not a running in-game rotation.
+There is no live target observer or input sender.
+
+Assist permits damage and stun spells only when the current target is observed
+as a hostile NPC and the copied spell has target type 5. Undead spells also
+require an observed undead target and target type 10. Bash and Smite require a
+hostile NPC. The copied client lists selected heals and HoTs as target type
+51, whose behavior is unverified here; self heals and Lay Hands stay disabled
+until a private-client test confirms their self-target behavior. Self buffs
+with type 6 also need explicit per-spell confirmation. The current verified
+self-heal, self-buff and Lay Hands lists are empty. Assist pauses when self HP
+is at or below 65% while another target is selected. It never changes target
+to heal. The default UI XML and existing log reader do not provide a unique
+target token or reliable hostile/friendly relation, so **no live assist action
+is ready**.
 `--demo-assist` prints a synthetic proposal and shows that OFF invalidates it.
 `--demo-gauges` uses Pillow to read fabricated red HP and blue mana bars. It
 does not capture the game.
@@ -178,7 +194,7 @@ character identity, chat focus and working hotkeys have not been verified.
 | Simulated mode | Actions permitted by the planner |
 | --- | --- |
 | Off | None |
-| Assist | Casts, abilities, heals, buffs on the current target only; never movement, target changes, autoattack, loot, vendors, camps, zones, or login |
+| Assist | Eligible rotation casts and abilities under the target checks above; verified self heals/buffs can be added after private-client confirmation. It never moves, changes targets, toggles autoattack, loots, vendors, camps, zones, or logs in. |
 | Full | All action categories in the simulator; there is no live input transport |
 
 The map graph currently contains **synthetic coordinates only**. It is not an

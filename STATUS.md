@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 06:08 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 06:20 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.25.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.26.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -105,6 +105,13 @@ Updated 2026-11-13 06:08 CST for coordinator task `829a00229b29`.
   Crushbone TIKIBAM sample had 10 sampled positions, no labels and two unknown BSP
   results along a 5.41-unit start snap. Neither result verifies a safe
   route, zone identity, or game movement.
+  Strict assist now requires a target-selection token that changes on every
+  selection, an observed target relationship, and a newer matching observation
+  before any proposed key. Copied-client spell target types gate hostile NPC
+  damage/stun and verified-undead damage; unverified self heals, buffs and Lay
+  Hands remain disabled. Low self HP with another target selected pauses
+  assist. Current UI/log interfaces do not supply the required unique token
+  or target relationship, so this is an offline contract only.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -187,6 +194,9 @@ Updated 2026-11-13 06:08 CST for coordinator task `829a00229b29`.
   hashes are in `FINDINGS.md`. A fabricated Butcherblock water line flagged
   41/41 samples, with route acceptance false. The Detour tool rebuilt and
   emitted WLD straight points; compile and diff checks passed.
+  `python3 -m pytest -q tests/test_assist.py tests/test_screen_observer.py`
+  — 9 passed for target continuity, spell/ability targeting and OFF cancellation;
+  `--demo-assist` proposed synthetic `/cast 3` and rejected it after OFF.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
@@ -202,7 +212,9 @@ Updated 2026-11-13 06:08 CST for coordinator task `829a00229b29`.
   Boundary collision, water region shapes and dynamic-door rules; compare
   more offline clearance variants without promoting edges. Trace the
   historical GFay height mismatch. Inspect dynamic doors, water, zone
-  transitions and actual movement before accepting a route. The new BSP
+  transitions and actual movement before accepting a route. Validate a unique
+  target-selection epoch, target relationship and type-51 healing behavior
+  on the intended private client before wiring assist input. The new BSP
   candidates require observed traversal; Crushbone camps
   still require client evidence; select later camps from observed level and
   safety. Build a
