@@ -51,3 +51,38 @@ def test_discontinuous_seam_and_invalid_shape_fail_closed():
     assert not seam.candidate and seam.reason == "seam_height_step_too_large"
     malformed = audit_route_strips(TwoTileMesh(), (0, 1), POINTS[:2])
     assert not malformed.candidate and malformed.reason == "invalid_route_limits"
+
+
+class LongTileMesh:
+    def __init__(self):
+        ring = [(0.0, 0.0, 2.0), (180.0, 0.0, 2.0),
+                (180.0, 10.0, 2.0), (0.0, 10.0, 2.0)]
+        self.polys = [ring]
+        self.area = [63]
+        self.component = [0]
+        self._detail_start = [0, 2]
+        self._detail = [[ring[0], ring[1], ring[2]],
+                        [ring[0], ring[2], ring[3]]]
+        self.links = [[]]
+        self._grid = self
+        self._grid_ids = [0]
+
+    def near(self, x, y, radius):
+        return [0]
+
+    def clearance(self, x, y, z, *, limit):
+        return limit
+
+
+def test_long_ground_strip_needs_explicit_bounded_sample_budget():
+    points = ((1.0, 5.0), (179.0, 5.0))
+    default = audit_route_strips(LongTileMesh(), (0,), points)
+    assert not default.candidate and default.reason == "segment_strip_sample_budget_exceeded"
+    extended = audit_route_strips(LongTileMesh(), (0,), points,
+                                  sample_spacing=1.0, max_segment_samples=2048,
+                                  max_segment_seconds=10.0, max_seconds=12.0)
+    assert extended.candidate and not extended.real_client_accepted
+    assert extended.checked_segments == 1
+    invalid = audit_route_strips(LongTileMesh(), (0,), points,
+                                 max_segment_samples=True)
+    assert not invalid.candidate and invalid.reason == "invalid_route_limits"

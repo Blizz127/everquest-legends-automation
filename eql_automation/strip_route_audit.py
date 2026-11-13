@@ -32,14 +32,24 @@ def audit_route_strips(mesh, polygons: tuple[int, ...],
                        max_segments: int = 200,
                        max_total_samples: int = 20000,
                        max_seconds: float = 20.0,
-                       half_width: float = 1.2) -> StripRouteCheck:
+                       half_width: float = 1.2,
+                       sample_spacing: float = 0.5,
+                       max_segment_samples: int = 512,
+                       max_segment_seconds: float = 3.0) -> StripRouteCheck:
     if (not isinstance(max_segments, int) or isinstance(max_segments, bool) or max_segments < 1 or
             not isinstance(max_total_samples, int) or isinstance(max_total_samples, bool) or
             max_total_samples < 1 or
+            not isinstance(max_segment_samples, int) or isinstance(max_segment_samples, bool) or
+            max_segment_samples < 3 or
             not isinstance(max_seconds, (int, float)) or isinstance(max_seconds, bool) or
             not math.isfinite(max_seconds) or max_seconds <= 0 or
+            not isinstance(max_segment_seconds, (int, float)) or
+            isinstance(max_segment_seconds, bool) or not math.isfinite(max_segment_seconds) or
+            max_segment_seconds <= 0 or
             not isinstance(half_width, (int, float)) or isinstance(half_width, bool) or
             not math.isfinite(half_width) or half_width <= 0 or
+            not isinstance(sample_spacing, (int, float)) or isinstance(sample_spacing, bool) or
+            not math.isfinite(sample_spacing) or sample_spacing <= 0 or
             not isinstance(polygons, tuple) or not polygons or len(polygons) > max_segments or
             any(not isinstance(poly, int) or isinstance(poly, bool) or poly < 0
                 for poly in polygons) or
@@ -72,7 +82,9 @@ def audit_route_strips(mesh, polygons: tuple[int, ...],
                                        index, total_samples, index, poly)
         result = audit_segment_strip(mesh, poly, points[index], points[index + 1],
                                      half_width=half_width,
-                                     max_seconds=min(remaining, 3.0))
+                                     sample_spacing=sample_spacing,
+                                     max_samples=max_segment_samples,
+                                     max_seconds=min(remaining, max_segment_seconds))
         total_samples += result.samples
         if total_samples > max_total_samples:
             return StripRouteCheck(False, "route_work_budget_exceeded",

@@ -1,5 +1,47 @@
 # FINDINGS
 
+## GFay ground-strip candidate and turn review — 2026-11-13 13:52 CST
+
+**VERIFIED offline, no game input, project 0.41.14:** `audit_route_strips()` now accepts
+caller-bounded per-segment spacing, sample and time limits, while keeping its
+previous defaults. A one-call audit of all 215 ground polygons in the saved
+GFay corridor, using 1.0-unit spacing, 1.2-unit half-width and a point 2 units
+before the old terminal ground exit, passed 215/215 strip segments, 214/214
+internal seams and 17,772 strip samples in 48.01 seconds. The result at
+`~/.local/share/eql-automation/nav-candidates/gfay-high-clearance-whole-strip-audit-20261113T1947Z.json`
+has SHA-256 `1f95b6bbe3e4d63dbf4089a8a5f1a614e4cd7c2ada3ee0229495cdbcc221cab7`.
+At the old exit point, one final side sample overlaps area 4; the 2-unit
+standoff avoids that overlap. Area 4 is the copied manifest's
+`DRNTP00255000004_ZONE` Crushbone reference, but its `target` and
+`to_zone_id` fields are both null. The actual transition and arrival are
+unknown. The strip pass samples straight segments; it does not validate
+turning, thin detail transitions, dynamic objects, measured follower error,
+current character position or real client motion.
+
+**VERIFIED copied-mesh turn warning:** A conservative 32-direction check at
+the midpoint of GFay portal 22391→22406 found a 0.622271-unit drop over a
+0.6-unit radial step, grade 1.037118 above the current 1.0 limit. Moving
+that crossing from portal fraction 0.50 to 0.60 makes its local full-disk
+check and both adjoining 1.0-unit-spaced strips pass. The next portal
+22406→22403 fails a conservative full-disk angular-grade check at its
+midpoint; moving it to fraction 0.70 passes its local disk and adjoining
+strips. Source audits found a third midpoint warning at portal
+19145→19119; its fraction 0.60 passes the local disk and adjoining strips.
+With portal fractions `{170: 0.60, 171: 0.70, 187: 0.60}` and the same
+2-unit standoff, a single route-wide run passed all **214/214** 32-direction,
+two-radius turn disks (13,696 samples), and a separate single route-wide run
+passed all **215/215** ground strips plus **214/214** seams (17,799 samples).
+The hash-bound turn result is
+`~/.local/share/eql-automation/nav-candidates/gfay-high-clearance-adjusted-turn-audit-20261113T1954Z.json`
+(SHA-256 `12011abe2ca2c7793ba8110c33138115afc3facf5c54dad792670b5d1c51d0ad`);
+the strip result is
+`~/.local/share/eql-automation/nav-candidates/gfay-high-clearance-adjusted-strip-audit-20261113T1956Z.json`
+(SHA-256 `0c4285f15f15f9ef793f097a0c081454c35706c459bf74566e6bca4f2fe8ac80`).
+These are only sampled ground geometry: the zone trigger/arrival, thin detail
+transitions, dynamic obstacles, follower error and real movement remain
+unverified. Twenty-nine focused portal/strip/turn tests and a startup demo
+passed. F11 stays disabled.
+
 ## GFay corridor edge quantization and owner supply signals — 2026-11-13 13:39 CST
 
 **VERIFIED offline, no game input:** The copied owner GFay mesh at
@@ -18,7 +60,8 @@ seam candidates. All 215 ground polygon midpoint centerlines passed a
 0.5-unit-spaced detail-surface audit, with maximum sampled local grade 0.906
 and queried clearance reaching the 4-unit cap. Sampled 1.2-unit lateral strips
 passed segments 0–36; segment 37 exhausted a 10-second work budget without
-an observed geometry rejection. The remaining strip, zone transition,
+an observed geometry rejection. The later 13:52 audit above supersedes that
+partial strip result. At this point, the remaining strip, zone transition,
 dynamic obstacles, follower error, current position and actual movement are
 **NOT RUN**. The corridor is not an accepted F11 route. The polygon-wide
 maximum slope is 83.764 degrees, which does not describe the checked midline.

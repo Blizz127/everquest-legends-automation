@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.13 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.14 / owner preview 0.39.4
 
 ## Current availability
 
@@ -60,6 +60,15 @@ and 215 midpoint centerline segments of one saved GFay corridor pass offline;
 only the first 37 lateral strips passed the bounded check. The remaining
 strip, zone transition and live follower are unverified, so the route is not
 available to F11. No purchases or game input were added to this build.
+Version 0.41.14 lets the offline strip audit use explicit bounded work limits
+for long paths. The complete saved GFay ground approach passed 215 sampled
+strip segments and 214 internal seams to a point 2 units before the copied
+Crushbone trigger. A new conservative turn-disk audit found local warnings
+at portal waypoints 170, 171 and 187. With three adjusted crossings, the
+complete approach passed 214 sampled turn disks and all 215 strips in
+separate whole-route offline runs. The actual zone transition, Crushbone
+arrival and client movement are unverified. F11 remains disabled. The
+owner-run preview remains 0.39.4.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
