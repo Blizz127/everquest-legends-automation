@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.38 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.39 / owner preview 0.39.4
 
 ## Current availability
 
@@ -19,8 +19,8 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.38 are privately staged on Alienware under
-`~/.local/share/eql-automation/owner-tools/0.41.38/source`; they do not
+Source tools 0.41.39 are privately staged on Alienware under
+`~/.local/share/eql-automation/owner-tools/0.41.39/source`; they do not
 replace the owner-run 0.39.4 assist preview.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
@@ -228,6 +228,10 @@ Version 0.41.38 adds a read-only analyzer for the owner-created HP crop. It
 checks the saved crop and source hashes and reports an **unverified** red-bar
 fraction. It does not authorize smart heals or G2. The owner-run UI capture
 below is still needed; no live HP pixels have been observed.
+Version 0.41.39 adds pinned copied South and North Kaladim archives to the
+offline zone scene, map alignment and BSP region tools. Their map labels and
+nearby BSP zone-line regions are static exit candidates, not accepted
+movement or zone transitions. No owner-run controls change.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
@@ -333,7 +337,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.38/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.39/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -341,7 +345,7 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.38/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.39/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 
@@ -787,6 +791,21 @@ python3 -m eql_automation --build-later-zone-candidate-scene cauldron --exclude-
 python3 -m eql_automation --build-later-zone-candidate-scene unrest
 ```
 
+The copied South and North Kaladim archives now have the same hash-pinned
+offline command. Run it on the devbox with the approved private client copies:
+
+```bash
+python3 -m eql_automation --build-copied-zone-candidate-scene kaladima
+python3 -m eql_automation --build-copied-zone-candidate-scene kaladimb
+python3 -m eql_automation --audit-map-alignment kaladima
+python3 -m eql_automation --probe-zone-labels kaladima
+```
+
+`kaladima` is South Kaladim and has a copied map label for Butcherblock.
+`kaladimb` is North Kaladim and has labels for South Kaladim. These commands
+only produce private static evidence. The character's actual fresh spawn,
+walkable route, zone trigger and arrival still need real-client checks.
+
 Both emit provisional WLD-XYZ OBJs under
 `~/.local/share/eql-automation/nav-candidates/`, alongside archive/member
 hashes and `real_client_accepted: false`. Omit `--exclude-boundary` to retain
@@ -796,7 +815,8 @@ door behavior remain unresolved. These are offline geometry commands, not
 an Alienware launch step or an F11 travel command.
 
 `--audit-zone-regions ZONE` checks copied WLD BSP tree and region-label
-references for `butcher`, `crushbone`, or `gfaydark`. It reports water and
+references for `butcher`, `crushbone`, `gfaydark`, `kaladima`, or `kaladimb`.
+It reports water and
 zoneline **region ID candidates**. It does not decode region shapes, accept
 water-free paths, or turn zoneline labels into graph edges.
 `--audit-map-alignment ZONE` compares map drawing endpoints with copied WLD

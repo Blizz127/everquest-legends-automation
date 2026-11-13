@@ -1,5 +1,67 @@
 # FINDINGS
 
+## Copied Kaladim starting-zone source — 2026-11-13 17:27 CST
+
+**VERIFIED offline, no game input:** `kaladima` is South Kaladim in the
+owner's client map labels; `kaladimb` is North Kaladim. Four zone/object
+archives were copied read-only from the Alienware install into the approved
+untracked private store; local SHA-256 matched the installed originals:
+
+| Archive | SHA-256 |
+| --- | --- |
+| `kaladima.s3d` | `4e9dfb073a551f0caaca736286d3b73eaff3bf1cbaef1b143b575ce65d91f8f7` |
+| `kaladima_obj.s3d` | `192c44e5e3c6e110d72aff09a6f06d802383b3d7ec019114d78c82894bec4c6e` |
+| `kaladimb.s3d` | `605911382c8bc23bd2d735ba2e3eb0e8f7f941f7a260895acc01db87d7a5ba12` |
+| `kaladimb_obj.s3d` | `649ddc660e18a997b393e2f7da7fd32e7eb080eb7ef5832b37cba3fc92a3b103` |
+
+The copied map SHA-256 values are `bfcbaed6d2c04b506a82a073b00133f830ad961d59fd2df78598d75a2099f69d`
+(`kaladima.txt`), `f6f6d9d30752b7f7d812126af323eac66c558f16641cf4cce0bd561310aea5f7`
+(`kaladima_1.txt`), `f83bb7f4e39f937d66ca65088f5bbfc8f8f4827f645cea1ca4e304bf36dcc13b`
+(`kaladimb.txt`) and `e4c8c4398c2a987085ca362aee9142a5b14915bda9af67d86a7be02fa0c58656`
+(`kaladimb_1.txt`). The private copies are under
+`~/.local/share/eql-automation/client-data/retail-full/assets/` and
+`~/.local/share/eql-automation/client-data/retail-full/maps/`.
+
+South Kaladim's copied terrain WLD has 5,861 BSP nodes and 1,474 regions;
+22 region-type records are water and three are zone-line candidates. North
+Kaladim has 7,436 nodes and 2,021 regions; 40 records are water and two are
+zone-line candidates. Both map geometries independently select the `-y,-x`
+map-to-WLD transform. South Kaladim's `to_Butcherblock_Mountains` label is
+near copied surface Z=0; a sampled zone-line region at WLD
+`(-87.2702,39.7893,0)` lies 30 units in XY from its label. At the label itself
+the BSP lookup returns `missing BSP child`, so its trigger shape and exact
+entry direction are unresolved. North Kaladim's second South Kaladim label
+has a sampled zone-line region five units away; its first does not have one
+within the current search radius. These are static candidates only.
+
+The pinned `--build-copied-zone-candidate-scene` command composed provisional
+South Kaladim OBJ SHA-256
+`c9e0a3c9d16e278d53fd958f5696e8d88df18be927a76ac0980d4bb9f85f02c8`
+(40,707 vertices, 23,854 faces) and North Kaladim OBJ SHA-256
+`ea49e4f493dc08b541ddfb247acf612dab5168f3d400cd73b153ebdd98bdc8f5`
+(52,743 vertices, 30,591 faces), both under
+`~/.local/share/eql-automation/nav-candidates/`. All 266 South and 249 North
+object placements found exact model names. Collision materials, doors,
+navigability, spawn, a real zone crossing and an automated level gain remain
+unverified. F11 remains disabled.
+
+**VERIFIED offline exit diagnostic:** The pinned local Recast baker
+(`9f4ce64458dfae86e1239c525ddc219c4e9e06f1`) produced a 128-unit
+South Kaladim exit tile with 50 provisional nav polygons using profile
+`height=8,radius=5,climb=2,slope=45`. The nav SHA-256 is
+`6e3efc8ddd012f7a270980416ef180d30d26a0ca94b5456de09209dd3c67c7f6`.
+The hash-bound local Detour query from sampled BSP zone-line point
+`(-87.2702,39.7893,0)` toward the map label at `(-57.2702,39.7893,0)`
+returned six polygons and five straight points, with start/end snap distances
+0.747/0.866 units; query JSON SHA-256 is
+`8b975e42785ef693d9af3dfd441e1d83892005e2ed6d991e888eab5d989144d1`.
+A separate copied BSP scan of its four straight segments at path and path+1
+height found two zone-line spans at the start and four unlabelled spans, with
+no water/unknown spans. The query appears to move *out of* the sampled
+zone-line region; the actual trigger direction and transition remain unknown.
+The tile covers only the exit vicinity and gives no fresh-character spawn
+location or certified route from spawn. No real client movement was run.
+
 ## HP crop evidence reader — 2026-11-13 17:20 CST
 
 **VERIFIED source diagnosis, live pixels still missing:** The owner preview

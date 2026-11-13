@@ -1,8 +1,21 @@
 # STATUS
 
-Updated 2026-11-13 17:22 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 17:27 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
+- Fresh level-1 source progress: South and North Kaladim zone/object archives
+  and maps were copied read-only from the owner's client to the private store
+  with matching SHA-256. Pinned offline scene composition produced South
+  Kaladim OBJ `c9e0a3c9…` (23,854 faces) and North OBJ `ea49e4f4…`
+  (30,591 faces). Copied maps and WLD terrain agree on the `-y,-x` frame;
+  a South Kaladim BSP zone-line candidate is 30 units from its Butcherblock
+  label. A 128-unit exit tile baked 50 provisional polygons; an offline
+  six-polygon Detour query links the sampled zone-line point toward the map
+  label, and a copied BSP scan sees the zone-line at its start. Exact trigger
+  direction, fresh spawn, full route and real transition remain unverified.
+  Next: derive a bounded South Kaladim corridor from an observed fresh spawn
+  to that exit; retain F11 off. XP/hour and deaths
+  remain unavailable; current camp is last reported GFay, unverified now.
 - Low-level route progress: a bounded select-only run saved the 249-ground-
   polygon Butcherblock camp→GFay portal sequence; a separate hash-bound
   whole-strip audit passed all 249 copied segments. A separate copied-client

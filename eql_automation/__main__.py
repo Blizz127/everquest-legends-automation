@@ -37,7 +37,15 @@ from .path_hazard_audit import audit_path_hazards
 
 # Copied owner-client archives already checked against the Alienware install.
 # A changed archive needs a new source audit before it can compose route input.
-LATER_ZONE_ARCHIVES = {
+COPIED_ZONE_ARCHIVES = {
+    "kaladima": {
+        "kaladima.s3d": "4e9dfb073a551f0caaca736286d3b73eaff3bf1cbaef1b143b575ce65d91f8f7",
+        "kaladima_obj.s3d": "192c44e5e3c6e110d72aff09a6f06d802383b3d7ec019114d78c82894bec4c6e",
+    },
+    "kaladimb": {
+        "kaladimb.s3d": "605911382c8bc23bd2d735ba2e3eb0e8f7f941f7a260895acc01db87d7a5ba12",
+        "kaladimb_obj.s3d": "649ddc660e18a997b393e2f7da7fd32e7eb080eb7ef5832b37cba3fc92a3b103",
+    },
     "cauldron": {
         "cauldron.s3d": "a035788d5df592e313d7b2a7998a3ceae300ebe68cf9e837c2509a2cd98b4409",
         "cauldron_obj.s3d": "b4d59143a630c81b9a9b39156a27854df5c72641e7ad3d93e5fe49ecdc89a686",
@@ -158,13 +166,18 @@ def main() -> None:
                        help="inventory copied Crushbone placements, meshes and materials offline")
     group.add_argument("--build-crushbone-candidate-scene", action="store_true",
                        help="write provisional Crushbone solid-flag OBJ outside git")
-    group.add_argument("--build-later-zone-candidate-scene", choices=tuple(LATER_ZONE_ARCHIVES),
-                       metavar="ZONE", help="compose a hash-pinned Cauldron or Unrest OBJ outside git")
-    group.add_argument("--audit-zone-regions", choices=("butcher", "crushbone", "gfaydark"),
+    group.add_argument("--build-later-zone-candidate-scene", "--build-copied-zone-candidate-scene",
+                       dest="build_copied_zone_candidate_scene",
+                       choices=tuple(COPIED_ZONE_ARCHIVES), metavar="ZONE",
+                       help="compose a hash-pinned copied-zone OBJ outside git")
+    group.add_argument("--audit-zone-regions", choices=("butcher", "crushbone", "gfaydark",
+                                                         "kaladima", "kaladimb"),
                        metavar="ZONE", help="audit copied WLD water/zone region labels offline")
-    group.add_argument("--audit-map-alignment", choices=("butcher", "crushbone", "gfaydark"),
+    group.add_argument("--audit-map-alignment", choices=("butcher", "crushbone", "gfaydark",
+                                                         "kaladima", "kaladimb"),
                        metavar="ZONE", help="cross-check copied map points/labels with WLD terrain")
-    group.add_argument("--probe-zone-labels", choices=("butcher", "crushbone", "gfaydark"),
+    group.add_argument("--probe-zone-labels", choices=("butcher", "crushbone", "gfaydark",
+                                                       "kaladima", "kaladimb"),
                        metavar="ZONE", help="sample copied BSP zoneline labels near client map hints offline")
     group.add_argument("--audit-path-hazards", choices=("butcher", "crushbone", "gfaydark"),
                        metavar="ZONE", help="sample a provisional Detour query against copied BSP labels")
@@ -478,14 +491,14 @@ def main() -> None:
                                           include_boundary=not args.exclude_boundary,
                                           zone_name="Crushbone", filename_prefix="crushbone")
             print(json.dumps({**source_info, **asdict(scene)}, indent=2))
-    elif args.build_later_zone_candidate_scene is not None:
-        zone = args.build_later_zone_candidate_scene
+    elif args.build_copied_zone_candidate_scene is not None:
+        zone = args.build_copied_zone_candidate_scene
         asset_root = DATA_ROOT / "client-data" / "retail-full" / "assets"
         destination = DATA_ROOT / "nav-candidates"
         if (not asset_root.resolve().is_relative_to(DATA_ROOT.resolve()) or
                 not destination.resolve().is_relative_to(DATA_ROOT.resolve())):
             parser.error("Candidate scene sources and destination must stay in the approved EQL store")
-        expected = LATER_ZONE_ARCHIVES[zone]
+        expected = COPIED_ZONE_ARCHIVES[zone]
         archives = {name: PFSArchive(asset_root / name) for name in expected}
         if any(archives[name].sha256 != digest for name, digest in expected.items()):
             parser.error("Copied zone archive hash changed; audit the owner-client source again")
