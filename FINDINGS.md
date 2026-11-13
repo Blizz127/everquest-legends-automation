@@ -1,5 +1,43 @@
 # FINDINGS
 
+## Alienware source switched; owner F8 path rechecked — 2026-11-13 09:17 CST
+
+**VERIFIED read-only:** The Alienware rotation folder currently contains a
+large, dirty November 12 working tree, not the reviewed October 17 mirror.
+At 2026-11-13 15:15:41 UTC, its `rotation_core.py` SHA-256 was
+`5632dbef84ae93b5ec3ec70d516cbc53c4b26593d78d99b55e1f7856bbdbd83a`,
+`rotation_engine.py` was
+`1e1e6e3e021619471f9d954e86c9af81363315a66a7b8771b766acea53ea4731`,
+and `eql_rotation.py` was
+`c4fd21f59d0e6cfa2321f0c64826d8402d566a2ac0bde14b4614db4d5a49ac8e`.
+Their sizes are 23,178, 138,022 and 56,647 bytes. The earlier 15:08 UTC
+recheck found the October hashes; the folder's visible contents changed
+between checks. The cause is unknown. The changed source is preserved and
+was not overwritten.
+
+**VERIFIED startup and refusal:** The 0.37.0 owner wrapper archive, SHA-256
+`afebbc527bf72824cf7ca02f6719ef85071611d766659b158ddac301b416c0e9`,
+was staged outside the game install. Its Alienware dry-run refused before GUI
+or input because the source hash changed. Its extracted directory was renamed
+to `~/.local/share/eql-automation/owner-assist/0.37.0-source-mismatch` so the
+old HOWTO command cannot start it. The current Alienware legacy helper's
+`./launch.sh --dry-run --level 4` then exited 0 without opening input.
+No lead-controlled game login, key press, movement or character progress
+occurred.
+
+**OBSERVED current source:** F8 arms persistent combat without selecting a
+target or moving, and F9 disarms it; F7 toggles. F8 performs `/consider`
+target review and sends `/attack` for approved NPCs, so it is not strict
+rotation-only ASSIST. F10 sends `/attack off` before `/cast 1`. F9's native
+`/attack off` can be deferred until focus/input is safe; a prompt helper stop
+does not prove melee immediately stopped in the client. F11 can start
+unattended targeting and movement even though all new movement gates in
+`LIVE_GATES.md` are marked NOT_RUN and the November 6 continued-walking
+incident remains unresolved. F12 records route points. HOWTO therefore
+limits Blizz's current supervised test to F8/F9 and says not to use F11/F12.
+The current README claims historical live F8 validation but points to an
+unresolved evidence file. No fresh-character 1→50 run has been verified.
+
 ## Owner-run attack-free rotation preview — 2026-11-13 09:14 CST
 
 **VERIFIED offline:** `owner_live_entry.py` checks SHA-256 of the three
