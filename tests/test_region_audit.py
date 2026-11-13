@@ -5,6 +5,7 @@ import pytest
 
 from eql_automation.bsp_probe import BspPointLookup, nearby_zoneline_candidate
 from eql_automation.nav import Point
+from eql_automation.path_hazard_audit import audit_path_hazards
 from eql_automation.region_audit import audit_bsp_regions
 from eql_automation.wld_inventory import WLDInventory, XOR_KEY
 
@@ -86,3 +87,22 @@ def test_bsp_point_lookup_labels_branches_and_fails_closed():
                                        transform="x,y", radius=10, step=5)
     assert nearby["nearest_zoneline_candidate"]["region_id"] == 2
     assert nearby["navigation_edge_accepted"] is False
+
+
+def test_bounded_path_sampling_flags_water_zone_and_unknown_without_acceptance():
+    lookup = BspPointLookup(point_wld())
+    audit = audit_path_hazards(lookup, [(1, -1, 0), (1, 1, 0)],
+                               requested_start=(0, -1, 0),
+                               requested_end=(1, 1, 0), spacing=1.0,
+                               query_complete=True, start_snap_distance=1,
+                               end_snap_distance=0)
+    assert audit["label_sample_counts"] == {"water": 1, "zoneline": 1}
+    assert audit["unknown_region_sample_count"] == 2
+    assert audit["requested_start_connector_length"] == 1
+    assert audit["route_accepted"] is False
+    with pytest.raises(ValueError, match="sampling exceeds cap"):
+        audit_path_hazards(lookup, [(0, 0, 0), (1_000_000, 0, 0)],
+                           requested_start=(0, 0, 0), requested_end=(1_000_000, 0, 0))
+    with pytest.raises(ValueError, match="invalid WLD XYZ"):
+        audit_path_hazards(lookup, [None, (1, 1, 0)],
+                           requested_start=(0, 0, 0), requested_end=(1, 1, 0))

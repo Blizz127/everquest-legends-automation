@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 from collections import Counter
+from math import dist, isfinite
 from pathlib import Path
 from dataclasses import asdict
 
@@ -31,6 +32,7 @@ from .material_audit import summarize_zone_materials
 from .region_audit import audit_bsp_regions
 from .map_alignment import audit_map_alignment
 from .bsp_probe import BspPointLookup, nearby_zoneline_candidate
+from .path_hazard_audit import audit_path_hazards
 
 
 def shell() -> None:
@@ -148,6 +150,8 @@ def main() -> None:
                        metavar="ZONE", help="cross-check copied map points/labels with WLD terrain")
     group.add_argument("--probe-zone-labels", choices=("butcher", "crushbone", "gfaydark"),
                        metavar="ZONE", help="sample copied BSP zoneline labels near client map hints offline")
+    group.add_argument("--audit-path-hazards", choices=("butcher", "crushbone", "gfaydark"),
+                       metavar="ZONE", help="sample a provisional Detour query against copied BSP labels")
     parser.add_argument("--output", type=Path,
                         help="synthetic trace directory; defaults under ~/.local/share/eql-automation/runs")
     parser.add_argument("--source", type=Path,
@@ -515,6 +519,68 @@ def main() -> None:
                           "label_map_sha256": sha256_file(label_path),
                           "frame_transform": alignment["best_map_to_wld_xy_transform"],
                           "label_probes": results, "real_client_accepted": False}, indent=2))
+    elif args.audit_path_hazards is not None:
+        if args.source is None:
+            parser.error("--audit-path-hazards requires --source QUERY.json")
+        zone = args.audit_path_hazards
+        archive_path = DATA_ROOT / "client-data" / "retail-full" / "assets" / f"{zone}.s3d"
+        candidate_root = (DATA_ROOT / "nav-candidates").resolve()
+        if (not archive_path.resolve().is_relative_to(DATA_ROOT.resolve()) or
+                not args.source.resolve().is_relative_to(candidate_root)):
+            parser.error("Query JSON must be inside the approved EQL candidate store")
+        if not args.source.is_file() or args.source.stat().st_size > 2 * 1024 * 1024:
+            parser.error("Provisional query JSON is missing or too large")
+        query = json.loads(args.source.read_text(encoding="utf-8"))
+        if (not isinstance(query, dict) or
+                query.get("format") != "eql-offline-nav-query-v1" or
+                query.get("zone") != zone or
+                query.get("real_client_accepted") is not False or
+                query.get("offline_path_complete") is not True or
+                query.get("straight_path_complete") is not True or
+                not isinstance(query.get("straight_path_wld_xyz"), list)):
+            parser.error("Expected a complete, zone-matched, unaccepted local Detour query")
+        path_points = query["straight_path_wld_xyz"]
+        if (not isinstance(query.get("straight_points"), int) or
+                isinstance(query["straight_points"], bool) or
+                query["straight_points"] != len(path_points) or len(path_points) < 2):
+            parser.error("Detour straight-point count does not match query data")
+        def valid_xyz(value: object) -> bool:
+            return (isinstance(value, list) and len(value) == 3 and
+                    all(isinstance(axis, (int, float)) and
+                        not isinstance(axis, bool) and isfinite(axis)
+                        for axis in value))
+        snapped_start = query.get("snapped_start_wld_xyz")
+        snapped_end = query.get("snapped_end_wld_xyz")
+        if (not all(valid_xyz(value) for value in
+                    (snapped_start, snapped_end, path_points[0], path_points[-1])) or
+                dist(snapped_start, path_points[0]) > 0.05 or
+                dist(snapped_end, path_points[-1]) > 0.05):
+            parser.error("Snapped endpoints disagree with Detour straight points")
+        nav_value = query.get("nav_path")
+        if not isinstance(nav_value, str):
+            parser.error("Query is missing its provisional nav path")
+        nav_path = Path(nav_value).resolve()
+        if (not nav_path.is_relative_to(candidate_root) or
+                not nav_path.name.startswith(zone + "-") or
+                not nav_path.is_file() or
+                not 0 < nav_path.stat().st_size <= 100 * 1024 * 1024 or
+                query.get("nav_sha256") != sha256_file(nav_path)):
+            parser.error("Query nav file or hash does not match the copied zone")
+        archive = PFSArchive(archive_path)
+        wld = WLDInventory(archive.read_member(f"{zone}.wld"))
+        result = audit_path_hazards(
+            BspPointLookup(wld), query["straight_path_wld_xyz"],
+            requested_start=query.get("requested_start_wld_xyz"),
+            requested_end=query.get("requested_end_wld_xyz"),
+            query_complete=query["offline_path_complete"] and
+            query["straight_path_complete"],
+            start_snap_distance=query.get("start_snap_distance"),
+            end_snap_distance=query.get("end_snap_distance"))
+        print(json.dumps({"zone": zone, "query_sha256": sha256_file(args.source),
+                          "nav_sha256": query["nav_sha256"],
+                          "zone_filename_and_nav_hash_checked": True,
+                          "archive_sha256": archive.sha256, "wld_sha256": wld.sha256,
+                          **result}, indent=2))
     else:
         shell()
 

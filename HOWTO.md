@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.24.0
+# EverQuest Legends automation — current build 0.25.0
 
 ## Current availability
 
@@ -50,6 +50,8 @@ python3 -m eql_automation --audit-map-alignment gfaydark
 python3 -m eql_automation --probe-zone-labels butcher
 python3 -m eql_automation --probe-zone-labels crushbone
 python3 -m eql_automation --probe-zone-labels gfaydark
+python3 tools/query_offline_nav.py butcher ~/.local/share/eql-automation/nav-candidates/butcher-fayhouse-128.nav ~/.local/share/eql-automation/nav-candidates/butcher.sample-query-with-points.json 1405.765747 2757.740967 -3.65255 1405.765747 2797.740967 -3.65255
+python3 -m eql_automation --audit-path-hazards butcher --source ~/.local/share/eql-automation/nav-candidates/butcher.sample-query-with-points.json
 python3 -m eql_automation --index-spell-levels
 python3 -m eql_automation --query-spell-levels Yaulp --class-name Paladin --level 9
 python3 -m eql_automation --index-ui-widgets
@@ -274,6 +276,16 @@ regions. It reports unknown when a BSP branch is missing or ambiguous.
 Results are sampled review hints only: no transition, route edge, or safe
 water-free path is accepted. The Greater Faydark labels do not themselves
 fall in tagged zoneline regions in this copied client.
+`tools/query_offline_nav.py` runs the local Detour query and writes JSON
+bound to a zone-named nav file and its before/after checked SHA-256 in the approved untracked
+store. `--audit-path-hazards ZONE --source QUERY.json` rehashes that nav
+file, rejects incomplete or mismatched query points, then samples the
+provisional straight path and both requested-to-snap
+endpoint gaps against copied BSP labels. A filename/hash match does not
+prove the nav mesh is correct for the real zone. A zero-label result means
+only that the sampled points had no labelled region; unknown samples and
+narrow missed regions remain possible. The audit always keeps route and
+movement acceptance false.
 
 For bounded **offline** navmesh experiments, place the upstream
 [RecastNavigation source](https://github.com/recastnavigation/recastnavigation)

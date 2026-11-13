@@ -2,10 +2,12 @@
 #include <DetourAlloc.h>
 #include <DetourNavMesh.h>
 #include <DetourNavMeshQuery.h>
+#include <DetourStatus.h>
 
 #include <cmath>
 #include <cstring>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -85,22 +87,47 @@ int main(int argc, char** argv) {
         unsigned char straight_flags[256]{};
         dtPolyRef straight_refs[256]{};
         int straight_count = 0;
+        dtStatus straight_status = DT_FAILURE;
         if (dtStatusSucceed(start_status) && dtStatusSucceed(end_status) &&
             start_ref && end_ref) {
             path_status = query->findPath(start_ref, end_ref,
                                           nearest_start, nearest_end, &filter,
                                           corridor, &corridor_count, 256);
             if (dtStatusSucceed(path_status) && corridor_count > 0) {
-                query->findStraightPath(nearest_start, nearest_end,
-                                        corridor, corridor_count, straight,
-                                        straight_flags, straight_refs,
-                                        &straight_count, 256);
+                straight_status = query->findStraightPath(
+                    nearest_start, nearest_end, corridor, corridor_count,
+                    straight, straight_flags, straight_refs,
+                    &straight_count, 256);
             }
         }
-        const bool complete = dtStatusSucceed(path_status) &&
-                              corridor_count > 0 && corridor[corridor_count - 1] == end_ref;
-        std::cout << "{\"start_poly_found\":" << (start_ref ? "true" : "false")
+        const bool path_clean = dtStatusSucceed(path_status) &&
+            !dtStatusDetail(path_status, DT_PARTIAL_RESULT) &&
+            !dtStatusDetail(path_status, DT_BUFFER_TOO_SMALL) &&
+            !dtStatusDetail(path_status, DT_OUT_OF_NODES);
+        const bool straight_clean = dtStatusSucceed(straight_status) &&
+            !dtStatusDetail(straight_status, DT_PARTIAL_RESULT) &&
+            !dtStatusDetail(straight_status, DT_BUFFER_TOO_SMALL) &&
+            !dtStatusDetail(straight_status, DT_OUT_OF_NODES) &&
+            straight_count > 0;
+        const bool complete = path_clean && straight_clean &&
+            corridor_count > 0 && corridor[corridor_count - 1] == end_ref;
+        auto write_wld_point = [](const float* point) {
+            std::cout << '[' << -point[0] << ',' << point[2] << ',' << point[1] << ']';
+        };
+        std::cout << std::setprecision(9)
+                  << "{\"start_poly_found\":" << (start_ref ? "true" : "false")
                   << ",\"end_poly_found\":" << (end_ref ? "true" : "false")
+                  << ",\"requested_start_wld_xyz\":";
+        write_wld_point(start);
+        std::cout << ",\"requested_end_wld_xyz\":";
+        write_wld_point(end);
+        std::cout << ",\"snapped_start_wld_xyz\":";
+        if (start_ref) write_wld_point(nearest_start);
+        else std::cout << "null";
+        std::cout << ",\"snapped_end_wld_xyz\":";
+        if (end_ref) write_wld_point(nearest_end);
+        else std::cout << "null";
+        std::cout
                   << ",\"start_snap_distance\":";
         if (start_ref) std::cout << point_distance(start, nearest_start);
         else std::cout << "null";
@@ -110,6 +137,16 @@ int main(int argc, char** argv) {
         std::cout
                   << ",\"corridor_polygons\":" << corridor_count
                   << ",\"straight_points\":" << straight_count
+                  << ",\"straight_path_complete\":" << (straight_clean ? "true" : "false")
+                  << ",\"straight_path_wld_xyz\":[";
+        for (int index = 0; index < straight_count; ++index) {
+            if (index) std::cout << ',';
+            // Recast (-WLD_X, WLD_Z, WLD_Y) back to raw WLD XYZ.
+            std::cout << '[' << -straight[3 * index]
+                      << ',' << straight[3 * index + 2]
+                      << ',' << straight[3 * index + 1] << ']';
+        }
+        std::cout << ']'
                   << ",\"offline_path_complete\":" << (complete ? "true" : "false")
                   << ",\"real_client_accepted\":false,\"movement_verified\":false}\n";
         dtFreeNavMeshQuery(query);

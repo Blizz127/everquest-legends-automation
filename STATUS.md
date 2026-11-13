@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 06:04 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 06:08 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.24.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.25.0. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -97,6 +97,14 @@ Updated 2026-11-13 06:04 CST for coordinator task `829a00229b29`.
   Butcherblock's GFay label has a candidate 30 units away; Crushbone's
   GFay label has a candidate 25 units away but hits a missing BSP child at
   the label itself. These hints add no accepted route or transition.
+  Detour queries now export requested, snapped and straight path WLD points.
+  A local wrapper binds query JSON to a zone-named nav file and SHA-256;
+  an offline sampler includes straight segments and both requested-to-snap
+  connectors when checking copied BSP labels. The Butcherblock FAYHOUSE
+  sample had 27 sampled positions with no copied labels or unknown BSP results. The
+  Crushbone TIKIBAM sample had 10 sampled positions, no labels and two unknown BSP
+  results along a 5.41-unit start snap. Neither result verifies a safe
+  route, zone identity, or game movement.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -173,6 +181,12 @@ Updated 2026-11-13 06:04 CST for coordinator task `829a00229b29`.
   against all three copied zones. Sample manifests/hashes are in
   `FINDINGS.md`; `python3 -m compileall -q eql_automation` and
   `git diff --check` passed.
+  `python3 -m pytest -q tests/test_region_audit.py tests/test_map_alignment.py`
+  — 5 passed after connector and malformed-path checks. The local query
+  wrapper and `--audit-path-hazards` CLI ran on both copied-zone nav samples;
+  hashes are in `FINDINGS.md`. A fabricated Butcherblock water line flagged
+  41/41 samples, with route acceptance false. The Detour tool rebuilt and
+  emitted WLD straight points; compile and diff checks passed.
 - Current blocker: owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will

@@ -1,5 +1,44 @@
 # FINDINGS
 
+## Provisional Detour path sampling against copied BSP labels — 2026-11-13 06:06 CST
+
+**VERIFIED offline query and sampling:** The pinned Detour query tool now
+emits its requested, snapped, and straight path points back in WLD XYZ;
+checks both corridor and straight-path status for partial, truncated, or
+out-of-nodes results; and reports endpoint snap distances. A local wrapper
+checks the nav SHA-256 before and after querying, then binds the JSON to a
+zone-named nav file and that hash. The audit accepts only complete queries,
+rehashes that nav file, checks point counts and snapped endpoints, and samples
+the straight segments **and the requested
+endpoint-to-snap connectors** at intervals no longer than five WLD units.
+It looks up copied WLD BSP labels at each sample. The filename/hash check
+does not verify that the nav geometry matches the real zone. Missing or
+ambiguous BSP regions remain unknown; no negative result establishes a
+safe route.
+
+The existing 24-polygon Butcherblock FAYHOUSE corridor yielded 8 straight
+points and 27 connector-inclusive samples with no labelled or unknown BSP
+regions. Its query JSON SHA-256 is
+`5c28b2bb90d6b62b046247330971ff9fcaeaee35f4da9137b92bf901227c028e`;
+the hazard audit JSON is
+`40772f58ccb06016d49692c47879769a9222cdcca36810209796d27faa199a97`.
+The 7-polygon Crushbone TIKIBAM corridor yielded 3 straight points and 10
+connector-inclusive samples: no copied labels, but **two unknown BSP
+samples**. Its requested start was 5.41 units from the snapped start.
+Its query and audit hashes are
+`c94fb013a3a823c2de5f396183f14b01dc6794b4c2255a993e948b5a2414621e`
+and `9056e51e0e79f1e505674f6c824ff13aec6e029a25a6d3344ee8cc8c0e795cb9`.
+These are **sampled label absences only**: narrow volumes, vertical levels,
+doors, collision, aggro and live server behavior can invalidate either
+corridor. No nav edge was promoted or moved in the client.
+
+**VERIFIED positive detection control:** A fabricated WLD line at Z −50
+across two copied Butcherblock water-labelled regions produced 41/41
+water-labelled samples and still reported `route_accepted=false`. This
+checks the new sampler's ability to flag a copied water label, not an
+actual path the character could follow. All query and audit JSON stays
+under `~/.local/share/eql-automation/nav-candidates/`, outside git.
+
 ## Offline BSP point and zone-label probes — 2026-11-13 06:03 CST
 
 **VERIFIED copied-data algorithm and CLI:** A bounded WLD-XYZ point lookup
