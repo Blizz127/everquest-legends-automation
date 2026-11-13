@@ -1,5 +1,39 @@
 # FINDINGS
 
+## Crushbone bypass graph cut and bounded portal clearance — 2026-11-13 12:02 CST
+
+**VERIFIED offline, no game input:** `eql_automation/graph_cut_audit.py` adds
+bounded ground-graph reachability and a sampled upper bound for maximum wall
+clearance along one portal at a fixed height. The upper bound adds half the
+sample spacing because distance to the same set of walls is 1-Lipschitz in
+the plane. Thirty focused portal, strip and graph tests pass. This is
+only copied-mesh evidence, never client acceptance. The staged source outside
+the Alienware client at
+`~/.local/share/eql-automation/nav-work/0.41.8/eql_automation/graph_cut_audit.py`
+matches devbox SHA-256
+`1f5dac4fc2855d08efb9e68a0718ca8527a98bda0cf7557822d050e376e4a365`.
+
+On the hash-matched Crushbone mesh, blocking the short-route step polygon
+3248 still leaves a 176-polygon ground-graph path from historical arrival
+2249 to Slaver goal 3805. Blocking both 3248 and 1170 disconnects that graph
+(1,406 polygons visited), so 1170 is required by any ground-graph bypass
+that avoids 3248. Polygon 1170 has links only to 637 and 1169. A 1,001-point
+scan at the portal's flat detail height Z=0.162506 gives maximum sampled
+clearance 2.632477 and a between-sample upper bound 2.635160, both below the
+current 3.0-unit diagnostic requirement. Both adjacent polygons' detail
+triangles are flat at that height. Thus that copied-mesh bypass cannot
+meet the current threshold at this fixed-height portal. The longer penalized
+route has 199 polygons and also reaches this gate.
+
+**CORRECTION to sparse sampling:** The preceding 637→1170 portal **does**
+have a narrow interval near fraction 0.47 with clearance 3.089791; its
+1,001-sample upper bound is 3.093691. The earlier five/few-fraction rejection
+there was a grid miss. A targeted sample at 0.47 lets the fixed-corridor
+preflight reach the next 1170→1169 portal, where the bounded clearance result
+above applies. The 3.0-unit requirement is a conservative diagnostic budget;
+the actual follower error is unmeasured. No live route has been accepted,
+and F11 stays disabled.
+
 ## Route-wide strip scan and second bottleneck — 2026-11-13 11:56 CST
 
 **VERIFIED offline, no game input:** `eql_automation/strip_route_audit.py`

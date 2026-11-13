@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.7 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.41.8 / owner preview 0.39.3
 
 ## Current availability
 
@@ -33,7 +33,9 @@ corridor by sampling one additional portal position. It is not a live travel
 release. Version 0.41.6 samples lateral ground and rejects that candidate at
 Crushbone polygon 3146. Version 0.41.7 adds a route-wide strip scanner; one
 local adjustment moves the first rejection to polygon 3248, with no verified
-short local crossing there. F11 stays disabled.
+short local crossing there. Version 0.41.8 checks the longer copied-mesh
+bypass and finds a required portal with clearance below the current 3-unit
+diagnostic threshold. F11 stays disabled.
 These changes are not in the owner preview or accepted
 for real-client movement.
 F11 remains disabled.

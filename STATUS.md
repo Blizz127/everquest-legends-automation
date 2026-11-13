@@ -1,11 +1,11 @@
 # STATUS
 
-Updated 2026-11-13 11:56 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 12:02 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Owner feedback check: at 11:44 CST, neither `~/eql-assist-trace.jsonl` nor `~/eql-g0-trace.jsonl` existed on Alienware; Legira's log had last been checked at 11:16 CST and had not changed since 09:31:50 CST. No 0.39.3 live result is available.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.41.7 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.41.8 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -456,6 +456,13 @@ Updated 2026-11-13 11:56 CST for coordinator task `829a00229b29`.
   passes adjacent strips. A graph bypass exists but is 176 polygons and
   remains untested by the strip audit. Twenty-five focused tests pass;
   F11 remains off.
+  A bounded graph-cut audit shows that avoiding poly3248 requires poly1170
+  on this copied ground graph. Its portal to1169 has maximum clearance at
+  most 2.635 units under the fixed-height copied-mesh distance bound, below
+  the current 3.0-unit diagnostic budget. A denser check corrected the
+  earlier sparse false rejection at the preceding 637→1170 portal: it has
+  a narrow 3.09-unit clearance opening near fraction0.47. Thirty
+  focused tests pass; these are offline geometry findings only.
   A bounded copied-mesh search found a wider GFay candidate with 3.47-unit
   minimum sampled clearance but an 89.19-degree slope flag and 55 standard
   locator mismatches. The filtered Crushbone arrival-to-Slaver route remains
@@ -487,9 +494,11 @@ Updated 2026-11-13 11:56 CST for coordinator task `829a00229b29`.
   trial after G0/G2 checks and resolve the narrow GFay/Crushbone corridors.
   For Crushbone, the 0.41.5 centerline fails the lateral strip at poly3146;
   a local portal shift moves the first failure to poly3248. Evaluate the
-  176-polygon graph bypass around poly3248 under the same bounded centerline
-  and strip checks, then inspect turn fans and variable source-to-bake height
-  offsets. Do not promote the centerline artifact to F11.
+  176-polygon bypass only after measured follower error establishes a real
+  clearance budget; the current 3.0-unit offline budget fails its mandatory
+  1170→1169 portal. Inspect turn fans, variable source-to-bake height offsets
+  and alternate camps/routes in parallel. Do not promote the centerline
+  artifact to F11.
   Integrate the already tested reachable-camp
   fallback for level 9; resolve the level-11 camp using measured XP and route safety.
   Validate a unique selection signal and chat-open/draft signal on an isolated
