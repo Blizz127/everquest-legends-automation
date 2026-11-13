@@ -1,5 +1,40 @@
 # FINDINGS
 
+## Owner-run live rotation handoff — 2026-11-13 09:10 CST
+
+**VERIFIED read-only:** Alienware currently has the October
+`/home/blizz/Projects/everquest-legends-rotation/launch.sh` (SHA-256
+`c692b528fe86af7e0bef7c341cfc37144d8549c29c1723a99fad94d9d01f3a2c`)
+and `rotation_engine.py` (SHA-256
+`8e32a72eb7f87dae9901f84841679fdb628c46fab7458de216bfdff9fe567683`).
+The desktop **EQ Legends Solo Assist** shortcut is present (SHA-256
+`a2dbafb1bad33e93962fa9cfb7c066c57b51de78d74d637b3f24d258f2952cbd`).
+One earlier bounded inventory saw placeholder files; a direct recheck at
+2026-11-13 15:08:58 UTC and a second agent at 15:09 UTC saw the actual files.
+The earlier absence finding is superseded; the cause of the differing reads
+is unknown. `./launch.sh --dry-run --level 1` ran on Alienware and exited 0
+after reading the installed spell catalog, without opening input devices.
+It reported an unconfirmed spellbook and a prospective level-1 gem plan.
+No lead-controlled login, game input or character progress occurred.
+
+**OBSERVED tool behavior:** October F6 exports the learned spellbook and
+memorizes gems, sending `/attack off` first; F8 starts/stops and sends
+`/attack on` when arming, while F8/F9 stop can send `/attack off`; F10 casts
+`/cast 1`. It does not choose targets, move, loot, vendor or camp. It clears
+an uncertain command draft when physical Escape/Enter is seen without a
+verified focused-chat-clear signal, and live combat/implied healing remain
+untested. The owner-run command and these limits are in HOWTO.md. This is a
+legacy live test path, not proof of strict rotation-only ASSIST or level 50.
+
+**VERIFIED current service rule, non-blocking owner notice:** The installed
+retail `eqhost.txt` still points to Daybreak's live login host. Daybreak's
+[Terms of Service, section 10](https://www.daybreakgames.com/terms-of-service?locale=en_us)
+currently forbids unapproved gameplay-modifying software, macros and bots;
+its [Rules of Conduct](https://help.daybreakgames.com/hc/en-us/articles/53818164365843-What-are-the-EverQuest-Legends-Rules-of-Conduct)
+also restrict unauthorized servers. The owner explicitly chose to test the
+legacy rotation himself on live; the lead will not access his account or
+character. A private endpoint is still needed for full-auto acceptance.
+
 ## Non-replaying run telemetry — 2026-11-13 09:04 CST
 
 **OBSERVED source risk:** The October `LogTail` reset its byte offset to

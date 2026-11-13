@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 09:04 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 09:11 CST for coordinator task `829a00229b29`.
 
 - Real-client level: n/a. No automated character login or live run.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: 0. Camp: none.
-- Build: offline prototype 0.36.0. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.36.1. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -164,6 +164,12 @@ Updated 2026-11-13 09:04 CST for coordinator task `829a00229b29`.
   backlogged logs invalidate level, XP, death count, camp and zone instead
   of replaying old events. First content from a newly created fresh-character
   log requires explicit opt-in. No owner-character log was read for this test.
+  The owner says he will test the older October rotation helper himself on
+  live. A direct Alienware recheck found that launcher and source present;
+  its `--dry-run --level 1` exited 0 without input. HOWTO now gives its
+  owner-run command and controls. It is a legacy test path with attack
+  toggles and gem preparation, not strict current ASSIST. No lead-controlled
+  login, key input or character progress occurred.
 - Verification: `python3 -m pytest -q tests/test_screen_observer.py tests/test_ui_schema.py tests/test_assist.py tests/test_spell_catalog.py tests/test_client_ingest.py tests/test_control.py tests/test_offline.py`
   — 47 passed; `--demo-gauges` returned synthetic HP 0.5/mana 1.0
   and unknown values when unfocused; `--demo-assist` proposed a synthetic `/cast 3` and
@@ -301,7 +307,10 @@ Updated 2026-11-13 09:04 CST for coordinator task `829a00229b29`.
   backlog and nonmonotonic XP-time regressions. Synthetic 1–50 reran to only
   fabricated level 50 with 1,446 events at
   `/home/blizz/.local/share/eql-automation/runs/synthetic-1-50-20261113T150416Z/`.
-- Current blocker: owner says the target is private, but its endpoint/client
+- Current blocker: owner-run legacy rotation testing is now available, but
+  strict current ASSIST still lacks validated target/chat observation and
+  native input; full-auto real-client acceptance still lacks the intended
+  private endpoint/client configuration. Owner says the target is private, but its endpoint/client
   configuration is missing. The only located Alienware EQL client still points
   to Daybreak's official live login host. No automated connection or input will
   be sent to that host. Bounded devbox/Banshee process, listener, container and
@@ -313,7 +322,9 @@ Updated 2026-11-13 09:04 CST for coordinator task `829a00229b29`.
   conservative clearance failure remain unresolved. No actual client
   acceptance is ready. No private
   launcher/server publication destination is configured; this build is local.
-- Next step: obtain the intended private endpoint or separate client config,
+- Next step: collect the owner's live rotation observations without touching
+  his character, and build a strict rotation-only owner-run variant that does
+  not toggle autoattack or prepare gems during combat. Obtain the intended private endpoint or separate client config,
   then verify target identity before any live test. Review copied client
   Boundary collision, water region shapes and dynamic-door rules; compare
   more offline clearance variants without promoting edges. Trace the

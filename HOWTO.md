@@ -1,4 +1,4 @@
-# EverQuest Legends automation — current build 0.36.0
+# EverQuest Legends automation — current build 0.36.1
 
 ## Current availability
 
@@ -11,7 +11,40 @@ installed client points to Daybreak's live service. Its published
 prohibit the requested unattended bot and appear to prohibit a rotation assist
 on the live service without Daybreak authorization. The owner says the target
 is a private server, but its endpoint has not been found; the installed retail
-client still points to Daybreak. No live mode is enabled.
+client still points to Daybreak. This project's strict live modes are not
+enabled. The separate October helper below is available for an owner-run test.
+
+## Owner-run rotation test on Alienware today
+
+The October **EQ Legends Solo Assist** launcher is present on Alienware. Blizz
+can open it from the desktop, or run this in an Alienware terminal:
+
+```bash
+cd ~/Projects/everquest-legends-rotation
+./launch.sh
+```
+
+The helper starts disarmed. Blizz logs in and chooses his character and level
+in the helper. While safely out of combat, **F6** exports learned spells and
+memorizes the suggested gems. He selects the current enemy himself; **F8**
+starts or stops a fight, **F9** cancels, and **F10** requests a quick heal.
+The first F8 may only prepare the bar and stop. The helper's **STOP** button
+or closing its window ends the test. Do not run two rotation helpers at once.
+
+**Exact scope of the October helper:** It does not choose targets, move, loot,
+vendor or camp. It is not yet the strict ASSIST mode requested here: F6 sends
+`/attack off` and changes spell gems, F8 arming sends `/attack on`, and F8/F9
+stopping may send `/attack off`. The intended Paladin/Cleric loadout and
+implied healing have not been validated in live combat. F10 is a cast request
+on the selected target; the helper has no verified target-relationship signal.
+An interrupted chat command may leave a draft, and its clearing logic has not
+been proven against the live UI. Blizz should review the helper's on-screen
+status before each fight and stop if it reports an interrupted command.
+
+**VERIFIED read-only startup check:** On 2026-11-13, the Alienware launcher
+and engine hashes matched the devbox October source; `./launch.sh --dry-run
+--level 1` read the installed client spell data and exited without starting
+the input engine. No live combat or character input was tested by this lead.
 
 ## Start the offline prototype
 
