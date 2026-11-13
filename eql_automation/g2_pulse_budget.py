@@ -35,6 +35,7 @@ class G2Scene:
     raw_location: tuple[float, float, float]
     log_epoch: int
     fix_seq: int
+    zone_generation: int
     focused: bool = False
     owner_keys_clear: bool = False
     chat_clear: bool = False
@@ -96,6 +97,7 @@ class G2PulseBudget:
             raise G2Halt("Missing current geometry, owner G0 or bounded calibration")
         self.zone = first.zone
         self.log_epoch = first.log_epoch
+        self.zone_generation = first.zone_generation
         self.started_at = first.at
         self.last_at = first.at
         self._check(first)
@@ -134,6 +136,10 @@ class G2PulseBudget:
                 not isinstance(scene.zone, str) or not scene.zone or scene.zone != self.zone or
                 not isinstance(scene.log_epoch, int) or scene.log_epoch != self.log_epoch or
                 not isinstance(scene.fix_seq, int) or scene.fix_seq < 1 or
+                not isinstance(scene.zone_generation, int) or
+                isinstance(scene.zone_generation, bool) or
+                scene.zone_generation < 1 or
+                scene.zone_generation != self.zone_generation or
                 not isinstance(loc, tuple) or len(loc) != 3 or
                 any(not isinstance(value, (int, float)) or not math.isfinite(value) for value in loc) or
                 not all(value is True for value in

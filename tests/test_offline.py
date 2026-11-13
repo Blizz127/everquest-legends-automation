@@ -246,7 +246,8 @@ def test_campaign_prioritizes_recovery_and_switches_poor_camp():
         Camp("clear", 1, 10, 90),
     ])
     base = WorldSnapshot(level=5, hp=1, mana=1, bag_fullness=0,
-                         camp="crowded", observed_xp_hour=20)
+                         camp="crowded", observed_xp_hour=20,
+                         verified_reachable_camps=frozenset({"crowded", "clear"}))
     assert planner.decide(base) == Action(ActionKind.CAMP, "clear")
     assert planner.decide(WorldSnapshot(level=5, hp=1, mana=1,
                                         bag_fullness=0, dead=True)).kind == ActionKind.RECOVER
@@ -254,7 +255,19 @@ def test_campaign_prioritizes_recovery_and_switches_poor_camp():
                                         bag_fullness=0)).kind == ActionKind.REST
     leveled = CampaignPlanner([Camp("old", 1, 5, 100), Camp("new", 6, 10, 80)])
     assert leveled.decide(WorldSnapshot(level=6, hp=1, mana=1, bag_fullness=0,
-                                        camp="old")) == Action(ActionKind.CAMP, "new")
+                                        camp="old", verified_reachable_camps=frozenset({"new"}))) == Action(ActionKind.CAMP, "new")
+
+
+def test_campaign_filters_unreachable_camps_and_pauses_without_route_evidence():
+    planner = CampaignPlanner([Camp("high", 1, 10, 100), Camp("reachable", 1, 10, 40)])
+    base = WorldSnapshot(level=7, hp=1, mana=1, bag_fullness=0,
+                         camp="high", verified_reachable_camps=frozenset({"reachable"}))
+    assert planner.select_camp(base).name == "reachable"
+    assert planner.decide(base) == Action(ActionKind.CAMP, "reachable")
+    assert planner.decide(WorldSnapshot(level=7, hp=1, mana=1, bag_fullness=0,
+                                        verified_reachable_camps=frozenset())).kind == ActionKind.PAUSE
+    assert planner.decide(WorldSnapshot(level=7, hp=1, mana=1,
+                                        bag_fullness=0)).kind == ActionKind.PAUSE
 
 
 def test_campaign_pauses_on_unknown_or_unsafe_state_and_loots_only_when_safe():

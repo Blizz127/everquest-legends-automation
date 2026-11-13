@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.11 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.12 / owner preview 0.39.4
 
 ## Current availability
 
@@ -45,6 +45,10 @@ Furor and Light Healing IDs and unlock levels. It adds no game input.
 Version 0.41.11 numbers new `/location` log lines and zone observations for
 offline G2 work. The client log has no echoed request ID, so those numbers
 do not prove a reply belongs to one command. G2 remains unavailable.
+Version 0.41.12 makes the offline G2 pulse policy reject a zone generation
+change even when the displayed zone name stays the same. Its full-auto camp
+planner now requires a caller-supplied verified reachable-camp set and pauses
+if none qualifies. This does not accept a real route or enable F11.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.

@@ -6,6 +6,7 @@ from eql_automation.g2_pulse_budget import G2Halt, G2PulseBudget, G2Scene
 def scene(at, x=0.0, *, zone="gfaydark", **changes):
     data = dict(at=at, zone=zone, raw_location=(x, 0.0, 10.0),
                 log_epoch=1, fix_seq=round(at * 100) + 1,
+                zone_generation=1,
                 focused=True, owner_keys_clear=True, chat_clear=True,
                 target_absent=True, combat_clear=True, no_transition=True,
                 no_incoming_attack=True)
@@ -152,4 +153,12 @@ def test_off_cancels_a_queued_pulse_before_keydown():
     budget.cancel()
     with pytest.raises(G2Halt, match="cancelled"):
         budget.confirm_keydown(scene(0.51), permit)
+    assert budget.pulses == 0 and budget.stage == "halted"
+
+
+def test_same_zone_reentry_invalidates_reserved_pulse_before_keydown():
+    budget = ready()
+    permit = budget.reserve_forward(scene(0.5))
+    with pytest.raises(G2Halt, match="unsafe"):
+        budget.confirm_keydown(scene(0.51, zone_generation=2), permit)
     assert budget.pulses == 0 and budget.stage == "halted"

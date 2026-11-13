@@ -30,6 +30,9 @@ class WorldSnapshot:
     target_present: bool = False
     camp: str | None = None
     observed_xp_hour: float | None = None
+    # The caller must verify routes from the current observed position. A map
+    # label or a connected copied mesh alone is not route evidence.
+    verified_reachable_camps: frozenset[str] | None = None
     gm_present: bool = False
     under_attack: bool = False
     loot_available: bool = False
@@ -40,8 +43,14 @@ class CampaignPlanner:
         self.camps = camps
 
     def select_camp(self, state: WorldSnapshot) -> Camp | None:
+        routes = state.verified_reachable_camps
+        if (not isinstance(routes, frozenset) or
+                any(not isinstance(name, str) for name in routes)):
+            return None
         eligible = [camp for camp in self.camps
-                    if camp.min_level <= state.level <= camp.max_level and camp.score() > 0]
+                    if (camp.name in routes and
+                        camp.min_level <= state.level <= camp.max_level and
+                        camp.score() > 0)]
         return max(eligible, key=Camp.score, default=None)
 
     def decide(self, state: WorldSnapshot) -> Action | None:
@@ -68,9 +77,10 @@ class CampaignPlanner:
             return Action(ActionKind.LOOT, "loot only after corpse ownership review")
         best = self.select_camp(state)
         if best is None:
-            return None
+            return Action(ActionKind.PAUSE, "no verified reachable camp for this level")
         current = next((camp for camp in self.camps if camp.name == state.camp), None)
         current_ineligible = (current is None or
+                              current.name not in state.verified_reachable_camps or
                               not current.min_level <= state.level <= current.max_level)
         poor_xp = (current is not None and state.observed_xp_hour is not None
                    and state.observed_xp_hour < 0.5 * current.expected_xp_hour)

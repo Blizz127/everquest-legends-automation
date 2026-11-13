@@ -1,5 +1,19 @@
 # FINDINGS
 
+## Offline G2 reentry guard and camp reachability filter — 2026-11-13 13:11 CST
+
+**VERIFIED offline, no game input:** G2 scenes now require the copied log
+reader's `zone_generation` and halt when it changes, including a loading and
+reentry into the same displayed zone. A queued pulse with the old generation
+is rejected before key-down. The campaign planner now ranks only camps in an
+explicit caller-supplied verified reachable set. It switches away from an
+excluded current camp and pauses if the set is absent or contains no suitable
+camp. The synthetic environment supplies fabricated route evidence and still
+reaches synthetic level 50; that does not verify any real-client route or XP.
+Twenty-nine focused G2/location tests, 26 offline planner tests and the
+synthetic 1–50 CLI passed. There is no live G2 scene adapter or real verified
+camp set, so F11 remains disabled.
+
 ## G2 location-line identity, not command identity — 2026-11-13 12:37 CST
 
 **VERIFIED offline, no game input:** `LocationLogReader` now assigns a

@@ -42,7 +42,7 @@ class FakeSender:
 
 def scene(*, target_absent=True):
     return G2Scene(time.monotonic(), "gfaydark", (0.0, 0.0, 10.0),
-                   log_epoch=1, fix_seq=2, focused=True,
+                   log_epoch=1, fix_seq=2, zone_generation=1, focused=True,
                    owner_keys_clear=True, chat_clear=True,
                    target_absent=target_absent, combat_clear=True,
                    no_transition=True, no_incoming_attack=True)
@@ -51,12 +51,12 @@ def scene(*, target_absent=True):
 def budget():
     now = time.monotonic()
     first = G2Scene(now - 0.5, "gfaydark", (0.0, 0.0, 10.0),
-                    log_epoch=1, fix_seq=1, focused=True,
+                    log_epoch=1, fix_seq=1, zone_generation=1, focused=True,
                     owner_keys_clear=True, chat_clear=True,
                     target_absent=True, combat_clear=True,
                     no_transition=True, no_incoming_attack=True)
     second = G2Scene(now - 0.1, "gfaydark", (0.0, 0.0, 10.0),
-                     log_epoch=1, fix_seq=2, focused=True,
+                     log_epoch=1, fix_seq=2, zone_generation=1, focused=True,
                      owner_keys_clear=True, chat_clear=True,
                      target_absent=True, combat_clear=True,
                      no_transition=True, no_incoming_attack=True)
