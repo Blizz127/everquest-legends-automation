@@ -1,10 +1,10 @@
 # STATUS
 
-Updated 2026-11-13 10:16 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 10:20 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Real-client XP / XP per hour: n/a. Current-level XP fraction / percentage points per hour: n/a. Deaths: n/a (no observed full run). Camp: Greater Faydark current zone; Slaver Caves (west) is a planned level-7 destination, not an accepted active camp.
-- Build: offline prototype 0.40.4 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
+- Build: offline prototype 0.40.5 plus an isolated owner-run assist/G0 preview 0.39.3 staged outside the Alienware game install. The 0.37.0 guarded preview remains quarantined after its source-hash refusal. Mode boundary, prior rotation planner reuse,
   synthetic nav graph and stall monitor, incremental log-state adapter, hourly
   status writer, spell progression and camp decision models, cross-zone route
   planner, unknown-state safety pause, simulator CLI. Four offline audit defects
@@ -390,6 +390,10 @@ Updated 2026-11-13 10:16 CST for coordinator task `829a00229b29`.
   one level-8 centurion kill for 2.574% XP but does not locate that fight;
   it also reports no food/drink and full bags. The only GFay guide camp is
   about 4,104 mesh units from the last fix and its route has a steep polygon.
+  A separate pinned-source patch now places the bounded corridor audit inside
+  November `Navigator._plan()` before each follower/replan and clears stale
+  follower state on rejection. Two isolated no-input source smokes passed;
+  the patch is not in the owner preview, and recorded routes remain unguarded.
 - Current blocker: 0.39.3 owner-supervised F8/F9 HP and attack-free rotation
   feedback is pending. Strict current ASSIST still lacks a unique target and
   verified chat-draft observation. Full-auto F11 needs confirmed native melee

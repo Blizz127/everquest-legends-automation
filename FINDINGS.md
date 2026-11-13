@@ -1,5 +1,23 @@
 # FINDINGS
 
+## Isolated November follower clearance guard — 2026-11-13 10:20 CST
+
+**VERIFIED offline:** `patches/nov12-7e3cd28-follower-clearance-guard.patch`
+applies cleanly to the pinned November source and adds the bounded corridor
+audit to `Navigator._plan()`, so every mesh replan must pass before a new
+`PathFollower` is made. The `Navigator` defaults to an unmeasured follower
+error and therefore refuses travel. It clears any stale path, follower and
+held-control intent when planning fails. Two no-input source smokes passed:
+one refuses unmeasured error, the other refuses a synthetic mid-segment pinch
+and clears a stale follower. The isolated combined source is under
+`~/.local/share/eql-automation/nav-work/0.40.5` on devbox, not in the
+owner-run preview or game install. Patched `eqnav/steer.py` SHA-256 is
+`fa4ec5fbd4a725a4e0e2ab1ac1c871d508464cb23314d7db5cff640802fdb05a`;
+`eqnav/pathguard.py` matches the project module SHA-256
+`c161ddf99ad3746efe58ce256f79760adb3e43b44ac488e18984cf563c1c24eb`.
+Recorded routes and cross-zone arrival still lack accepted guards; G0/G2
+and a measured follower error are missing. F11 stays disabled.
+
 ## Bounded corridor audit model and local-camp evidence — 2026-11-13 10:16 CST
 
 **VERIFIED offline:** `audit_path` now checks a mesh path with a capped
@@ -25,7 +43,7 @@ SHA-256
 Legira 2.574% current-level XP at 09:27:56, but the first `/loc` fix was
 44 seconds later, so the fight's exact position is unknown. The guide's
 only GFay Orc Camps anchor is about 4,104 dry-mesh units from that fix and
-its candidate route includes a steep polygon; it is no accepted short local
+its candidate route includes a steep polygon; it is not an accepted short local
 route. The same log repeatedly reports no food or drink from 09:09:50 through
 09:31:18, and no inventory room for loot at 09:27:57. Copied owner log
 SHA-256:

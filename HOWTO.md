@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.40.4 / owner preview 0.39.3
+# EverQuest Legends automation — project 0.40.5 / owner preview 0.39.3
 
 ## Current availability
 
