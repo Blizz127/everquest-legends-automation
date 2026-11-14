@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 05:19 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:20 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -16,7 +16,10 @@ Updated 2026-11-14 05:19 UTC for coordinator task `829a00229b29`.
   synthetic renderings of actual source icons rank correctly. Crops and source
   XML are pinned and parent/child pixels checked. Results select no live state;
   active rendering/texture identity and the live scene budget remain unverified.
-  Source staging follows the commit; assist remains unchanged.
+  Source `e597f2d` is privately staged at `owner-tools/0.41.72/source`; six
+  synthetic/no-input Alienware startup checks pass. Archive SHA
+  `3106ff4a7fc75c675895fb1c99f76b1d1462e8bba8ef71db871fddf4d67d45b6` matched.
+  Assist remains unchanged.
 - **Source 0.41.71:** latched positive-hazard log monitoring now brackets
   measurement scene observations. Quiet logs never grant safety. Eighty focused
   reader/provider checks and three actual-watchdog pipe cases pass. The retained

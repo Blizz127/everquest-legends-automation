@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Private source 0.41.72 staging — 2026-11-14 05:20 UTC
+
+**VERIFIED:** Commit `e597f2d819af336c0c366171412cc9f5f9f6eba0`, archive SHA
+`3106ff4a7fc75c675895fb1c99f76b1d1462e8bba8ef71db871fddf4d67d45b6`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.72/source`.
+Six remote synthetic/no-input startup checks pass: version, decal ranking in a
+tall crop without permission, pinned parent/child consistency with texture
+identity unknown, changed-crop refusal, analyzer CLI and location-collector CLI.
+Remote `../smoke.json` and local `releases/eql-automation-0.41.72-staging.json`
+retain the result. No client assets, display capture, input device or login
+were opened by these checks. Owner assist/observation controls remain unchanged.
+
 ## Source-derived saved combat-icon analysis — 2026-11-14 05:19 UTC
 
 **VERIFIED source 0.41.72:** `combat_ui_match.py` and
