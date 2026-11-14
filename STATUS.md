@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 08:28 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 08:36 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,21 @@ Updated 2026-11-14 08:28 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.95:** route location acquisition now has a concrete single
+  hotbutton alternative, avoiding typed chat and per-character recognition.
+  Twenty-seven focused tests pass using the retained helper, actual watchdog
+  and pipes. The fixture route completed two segments/nine steps with twenty
+  hotbutton queries and no chat keys. Evidence SHA
+  `103a42f1f90f1159d242b023b0313c87b00584cdae7ad203561bce1ddf8bb37d`.
+  Owner hotbutton setup is explicitly a declaration, not mechanically verified
+  client behavior. No key is assumed or launcher enabled. Read-only Alienware
+  checks found zero game windows and zero stationary pairs, so no current frame
+  was captured. The exact Legira INIs contain no `/location` hotbutton.
+  Next: wire a stationary owner setup/test for this alternative, then combine
+  current position/zone and motion observations for the first supervised leg.
+  Per-character caret/selection checks are an optional engineering approach,
+  not an owner restriction. Read-only observation is authorized; no live window
+  was available. G0 remains passed; real level/XP/hour/deaths/camp are unknown.
 - **Source 0.41.94:** corrected per-glyph/caret geometry now feeds a
   conditional pixel sampler and the existing prefix matcher. Atlas/DIB edge
   samples outside known glyph extents remain explicitly unknown; all prefix

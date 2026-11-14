@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.94** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.95** · rotation preview **0.39.6** · observation candidate **0.39.10**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -108,11 +108,22 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.94/source
+~/.local/share/eql-automation/owner-tools/0.41.95/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.94 connects corrected glyph/caret geometry to conditional
+above. Source 0.41.95 adds a route-position option that presses a single
+owner-configured `/location` hotbutton instead of typing into chat. It uses
+the existing sender, stop/focus checks, input observation and release watchdog;
+the route still requires a fresh, single location reply. It never assumes a
+default key. This option needs a same-session owner setup/test and launcher
+integration before use; no hotkey test or route control is enabled today.
+The current Alienware files contain no `/location` hotbutton. Per-character
+font/caret classification belongs to the optional typed-command approach; it
+is not an owner requirement or a prerequisite for the hotbutton alternative.
+The existing G0 result remains passed, and no repeat is requested.
+
+Source 0.41.94 connects corrected glyph/caret geometry to conditional
 pixel sampling. Unknown atlas-edge pixels have explicit masks. The matcher
 compares every prefix on the same known pixels and cannot promote a partial
 comparison to a complete-field match. The offline font importer now offers

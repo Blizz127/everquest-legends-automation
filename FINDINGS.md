@@ -1,5 +1,67 @@
 # FINDINGS
 
+## Hotbutton route-position option and access reconciliation — 2026-11-14 08:36 UTC
+
+**VERIFIED implementation:** source 0.41.95 adds
+`route_location_hotkey.RouteLocationHotkeyExecutor` to the existing
+`RouteSessionDriver.request_location` interface. It uses the existing sender,
+reserved operation and duplicated descriptor, a 20 ms watchdog pulse, original
+F9/focus checks and the existing complete owner-input observer. Full binding
+checks run after callbacks as well as before them. Cleanup releases the pinned
+original descriptor even when the current sender/device is replaced. No chat,
+Escape, Enter, target, movement or recovery command is part of this query.
+The route's existing exclusive log reader accepts or refuses the subsequent
+fresh single reply; the key receipt never asserts a client effect.
+
+The owner must supply a configured/tested nonprinting function key and a
+same-session setup record. F6–F12 (helper controls), printable keys, arrows,
+Enter and Escape are excluded. Saved configuration hashes detect persisted
+edits; they do not prove unflushed hotbar/page state or macro contents. Those
+remain explicit owner setup assertions, and any owner input stops the route.
+No default key is supplied, no client config is written, and no launcher
+constructs this executor yet. A stationary owner setup/test is the next
+integration step; this release does not claim that path is ready to use.
+
+**VERIFIED tests:** 27 focused cases pass with the actual retained helper and
+watchdog, pipe input and fixture logs/scene/geometry. The complete fixture run
+finished two segments/nine steps using twenty hotbutton queries and no chat
+keys. Missing/duplicate replies stop before movement; a reply printed before
+UP remains buffered until the driver installs its receipt. F9 during DOWN and
+device replacement release the original pipe; changes during input observation
+refuse before DOWN. The initial run had one test expectation error: retained
+focus loss raises InterruptedError, not RuntimeError. The assertion was fixed;
+the focus-loss behavior already refused input. A post-callback device/focus
+binding gap found in review was fixed and covered by two additional regressions.
+Private evidence `evidence/route-location-hotkey-0.41.95.json`, SHA-256
+`103a42f1f90f1159d242b023b0313c87b00584cdae7ad203561bce1ddf8bb37d`.
+
+**OBSERVED access/current-client evidence:** rereading owner instructions found
+no ban on read-only game-window capture. Historical statements that a turn
+did not capture were action reports, not permission denials. The explicit
+limits remain no lead login/control of the owner's character, no protected
+prefix changes and no access/prompt bypass. Read-only SSH/X11 queries found
+zero game windows, no process/session through WindowGate, and zero saved
+stationary position pairs; no image or input was taken. A game-window absence
+is not evidence of a denied permission and does not justify repeatedly asking
+for G0. G0's trace and owner's visible-stop confirmation remain accepted.
+
+Current read-only configuration pins, under the installed EverQuest Legends
+directory on Alienware:
+
+| File | SHA-256 |
+| --- | --- |
+| `eqclient.ini` | `a10560ba3301c411f1b9eb05b5ad2627b4577222b430a7acf59687341356c7fc` |
+| `Legira_freeport_LO1.ini` | `e2d8d449c7d03fb66493e0caf6a49a29c8ae13cdbfdfe3641f6b286e6ba681ab` |
+| `UI_Legira_freeport_LO1.ini` | `5876a4136283b692263bc2826ffc2b12cd7328f4faa320c5f4071f2092fbc76b` |
+
+No `/loc` or `/location` entry was present in those files. The unsuffixed
+Legira INIs were absent; the `_LO1` files above are the actual matches.
+The configured hotbutton option is therefore not ready for real dispatch.
+Per-character caret/selection recognition was a chosen typed-input design,
+not an owner rule or a necessary dependency for every acquisition mechanism.
+Actual current zone/height/motion/scene and route acceptance remain missing.
+No level/XP/hour/deaths/camp can be reported for a real automation run.
+
 ## Private source 0.41.94 staged — 2026-11-14 08:29 UTC
 
 **VERIFIED:** source `672d8ebfdee81e8aee5f5665840b872666c8cd80`, archive SHA

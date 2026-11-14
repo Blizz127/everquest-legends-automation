@@ -1,9 +1,20 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 08:28 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 08:36 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.95 provides a single owner-configured hotbutton route-position
+executor. The retained helper and actual watchdog completed a two-segment
+fixture route with nine movement pulses and twenty position queries, without
+chat keys; 27 focused tests passed, including cancellation, device replacement,
+missing/duplicate replies and replies before key release. This removes the
+font/caret recognizer dependency from that acquisition option. Current owner
+hotbutton configuration/testing and launcher wiring remain to be implemented;
+no default key or live input was used. A read-only Alienware check found no
+game window and no saved stationary pair. G0 remains passed; no live leg is
+accepted, and current position/zone/motion observations are still missing.
 
 Source 0.41.94 joins corrected glyph/caret placement with conditional
 bilinear alpha sampling and prefix comparison. Unknown atlas-edge pixels
