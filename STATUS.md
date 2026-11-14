@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 09:30 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 09:31 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -24,6 +24,9 @@ Updated 2026-11-14 09:30 UTC for coordinator task `829a00229b29`.
   links automatically and resolve the remaining corridor beyond waypoint 164;
   consume the existing owner 0.39.12 motion/current-scene result when present.
   No game input or new owner test; real level, XP/hour, deaths and camp unknown.
+  Source `8e916b2` is staged at Alienware `owner-tools/0.42.0/source`;
+  no-input startup/up-step/down-step/component/parent-isolation checks pass.
+  Startup SHA `68cff203b87466e8321ab426daada0074f26f64486c4a9b58caa06a02d3d456d`.
 - **Source 0.41.99:** the offline source planner now searches bounded detours
   and rejoins the original guide automatically. Failed branches preserve the
   accepted floor prefix; each candidate checks full swept terrain/static space

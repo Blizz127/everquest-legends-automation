@@ -64,6 +64,14 @@ deaths and camp remain unknown. Existing assist 0.39.6 and owner measurement
 0.39.12 are unchanged; G0 remains passed and requires no repeat.
 
 
+**VERIFIED private staging:** source commit
+`8e916b2e548652729de11808bd9880f3bca340e3` is staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.0/source`. Archive SHA
+`a47ffa7b1fdfa1bdf566245db3f7f8191667c42bd9b18897ee51a3f2fda0ffb0`.
+Imports, both step directions, component pruning and parent-prefix isolation
+pass without creating an engine or sending game input. Startup artifact SHA
+`68cff203b87466e8321ab426daada0074f26f64486c4a9b58caa06a02d3d456d`.
+
 ## Automatic source-floor detours — 2026-11-14 09:19 UTC
 
 **VERIFIED implementation:** source 0.41.99 introduces a bounded local A*
