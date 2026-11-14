@@ -207,18 +207,19 @@ def audit_contact_envelope(step,footprint,terrain_sources,static,hypothesis,*,
 
 
 def audit_contact_walks(prefix,operations,goal,terrain,static,bsp,region_policy,hypothesis,*,
-                        radius,check_context,progress=lambda _:None):
+                        radius,check_context,progress=lambda _:None,forward_runout=0.):
     """Follow only a private terrain reference through conditional envelopes.
 
     No future floor object or executable itinerary is returned. The caller's
     original prefix is unchanged, including when a proposal fails.
     """
     if (type(operations) is not tuple or not 1<=len(operations)<=10000
-            or any(type(op) is not SourceWalkHint or not xy(op.start) or not xy(op.end)
+            or any(type(op) is not SourceWalkHint or not xy(op.start) or not xy(op.end) or op.start==op.end
                    for op in operations)
             or any(a.end!=b.start for a,b in zip(operations,operations[1:]))
             or not xy(goal) or operations[-1].end!=goal
             or type(radius) not in (float,int) or not .05<=radius<=10
+            or type(forward_runout) not in (float,int) or not 0<=forward_runout<=40.
             or prefix.inventory_sha256!=terrain.wld_sha256):
         raise ValueError('Continuous walk-only hints ending at the exact goal required')
     original=_chain_snapshot(prefix)
@@ -233,7 +234,7 @@ def audit_contact_walks(prefix,operations,goal,terrain,static,bsp,region_policy,
     check();position=operations[0].start;prefix.floor_at(position)
     chain=prefix.fork();index=0
     record=dict(format='eql-offline-contact-walks-v1',start=position,goal=goal,
-        parent_terrain_proof_sha256=prefix.previous.proof_sha256,
+        parent_terrain_proof_sha256=prefix.previous.proof_sha256,forward_runout=forward_runout,
         contact_hypothesis_sha256=hypothesis.sha256,attempts=[],accepted_envelopes=[],
         exit_envelopes_clear=False,original_floor_unchanged=True,
         contact_semantics_verified=False,transition_kinematics_verified=False,
@@ -243,12 +244,18 @@ def audit_contact_walks(prefix,operations,goal,terrain,static,bsp,region_policy,
         check();chosen=None
         for end in range(len(operations)-1,index-1,-1):
             destination=operations[end].end
-            if math.dist(position,destination)>40:continue
+            length=math.dist(position,destination)
+            if not 0<length or length+forward_runout>40:continue
             check()
             if len(record['attempts'])>=512:raise TimeoutError('Contact proposal query budget exhausted')
-            row=dict(first_origin=index,last_origin=end,start=position,end=destination)
+            # Check the maximum possible last pulse beyond each waypoint,
+            # including corners. The actual destination remains unchanged.
+            checked_end=tuple(destination[k]+forward_runout*(destination[k]-position[k])/length
+                              for k in (0,1))
+            row=dict(first_origin=index,last_origin=end,start=position,end=destination,
+                     checked_end=checked_end)
             record['attempts'].append(row)
-            cap=swept_square(position,destination,radius)
+            cap=swept_square(position,checked_end,radius)
             try:sources=terrain.source_faces_for_footprint(cap)
             except ValueError as error:
                 if str(error)!='Source projection candidate budget exceeded':raise

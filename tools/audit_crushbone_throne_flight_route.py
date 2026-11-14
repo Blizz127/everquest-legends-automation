@@ -45,6 +45,8 @@ def main():
         help='Offline evenly spaced pulse checks with explicitly synthetic speed/error bounds (0..32)')
     parser.add_argument('--contact-plan-radius',type=float,
         help='Rebuild the exit as a conditional contact plan and test full synthetic pulses, without input')
+    parser.add_argument('--contact-plan-runout',type=float,default=0.,
+        help='Additional checked forward distance at every accepted contact leg; exact goal stays unchanged')
     exit_policy=parser.add_mutually_exclusive_group()
     exit_policy.add_argument('--exit-detour-range',nargs=2,type=int,metavar=('FIRST','LAST'))
     exit_policy.add_argument('--exit-contact-face',nargs=2,type=int,action='append',metavar=('FRAGMENT','FACE'))
@@ -55,6 +57,8 @@ def main():
             or not 0<=args.first_step<args.last_step<32
             or not 0<=args.probe_contact_pulses<=32
             or args.probe_contact_pulses and args.stair_model!='bounded_source_contacts'
+            or not math.isfinite(args.contact_plan_runout) or not 0<=args.contact_plan_runout<=40
+            or args.contact_plan_runout and args.contact_plan_radius is None
             or args.contact_plan_radius is not None and (not args.exit_contact_face
                 or not math.isfinite(args.contact_plan_radius) or not .05<=args.contact_plan_radius<=10)
             or args.stair_radius is not None and (not math.isfinite(args.stair_radius) or not .05<=args.stair_radius<=10)):
@@ -180,7 +184,7 @@ def main():
                 from eql_automation.source_contact_plan import plan_source_contact,SourceContactIndex
                 plan=plan_source_contact(after,suffix.operations,guide.goal,p.source,p.static,p.bsp,
                     p.region_policy,hypothesis,body_radius=guide.radius,checked_radius=args.contact_plan_radius,
-                    check_context=check,maximum_seconds=90.)
+                    check_context=check,maximum_seconds=90.,forward_runout=args.contact_plan_runout)
                 record.update(contact_plan=plan.record(),contact_plan_sha256=plan.sha256)
                 contact=plan.record()['contact_walks'];index=SourceContactIndex(plan)
                 bounds=RouteMotionBounds('offline-thin-contact-probe','offline-assumptions',
@@ -198,7 +202,8 @@ def main():
                     a,z=tuple(row['start']),tuple(row['end'])
                     heading=math.degrees(math.atan2(z[0]-a[0],z[1]-a[1]))%360
                     base=float(index.height[0])
-                    for point,kind in ((a,'left'),(tuple((a[k]+z[k])/2 for k in (0,1)),'forward'),(z,'right')):
+                    for point,kind in ((a,'left'),(tuple((a[k]+z[k])/2 for k in (0,1)),'forward'),
+                                       (z,'right'),(z,'forward')):
                         check()
                         covered=index.cover_pulse(point,heading,kind,bounds,height_interval=(base-.05,base+.175))
                         if index.compatible(point,bounds,height_interval=(above+.005,above+.01)):

@@ -221,3 +221,19 @@ def test_changed_contact_index_cannot_refresh_departure(f):
     object.__setattr__(pre.contact_index.cells[0],'height',(-100,100))
     with pytest.raises(ValueError,match='index changed'):pre.consume_start(start)
     assert f.ledger.phase=='stopped' and not f.drain_events()
+
+
+@pytest.mark.parametrize('change',['fix_clone','cache_pin','authorization'])
+def test_final_provider_cannot_replace_issued_start_during_consumption(f,monkeypatch,change):
+    pre=preflight(f);pre.prepare();start=pre.bind_start(*replies(f,pre))
+    original=f.ledger.reference;check=pre.check;calls=[]
+    def changed():
+        result=check();calls.append(True)
+        if len(calls)==2:
+            if change=='fix_clone':object.__setattr__(start,'second',replace(start.second))
+            elif change=='cache_pin':object.__setattr__(start,'cache_sha256','f'*64)
+            else:object.__setattr__(start,'input_authorized',True)
+        return result
+    monkeypatch.setattr(pre,'check',changed)
+    with pytest.raises(RuntimeError):pre.consume_start(start)
+    assert f.ledger.reference is original and f.ledger.phase=='stopped' and not f.drain_events()

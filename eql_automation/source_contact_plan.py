@@ -8,6 +8,7 @@ from dataclasses import asdict,dataclass
 from fractions import Fraction as F
 from hashlib import sha256
 import json
+import math
 import time
 
 from .ground_binding import finite
@@ -16,9 +17,11 @@ from .native_region_policy import encoded
 from .route_floor_commit import _chain_snapshot
 from .route_geometry import RouteMotionBounds
 from .source_contact_envelope import ContactHypothesis,audit_contact_walks,declare_contact_hypothesis
+from .source_detour import swept_square
 from .source_floor_chain import SourceFloorChain,rational
+from .source_itinerary import xy
 from .source_probe_geometry import _source_storage
-from .source_stair_coverage import covers_closed,intersection
+from .source_stair_coverage import closed_hull,covers_closed,intersection
 
 
 @dataclass(frozen=True)
@@ -36,12 +39,13 @@ class SourceContactPlan:
 
 def plan_source_contact(prefix,operations,goal,terrain,static,bsp,policy,hypothesis,*,
                         body_radius,checked_radius,check_context,clock=time.monotonic,
-                        maximum_seconds=30.):
+                        maximum_seconds=30.,forward_runout=0.):
     """Rebuild every cell on a private terrain fork without adopting it."""
     if (type(prefix) is not SourceFloorChain or prefix.halted or prefix.previous is None
             or type(hypothesis) is not ContactHypothesis
-            or not all(finite(v) for v in (body_radius,checked_radius,maximum_seconds))
-            or not .05<=body_radius<=checked_radius<=10. or not 0<maximum_seconds<=180.):
+            or not all(finite(v) for v in (body_radius,checked_radius,maximum_seconds,forward_runout))
+            or not .05<=body_radius<=checked_radius<=10. or not 0<maximum_seconds<=180.
+            or not 0<=forward_runout<=40.):
         raise ValueError('Original source floor and explicit bounded contact corridor required')
     before=_chain_snapshot(prefix);storage=_source_storage(terrain,static)
     declaration=hypothesis.record();ids=tuple((s['fragment'],s['face']) for s in declaration['faces'])
@@ -61,13 +65,14 @@ def plan_source_contact(prefix,operations,goal,terrain,static,bsp,policy,hypothe
             raise ValueError('Contact source, original floor or declaration changed')
     check()
     cells=audit_contact_walks(prefix,operations,goal,terrain,static,bsp,policy,hypothesis,
-        radius=checked_radius,check_context=check)
+        radius=checked_radius,check_context=check,forward_runout=forward_runout)
     check()
     if not cells['exit_envelopes_clear'] or not 1<=len(cells['accepted_envelopes'])<=128:
         raise ValueError('Complete bounded contact corridor required')
     record=dict(format='eql-source-contact-plan-v1',source_wld_sha256=terrain.wld_sha256,
         static_inventory_sha256=static.inventory_sha256,parent_proof_sha256=prefix.previous.proof_sha256,
         body_radius=body_radius,body_height=prefix.body_height,checked_radius=checked_radius,
+        forward_runout=forward_runout,
         contact_hypothesis_sha256=hypothesis.sha256,contact_hypothesis=declaration,
         start=operations[0].start,goal=goal,contact_walks=cells,
         current_floor_unchanged=True,contact_semantics_verified=False,
@@ -119,12 +124,13 @@ class SourceContactIndex:
         r=plan.record();walks=r['contact_walks'];declaration=r['contact_hypothesis']
         self.plan=plan;self._plan=(plan,plan.payload,plan.sha256)
         self.body_radius=r['body_radius'];self.body_height=r['body_height']
-        rise=declaration['maximum_height_above_reference_terrain']
+        rise=declaration['maximum_height_above_reference_terrain'];runout=r.get('forward_runout',0.)
         if (r['format']!='eql-source-contact-plan-v1'
                 or any(r[k] is not False for k in ('input_authorized','real_client_accepted','executable_itinerary'))
                 or not all(finite(v) for v in (self.body_radius,self.body_height,r['checked_radius'],rise))
                 or not .05<=self.body_radius<=r['checked_radius']<=10. or not 0<self.body_height<=100.
                 or not 0<rise<=.125 or walks['exit_envelopes_clear'] is not True
+                or not finite(runout) or not 0<=runout<=40. or walks.get('forward_runout',0.)!=runout
                 or walks['start']!=r['start'] or walks['goal']!=r['goal']
                 or walks['parent_terrain_proof_sha256']!=r['parent_proof_sha256']
                 or sha256(encoded(declaration)).hexdigest()!=r['contact_hypothesis_sha256']
@@ -136,7 +142,14 @@ class SourceContactIndex:
             e=row['contact_envelope'];floor=row['terrain'];occupancy=e['other_surface_occupancy']
             footprint=rational(e['footprint']);base=F(e['reference_height_exact'])
             band=tuple(F(v) for v in e['region_body_band_exact']);classes=e['native']['possible_classes']
+            a,b=tuple(row['start']),tuple(row['end'])
+            if not xy(a) or not xy(b) or a==b:
+                raise ValueError('Contact cell needs distinct finite endpoints')
+            length=math.dist(a,b)
+            checked_end=tuple(b[k]+runout*(b[k]-a[k])/length for k in (0,1))
             if (row['start']!=previous or floor['candidate'] is not True
+                    or length+runout>40 or tuple(row.get('checked_end',b))!=checked_end
+                    or footprint!=rational(swept_square(a,checked_end,r['checked_radius']))
                     or e['reference_terrain_proof_sha256']!=floor['proof_sha256']
                     or e['source_wld_sha256']!=r['source_wld_sha256']
                     or e['contact_hypothesis']!=declaration
@@ -167,7 +180,10 @@ class SourceContactIndex:
             raise ValueError('Bounded unique declared contact sheets required')
         self.sheets=tuple(sheets);self._values=self._snapshot()
 
-    def _snapshot(self):return self.body_radius,self.body_height,self.cells,self.height,self.sheets
+    def _snapshot(self):
+        return (self.body_radius,self.body_height,self.height,
+                tuple((id(c),c.index,c.footprint,c.reference_height,c.region_band) for c in self.cells),
+                tuple((id(s),s.identifier,s.footprint,s.height) for s in self.sheets))
 
     def check(self):
         if (self.plan is not self._plan[0] or self.plan.payload is not self._plan[1]
@@ -223,6 +239,17 @@ class SourceContactIndex:
         footprint=motion_footprint(point,heading,reach,position_error=b.position_error,
             heading_error_degrees=b.heading_error_degrees,post_release_drift=b.post_release_drift,
             extra_radius=b.body_radius+pivot)
+        # A body's covered area cannot authorize extra translation of its
+        # center. Preserve exact closed point/line cases when uncertainty is zero.
+        center_radius=(b.position_error+b.post_release_drift+pivot
+                       +2*reach*math.sin(math.radians(b.heading_error_degrees)/2))
+        if center_radius:
+            centers=motion_footprint(point,heading,reach,position_error=b.position_error,
+                heading_error_degrees=b.heading_error_degrees,post_release_drift=b.post_release_drift,
+                extra_radius=pivot)
+        else:
+            angle=math.radians(heading)
+            centers=closed_hull((point,(point[0]+reach*math.sin(angle),point[1]+reach*math.cos(angle))))
         body=rational(footprint)
         cells=tuple(c for c in self.cells if intersection(body,c.footprint))
         if not cells or not covers_closed(body,tuple(c.footprint for c in cells)):
@@ -235,6 +262,7 @@ class SourceContactIndex:
         self.check()
         record=dict(format='eql-source-contact-pulse-coverage-v1',contact_plan_sha256=self.plan.sha256,
             point=point,heading=heading,kind=kind,motion_bounds=asdict(bounds),body_footprint=footprint,
+            center_footprint_exact=[[str(F(v)) for v in p] for p in centers],
             observed_height_interval_exact=[str(F(v)) for v in height_interval],
             compatible=[dict(kind=c.kind,source_ids=c.source_ids,
                 height_interval_exact=[str(v) for v in c.height_interval]) for c in compatible],

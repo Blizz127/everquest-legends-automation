@@ -151,8 +151,9 @@ class SupervisedSourcePolicy:
         self._scene=self._authorization=None
         def check_lease():
             if (lease is None or self.ledger is not self._ordinary_ledger
-                    or self.ledger.phase!='stair_preflight' or self.ledger._busy is not lease):
-                raise RouteHalt('Idle observation requires the current stair preflight lease')
+                    or self.ledger.phase not in ('stair_preflight','contact_preflight')
+                    or self.ledger._busy is not lease):
+                raise RouteHalt('Idle observation requires the current stair or contact preflight lease')
         check_lease();began=self._check()
         before,log,after,finished=self._physical_observation(began)
         check_lease()

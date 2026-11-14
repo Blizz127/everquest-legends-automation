@@ -227,13 +227,19 @@ class SourceStairPreflight:
     def _pair_at(self,first,second,now):
         """Final pure checks after the last physical observation/provider call."""
         observer=self.ledger.observer
-        if (len(self._reply_states)!=2
+        if (len(self._replies)!=2 or first is not self._replies[0] or second is not self._replies[1]
+                or len(self._reply_states)!=2
                 or [observer._observation_snapshot(v) for v in (first,second)]!=self._reply_states
                 or not first.raw_fix.received_monotonic<=now<=first.raw_fix.received_monotonic+2.5
                 or not second.raw_fix.received_monotonic<=now<=second.raw_fix.received_monotonic+.5
                 or observer.reader.latest is not second.raw_fix
                 or observer.reader.log_line_seq!=second.raw_fix.log_line_seq):
             raise RouteHalt('Stair start pair changed or expired during final observation')
+
+    @staticmethod
+    def _start_snapshot(start):
+        return (id(start),id(start.first),id(start.second),start.cache_sha256,
+                start.issued_at,start.expires_at,start.input_authorized,start.real_client_accepted)
 
     def bind_start(self,first,second):
         try:
@@ -247,8 +253,7 @@ class SourceStairPreflight:
                 start=SourceStairStart(first,second,self.cache.sha256,issued,
                     second.raw_fix.received_monotonic+.5)
                 self.start=start
-                self._start_state=(id(start),first,second,start.cache_sha256,
-                    start.issued_at,start.expires_at,start.input_authorized,start.real_client_accepted)
+                self._start_state=self._start_snapshot(start)
                 self.phase='ready'
                 return start
         except BaseException as error:self.cancel(error);raise
@@ -263,12 +268,13 @@ class SourceStairPreflight:
             with self.lock:
                 self.check()
                 if (self.phase!='ready' or type(start) is not SourceStairStart or start is not self.start
-                        or (id(start),start.first,start.second,start.cache_sha256,start.issued_at,
-                            start.expires_at,start.input_authorized,start.real_client_accepted)!=self._start_state):
+                        or self._start_snapshot(start)!=self._start_state):
                     raise RouteHalt('Exact unconsumed stair start required')
                 self._pair(start.first,start.second)
                 idle=self.check()
                 now=idle.finished_at
+                if start is not self.start or self._start_snapshot(start)!=self._start_state:
+                    raise RouteHalt('Stair start changed during final observation')
                 self._pair_at(start.first,start.second,now)
                 if not start.issued_at<=now<=start.expires_at:
                     raise RouteHalt('Stair start expired')

@@ -48,6 +48,18 @@ def f(tmp_path,monkeypatch,legacy,request):
     p=f.planner
     guide=SourceItineraryGuide('crushbone',p.pins[2],p.pins[3],'f'*64,.1,6.,(4.,3.25),
         (SourceWalkHint((4.,2.),(4.,3.)),))
+    if getattr(request,'param',None)=='contact_preflight':
+        p.source.sources=tuple(replace(s,vertices_wld=tuple((y*1.5,x,z) for y,x,z in s.vertices_wld))
+                               for s in p.source.sources)
+        coords=np.asarray([s.vertices_wld for s in p.source.sources])[:,:,[1,0,2]]
+        p.source.source_minimum=coords.min(axis=1);p.source.source_maximum=coords.max(axis=1)
+        p.source.source_minimum.setflags(write=False);p.source.source_maximum.setflags(write=False)
+        points=((2.,3.4,.2945911407470703),(6.,3.4,.2945911407470703),
+                (6.,4.9,.2945911407470703),(2.,4.9,.2945911407470703))
+        p.static.sources=tuple(SourceFace(tuple((y,x,z) for x,y,z in tri),0,'TransparentMasked',20,i)
+            for i,tri in enumerate(((points[0],points[1],points[2]),(points[0],points[2],points[3]))))
+        p.static.identities={20:dict(placement_fragment=110,model_wld_sha256='e'*64,transform_sha256='f'*64)}
+        p.static.faces_for_footprint=lambda _:p.static.sources
     if getattr(request,'param',None)=='compact_long':
         from eql_automation.source_guide_compaction import compact_source_guide
         vertices=((0.,0.,.2),(10.,0.,.2),(10.,15.,.2),(0.,15.,.2))

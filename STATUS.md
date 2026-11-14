@@ -1,11 +1,32 @@
 # STATUS
 
-Updated 2026-11-14 22:36 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 22:48 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.71 locally verified; not installed.** VERIFIED 152 focused
+  checks (140 geometry/preflight plus 12 synthetic stair receipt checks), runtime
+  import smoke and copied-client replay. The replay covers 16 approach cells,
+  53 stair cells, eight contact exits and 32 whole-pulse probes, including every
+  leg endpoint. Its .1-unit forward runout derives from explicitly synthetic
+  2-unit/s speed and .05-second maximum hold; these are not current live bounds.
+  Exact goal remains (106,154); artifact SHA
+  `d2a2b343006d5ba0fee77b49c3a976f70623c4dfc09cabbaa88105166d844393`.
+  All 217 geometry code pins match. Contact preflight retains original terrain,
+  calibration, scope and budgets, then requires a fresh exact stopped departure
+  pair after planning. Full forward runout is checked at every accepted leg;
+  center coverage excludes body radius. Reproduced/fixed bounded point/segment
+  containment, mutable cell snapshot and final callback start-identity bugs.
+  The latter also hardens the existing stair preflight. No new sender or owner
+  control is enabled. Next: receipt-issued contact fixes, waypoint traversal and
+  distinct contact arrival/checkpoint, then owner runner integration.
+  Alienware receipt retrieval still fails at SSH connection; no installation or
+  helper restart this turn. Installed owner/runtime/source versions remain
+  0.39.32/0.42.61/0.42.68. Candidate 0.39.33 is still local; any final owner
+  package must incorporate these later source fixes. G0 passed. Real metrics
+  remain unknown; no accepted 1–20 or 1–50 run.
 - **Source 0.42.70: thin-contact corridor geometry implemented locally.**
   Local commit `5f57d89ec6ac0c2052e891f90485e02c83879392`; source candidate archive
   `releases/eql-source-tools-0.42.70-candidate.tar.gz`, SHA

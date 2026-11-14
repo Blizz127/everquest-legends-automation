@@ -1,5 +1,71 @@
 # FINDINGS
 
+## 2026-11-14 22:48 UTC — 0.42.71 contact preflight and bounded runout
+
+VERIFIED **152 focused tests**: 140 contact/preflight/geometry cases in 34.44s
+and 12 retained stair receipt-feedback cases in 20.32s. Feedback is synthetic;
+no real pipe sender or client movement was exercised in this increment.
+JUnit files under the private data store's `releases/`:
+
+- `eql-0.42.71-contact-final-local.xml`, SHA
+  `daa265cd2f6fba9c14f8e58983503e040edd5f119d8e40a7146d3976ed34c23c`.
+- `eql-0.42.71-stair-feedback-local.xml`, SHA
+  `afe37d2868e29b5d3b275ce9a839c5413c0e817b15ce811a3b610c9d907038b6`.
+
+VERIFIED final copied-client replay: 16 approach cells, 53 stair cells,
+eight contact exit cells and **32 whole-pulse probes**, including forward
+motion at every nominal leg endpoint. The exact goal remains (106,154), and
+terrain/rug-top support candidates remain separate. Artifact
+`nav-candidates/crushbone-throne-contact-runout-0.42.71-final.json`, SHA
+`d2a2b343006d5ba0fee77b49c3a976f70623c4dfc09cabbaa88105166d844393`;
+contact plan SHA `b9919459c3a599be1250a41d56362b272d1116318f0e59688f6a0c16bb589b6e`.
+All 217 code pins match. Runtime 43.37s wall / 23.30s CPU, nice 19 and one
+BLAS thread. `.1` forward runout is explicitly synthetic (speed 2 × max hold
+.05). Actual session bounds must be supplied by preflight; this establishes
+neither current calibration nor executable traversal or client acceptance.
+The earlier `...contact-runout-0.42.71.json` passed the same geometry before
+final startup identity hardening; the `-final` artifact is authoritative.
+
+Contact preflight takes the existing ordinary ledger under its stop lock,
+retains the original floor/calibration/scope/budgets, then builds on a private
+fork outside that lock. Each accepted greedy leg checks real geometry beyond
+its nominal endpoint by the full speed-bound × maximum-hold distance. The
+endpoint itself is unchanged, including at bends. A new consecutive stopped
+pair must arrive after planning and match the original printed departure.
+Only that issued reference is refreshed, without adopting proposed terrain or
+rug heights. Cancellation can interrupt planning and late ancestor cleanup
+cannot stop its successor. No contact controller or sender admission is added.
+
+Three defects were reproduced and fixed during integration:
+
+1. The shared closed-containment helper treated a point as unrestricted and a
+   segment as an infinite line. Isolated retained-function replay accepts three
+   displaced/overrun cases; the fixed helper rejects all three. Evidence
+   `releases/eql-0.42.71-degenerate-regression.json`, SHA
+   `f1405487c37dc1fec41005f4810ebc0bc98c6395d02a2604d75a0ccbf0f48195`.
+   Contact pulse coverage separately seals center motion, excluding body radius;
+   bounded point and segment cases remain supported.
+2. The contact index snapshot retained its frozen cell objects by reference.
+   An in-place field change was not detected. Primitive field snapshots now
+   detect it; the preflight regression failed before that correction.
+3. A final provider callback could replace a start's issued fix with an equal
+   clone or alter its cache/authorization fields after the initial check.
+   All three cases failed before correction (retained
+   `releases/eql-0.42.71-final-provider-before.xml` has three expected failures).
+   Both contact and existing stair preflight now recheck exact start and reply
+   identities after the last provider callback, immediately before adoption.
+
+Runtime imports succeed with development-tool imports forbidden; startup
+receipt SHA `84c522b3666349881bb8f5caaec11cd8e8d976b8b0d03053facb5b13dcb545d7`.
+No engine/device, game input, helper restart, prefix write or character change.
+Alienware's one read-only receipt-recovery attempt this turn failed to connect
+to port 22. The existing remote arrival batch was not restarted.
+Installed owner/runtime/source remain 0.39.32/0.42.61/0.42.68; 0.39.33 remains
+local. G0 passed; no repeat needed. Live level, XP, XP/hour, deaths and camp
+remain unknown. Full 1–20/1–50 remain unmet. Next is the receipt controller,
+actual rug-aware arrival/checkpoint and runner integration, followed by owner
+acceptance; ordinary terrain must never absorb the rug height as calibration.
+
 ## 2026-11-14 22:35 UTC — 0.42.70 conditional contact plan and local height states
 
 VERIFIED local source commit `5f57d89ec6ac0c2052e891f90485e02c83879392` is staged

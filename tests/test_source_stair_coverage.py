@@ -7,6 +7,18 @@ import pytest
 from eql_automation.native_region_policy import encoded
 from eql_automation.route_geometry import RouteMotionBounds
 from eql_automation.source_stair_coverage import SourceStairContactIndex,covers_closed
+
+
+def test_degenerate_covering_shapes_are_bounded_not_half_plane_intersections():
+    origin=(F(0),F(0));one=(F(1),F(0));two=(F(2),F(0))
+    assert covers_closed((origin,),((origin,),))
+    assert not covers_closed((one,),((origin,),))
+    assert covers_closed((one,),((origin,two),))
+    assert not covers_closed(((F(3),F(0)),),((origin,two),))
+    assert not covers_closed(((F(-1),F(0)),),((origin,two),))
+    assert covers_closed((origin,two),((origin,one),(one,two)))
+    assert not covers_closed((origin,two),((origin,one),(two,)))
+    assert not covers_closed((origin,two),(((F(1),F(-1)),(F(1),F(1))),))
 from eql_automation.source_stair_plan import SourceStairPlan,plan_stair_flight
 from test_source_stair_plan import setup
 

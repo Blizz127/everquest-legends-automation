@@ -29,10 +29,24 @@ def covers_closed(target,polygons):
     """Do not lose point/edge contact by using positive-area coverage alone."""
     if not target:return True
     if not 1<=len(polygons)<=32:raise ValueError('Bounded local stair cell coverage required')
-    if len(target)>=3 and area(target)>0:return covered_by_union(target,polygons)
-    if len(target)==1:return any(inside(target[0],p) for p in polygons)
+    if len(target)>=3 and area(target)>0:
+        full=tuple(p for p in polygons if len(p)>=3 and area(p)>0)
+        return bool(full) and covered_by_union(target,full)
+    def contains(point,poly):
+        if len(poly)==1:return point==poly[0]
+        if len(poly)==2:
+            a,b=poly
+            return cross(a,b,point)==0 and all(min(a[k],b[k])<=point[k]<=max(a[k],b[k]) for k in (0,1))
+        return bool(poly) and inside(point,poly)
+    if len(target)==1:return any(contains(target[0],p) for p in polygons)
     a,b=target[0],target[-1];intervals=[]
     for poly in polygons:
+        if not poly:continue
+        if len(poly)==1:
+            if contains(poly[0],(a,b)):
+                axis=0 if a[0]!=b[0] else 1
+                t=(poly[0][axis]-a[axis])/(b[axis]-a[axis]);intervals.append((t,t))
+            continue
         low,high=F(0),F(1)
         for i,p in enumerate(poly):
             q=poly[(i+1)%len(poly)];base=cross(p,q,a);slope=cross(p,q,b)-base
@@ -40,6 +54,16 @@ def covers_closed(target,polygons):
                 if base<0:low,high=F(1),F(0);break
             elif slope>0:low=max(low,-base/slope)
             else:high=min(high,-base/slope)
+        if len(poly)==2 and low<=high:
+            # The two edge half-planes describe an infinite line. Clip its
+            # parameter to the actual segment as well, retaining exact endpoints.
+            axis=0 if poly[0][0]!=poly[1][0] else 1
+            start,end=sorted((poly[0][axis],poly[1][axis]))
+            delta=b[axis]-a[axis]
+            if delta:
+                p,q=sorted(((start-a[axis])/delta,(end-a[axis])/delta))
+                low,high=max(low,p),min(high,q)
+            elif not start<=a[axis]<=end:low,high=F(1),F(0)
         if low<=high:intervals.append((low,high))
     end=F(0)
     for low,high in sorted(intervals):
