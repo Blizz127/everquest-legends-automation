@@ -1,9 +1,9 @@
-# EverQuest Legends automation — project 0.41.42 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.43 / owner preview 0.39.5
 
 ## Current availability
 
 This project's full-auto bot remains an **offline simulator and planning
-library**. An isolated, owner-run rotation preview 0.39.4 is staged on the
+library**. An isolated, owner-run rotation preview 0.39.5 is staged on the
 Alienware outside the game install. Blizz runs the game and helper himself;
 the lead has not logged in or sent game input. The installed client points to
 Daybreak's live service. Its published
@@ -19,9 +19,18 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.42 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.42/source`; they do not
-replace the owner-run 0.39.4 assist preview.
+Source tools 0.41.43 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.43/source`; the runnable
+rotation helper is separately staged under `owner-assist/0.39.5`.
+
+Preview 0.39.5 builds on the existing rotation bot and proposes its HP crop
+from the client's saved UI layout. **Find / calibrate HP** opens the captured
+game image with a highlighted rectangle. At full health, confirm the outline
+covers your inner red HP gauge and click **Save**. You can drag to correct it;
+Cancel preserves the previous calibration. Synthetic full/partial/blue-bar
+dialog checks passed on Alienware without starting the engine or changing
+settings. Live HP reading and smart healing remain unverified. References
+to 0.39.4 in the history below describe the retained earlier baseline.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
 separate-process same-device release timer tested only with a pipe. Version
@@ -254,22 +263,28 @@ historical start and untested zone trigger keep F11 closed.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
-The owner launch steps below are for 0.39.4.
+The owner launch steps below are for 0.39.5.
 
-## Owner-run rotation test on Alienware today: preview 0.39.4
+## Owner-run rotation test on Alienware today: preview 0.39.5
 
 Close any already running Solo Assist window. Blizz starts the game through
 Lutris and logs in himself. In an Alienware terminal, start the isolated
 preview:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.4
+cd ~/.local/share/eql-automation/owner-assist/0.39.5
 EQL_ROTATION_TRACE="$HOME/eql-assist-trace.jsonl" ./launch.sh
 ```
 
 The GUI starts disarmed. Blizz chooses his character and current level there.
-At full HP, click **Calibrate HP** and select only the inner red gauge from
-left to right, 5–24 pixels tall; exclude the frame, text and blue mana bar.
+At full HP, click **Find / calibrate HP**. The saved client layout proposes
+the inner red gauge. Check the captured character and highlighted rectangle;
+click **Save** only if it covers that full red gauge. If needed, drag a new
+rectangle from left to right, 5–24 pixels tall, excluding frame, text and mana.
+Missing, hidden, minimized or offscreen layouts fall back to manual selection.
+An unreadable preview or one below 85% cannot be saved; confirm actual full
+HP before pressing Save. The suggested layout
+is re-read at Save; a changed rectangle cancels that save.
 The older 51-pixel-tall saved HP crop is rejected in this preview. Check that
 the Combat tab shows a plausible full HP reading before combat. If HP remains
 unknown or falls below 10%, heal manually; the preview treats those readings
@@ -356,7 +371,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.42/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.43/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -364,12 +379,12 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.42/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.43/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 
 Its numeric result remains unverified until the owner confirms the live
-screen state at full HP and a second known HP state. The current 0.39.4
+screen state at full HP and a second known HP state. The earlier 0.39.4
 preview still requires manual **Calibrate HP** on the inner red band at full
 health for its own smart-heal setting; do not use the old 51-pixel saved crop.
 
@@ -890,7 +905,7 @@ polygons and a 24-polygon offline Detour query path. Its data stays under
 `~/.local/share/eql-automation/nav-candidates/`. No query is an accepted bot
 route or proof of game movement; the active bot still has no verified nav edge.
 
-The owner-run 0.39.4 preview above is built from a pinned copy of the November
+The owner-run 0.39.5 preview above is built from a pinned copy of the November
 helper plus the source patch in `patches/`. Its original working tree at
 `~/Projects/everquest-legends-rotation` was not edited. Do not run the old
 tool's installer: it writes character INIs in the protected Alienware prefix.
@@ -918,7 +933,7 @@ python3 -m compileall -q eql_automation
 The staged owner preview also supports a no-input Alienware check:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.4
+cd ~/.local/share/eql-automation/owner-assist/0.39.5
 /usr/bin/python3 -B owner_nov12_smoke.py
 ./launch.sh --dry-run --level 7
 ```

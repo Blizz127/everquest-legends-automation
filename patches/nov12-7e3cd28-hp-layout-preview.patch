@@ -1,0 +1,119 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -40,7 +40,11 @@
+     parser.add_argument("--gui-smoke-scroll", type=int, default=0, help="Scroll that tab down by this many pixels")
+     parser.add_argument("--measure-navigation", action="store_true",
+                         help="Measurement-only GUI: disable combat and the leveling autopilot")
++    parser.add_argument("--gui-smoke-hp-capture", type=Path,
++                        help="Render HP calibration from a PNG only with --gui-smoke-test; no engine")
+     args = parser.parse_args()
++    if args.gui_smoke_hp_capture and not args.gui_smoke_test:
++        parser.error("--gui-smoke-hp-capture requires --gui-smoke-test")
+     settings = Settings.load()
+     settings.game_dir = str(args.game_dir)
+     if args.level is not None:
+@@ -65,10 +69,12 @@
+         except BlockingIOError:
+             parser.exit(1, "EQ Legends Solo Assist is already running.\n")
+     run_gui(settings, catalog, args.gui_smoke_test, args.measure_navigation,
+-            smoke_view=(args.gui_smoke_tab, args.gui_smoke_scroll))
+-
+-
+-def run_gui(settings, catalog, smoke_path=None, measurement_only=False, smoke_view=(0, 0)):
++            smoke_view=(args.gui_smoke_tab, args.gui_smoke_scroll),
++            smoke_hp_capture=args.gui_smoke_hp_capture)
++
++
++def run_gui(settings, catalog, smoke_path=None, measurement_only=False, smoke_view=(0, 0),
++            smoke_hp_capture=None):
+     from PySide6.QtCore import Qt, QThread, Signal, QTimer, QRectF
+     from PySide6.QtGui import QColor, QImage, QPixmap, QPen, QPainter
+     from PySide6.QtWidgets import (
+@@ -128,6 +134,7 @@
+         def __init__(self, image, channel, parent):
+             super().__init__(parent)
+             self.image, self.channel, self.region = image, channel, None
++            self.layout_proposal = None
+             self.setWindowTitle("Calibrate health" if channel == "red" else "Calibrate mana")
+             self.resize(1100, 720)
+             layout = QVBoxLayout(self)
+@@ -151,8 +158,23 @@
+             self.buttons.rejected.connect(self.reject)
+             layout.addWidget(self.buttons)
+             QTimer.singleShot(0, lambda: self.view.fitInView(self.scene.sceneRect(), Qt.AspectRatioMode.KeepAspectRatio))
+-
+-        def selected(self, box):
++            if channel == "red":
++                from eql_automation.hp_layout import propose_hp_box
++                try:
++                    box = propose_hp_box(parent.settings.game_dir, parent.settings.character,
++                                         parent.settings.server, image.size)
++                    x0, y0, x1, y1 = box
++                    self.view.rectangle = self.scene.addRect(
++                        QRectF(x0, y0, x1 - x0, y1 - y0), QPen(QColor("#f5ca72"), 2))
++                    self.selected(list(box), from_layout=True)
++                    instruction.setText(
++                        "The outline comes from your saved client UI layout. Check that it covers your INNER red HP gauge.\n"
++                        "Save confirms you were at full HP when this image was captured. Drag a new rectangle if the outline is wrong; Cancel keeps your previous calibration.")
++                except (OSError, ValueError) as error:
++                    self.reading.setText(f"Could not suggest HP gauge: {error}. Select the inner red bar manually.")
++
++        def selected(self, box, *, from_layout=False):
++            self.layout_proposal = tuple(box) if from_layout else None
+             fraction = bar_fraction(self.image.crop(tuple(box)), self.channel)
+             valid = (fraction is not None and fraction >= 0.85 and
+                      (self.channel != "red" or 5 <= box[3] - box[1] <= 24))
+@@ -281,7 +303,7 @@
+             prep = QPushButton("Prepare spell bar  ·  F6")
+             prep.setObjectName("primary")
+             prep.clicked.connect(lambda: self.post("prepare_later"))
+-            hp_button = QPushButton("Calibrate HP")
++            hp_button = QPushButton("Find / calibrate HP")
+             hp_button.clicked.connect(lambda: self.post("capture", "red"))
+             mana_button = QPushButton("Calibrate mana")
+             mana_button.clicked.connect(lambda: self.post("capture", "blue"))
+@@ -763,6 +785,16 @@
+         def calibrate(self, channel, image):
+             dialog = Calibration(image, channel, self)
+             if dialog.exec() == QDialog.DialogCode.Accepted and dialog.region:
++                if dialog.layout_proposal is not None:
++                    from eql_automation.hp_layout import propose_hp_box
++                    try:
++                        current = propose_hp_box(self.settings.game_dir, self.settings.character,
++                                                 self.settings.server, image.size)
++                        if current != dialog.layout_proposal:
++                            raise ValueError("The saved UI layout changed; capture the gauge again")
++                    except (OSError, ValueError) as error:
++                        self.status.setText(f"Calibration not saved: {error}")
++                        return
+                 data = asdict(self.settings)
+                 data["hp_region" if channel == "red" else "mana_region"] = dialog.region
+                 self.settings = Settings(**data)
+@@ -814,9 +846,26 @@
+             if scroll and hasattr(page, "verticalScrollBar"):
+                 QTimer.singleShot(200, lambda: page.verticalScrollBar().setValue(scroll))
+ 
++        smoke_widget = window
++        if smoke_hp_capture:
++            from PIL import Image
++            with Image.open(smoke_hp_capture) as raw:
++                image = raw.convert("RGB")
++            smoke_widget = Calibration(image, "red", window)
++            smoke_widget.show()
++
+         def render():
+             smoke_path.parent.mkdir(parents=True, exist_ok=True)
+-            window.grab().save(str(smoke_path))
++            smoke_widget.grab().save(str(smoke_path))
++            if smoke_hp_capture:
++                smoke_path.with_suffix(".json").write_text(json.dumps({
++                    "region": smoke_widget.region,
++                    "save_enabled": smoke_widget.buttons.button(QDialogButtonBox.StandardButton.Save).isEnabled(),
++                    "layout_proposal": smoke_widget.layout_proposal,
++                    "worker_started": window.worker is not None,
++                    "game_input_sent": False,
++                    "settings_saved": False,
++                }, indent=2) + "\n")
+             app.quit()
+         QTimer.singleShot(400, render)
+     app.exec()

@@ -1,5 +1,42 @@
 # FINDINGS
 
+## Owner assist 0.39.5 proposes HP from client layout — 2026-11-13 18:08 CST
+
+**VERIFIED build and synthetic Alienware GUI, no game input:** The new
+preview builds from the pinned 0.39.4 rotation helper. Its existing HP
+calibration dialog now proposes `PlayerWindow/Player_HP` using the selected
+character/server and captured window dimensions. The owner sees the outline
+and explicitly saves it at full HP; manual drag and Cancel remain available.
+It rejects the old 51-pixel crop, missing/hidden/minimized/offscreen layouts,
+and malformed identities. The saved layout rectangle is re-read before an
+auto-proposed calibration is saved. Runtime HP pixel reading and the input
+adapter are unchanged. This does not make unsaved UI moves observable.
+
+The 13 focused rectangle tests passed. On Alienware, the existing no-device
+rotation smoke passed. Three new offscreen calibration-dialog smokes used
+synthetic full-red, half-red and blue bars at the real saved rectangle
+`[1966,693,2296,710]`: only full red enabled Save; the other two kept the
+region unknown. All three reported no worker, no game input and no settings
+save, and the owner settings file remained byte-identical. The synthetic
+full-bar dialog was visually inspected; private image SHA-256 is
+`c2c09792d6e95b8bacdf3929859ae41141ad9e2851c75d2cf8c4207f8a4a18a1`.
+Local no-device smoke attempts were blocked by the devbox environments'
+missing Pillow/numpy combinations; the equivalent Alienware run passed.
+
+Preview is staged outside the game install at
+`~/.local/share/eql-automation/owner-assist/0.39.5` on Alienware. Local/remote
+archive SHA-256 matched
+`2161c8996305a4c1620a024074a3194908aaf7a908f2fcca9f124b8605806e2c`.
+New GUI SHA-256 is
+`cd59576a50ba353c6f47f03f04ebf7b92c4407785e7fdbd3a50e13df4a35ea17`;
+the proposal module is
+`3866414c8e3dfff41744ff7ba39e4996ae1ac645e2712ecf79a1836dcca1481f`.
+Both and the existing UI-layout reader are checked by the launch guard.
+**Unverified:** live HP calibration, partial-health reading, automatic
+healing and strict assist acceptance. F11 is still disabled. The previous
+0.39.4 preview remains available; no helper or game session was launched
+for live input. HOWTO contains the owner launch and calibration steps.
+
 ## Controlled Crushbone horizontal-grid sensitivity — 2026-11-13 18:02 CST
 
 **VERIFIED offline bake, no game input:** New `tools/probe_crushbone_bake.py`

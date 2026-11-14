@@ -1,8 +1,16 @@
 # STATUS
 
-Updated 2026-11-13 18:03 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 18:08 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
+- Owner assist 0.39.5 is privately staged on Alienware. **Find / calibrate
+  HP** now proposes the crop from the saved client UI, highlights it, and
+  retains the owner's full-HP Save/manual correction flow. Thirteen focused
+  tests passed; Alienware no-device rotation smoke plus full/partial/blue
+  synthetic dialog smokes passed. No worker/input/settings change occurred.
+  Archive SHA-256 `2161c8996305a4c1620a024074a3194908aaf7a908f2fcca9f124b8605806e2c`
+  matched locally/remotely. Live HP and healing still need the owner test;
+  F11 remains disabled, level/XP/hour/deaths unobserved since prior report.
 - Controlled Crushbone full-zone bake comparison completed: identical
   copied source/baker reproduced all 65 baseline ground heights exactly.
   Halving horizontal cell size reduced the inner-ring error at 658→623,
@@ -85,7 +93,7 @@ Updated 2026-11-13 18:03 CST for coordinator task `829a00229b29`.
   and the bake-probe/UI-capture CLI help checks passed. This release adds
   the controlled Crushbone bake probe and supersedes source 0.41.41.
   No live screenshot, character input or movement was run for 0.41.42.
-  Owner-run assist/G0 preview remains 0.39.4; F11 remains disabled.
+  Owner-run assist is now 0.39.5; G0 was observed in 0.39.4. F11 remains disabled.
 - Read-only UI progress: the installed Legira layout puts the HP gauge at
   `(1966,693,330,17)` at 2560×1600; the saved HP crop starts 32 pixels too
   high and spans 51 pixels. The 0.39.4 reader explicitly rejects its height
