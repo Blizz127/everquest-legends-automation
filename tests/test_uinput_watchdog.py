@@ -10,7 +10,7 @@ import time
 
 import pytest
 
-from eql_automation.uinput_watchdog import PulseError, timed_key_pulse
+from eql_automation.uinput_watchdog import PulseError, PulseInterrupted, timed_key_pulse
 import eql_automation.uinput_watchdog as watchdog
 
 
@@ -58,11 +58,48 @@ def test_stop_after_down_releases_and_does_not_report_success(monkeypatch):
         return result
 
     monkeypatch.setattr(watchdog, "_read_status", observe_ack)
-    with pytest.raises(PulseError, match="interrupted"):
+    with pytest.raises(PulseInterrupted, match="interrupted") as caught:
         timed_key_pulse(write_fd, 17, 0.15, should_stop=lambda: down)
+    receipt=caught.value.receipt
+    assert receipt.key_code==17 and receipt.requested_seconds==.15
+    assert receipt.completion in ('interrupted','elapsed')
+    assert receipt.down_started_at<=receipt.down_completed_at<=receipt.up_started_at<=receipt.up_completed_at
     sent = frames(write_fd, read_fd)
     assert sent[0] == (1, 17, 1)
     assert (1, 17, 0) in sent
+
+
+def test_stop_after_elapsed_release_retains_receipt_but_never_returns_success(monkeypatch):
+    read_fd,write_fd=os.pipe();released=False
+    original=watchdog._read_status
+    def observe(*args,**kwargs):
+        nonlocal released
+        result=original(*args,**kwargs)
+        released|=result.startswith('UP ')
+        return result
+    monkeypatch.setattr(watchdog,'_read_status',observe)
+    with pytest.raises(PulseInterrupted,match='after release') as caught:
+        timed_key_pulse(write_fd,17,.03,should_stop=lambda:released)
+    assert caught.value.receipt.completion=='elapsed'
+    sent=frames(write_fd,read_fd)
+    assert sent[0]==(1,17,1) and sent[-2:]==[(1,17,0),(0,0,0)]
+
+
+def test_late_stop_reads_queued_up_even_after_child_exited(monkeypatch):
+    read_fd,write_fd=os.pipe();down=False
+    original=watchdog._read_status
+    def observe(*args,**kwargs):
+        nonlocal down
+        result=original(*args,**kwargs)
+        if result=='DOWN':
+            down=True;time.sleep(.1)
+        return result
+    monkeypatch.setattr(watchdog,'_read_status',observe)
+    with pytest.raises(PulseInterrupted) as caught:
+        timed_key_pulse(write_fd,17,.02,should_stop=lambda:down)
+    assert caught.value.receipt.completion=='elapsed'
+    sent=frames(write_fd,read_fd)
+    assert sent[0]==(1,17,1) and sent[-2:]==[(1,17,0),(0,0,0)]
 
 
 def test_ready_wait_pumps_stop_without_sending_down():

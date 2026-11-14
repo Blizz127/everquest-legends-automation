@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 12:29 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 12:39 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,18 @@ Updated 2026-11-14 12:29 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.18:** the checked sender now has a separate one-pulse crossing
+  policy/controller. Loading releases movement, the source floor/pose stays
+  uncommitted, and only fresh expected-zone arrival positions follow. Continued
+  hazard scanning catches attacks after the loading line. Actual watchdog
+  pipe tests pass for interrupted/delayed arrival, cancellation, missing/late
+  loading, wrong zone and release failure. 232 focused regressions passed before
+  review fixes; 68 crossing/arrival/watchdog and 53 crossing/policy checks pass
+  after cancellation/receipt fixes. Owner preview 0.39.18 is unchanged.
+  **Next:** bind the checked launch-point approach and exclusive lease transfer
+  into the owner travel action, then fresh Crushbone geometry/camps. Pending
+  owner map/travel acceptance remains; no new G0 request. Current level,
+  XP/hour, deaths and camp unknown; no real crossing, route or automated XP.
 - **Source 0.42.17:** exact pinned zone-line geometry now propagates through
   terrain/precision/static/BSP preparation and cache identity. The copied GFay
   synthetic footprint passes with polygon 19256 / native region 2884, while

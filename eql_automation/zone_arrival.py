@@ -12,13 +12,14 @@ import time
 from .ground_binding import finite
 from .motion_collection import CommandReceipt
 from .owner_zone_tracker import ZoneReaderLease
+from .scene_log_veto import ExpectedArrivalLogVeto
 from .stopped_location_pair import StoppedLocationPair
 
 
 class ZoneArrivalHandoff:
     def __init__(self, lease, destination, *, release_controls, ready_for_location,
                  check_current, clock=time.monotonic, local_wall_clock=datetime.now,
-                 maximum_seconds=90.):
+                 maximum_seconds=90.,cancel_generation=0):
         if (not isinstance(lease, ZoneReaderLease)
                 or not all(callable(f) for f in (release_controls, ready_for_location,
                                                 check_current, clock, local_wall_clock))
@@ -43,6 +44,12 @@ class ZoneArrivalHandoff:
         self.phase, self.reason = 'await_loading', ''
         self.loading = self.entry = self.release = self.collector = None
         self.events = []
+        self.veto=ExpectedArrivalLogVeto(r.tail.path,
+            expected_character=r.expected_character,expected_server=r.expected_server,
+            cancel_generation=cancel_generation,clock=clock,destination=destination)
+        self.veto_binding=(self.veto.tail.identity,self.veto.tail.epoch)
+        if (self.veto.tail.identity,self.veto.tail.position)!=(r.tail.identity,r.tail.position):
+            raise ValueError('Arrival hazard observer must start at the same exact source cursor')
         self._check()
 
     def _cursor(self):
@@ -54,11 +61,15 @@ class ZoneArrivalHandoff:
             raise ValueError(self.reason)
         self.check_current()
         owner = self.lease.check()
+        hazard=self.veto.poll()
         now = self.clock()
         if (self.phase == 'stopped' or owner != self.owner or self.lease.reader is not self.reader
                 or not finite(now) or not self.last_at <= now <= self.deadline
-                or (self.reader.tail.identity, self.reader.tail.epoch) != self.log_binding):
-            raise ValueError('Arrival cancelled, log/process binding changed or deadline expired')
+                or (self.reader.tail.identity, self.reader.tail.epoch) != self.log_binding
+                or (self.veto.tail.identity,self.veto.tail.epoch)!=self.veto_binding
+                or not hazard.continuity_available or hazard.reason is not None):
+            raise ValueError('Arrival cancelled, log/process binding changed, hazard or deadline expired'
+                             +(':'+hazard.reason if hazard.reason else ''))
         self.last_at = now
         return now
 

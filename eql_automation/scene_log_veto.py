@@ -95,6 +95,9 @@ class SceneLogVeto:
     def poll(self) -> LogVetoObservation:
         return self._poll(baseline=False)
 
+    def classify(self, body):
+        return classify_log_veto(body)
+
     def _poll(self, *, baseline):
         if self._latched is not None:
             return self._latched
@@ -128,7 +131,7 @@ class SceneLogVeto:
                         reason, continuity = "log time moved backward", False
                         break
                     self._last_log_time = log_time
-                    reason = classify_log_veto(body)
+                    reason = self.classify(body)
                     if reason is not None:
                         break
             ended = self.clock()
@@ -145,3 +148,21 @@ class SceneLogVeto:
         else:
             self._last_finished = ended
         return observation
+
+
+class ExpectedArrivalLogVeto(SceneLogVeto):
+    """Continue hazard scanning across exact expected arrival messages.
+
+    This does not validate ordering or authorize movement. ZoneArrivalHandoff
+    independently requires fresh loading, exact entry and unchanged bindings.
+    """
+    def __init__(self, *args, destination, **kwargs):
+        if not isinstance(destination,str) or not destination or '\n' in destination:
+            raise ValueError('Exact destination name required')
+        self.destination=destination
+        super().__init__(*args,**kwargs)
+
+    def classify(self, body):
+        if body in ('LOADING, PLEASE WAIT...', 'You have entered '+self.destination+'.'):
+            return None
+        return classify_log_veto(body)

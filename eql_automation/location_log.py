@@ -190,6 +190,7 @@ class LocationLogReader:
                  max_bytes: int = 512 * 1024) -> None:
         if log_path.name != f"eqlog_{expected_character}_{expected_server}.txt":
             raise ValueError("Location log does not match expected character/server")
+        self.expected_character, self.expected_server = expected_character, expected_server
         self.zone_ids, self.ambiguous_zone_names = unique_client_zone_ids(zone_names_path)
         self.tail = NonReplayingLogTail(log_path, max_bytes=max_bytes)
         self.zone_id: int | None = None

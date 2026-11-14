@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.17** · rotation preview **0.39.13** · destination preview **0.39.18** · short route trial **0.39.15**.
+Source **0.42.18** · rotation preview **0.39.13** · destination preview **0.39.18** · short route trial **0.39.15**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -23,12 +23,13 @@ pulse.** Assist still uses the existing rotation bot. Preview 0.39.15 is a
 separate finite movement test; it cannot switch into assist or full auto.
 The requested seamless assist/full-auto switch is still unfinished.
 
-Source 0.42.17 adds an exact zone-line footprint check to the arrival work:
-the copied GFay crossing passes terrain, objects and the specified transition
-region under explicit offline position/body assumptions. Water and other zone
-lines still refuse. The arrival flow releases on loading, requires the expected
-destination and collects fresh stopped positions. These pieces are not yet
-connected to a crossing movement in the owner preview.
+Source 0.42.18 connects a distinct final crossing pulse to the checked sender
+and arrival flow. Pipe tests cover release on loading, the expected destination,
+two new stopped positions, hazards and cancellation. It discards the old floor
+state and stops if loading is missing or late. The owner preview does not yet
+expose this action: its approach must first supply the checked launch point and
+transfer the live reader. Copied geometry and pipe tests are not live crossing
+acceptance.
 Use the same 0.39.18 command below; this source update needs no new owner test.
 
 ## Travel toward Crushbone on Alienware: 0.39.18

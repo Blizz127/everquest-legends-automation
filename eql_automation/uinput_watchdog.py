@@ -31,6 +31,17 @@ class PulseError(RuntimeError):
     pass
 
 
+class PulseInterrupted(PulseError):
+    """A cancelled pulse with a validated child DOWN/UP timing receipt.
+
+    This remains an error to ordinary movement callers. The receipt describes
+    descriptor writes only and must never commit an ordinary cancelled route.
+    """
+    def __init__(self, message, receipt):
+        super().__init__(message)
+        self.receipt = receipt
+
+
 @dataclass(frozen=True)
 class PulseSelection:
     """One key and duration selected after READY under the shared stop lock."""
@@ -70,7 +81,7 @@ def _valid_key_duration(key, seconds):
             and math.isfinite(seconds) and 0 < seconds <= _MAX_PULSE)
 
 
-def _parse_receipt(result, key, seconds, sent_at, received_at):
+def _parse_receipt(result, key, seconds, sent_at, received_at, *, allow_interrupted=False):
     try:
         if not result.startswith("UP "):
             raise ValueError("missing UP receipt")
@@ -79,7 +90,7 @@ def _parse_receipt(result, key, seconds, sent_at, received_at):
                   receipt.up_started_at, receipt.up_completed_at)
         if (not _valid_key_duration(receipt.key_code, receipt.requested_seconds)
                 or receipt.key_code != key or receipt.requested_seconds != seconds
-                or receipt.completion != "elapsed"
+                or receipt.completion not in (("elapsed", "interrupted") if allow_interrupted else ("elapsed",))
                 or not all(isinstance(v, (int, float)) and not isinstance(v, bool)
                            and math.isfinite(v) for v in stamps)
                 or not sent_at <= stamps[0] <= stamps[1] <= stamps[2] <= stamps[3] <= received_at
@@ -220,7 +231,16 @@ def _run_pulse(device_fd, key_code, seconds, *, before_down=None, select_after_r
         result = _read_status(child.stdout, time.monotonic() + 1.0,
                               pump=pump, should_stop=should_stop)
         if result == "STOP":
-            raise PulseError("Pulse interrupted")
+            try:
+                child.stdin.write(b"STOP\n")
+            except BrokenPipeError:
+                pass  # An elapsed child may already have queued its UP receipt.
+            # Stop is already latched: finish bounded same-device cleanup
+            # without calling providers that could send or restart anything.
+            result = _read_status(child.stdout, time.monotonic() + .5)
+            receipt = _parse_receipt(result, key_code, seconds, sent_at, time.monotonic(),
+                                     allow_interrupted=True)
+            raise PulseInterrupted("Pulse interrupted", receipt)
         receipt = _parse_receipt(result, key_code, seconds, sent_at, time.monotonic())
     finally:
         if child.poll() is None:
@@ -238,7 +258,7 @@ def _run_pulse(device_fd, key_code, seconds, *, before_down=None, select_after_r
         child.stdin.close()
         child.stdout.close()
     if should_stop is not None and should_stop():
-        raise PulseError("Pulse cancelled after release")
+        raise PulseInterrupted("Pulse cancelled after release", receipt)
     return receipt
 
 

@@ -70,6 +70,30 @@ def test_expected_crossing_releases_before_location_and_collects_new_stopped_pai
     assert h.tick() is None and len(h.requests)==2
 
 
+@pytest.mark.parametrize('body',['a bat hits YOU for 3 points of damage.',
+    'You have been slain by a bat!','Targeted (NPC): a bat','Auto attack is on.',
+    'YOU are drowning!'])
+@pytest.mark.parametrize('phase',['same_loading_batch','after_loading','after_entry','collecting'])
+def test_arrival_keeps_all_hazards_after_expected_transition(h,body,phase):
+    h.append('LOADING, PLEASE WAIT...')
+    if phase!='same_loading_batch':h.tick()
+    if phase in ('after_entry','collecting'):
+        h.append('You have entered Clan Crushbone.');h.tick()
+    if phase=='collecting':
+        h.ready=True;h.send(h.tick(.2));h.tick()
+    h.append(body)
+    with pytest.raises(ValueError,match='hazard'):h.tick()
+    assert h.session.phase=='stopped' and not h.held
+    assert len(h.requests)==(1 if phase=='collecting' else 0)
+
+
+def test_ready_callback_hazard_cannot_issue_a_location_request(h):
+    enter(h);h.ready=True
+    h.ready_hook=lambda:h.append('You have been slain by a bat!')
+    with pytest.raises(ValueError,match='hazard'):h.tick(.2)
+    assert not h.requests and h.session.phase=='stopped'
+
+
 @pytest.mark.parametrize('change', ['wrong_zone','entry_without_loading','logging','malformed_logging',
     'duplicate_loading','position_while_loading','unsolicited_arrival','old_entry','partial','reset',
     'external_consumer','owner_changed','timeout'])

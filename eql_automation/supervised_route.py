@@ -38,6 +38,8 @@ def scope_limits(scope):
         return (120., 32, 20., 2.)
     if scope == 'destination_travel':
         return (1500., 3000, 10000., 600.)
+    if scope == 'zone_crossing':
+        return (15., 1, 10., .2)
     raise ValueError('Unknown supervised route scope')
 
 
@@ -80,8 +82,7 @@ class SupervisedRoutePolicy:
                 or not callable(check_current) or not callable(getattr(owner_input, 'sample', None))):
             raise ValueError('Explicit supervised scope, real observation providers and geometry required')
         d, r, b = declaration, geometry.ledger.runner, geometry.bounds
-        if geometry.expected_zone_line is not None:
-            raise ValueError('Ordinary route trials cannot authorize a zone crossing')
+        self._validate_geometry(geometry,d)
         seconds, steps, distance, hold = scope_limits(d.scope)
         if (not all(isinstance(v, str) and v for v in
                     (d.record_id, d.route_sha256, d.motion_record_id, d.planning_bounds_record_id))
@@ -111,14 +112,20 @@ class SupervisedRoutePolicy:
         self._cancelled = None
         self._check()
 
+    def _validate_geometry(self, geometry, declaration):
+        if geometry.expected_zone_line is not None:
+            raise ValueError('Ordinary route trials cannot authorize a zone crossing')
+
     def cancel(self, reason):
-        self._cancelled = str(reason)
+        with self.ledger.lock:
+            self._cancelled = str(reason)
 
     def _check(self):
         began, r, d = self.ledger.clock(), self.ledger.runner, self.declaration
         if self._cancelled is not None:
             raise RouteHalt('Supervised route stopped: '+self._cancelled)
         self.check_current()
+        self._validate_geometry(self.geometry,d)
         r._check(began)
         try:
             window = focused_game_identity(self.gate)

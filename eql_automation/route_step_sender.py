@@ -20,7 +20,7 @@ from .fixed_route_follower import RouteHalt, finite
 from .g2_pulse_budget import G2Scene
 from .ground_binding import AlignedWldFix
 from .route_floor_commit import FloorCommitTicket, RouteFloorCommit
-from .uinput_watchdog import PulseReceipt, PulseSelection, selected_key_pulse_receipt
+from .uinput_watchdog import PulseReceipt, PulseSelection, PulseInterrupted, selected_key_pulse_receipt
 
 
 @dataclass(frozen=True)
@@ -60,6 +60,41 @@ def _fd_identity(fd):
 def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
                            authorize_step, still_authorized,
                            command_state_clear, pump, supervised_policy=None):
+    return _run_checked_step(sender,ledger,scene_provider=scene_provider,prepare_step=prepare_step,
+        authorize_step=authorize_step,still_authorized=still_authorized,
+        command_state_clear=command_state_clear,pump=pump,supervised_policy=supervised_policy)
+
+
+def run_checked_crossing_step(sender, crossing, *, policy, scene_provider, command_state_clear, pump):
+    """One final source pulse, release, then an independently checked arrival.
+
+    The caller transfers the exclusive reader before calling, and must not run
+    the ordinary RouteSessionDriver concurrently. No source floor/pose commit
+    occurs, including when the pulse elapses before the loading log arrives.
+    """
+    from .crossing_pulse import CrossingPulseHandoff
+    if type(crossing) is not CrossingPulseHandoff:
+        raise ValueError('Explicit exclusive crossing handoff required')
+    try:
+        crossing.start(policy)
+        try:
+            receipt=_run_checked_step(sender,crossing.ledger,scene_provider=scene_provider,
+                prepare_step=crossing.geometry,authorize_step=policy.authorize,
+                still_authorized=policy.still_authorized,command_state_clear=command_state_clear,
+                pump=pump,supervised_policy=policy,crossing=crossing)
+        except PulseInterrupted as error:
+            if crossing.arrival.loading is None:raise
+            receipt=error.receipt
+        if sender.held or getattr(sender,'_eql_route_operation',None) is not None:
+            raise RouteHalt('Crossing sender has not finished exclusive release cleanup')
+        return crossing.released(receipt)
+    except BaseException as error:
+        crossing.cancel(str(error));raise
+
+
+def _run_checked_step(sender, ledger, *, scene_provider, prepare_step,
+                      authorize_step, still_authorized, command_state_clear, pump,
+                      supervised_policy=None,crossing=None):
     """Arm, observe, propose, check, send, release, then commit exactly once.
 
     ``prepare_step(proposal, scene)`` stages the complete geometry request on
@@ -88,12 +123,18 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
         raise ValueError('A route ledger and all independent live providers are required')
     if supervised_policy is not None:
         from .supervised_route import SupervisedRoutePolicy
-        if (type(supervised_policy) is not SupervisedRoutePolicy
+        policy_type=SupervisedRoutePolicy
+        if crossing is not None:
+            from .supervised_crossing import SupervisedCrossingPolicy
+            policy_type=SupervisedCrossingPolicy
+        if (type(supervised_policy) is not policy_type
                 or supervised_policy.ledger is not ledger
                 or prepare_step is not supervised_policy.geometry
                 or authorize_step != supervised_policy.authorize
                 or still_authorized != supervised_policy.still_authorized):
             raise ValueError('Supervised route must use its exact geometry and typed policy')
+    elif crossing is not None:
+        raise ValueError('Crossing requires its exact explicit supervised policy')
     operation = object()
     owned = False
     pinned_fd = None
@@ -124,6 +165,10 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
         binding()  # Recheck after every potentially reentrant callback.
 
     def checked_scene():
+        if crossing is not None:
+            binding()  # A changed descriptor must never receive arrival cleanup.
+            if crossing.poll_loading():
+                raise RouteHalt('Source movement ends on observed loading')
         check_sender()
         observed = scene_provider()
         binding()
@@ -180,6 +225,7 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
         else:
             supervised_policy.validate_authorization(authorization, observed)
         check_sender()
+        if crossing is not None:crossing.selected(ticket)
         key = ticket.preparation.movement_key
         sender.held.add(key)  # Retain until final UP and SYN both succeed.
         return PulseSelection(key, ticket.preparation.requested_seconds, authorization.expires_at)
@@ -187,6 +233,9 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
     def should_stop():
         try:
             with ledger.lock:
+                if crossing is not None:
+                    binding()
+                    if crossing.poll_loading():return True
                 observed = checked_scene()
                 if authorization is not None:
                     if still_authorized(authorization, observed) is not True:
@@ -250,9 +299,14 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
             if receipt is None or ticket is None or authorization is None:
                 raise RouteHalt('No completed checked route pulse')
             if should_stop():
+                if crossing is not None and crossing.arrival.loading is not None:
+                    raise PulseInterrupted('Loading observed after crossing release',receipt)
                 raise RouteHalt('Route was cancelled before receipt commit')
             if sender.held:
                 raise RouteHalt('Sender acquired a held key after final release')
+            if crossing is not None:
+                ledger.cancel('Final crossing pulse released; source floor is not committed')
+                return receipt
             floor = ledger.commit(ticket, receipt)
             return RouteStepResult(receipt, floor.proof_sha256, authorization.guard_record_id,
                 authorization_scope='external_guard' if supervised_policy is None else

@@ -102,8 +102,8 @@ def test_coverage_needs_the_exact_polygon_and_actual_area():
                      expected_zone_line=line,polygon_ids=(1,1)).candidate
 
 
-def prepare_crossing(legacy,*,wall=False):
-    f=build(legacy,wall=wall);p=f.prepare
+def prepare_crossing(legacy,*,wall=False,clock=None):
+    f=build(legacy,wall=wall,clock=clock);p=f.prepare
     p.ground.areas[1]=4
     # Test fixture's package X is raw BSP Y; region0 occupies its right half.
     bsp=BspVolumeView(SimpleNamespace(nodes=((0.,1.,0.,-2.,0,2,3),leaf(1),leaf(2)),

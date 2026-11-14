@@ -1,5 +1,62 @@
 # FINDINGS
 
+## Checked crossing pulse and arrival integration — 2026-11-14 12:39 UTC
+
+**VERIFIED implementation:** source 0.42.18 adds `SupervisedCrossingPolicy`,
+`CrossingPulseHandoff` and `run_checked_crossing_step`. The distinct declaration
+binds the exact expected zone line and destination and permits at most one
+forward pulse. It reuses the existing sender's descriptor pin, shared stop lock,
+geometry ticket, watchdog and final-UP cleanup. Ordinary route entry rejects
+this policy. Loading is observed before ordinary source-zone checks; source
+movement ends immediately and the expected-arrival flow owns the exclusive
+reader. The source floor fork and pose are never committed, even for a fully
+elapsed pulse. Missing/late loading stops after a 2.5-second observation bound;
+there is no retry from an old position. The destination needs a fresh planner.
+
+The watchdog now preserves a validated interrupted child DOWN/UP receipt in a
+`PulseInterrupted` exception. Ordinary callers still receive an error and cannot
+commit a cancelled pulse. A child already finished at stop may have closed stdin;
+the queued UP is still read and validated. The complete sender cleanup remains
+mandatory. The receipt proves descriptor write timing, not client consumption.
+
+`ExpectedArrivalLogVeto` accepts only exact loading/expected-entry text and keeps
+scanning for every other existing hazard. This fixes a concrete integration
+problem: ignoring an ordinary watcher's latched `zone_transition` would hide
+attack/death/log-reset messages after it. The independent location reader still
+enforces ordering, freshness and exact destination. The two non-replaying tails
+start at the same identity/cursor but retain their own epoch counters, avoiding
+a false mismatch when the source reader has already observed an earlier reset.
+
+**VERIFIED focused runtime checks:** actual watchdog subprocesses write to OS
+pipes only. The complete new sender/policy/controller path handles loading during
+DOWN and delayed loading after an elapsed pulse, then two new destination
+positions. No loading, late loading, wrong destination, incoming attack, owner/
+policy cancellation, assist mode, lease revocation, release failure and loading
+before DOWN all stop; no source floor commit or pose advance occurs. Arrival
+checks cover hazards in the loading batch, after entry and during the stopped
+pair. Position, input/focus observations, terrain and owner scope are synthetic.
+
+232 focused regressions passed in 15.16 seconds before the final review fixes.
+Read-only review found a policy-cancel+loading race, cancellation at final receipt
+commit and a finished-child BrokenPipe receipt loss. The policy race was
+reproduced as a failing test; fixes bind policy cancellation throughout arrival,
+serialize final state changes under the shared stop lock, recheck after callbacks
+and read queued UP after a closed child stdin. 68 crossing/arrival/watchdog
+checks passed afterward (7.31 seconds), then 53 crossing/policy cases passed after
+the final lock changes (5.69 seconds). No timing deadline was relaxed. A further
+late-loading case checks the receipt time rather than accepting a late message
+merely because it changed the phase.
+
+**Remaining owner/runtime work:** the GUI travel action still ends at the
+Crushbone approach. It must plan the checked launch-point approach, carry its
+source-floor chain through the layered entrance and transfer its lease into the
+new crossing controller without ordinary route cleanup revoking it. Fresh
+Crushbone geometry/camp execution follows. Owner preview **0.39.18**, assist
+**0.39.13** and passed G0 remain unchanged. No new owner test is requested by this
+source update. Actual live map recognition, traversal, crossing, automated XP
+and 1–20/1–50 completion are unverified. Current level, XP/hour, deaths and camp
+remain unknown.
+
 ## Exact expected zone-line geometry — 2026-11-14 12:29 UTC
 
 **VERIFIED implementation:** source 0.42.17 introduces immutable
