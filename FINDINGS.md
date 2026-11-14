@@ -1,5 +1,27 @@
 # FINDINGS
 
+## 2026-11-14 21:14 UTC — source tools 0.42.64 privately published
+
+VERIFIED installed `~/.local/share/eql-automation/owner-tools/0.42.64/source`
+on Alienware from `64e29a9a1688c8de40a22a337edc494a25d9e47e`. All **524** pinned
+source/test files match the validated snapshot. The bundle retains all **45**
+passing checks with verified JUnit hashes; imports and three auditor startups
+pass remotely. Source archive SHA
+`33c9f93eb7264be9a546f04c6726a884e0f57ed7a19bb1d38844d40168c632cc`;
+startup receipt SHA
+`399843f13149ab4cca8383dba70e1ef043a843f820f16a376c4e8455f79a17b3`.
+Private receipt: `releases/eql-source-tools-0.42.64-staging.json`.
+Owner launcher/runtime remain **0.39.32 / 0.42.61**; its launcher hash is
+unchanged. No helper restart, game input, install or character change.
+
+An exact rational point-in-triangle check independently confirms the marker
+and old rejoin are strictly inside rug 5782 faces 1 and 0 respectively.
+Private artifact `nav-candidates/crushbone-throne-rug-markers-0.42.64.json`,
+SHA `f47fe5408ff9881235c16e43275e40934527329746f6d5a13d2947b8ce6276e3`.
+This proves copied geometry containment, not the client's collision filter.
+The lower bypass is refused, no Throne guide was published, and the live stair
+executor remains unfinished. G0 passed; no repeat. Full 1–20/1–50 not accepted.
+
 ## 2026-11-14 21:13 UTC — source 0.42.64: selected-floor budget and Throne exit diagnosis
 
 VERIFIED the 32-patch limit now applies to the connected supporting floor,

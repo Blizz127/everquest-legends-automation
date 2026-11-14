@@ -1,13 +1,17 @@
 # STATUS
 
-Updated 2026-11-14 21:13 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 21:14 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.64 built locally; publication next.** VERIFIED 45 focused
-  checks pass. The 32-patch limit now counts the inherited connected floor;
+- **Source tools 0.42.64 privately published; owner preview stays 0.39.32.** VERIFIED 45 focused
+  checks pass. All 524 pinned files match Alienware `owner-tools/0.42.64/source`;
+  imports and three auditor startups pass. Bundle SHA
+  `33c9f93eb7264be9a546f04c6726a884e0f57ed7a19bb1d38844d40168c632cc`;
+  startup SHA `399843f13149ab4cca8383dba70e1ef043a843f820f16a376c4e8455f79a17b3`.
+  The 32-patch limit now counts the inherited connected floor;
   every unrelated source layer remains in ambiguity/collision checks. The
   Throne exit hits a rug 0.094591 units above terrain; the original target and
   rejoin lie on a second rug. A complete-query lower bypass passes its retreat
