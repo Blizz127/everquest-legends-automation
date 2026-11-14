@@ -11,6 +11,8 @@ import json
 import math
 import time
 
+import numpy as np
+
 from .current_route_start import CurrentStartPlanner, CurrentStartPlan, encoded
 from .fixed_route_follower import FixedRoute, FixedSegment
 from .ground_binding import GroundGeometryEvidence, finite, integer
@@ -74,7 +76,7 @@ def corridor_points(mesh,polygons,portals,start,goal,check):
 
 def plan_destination(planner, navigation_mesh, reader, first, second, *, goal_xy,
                      maximum_seconds=120., max_polygons=512, clock=time.monotonic,
-                     **start_options):
+                     expected_zone_line=None,**start_options):
     """Use the retained navigation search, then verify its selected endpoints.
 
     ``navigation_mesh`` is the owner's pinned eqnav.mesh.NavMesh. Its nearest
@@ -95,9 +97,21 @@ def plan_destination(planner, navigation_mesh, reader, first, second, *, goal_xy
     if not callable(binding):raise ValueError('Current owner binding required')
     identity=(reader.tail.identity,reader.tail.epoch,reader.zone_generation,
               reader.zone_id,reader.zone_display_name)
+    line=expected_zone_line
+    if line is not None:
+        from .zone_line import ExpectedZoneLine
+        if type(line) is not ExpectedZoneLine:raise ValueError('Typed expected zone line required')
+    def check_line():
+        if line is None:return
+        line.check_geometry(zone=planner.zone,mesh_sha256=mesh_pin,
+            archive_sha256=planner.pins[1],wld_sha256=planner.pins[2],bsp=planner.bsp)
+        if (planner.ground.polygons_for_area(line.area_id)!=line.polygon_ids
+                or tuple(int(i) for i in np.flatnonzero(navigation_mesh.area==line.area_id))!=line.polygon_ids
+                or tuple(int(i) for i in np.flatnonzero(planner.mesh.area==line.area_id))!=line.polygon_ids):
+            raise ValueError('Destination expected-line inventory differs')
     def check():
         nonlocal last
-        actual=binding();planner._check_views();now=clock()
+        actual=binding();now=clock();planner._check_views();check_line()
         if (actual!=owner or not finite(now) or not finite(began)
                 or not began<=last<=now<=began+maximum_seconds
                 or getattr(navigation_mesh,'sha256',None)!=mesh_pin
@@ -117,12 +131,12 @@ def plan_destination(planner, navigation_mesh, reader, first, second, *, goal_xy
     check()
     start=initial.route.segments[0].start
     start_polygon=initial.route.segments[0].polygon
-    goal_polygon,goal_z=planner._support(goal_xy)
+    goal_polygon,goal_z=planner._support(goal_xy,expected_zone_line=line)
     component=int(planner.ground.components[start_polygon])
     if int(planner.ground.components[goal_polygon])!=component:
         raise ValueError('Destination is not in the current dry connected component')
     goal=(*goal_xy,goal_z)
-    path=navigation_mesh.find_path(start,goal,water_cost=None,allow_zone_lines=(),
+    path=navigation_mesh.find_path(start,goal,water_cost=None,allow_zone_lines=() if line is None else (line.area_id,),
         locate_radius=0.,max_expansions=200000,margin=initial.route.half_width)
     check()
     polygons=tuple(path.polys)
@@ -133,8 +147,9 @@ def plan_destination(planner, navigation_mesh, reader, first, second, *, goal_xy
     links=[];pairs=[];portal_records=[]
     for polygon in polygons:
         if (not integer(polygon) or polygon>=len(planner.ground.areas)
-                or int(navigation_mesh.area[polygon])!=63
-                or int(planner.ground.areas[polygon])!=63
+                or int(navigation_mesh.area[polygon])!=int(planner.ground.areas[polygon])
+                or (int(planner.ground.areas[polygon])!=63 and
+                    (line is None or not line.allows_face(polygon,int(planner.ground.areas[polygon]))))
                 or int(planner.ground.components[polygon])!=component):
             raise ValueError('Destination corridor contains a closed or foreign component')
     for a,b in zip(polygons,polygons[1:]):
@@ -171,7 +186,8 @@ def plan_destination(planner, navigation_mesh, reader, first, second, *, goal_xy
     segments[0]=replace(segments[0],start=start)
     segments[-1]=replace(segments[-1],end=goal)
     finished=clock();check()
-    evidence=encoded(dict(format='eql-current-destination-geometry-v1',
+    crossing={} if line is None else dict(expected_zone_line=line.record())
+    evidence=encoded(dict(format='eql-current-destination-geometry-v1',**crossing,
         scope='initial_support_and_reciprocal_corridor; future_footprints_checked_before_input',
         initial_geometry=json.loads(initial.evidence_bytes),initial_chain_index=initial.floor_chain.index,
         initial_chain_proof=initial.floor_chain.previous.proof_sha256,
@@ -182,8 +198,8 @@ def plan_destination(planner, navigation_mesh, reader, first, second, *, goal_xy
         requires_fresh_start_pair=True,real_client_accepted=False,input_authorized=False))
     proof=sha256(evidence).hexdigest()
     geometry=GroundGeometryEvidence(planner.zone,*planner.pins[:3],proof,
-        start_options['maximum_source_z_difference'],tuple(sorted(set(pairs))),True)
-    plan_bytes=encoded(dict(format='eql-fixed-segment-plan-v1',zone=planner.zone,
+        start_options['maximum_source_z_difference'],tuple(sorted(set(pairs))),True,line)
+    plan_bytes=encoded(dict(format='eql-fixed-segment-plan-v1',zone=planner.zone,**crossing,
         frame='helper_package_WLD_Y_X_Z',offline_only=True,route_accepted=False,
         real_client_accepted=False,pins=dict(mesh=mesh_pin,archive=planner.pins[1],
             wld=planner.pins[2],static=planner.pins[3],bsp=planner.bsp_pin,geometry=proof),

@@ -13,7 +13,7 @@ from pathlib import Path
 from .fixed_route_follower import FixedRoute
 from .ground_binding import (AlignedWldFix, GroundGeometryEvidence, HeightCalibration,
     MeshProjection, SourceFloorObservation, digest, finite, integer, point,
-    validate_ground_binding)
+    validate_ground_binding,ground_zone_line)
 from .location_log import RawLocationFix
 
 
@@ -89,6 +89,11 @@ class RouteGroundObserver:
         if len(mesh.area)!=len(ground.areas) or len(ground.areas)!=len(ground.components):
             raise GroundObservationUnavailable('Geometry array lengths differ')
         self.mesh,self.ground,self.source,self.geometry=mesh,ground,source,g
+        self.expected_zone_line=ground_zone_line(g)
+        if self.expected_zone_line is not None and (
+                getattr(mesh,'mesh_sha256',None)!=g.mesh_sha256
+                or getattr(ground,'mesh_sha256',None)!=g.mesh_sha256):
+            raise GroundObservationUnavailable('Expected zone line needs matching loaded mesh views')
         self.links=frozenset(reciprocal_links)
         if (not isinstance(g.verified_portal_pairs,tuple) or len(g.verified_portal_pairs)>20000
                 or len(set(g.verified_portal_pairs))!=len(g.verified_portal_pairs)):
@@ -132,9 +137,15 @@ class RouteGroundObserver:
         return result
 
     def _polygon(self, polygon):
-        if (not integer(polygon) or polygon>=len(self.ground.areas)
-                or int(self.mesh.area[polygon])!=63 or int(self.ground.areas[polygon])!=63
-                or int(self.ground.components[polygon])<0):
+        if not integer(polygon) or polygon>=len(self.ground.areas):
+            raise GroundObservationUnavailable('Selected polygon is missing')
+        line=ground_zone_line(self.geometry)
+        if line is not self.expected_zone_line:
+            raise GroundObservationUnavailable('Expected zone-line context changed')
+        area=int(self.ground.areas[polygon])
+        allowed=(area==63 and (line is None or polygon not in line.polygon_ids))
+        if line is not None:allowed=allowed or line.allows_face(polygon,area)
+        if (int(self.mesh.area[polygon])!=area or not allowed or int(self.ground.components[polygon])<0):
             raise GroundObservationUnavailable('Selected polygon is missing or not dry ground')
         return int(self.ground.components[polygon])
 
@@ -210,9 +221,10 @@ class RouteGroundObserver:
         source=SourceFloorObservation(raw,(*raw.raw_coordinates[:2],source_z),
             g.source_archive_sha256,g.source_wld_sha256,source_ids,1,True)
         neighbors=tuple(sorted(b if a==polygon else a for a,b in g.verified_portal_pairs if polygon in (a,b)))
-        projection=MeshProjection(raw,(*xy,support.height),g.mesh_sha256,polygon,63,component,
+        projection=MeshProjection(raw,(*xy,support.height),g.mesh_sha256,polygon,int(self.ground.areas[polygon]),component,
             g.source_archive_sha256,g.source_wld_sha256,source_ids,g.same_floor_evidence_sha256,
-            g.maximum_source_baked_z_difference,neighbors,True,True)
+            g.maximum_source_baked_z_difference,neighbors,True,True,
+            None if self.expected_zone_line is None else self.expected_zone_line.sha256)
         aligned=AlignedWldFix(raw,source,projection,cal,route.zone,motion_calibration_record_id,
             live_alignment_verified=cal.live_verified,
             alignment_kind=('current_stopped_height_correspondence'

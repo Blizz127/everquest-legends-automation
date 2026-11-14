@@ -83,10 +83,14 @@ class ExpectedZoneLine:
             raise ValueError('Expected zone line differs from the actual BSP inventory or labels')
 
     def check_geometry(self, *, zone, mesh_sha256, archive_sha256, wld_sha256, bsp):
+        self.check_sources(zone=zone,mesh_sha256=mesh_sha256,
+                           archive_sha256=archive_sha256,wld_sha256=wld_sha256)
+        self.check_bsp(bsp)
+
+    def check_sources(self, *, zone, mesh_sha256, archive_sha256, wld_sha256):
         if (zone,mesh_sha256,archive_sha256,wld_sha256)!=(
                 self.zone,self.mesh_sha256,self.archive_sha256,self.wld_sha256):
             raise ValueError('Expected zone line belongs to another source geometry')
-        self.check_bsp(bsp)
 
     def allows_face(self, polygon, area):
         return type(polygon) is int and polygon in self.polygon_ids and area==self.area_id

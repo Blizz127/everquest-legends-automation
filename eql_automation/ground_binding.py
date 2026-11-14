@@ -84,6 +84,7 @@ class GroundGeometryEvidence:
     maximum_source_baked_z_difference: float
     verified_portal_pairs: tuple[tuple[int,int], ...] = ()
     geometry_verified: bool = False
+    expected_zone_line: object = None
 
 
 @dataclass(frozen=True)
@@ -110,6 +111,19 @@ class MeshProjection:
     verified_neighbor_polygons: tuple[int,...] = ()
     projection_verified: bool = False
     same_floor_verified: bool = False
+    expected_zone_line_sha256: str | None = None
+
+
+def ground_zone_line(geometry):
+    """Resolve an explicitly pinned transition context; never infer one."""
+    from .zone_line import ExpectedZoneLine
+    line=geometry.expected_zone_line
+    if line is not None:
+        if type(line) is not ExpectedZoneLine:
+            raise ValueError('Typed expected zone-line geometry required')
+        line.check_sources(zone=geometry.zone_short_name,mesh_sha256=geometry.mesh_sha256,
+            archive_sha256=geometry.source_archive_sha256,wld_sha256=geometry.source_wld_sha256)
+    return line
 
 
 @dataclass(frozen=True)
@@ -167,6 +181,10 @@ def validate_ground_binding(aligned, *, height_calibration, geometry_evidence, m
         return GroundBindingCheck(False,'missing_current_verified_ground_binding')
     raw,source,projection,cal = aligned.raw_fix,aligned.source_floor,aligned.mesh_projection,height_calibration
     geometry = geometry_evidence
+    try:line=ground_zone_line(geometry)
+    except ValueError:return GroundBindingCheck(False,'expected_zone_line_context_mismatch')
+    if projection.expected_zone_line_sha256!=(None if line is None else line.sha256):
+        return GroundBindingCheck(False,'expected_zone_line_projection_mismatch')
     if (geometry.zone_short_name != zone_short_name or geometry.mesh_sha256 != mesh_sha256
             or geometry.source_archive_sha256 != cal.source_archive_sha256
             or geometry.source_wld_sha256 != cal.source_wld_sha256
@@ -214,8 +232,11 @@ def validate_ground_binding(aligned, *, height_calibration, geometry_evidence, m
             or len(set(source.source_surface_ids)) != len(source.source_surface_ids)
             or projection.source_surface_ids != source.source_surface_ids):
         return GroundBindingCheck(False,'ground_geometry_provenance_mismatch')
+    area_ok=(projection.area==63 and (line is None or projection.polygon not in line.polygon_ids))
+    if line is not None:area_ok=area_ok or line.allows_face(projection.polygon,projection.area)
     if (not integer(source.floor_count) or source.floor_count != 1
-            or not integer(projection.polygon) or projection.area != 63 or not integer(projection.component)
+            or not integer(projection.polygon) or not integer(projection.area) or not area_ok
+            or not integer(projection.component)
             or not isinstance(projection.verified_neighbor_polygons,tuple)
             or len(projection.verified_neighbor_polygons)>32
             or any(not integer(p) or p==projection.polygon for p in projection.verified_neighbor_polygons)

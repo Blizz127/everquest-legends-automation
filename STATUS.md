@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 12:39 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 12:51 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,20 @@ Updated 2026-11-14 12:39 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.19:** exact expected-zone-line context now binds destination
+  planning, ground observations and movement geometry. Actual area 4 is retained;
+  ordinary routes still reject it. The complete copied GFay planner produces
+  200 segments / 5,029.06 units into polygon 19256, native region 2884, from a
+  synthetic start. Probe SHA
+  `8efea68b025c570f25a951e01ccd04ec0c34f6058730206c34fe98dd738eba24`.
+  169 focused checks passed plus one test-fixture failure; all 21 destination
+  cases pass after correcting that fixture. Search-time label/inventory changes
+  now refuse. This is planning/observation support, not a new owner action.
+  **Next:** seal completed movement receipts before waiting for loading, then
+  commit the source floor only after fresh source positions or discard it on
+  loading; connect that exclusive-reader flow to owner travel. Owner preview
+  0.39.18 and assist 0.39.13 unchanged; G0 passed. Current level, XP/hour, deaths
+  and camp unknown. No live crossing, accepted route or automated XP.
 - **Source 0.42.18:** the checked sender now has a separate one-pulse crossing
   policy/controller. Loading releases movement, the source floor/pose stays
   uncommitted, and only fresh expected-zone arrival positions follow. Continued

@@ -111,6 +111,10 @@ def prepare_crossing(legacy,*,wall=False,clock=None):
     g=f.runner.geometry_evidence
     line=expected(bsp,zone=f.runner.route.zone,mesh_sha256=g.mesh_sha256,
                   archive_sha256=g.source_archive_sha256)
+    f.runner.geometry_evidence=replace(g,expected_zone_line=line)
+    f.reference=replace(f.reference,mesh_projection=replace(f.reference.mesh_projection,
+        expected_zone_line_sha256=line.sha256))
+    f.scene=SimpleNamespace(reference_fix=f.reference)
     f.prepare=RouteGeometryPreparer(f.ledger,ground=p.ground,source=p.source,static=p.static,
         bsp=bsp,bounds=p.bounds,static_inventory_sha256=p.static_inventory_sha256,
         vertical_window=p.vertical_window,maximum_source_z_difference=p.maximum_source_z_difference,

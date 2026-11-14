@@ -105,3 +105,58 @@ def test_untraversed_static_obstacle_is_not_claimed_clear(f):
     plan=f.plan_destination()
     assert len(plan.route.segments)==2 and plan.floor_chain.index==1
     assert not json.loads(plan.evidence_bytes)['whole_corridor_clearance_verified']
+
+
+def crossing_context(f):
+    from types import SimpleNamespace
+    from eql_automation.bsp_volume import BspVolumeView
+    from eql_automation.current_route_start import CurrentStartPlanner
+    from eql_automation.zone_line import ExpectedZoneLine
+    p=f.planner;p.ground.areas[1]=4;f.nav.area[1]=4
+    bsp=BspVolumeView(SimpleNamespace(nodes=((0.,1.,0.,-10.,0,2,3),
+        (0.,0.,0.,0.,2,0,0),(0.,0.,0.,0.,1,0,0)),labels_by_region={1:{'zoneline'}}),
+        region_count=2,wld_sha256=p.pins[2])
+    f.planner=CurrentStartPlanner(mesh=p.mesh,ground=p.ground,source=p.source,static=p.static,bsp=bsp,
+        zone_short_name=p.zone,expected_zone_id=p.zone_id,expected_zone_name=p.zone_name,
+        mesh_sha256=p.pins[0],source_archive_sha256=p.pins[1],source_wld_sha256=p.pins[2],
+        static_inventory_sha256=p.pins[3])
+    return ExpectedZoneLine('destination-fixture',p.zone,*p.pins[:3],bsp.inventory_sha256,
+        'e'*64,'DRNTP00255000004_ZONE',4,(1,),(1,))
+
+
+def test_exact_zone_line_destination_is_explicit_and_keeps_actual_area(f):
+    line=crossing_context(f)
+    with pytest.raises((ValueError,RuntimeError)):f.plan_destination()
+    plan=plan_destination(f.planner,f.nav,f.reader,f.a,f.b,goal_xy=f.goal,
+        expected_zone_line=line,**f.destination_options)
+    assert plan.observer.geometry.expected_zone_line is line
+    assert plan.observer.mesh.area[plan.route.segments[-1].polygon]==4
+    assert json.loads(plan.plan_bytes)['expected_zone_line']['sha256']==line.sha256
+    assert plan.floor_chain.index==1 and not plan.real_client_accepted
+
+
+@pytest.mark.parametrize('change',['polygon','bsp','source','other_area'])
+def test_destination_cannot_expand_or_detach_expected_line(f,change):
+    line=crossing_context(f)
+    if change=='polygon':line=replace(line,polygon_ids=(0,))
+    elif change=='bsp':line=replace(line,bsp_inventory_sha256='f'*64)
+    elif change=='source':line=replace(line,archive_sha256='f'*64)
+    else:f.planner.ground.areas[1]=5
+    with pytest.raises((ValueError,RuntimeError)):
+        plan_destination(f.planner,f.nav,f.reader,f.a,f.b,goal_xy=f.goal,
+            expected_zone_line=line,**f.destination_options)
+
+
+@pytest.mark.parametrize('change',['bsp_water','extra_area','dry_relabel'])
+def test_destination_rechecks_expected_line_after_search_callback(f,change):
+    line=crossing_context(f);original=f.nav.find_path
+    def search(*args,**kwargs):
+        result=original(*args,**kwargs)
+        if change=='bsp_water':f.planner.bsp.labels=((),('water',))
+        elif change=='extra_area':f.nav.area[0]=4
+        else:f.planner.ground.areas[1]=f.nav.area[1]=63
+        return result
+    f.nav.find_path=search
+    with pytest.raises(ValueError):
+        plan_destination(f.planner,f.nav,f.reader,f.a,f.b,goal_xy=f.goal,
+            expected_zone_line=line,**f.destination_options)

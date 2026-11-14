@@ -108,11 +108,13 @@ class RouteGeometryPreparer:
 
     def _zone_line_binding(self):
         line=self.expected_zone_line
+        r=self.ledger.runner;g=r.geometry_evidence
+        if line!=g.expected_zone_line:
+            raise ValueError('Route observations and footprint need the same expected zone line')
         if line is None:return None
         from .zone_line import ExpectedZoneLine
         if not isinstance(line,ExpectedZoneLine):
             raise ValueError('Explicit expected zone-line geometry required')
-        r=self.ledger.runner;g=r.geometry_evidence
         line.check_geometry(zone=r.route.zone,mesh_sha256=r.route.mesh_sha256,
             archive_sha256=g.source_archive_sha256,wld_sha256=g.source_wld_sha256,bsp=self.bsp)
         if self.ground.polygons_for_area(line.area_id)!=line.polygon_ids:

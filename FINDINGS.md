@@ -1,5 +1,61 @@
 # FINDINGS
 
+## Exact zone-line route and observation context — 2026-11-14 12:51 UTC
+
+**VERIFIED implementation:** source 0.42.19 propagates the immutable expected
+zone line into destination planning and ground observations. The producer keeps
+the actual area 4 and exact raw XY; the consumer requires the same line hash
+and source pins. Named transition polygons cannot be relabelled as area 63.
+The movement geometry preparer requires matching observation and swept-footprint
+contexts. Ordinary plans/observers retain dry-only defaults. The initial start
+capsule is still dry-only: this does not support restarting inside the zone line.
+
+The retained NavMesh search may use only the explicit area after complete
+polygon inventory checks against the navigation/detail/ground views. Exact
+source pins and native BSP labels are rechecked after callbacks and search.
+Read-only review identified that the first implementation checked this context
+only before search; a mutation of the expected region to water could leave a
+stale planning record. The final implementation refuses that case, extra area
+polygons and dry relabeling. Runtime collision checks remain mandatory.
+
+**VERIFIED focused checks:** 72 zone-line/observation/destination/crossing cases
+passed before the final inventory rechecks. The broader focused run passed 169
+cases with one failing new fixture that attempted to mutate a tuple in place.
+After correcting that fixture, all 21 destination cases pass, including changed
+BSP labels, expanded area inventory and relabeling after search. No receipt,
+position or movement deadline was relaxed.
+
+**VERIFIED copied-client plan:** `tools/probe_destination_route.py` now accepts
+`--tile-rounding --expected-crushbone-zone-line`. It resolves the pinned native
+label `DRNTP00255000004_ZONE`, area 4, polygon 19256, region 2884, and uses only
+the manifest point's XY. Endpoint Z comes from exact mesh detail support; the
+manifest's vertical midpoint is not used as a floor. With explicit synthetic
+start `(1780.12,-1802.22)` and heading `336.8889866616196`, the planner produces
+200 segments / 5,029.060435635146 units in 6.609 seconds. The last point is
+`(-51.02425949999999,2618.9152374999994,16.068756103515625)` in actual area 4.
+The initial source-floor chain remains at index 1. Untraversed corridor body,
+static, terrain and BSP checks remain required before each movement.
+
+Retained private evidence:
+`~/.local/share/eql-automation/nav-candidates/gfay-zone-corridor-0.42.19/`.
+Probe SHA `8efea68b025c570f25a951e01ccd04ec0c34f6058730206c34fe98dd738eba24`;
+plan SHA `b984dd6b2737a7d2cab98467ea804d0b88294bdf0105e7153a0259d586faf842`;
+geometry SHA `aecfa6db0f4ac503d0638e20a9f942821eba1ceca9ba152b48e6085ee5bc4a17`.
+The destination remains a guide hint until a real expected-zone arrival. This
+does not establish server destination/spawn, current character position or
+actual traversal. No game input, login or character mutation was performed.
+
+**Remaining integration:** ordinary movement envelopes touch the zone line
+before a final pulse necessarily reaches it. Continuing source-side pulses
+therefore needs a receipt sealed while fresh, a stopped source/loading decision,
+and either a fresh-position source-floor commit or discard on loading. The
+existing 0.3-second receipt freshness requirement cannot simply be extended
+through the 2.5-second loading observation. Source-position collection and
+arrival must share one reader and inspect loading before source-zone checks.
+Then carry the lease into fresh Crushbone geometry/camps. Owner preview 0.39.18,
+assist 0.39.13 and passed G0 remain unchanged; no new G0 or owner test is requested.
+Current level, XP/hour, deaths and camp unknown. Real 1–20/1–50 remain unaccepted.
+
 ## Checked crossing pulse and arrival integration — 2026-11-14 12:39 UTC
 
 **VERIFIED implementation:** source 0.42.18 adds `SupervisedCrossingPolicy`,

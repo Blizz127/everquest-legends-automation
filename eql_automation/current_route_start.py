@@ -101,7 +101,13 @@ class CurrentStartPlanner:
                 or len(self.ground.areas) != len(self.ground.components)):
             raise ValueError('Current-start geometry identities changed')
 
-    def _support(self, xy):
+    def _support(self, xy, *, expected_zone_line=None):
+        if expected_zone_line is not None:
+            from .zone_line import ExpectedZoneLine
+            if type(expected_zone_line) is not ExpectedZoneLine:
+                raise ValueError('Typed expected zone-line geometry required')
+            expected_zone_line.check_geometry(zone=self.zone,mesh_sha256=self.pins[0],
+                archive_sha256=self.pins[1],wld_sha256=self.pins[2],bsp=self.bsp)
         g = self.ground
         indices = np.flatnonzero((g.minimum[:, 0] <= xy[0]) & (g.maximum[:, 0] >= xy[0])
                                & (g.minimum[:, 1] <= xy[1]) & (g.maximum[:, 1] >= xy[1]))
@@ -120,7 +126,10 @@ class CurrentStartPlanner:
         if len(hits) != 1:
             raise ValueError('Current XY needs one uniquely supported polygon; no snapping or Z selection')
         poly, height = hits[0]
-        if (int(self.mesh.area[poly]) != 63 or int(g.areas[poly]) != 63
+        actual=int(g.areas[poly])
+        allowed=actual==63 and (expected_zone_line is None or poly not in expected_zone_line.polygon_ids)
+        if expected_zone_line is not None:allowed=allowed or expected_zone_line.allows_face(poly,actual)
+        if (int(self.mesh.area[poly]) != actual or not allowed
                 or int(g.components[poly]) < 0):
             raise ValueError('Current polygon is not dry connected ground')
         return poly, height
