@@ -1,6 +1,6 @@
 # FINDINGS
 
-## Private source 0.41.77 staged — 2026-11-14 06:09 UTC
+## Private source 0.41.77 staged — 2026-11-14 06:08 UTC
 
 **VERIFIED:** commit `97ca10885747b769536a7dd134585b7f9795cb37`, archive SHA
 `f272597a6324186d33775844bd4b198a748d36035f33acd8df6e6cfed5aee084`,

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:09 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:08 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -102,7 +102,7 @@ Updated 2026-11-14 06:09 UTC for coordinator task `829a00229b29`.
   button and manual `/location` flow. It additionally saves private copied
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
-  turn (2026-11-14 06:09 UTC) found zero paired records. No lead capture was initiated.
+  turn (2026-11-14 06:08 UTC) found zero paired records. No lead capture was initiated.
 - **Next / real-client gate:** validate the source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported
   initial travel envelope and current scene, then supply the checked sender
