@@ -43,6 +43,12 @@ startup SHA `057493d27526f5076b6ef0bd9d4ee10e0e1ae5846ff92fc03789a797814c6276`.
 The GUI image is byte-identical to 0.39.16's inspected image. HOWTO now uses
 0.39.17. Assist stays 0.39.13; prior previews remain intact.
 
+Source commit `dc5e25cec42b3c73d372af7e210b0a05d6b4223a` is staged at
+Alienware `owner-tools/0.42.14/source`; all 138 package files match 0.39.17.
+Imports, engine composition and destination loading pass there without input.
+Source archive SHA `e532f803cd5f388ecb5b36a7f527aeb0263af365faa5a9e44aaf691ac2d96f43`;
+source startup SHA `8c16865bc0db25c349e84a0d282a70d6562285ea63de66879525b00ccb12f47d`.
+
 **Remaining:** current-zone recognition without a fresh appended entry needs
 an independent current-client observation. The actor-zone UI label remains
 the next source to integrate. Actual travel, zone crossing, camp/combat

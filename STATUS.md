@@ -16,6 +16,9 @@ Updated 2026-11-14 12:01 UTC for coordinator task `829a00229b29`.
   transition pairing requires a new zone observation. 97 focused checks pass.
   Alienware manifest/GUI/installed-data startup passes without game input;
   startup SHA `057493d27526f5076b6ef0bd9d4ee10e0e1ae5846ff92fc03789a797814c6276`.
+  Source `dc5e25c` is staged at `owner-tools/0.42.14/source`; all 138 package
+  files match preview 0.39.17. Its no-input composition/loader startup SHA is
+  `8c16865bc0db25c349e84a0d282a70d6562285ea63de66879525b00ccb12f47d`.
   Static client inspection indicates buffered open/write/close logging, so
   a persistent-writer-FD bootstrap was not enabled. **Next:** independent
   actor-zone UI observation and simpler travel startup, followed by actual
