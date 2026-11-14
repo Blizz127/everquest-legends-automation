@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 15:17 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 15:21 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.33 / candidate preview 0.39.22:** a bounded stationary camp now
+- **Source 0.42.33 / published preview 0.39.22:** a bounded stationary camp now
   reuses the actual retained engine, sender and spell rotation. History supplies
   observed NPC names only; new exact-name/level consideration is required before
   casting. One matching kill ends the session after passive loot observation.
@@ -14,11 +14,17 @@ Updated 2026-11-14 15:17 UTC for coordinator task `829a00229b29`.
   native melee, rest or loot input. **29 focused checks pass**, using the retained
   engine/KeySender, synthetic feedback and OS pipes. F9 during target/con/cast,
   late startup/provider callbacks, log replacement, encounter lock, heal/mana
-  priorities and kills during refresh are covered. Packaging/startup pending.
-  **Next:** owner preview publication and live one-kill acceptance, then camp
+  priorities and kills during refresh are covered. Both source and preview are
+  staged on Alienware; **29 checks pass there**, as do source-manifest matching,
+  movement-entry refusal and the offscreen GUI with an enabled camp button/tab.
+  Startup SHA `aaf0b910d115a17f95ca6cf58d85f1892b82a41265e20957addb840f606e9ac6`.
+  No engine worker, device, game input or install modification during staging.
+  An initial disabled-tab smoke failure was fixed before publication; inactive
+  failed artifacts were retained. Source code revision `7b82e21`.
+  **Next:** live one-kill acceptance, then camp
   repetition/rest and source-travel handoff. Level/XP/hour/deaths/camp unknown.
 - **G0 passed:** owner-confirmed visible stop plus trace evidence; no repeat.
-  Current assist is **0.39.13**, built on the existing rotation bot:
+  Retained standalone assist **0.39.13** uses the existing rotation bot:
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.

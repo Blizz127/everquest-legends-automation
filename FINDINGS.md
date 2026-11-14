@@ -29,6 +29,23 @@ artifacts after verifying no process was using either directory. The tab and
 mode indicators are corrected in the replacement candidate; no process was
 stopped and no game input was sent by the smoke.
 
+**VERIFIED private publication — 15:21 UTC:** preview **0.39.22** is installed at
+`Alienware: ~/.local/share/eql-automation/owner-assist/0.39.22`, and source
+**0.42.33**, revision `7b82e2129bcb4049d9fcb056c9561ae40edd7a9d`, is at
+`owner-tools/0.42.33/source`. All **29 focused checks pass on Alienware**. The
+packaged runtime sources exactly match the checked source snapshot. The final
+offscreen GUI shows the enabled **Stationary camp test** tab and **One stationary
+kill · F11** button; its startup report confirms no worker, device, game input or
+settings write. The movement-mode entry correctly refuses and points to 0.39.21.
+
+- Archive SHA: `aae67ea09535f57ac7f3bbb25cfd1e8eed609121576287af887ff371e61bb40f`.
+- Test output SHA: `b6ed5e95c99c83013d013faf04fcb7a89901ad930901e2e54d422c3ca01a8c88`.
+- GUI PNG SHA: `0ef648b3ec40fc141824e691c0bb9735742d91358474dcfc6ef3299d1712b511`.
+- Startup report SHA: `aaf0b910d115a17f95ca6cf58d85f1892b82a41265e20957addb840f606e9ac6`.
+
+Metadata is retained at `releases/eql-owner-camp-0.39.22-staging.json` in the
+private store. This is startup/pipe evidence, not a real kill or route acceptance.
+
 **VERIFIED retained evidence:** `owner-traces/eqlog-Legira-20261113.txt` under the
 private data store is 1,858,221 bytes, SHA
 `d622b3c12567f903d411860d3de1a0be28e4e8b38be7bbdc2bebfdd62c60f04e`.
