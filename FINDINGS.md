@@ -1,5 +1,22 @@
 # FINDINGS
 
+## 2026-11-14 18:01 UTC — source 0.42.47 privately published
+
+VERIFIED Alienware `owner-tools/0.42.47/source`, revision
+`226d48105067adadb3c6d1e6f925893ecde37f8d`. Runtime, tests and tools match the
+56-pass validation snapshot byte for byte. Imports, diagnostic CLI startup
+and copied-data pins pass. Archive SHA
+`3168bafc087b81e52081e59fc44023452eb97b1f65f3be09eff8cf10804f8e88`;
+startup SHA `ef50a2883a2f091e496853f9168cea68e320960682be0d21f39b1c2be79f9b64`.
+Publication record: `releases/eql-automation-0.42.47-staging.json`.
+
+Owner preview remains 0.39.30. No helper worker, input device, game input,
+client login, character action or protected-prefix edit. The single-probe
+transaction is input-free and not connected to owner controls. Reached-reference
+continuation, current scene/motion evidence and actual sender integration remain
+next; no automatic relocation or 1–20/1–50 acceptance is claimed. G0 passed;
+no repeat. Current level, XP, XP/hour, deaths and camp remain unknown.
+
 ## 2026-11-14 18:01 UTC — source 0.42.47, single camp-probe transaction
 
 VERIFIED `CampProbeTransaction` binds an exact consumed `CampProbeStart` to
