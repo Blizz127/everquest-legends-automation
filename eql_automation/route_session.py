@@ -70,6 +70,7 @@ class RouteSession:
         self.chain = ledger.chain
         self.requests, self.pairs, self.steps, self.raw_fixes = [], [], [], []
         self.step_attempts = []
+        self.executor_events = []
         self._check()
 
     def cancel(self, reason):
@@ -240,6 +241,7 @@ class RouteSession:
                 log_binding=self.log_binding, started_monotonic=self.started, last_checked_monotonic=self.last_at,
                 command_requests=list(self.requests), raw_fixes=list(self.raw_fixes), stopped_pairs=list(self.pairs),
                 steps=list(self.steps), step_attempts=list(self.step_attempts),
+                executor_events=list(self.executor_events),
                 real_client_accepted=False, request_correlation_verified=False)
 
 

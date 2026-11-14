@@ -1,5 +1,59 @@
 # FINDINGS
 
+## Route location-command execution 0.41.91 — 2026-11-14 08:04 UTC
+
+**VERIFIED implementation:** the route loop now has a concrete
+`RouteLocationExecutor`. It shares one fixed `/location` implementation with
+`MeasurementExecutors`, including the retained bot's actual command/character/
+tap methods, pinned descriptor, immutable submission snapshots and unconditional
+release. Only the engine/session binding differs. Each operation pins its
+exact active driver; changed driver, sender, pending request, mode or recovery
+refuses further input. The route executor has no movement method. Current
+independent command-start/key/end observations are still mandatory, and no
+owner job/hotkey constructs this path. Route session snapshots now retain the
+same command journals; trace purpose distinguishes route position requests
+from calibration requests.
+
+**VERIFIED route tests:** 17 focused checks pass, including exact ten-key
+submission, all four stop boundaries, copied/stale ownership, driver replacement,
+failed UP retry on the original descriptor and a complete retained-engine route.
+That passing route used actual command code and watchdog subprocesses on a pipe:
+nine steps, ten stopped pairs, 20 commands, 800 journaled command events and
+872 total pipe events asserted by the test. Scene, geometry, calibration and
+location feedback were synthetic. The saved helper result and source hashes
+are retained at `evidence/route-location-executor-0.41.91.json`, SHA
+`d59f68dfbb7025a8fb61343b118a59ee9453558226e09abd0913ad8e5dbe9c9d`.
+The raw pipe event stream from that test was not saved; its command write
+journals and movement receipts were. All paths below use the private store.
+
+**VERIFIED mixed calibration results:** 36 existing executor checks passed;
+the full real-time calibration test refused after two accepted pulses with
+`Release watchdog did not arm`. Its focused retry later refused with
+`Invalid release watchdog timing receipt`. Final records in both cases show
+no held keys, no pending releases and no cleanup error. The first error can
+also mean the stop predicate returned before READY was read; the second
+collapses several receipt predicates. Their exact earlier causes are unproven.
+CPU pressure was observed around 64%, but causation was not established.
+
+No deadline or release checks were relaxed. One bounded diagnostic on sampled
+CPU 41 retained raw child receipts and completed all seven pulses, eight pairs,
+16 commands and 696 pipe events with no parse errors. All original full-test
+result assertions were checked against that saved record. Evidence:
+
+| Run | SHA-256 |
+| --- | --- |
+| `evidence/motion-arm-refusal-0.41.91.json` | `5b3e779c436ab3331f13571948d8520ce8e78adb08aede0bfc4d163c4276b35c` |
+| `evidence/motion-receipt-refusal-0.41.91.json` | `1eb28745f1a52c289fca91195a32ea68d689a151b64972cc994d52958fdb6ea0` |
+| `evidence/motion-timing-0.41.91.json` | `22553cc53d9a47393d9436a79bdcac51915c9bdd2890d4e3a74b3abf7b176e49` |
+
+The previous turn made concrete progress by staging the route-session loop;
+this turn replaces its simulated command callback with the actual shared
+executor in the pipe harness. Current live scene/zone/height/motion bindings
+and owner route controls remain incomplete. No game capture/input/login or
+protected-prefix/character change occurred. Owner assist 0.39.6, observation
+0.39.10 and the passed G0 result are unchanged. Current level/XP/hour/deaths/
+camp remain unknown; neither the playable 1–20 nor fresh 1–50 goal is achieved.
+
 ## Private source 0.41.90 staged — 2026-11-14 07:58 UTC
 
 **VERIFIED:** source `4057d766b9e2854fd47a2bf29d10ca2faf006c62`, archive SHA

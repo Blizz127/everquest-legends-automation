@@ -1,4 +1,4 @@
-"""Concrete measurement input on the retained sender's existing descriptor.
+"""Concrete measurement input and shared checked location-command execution.
 
 No default scene/envelope observer exists. ``check_input`` is a required live
 dependency and must not consume the collector's exclusive location reader.
@@ -79,6 +79,7 @@ class _Scope:
         self.journal=(CommandSubmissionJournal(uuid4().hex)
                       if isinstance(request,LocationRequest) else None)
         self.checked_submission=None
+        self.driver=None
 
     def timestamp(self):
         # Receipt diagnostics must never prevent unconditional UP/SYN cleanup.
@@ -99,9 +100,10 @@ class _Scope:
     def binding(self):
         self.session._check()
         e, s = self.engine, self.sender
+        driver = self.owner._bound_driver()
+        if self.driver is None:self.driver = driver
         if (self.session.pending is not self.request or self.session.phase != self.phase
-                or e.motion_collection_driver is None or e.motion_collection_driver.session is not self.session
-                or not e._motion_idle() or e.cancelled or not e.jobs.empty()
+                or driver is not self.driver or e.cancelled or not e.jobs.empty()
                 or s is None or not self.same_device()
                 or getattr(s,'_eql_route_operation',None) is not self.marker
                 or self.session.clock() > self.request.expires_at +
@@ -273,8 +275,8 @@ def _command_view(scope):
     return CommandView()
 
 
-class MeasurementExecutors:
-    """Checked command/pulse callbacks for MotionExperimentDriver.
+class _LocationExecutor:
+    """Shared fixed-command implementation; subclasses bind a specific driver.
 
     check_input(request, phase, submission) returns fresh MeasurementInputEvidence
     bound to that exact immutable submission object (None for movement). For
@@ -283,17 +285,11 @@ class MeasurementExecutors:
     The submission records complete key cycles and all failed attempts, but
     proves neither client delivery nor chat focus. The independent observer
     must compare the current draft/transition with this exact submitted prefix.
-    pulse_start/held/end
-    require current input/scene checks; pulse_start also covers the complete
-    initial spatial envelope for the exact key and maximum hold. No such live
-    provider is included. The caller must keep device replacement/close and
+    No live observer is included. The caller must keep device replacement/close and
     stop operations under the same existing g0_stop_lock.
     """
-    def __init__(self, engine, session, *, check_input):
-        if (not isinstance(session,MotionExperimentSession) or not callable(check_input)
-                or session.lock is not getattr(engine,'g0_stop_lock',None)):
-            raise ValueError('Bound measurement session and independent input provider required')
-        self.engine, self.session, self.check_input = engine,session,check_input
+    def _bound_driver(self):
+        raise NotImplementedError('A concrete session/engine binding is required')
 
     def request_location(self, request):
         if not isinstance(request,LocationRequest):
@@ -318,8 +314,32 @@ class MeasurementExecutors:
             # Same attribution window as the pinned Engine.send implementation.
             self.engine.recent_commands = [(text,at) for text,at in self.engine.recent_commands
                 if completed-at <= 1.5] + [('/location',completed)]
-            self.engine.trace('command',text='/location',phase='entered',measurement=True)
+            self.engine.trace('command',text='/location',phase='entered',measurement=True,
+                              purpose=self.command_purpose)
             return CommandReceipt(began,completed)
+
+
+class MeasurementExecutors(_LocationExecutor):
+    """Checked command/pulse callbacks for MotionExperimentDriver.
+
+    In addition to the command checks described by _LocationExecutor,
+    pulse_start/held/end require current input/scene checks; pulse_start also
+    covers the complete initial spatial envelope for the exact key and hold.
+    No default live provider exists. No movement logic is shared with routes.
+    """
+    command_purpose = 'motion_calibration'
+    def __init__(self, engine, session, *, check_input):
+        if (not isinstance(session,MotionExperimentSession) or not callable(check_input)
+                or session.lock is not getattr(engine,'g0_stop_lock',None)):
+            raise ValueError('Bound measurement session and independent input provider required')
+        self.engine, self.session, self.check_input = engine,session,check_input
+
+    def _bound_driver(self):
+        driver = self.engine.motion_collection_driver
+        if (driver is None or driver.session is not self.session or not driver.busy
+                or not self.engine._motion_idle()):
+            raise CollectionStopped('Measurement driver or idle binding changed')
+        return driver
 
     def run_pulse(self, request):
         if not isinstance(request,MotionRequest):

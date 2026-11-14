@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:58 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 08:04 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,26 @@ Updated 2026-11-14 07:58 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.91:** the route loop now uses the retained bot's actual
+  `/location` sender through the shared checked command implementation.
+  Driver-specific bindings preserve the original descriptor, command journal,
+  exact per-key observation and unconditional release. Assist still rejects
+  attachment; route movement stays in the existing checked step sender.
+  Seventeen new route tests passed. The full actual-helper/command/watchdog
+  pipe test completed nine steps, ten stopped pairs and 20 commands (800
+  journaled command events; 872 total pipe events asserted by that test).
+  Evidence SHA
+  `d59f68dfbb7025a8fb61343b118a59ee9453558226e09abd0913ad8e5dbe9c9d`.
+  The existing executor run passed 36 tests but its full timed calibration
+  test refused twice, for arming and receipt timing. Both had no retained
+  held keys; no timing limits were changed. A subsequent bounded diagnostic
+  completed all seven pulses/16 commands/696 events and passed the same
+  result assertions; timing evidence SHA
+  `22553cc53d9a47393d9436a79bdcac51915c9bdd2890d4e3a74b3abf7b176e49`.
+  The earlier timing failures' exact causes remain unproven. Next: current
+  per-key chat/scene evidence and zone/height/motion bindings before owner
+  route control wiring. The pending stationary observation, G0 result and
+  owner helper versions are unchanged; no game input/capture occurred.
 - **Source 0.41.90:** a route session now joins the actual log/ground reader,
   fixed follower and checked sender across consecutive steps. The retained
   helper adapter services it on ticks, cancels on stop/jobs/close, rejects

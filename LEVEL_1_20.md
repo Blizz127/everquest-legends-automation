@@ -1,9 +1,18 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 07:58 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 08:04 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.91 supplies the actual checked `/location` executor for that loop,
+sharing the measurement command implementation and retained bot's key code.
+The full pipe run completed nine steps and 20 actual command submissions
+with synthetic location feedback. Seventeen route tests passed. The older
+calibration regression had two timing refusals before a bounded diagnostic
+completed all seven pulses with unchanged limits; the earlier exact causes
+remain unproven. Live per-key chat/scene evidence and zone/height/motion
+bindings are still missing. No route hotkey is enabled and no leg is accepted.
 
 Source 0.41.90 closes the runtime gap between one checked step and the next
 stopped-position pair. `RouteSession` owns the fresh log reader, aligns both

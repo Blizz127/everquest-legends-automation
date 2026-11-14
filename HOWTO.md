@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.90** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.91** · rotation preview **0.39.6** · observation candidate **0.39.10**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -108,11 +108,20 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.90/source
+~/.local/share/eql-automation/owner-tools/0.41.91/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.90 connects the fixed-route follower, ground reader and
+above. Source 0.41.91 supplies the route loop's concrete `/location` executor.
+It reuses the existing bot's command/key code and the same checked command
+implementation as motion measurement. Every key needs a current independent
+chat/scene observation bound to the exact submitted prefix. Route commands
+retain their input-attempt records in the saved session report; failed drafts
+remain uncertain after keys are released. This executor has no movement method,
+and assist cannot attach it. Current scene/zone/height/motion providers still
+need live evidence. No new owner command, hotkey or observation is enabled.
+
+Source 0.41.90 connects the fixed-route follower, ground reader and
 checked sender into an engine-tick loop. It collects two fresh stopped
 positions before each step, preserves the exact reference during the pulse,
 then continues from the committed floor state. The retained helper adapter
