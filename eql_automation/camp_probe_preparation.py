@@ -27,7 +27,10 @@ def _height_state(value):
 
 
 def _raw_record(raw):
-    value=asdict(raw);value['log_local_time']=raw.log_local_time.isoformat();return value
+    # RawLocationFix is flat: coordinates/datetime/scalars are immutable. The
+    # serialized result is identical without deepcopying every field at every
+    # ancestor check.
+    value=dict(vars(raw));value['log_local_time']=raw.log_local_time.isoformat();return value
 
 
 def _check_height_record(height,checkpoint,owner_binding):
@@ -116,15 +119,14 @@ class CampProbePreparation:
                     or self.last_at is not None and now<self.last_at):
                 raise ValueError('Camp probe preparation context changed')
             if self._envelope is not None:
-                envelope,payload,chain=self._envelope_state
+                envelope,payload,digest,chain=self._envelope_state
                 if (self._envelope is not envelope or envelope.payload is not payload
+                        or envelope.sha256!=digest
                         or _chain_snapshot(envelope.branch)!=chain):
                     raise ValueError('Prepared source envelope changed')
-                envelope.record()
             if self._prepared_record is not None:
                 payload,digest=self._prepared_record
-                if (self.payload is not payload or self.sha256!=digest
-                        or sha256(payload).hexdigest()!=digest):
+                if self.payload is not payload or self.sha256!=digest:
                     raise ValueError('Camp probe preparation record changed')
             if fresh is not None:
                 _check_height_record(fresh,self.checkpoint,self.owner_binding)
@@ -149,12 +151,14 @@ class CampProbePreparation:
                 check_context=self.check,clock=self.clock,maximum_seconds=maximum_seconds)
             self.check()
             self._envelope=envelope
-            self._envelope_state=(envelope,envelope.payload,_chain_snapshot(envelope.branch))
+            # Validate once, then pin immutable bytes/digest and the live branch.
+            geometry=envelope.record()
+            self._envelope_state=(envelope,envelope.payload,envelope.sha256,_chain_snapshot(envelope.branch))
             self.payload=encoded(dict(format='eql-camp-probe-preparation-v1',
                 checkpoint_sha256=checkpoint.sha256,planning_height_sha256=self.height.sha256,
                 planning_position=self.height.package_xyz,planning_observed_at=self.height.observed_at,
                 planning_expires_at=self.height.expires_at,bounds_basis=json.loads(self.bounds_basis),
-                geometry=envelope.record(),geometry_sha256=envelope.sha256,
+                geometry=geometry,geometry_sha256=envelope.sha256,
                 requires_new_matching_pair=True,motion_bounds_verified=False,
                 current_heading_verified=False,independent_scene_verified=False,
                 input_authorized=False,real_client_accepted=False))

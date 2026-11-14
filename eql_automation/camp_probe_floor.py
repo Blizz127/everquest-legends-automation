@@ -106,3 +106,18 @@ def camp_floor_anchor(checkpoint):
 
 
 CAMP_FLOOR_TYPES=(CampFloorCheckpoint,CampProbeFloorReference)
+
+
+def assert_camp_ancestry(checkpoint):
+    """Final non-provider check for cancellation after the full ancestry scan."""
+    seen=set();node=checkpoint
+    while type(node) is CampProbeFloorReference:
+        if id(node) in seen:raise ValueError('Cyclic retained camp floor ancestry')
+        seen.add(id(node));node._assert_intact()
+        tx=node._transaction
+        if tx.preparation.phase!='consumed' or tx.preparation._start is not tx.ticket.start:
+            raise ValueError('Retained camp ancestor preparation ended')
+        node=node._parent
+    if type(node) is not CampFloorCheckpoint:
+        raise ValueError('Missing original camp floor ancestor')
+    node._assert_intact()

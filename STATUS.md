@@ -1,11 +1,29 @@
 # STATUS
 
-Updated 2026-11-14 18:40 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 19:00 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.54 validated; private publication pending.** Optional camp
+  execution now adopts the prepared source route, collects a new startup pair,
+  reuses the existing walk/step loop, confirms movement, captures arrival and
+  stops before camp selection. The same probe ancestry, sender, reader, monitor,
+  stop lock and original deadline remain active. F8/F9 cleanup precedes lease
+  release and assist. No default plan/policy or owner launcher behavior changed.
+  VERIFIED final Alienware candidate `0.42.54-validation-14`: **173 passed in
+  197.83 seconds**, output SHA
+  `d4f251ee0749a77ba58a578c7c03c3fc60becddf56798ed18435e828ae20aee6`.
+  Actual watchdog/OS-pipe input; synthetic scene, geometry and game observations.
+  Timing refusals in earlier candidates led to removing repeated immutable
+  evidence parsing and duplicate ancestry/input scans in binding callbacks;
+  original 0.5s position and 0.05s proposal-to-DOWN limits remain unchanged.
+  Final ancestor checks catch cancellation after provider callbacks. No game
+  input, character action or prefix change. Preview stays 0.39.30; G0 passed.
+  Next: exact standard seven-probe sequence through routing, then the concrete
+  owner plan/policy provider and new-camp entry. That full sequence and real
+  1–20/1–50 acceptance remain unverified. Level/XP/hour/deaths/camp unknown.
 - **Source 0.42.53 privately published; preview stays 0.39.30.**
   The source ledger/walk driver now explicitly accept a camp-start observer.
   It consumes the fresh route start once, retains a separate measured height

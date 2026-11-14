@@ -75,7 +75,8 @@ def test_new_start_shift_requires_replanning_even_inside_arrival_cap(probe):
     assert f.probe.phase=='stopped' and f.checkpoint.valid
 
 
-@pytest.mark.parametrize('fault',('lease','binding','cancel','floor','bounds','clock','envelope','record'))
+@pytest.mark.parametrize('fault',('lease','binding','cancel','floor','bounds','clock','envelope','record',
+                                'envelope_digest','envelope_payload'))
 def test_preparation_is_discarded_when_its_context_changes(probe,fault):
     f=probe;p=f.probe;p.prepare()
     if fault=='lease':f.lease.release()
@@ -85,6 +86,8 @@ def test_preparation_is_discarded_when_its_context_changes(probe,fault):
     elif fault=='bounds':p.bounds=replace(p.bounds,forward_speed_upper_bound=1.)
     elif fault=='clock':f.now-=.01
     elif fault=='envelope':p._envelope.branch.seed_evidence_sha256='f'*64
+    elif fault=='envelope_digest':object.__setattr__(p._envelope,'sha256','f'*64)
+    elif fault=='envelope_payload':object.__setattr__(p._envelope,'payload',b'{}')
     else:p.payload=b'{}'
     with pytest.raises(ValueError):p.check()
     assert p.phase=='stopped' and p._envelope is None

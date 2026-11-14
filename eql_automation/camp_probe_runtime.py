@@ -62,6 +62,15 @@ class CampProbeRuntime:
     def _check(self):
         if self.phase=='stopped' or self.closed:raise ValueError(self.reason or 'Camp probe runtime ended')
         self.current();self.root.check();self.lease.check();self.hotkey.check()
+        return self._check_scope()
+
+    def _check_scope(self):
+        """Original runtime identity/time only; no floor or input authority.
+
+        A source child checks its adopted floor ancestry through its observer;
+        this avoids recursively checking that same ancestry in each binding
+        callback. Ordinary probe callers continue using the full _check().
+        """
         now=self.clock()
         actual=(self.root,self.sender,self.hotkey,self.owner_input,self.lock,self.policy_factory,
             self.current,self.command_clear,self.pump,self.probes,self.clock,self.wall,self.lease,self.maximum_seconds)

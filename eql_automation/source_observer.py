@@ -208,7 +208,8 @@ class SourceItineraryObserver:
         if (issued is None or issued[1] is not chain or _chain_snapshot(chain) != issued[2]
                 or not finite(maximum_age) or not 0 < maximum_age <= 2.5
                 or not 0 <= now-observation.raw_fix.received_monotonic <= maximum_age):
-            raise ValueError('Missing current issued source observation/floor')
+            age=now-observation.raw_fix.received_monotonic if type(observation) is SourceStoppedFix else None
+            raise ValueError(f'Missing current issued source observation/floor (age={age}, limit={maximum_age})')
         if self._observation_snapshot(observation)!=issued[3]:
             raise ValueError('Issued source observation changed')
         finished=self.check()

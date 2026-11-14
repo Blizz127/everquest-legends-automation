@@ -1,5 +1,50 @@
 # FINDINGS
 
+## 2026-11-14 19:00 UTC — source 0.42.54, retained camp route execution
+
+Implemented an optional `CampProbePlan.route_plan_factory` returning explicit
+`CampSourcePlan` bounds, current motion/heading and source-policy factory. The
+retained engine keeps the original probe runtime alive, adopts its exact route,
+collects genuinely new startup replies, and reuses a shared source walk/step
+execution loop. Owner travel retains its original admission adapter. No fake
+trial plan or default open-ground declaration is created for camp routing.
+
+The child retains sender/descriptor, reader lease, monitor, stop lock and the
+original deadline. Constructed components and child ownership are pinned.
+F8/F9 cancel the child first; key UP and operation cleanup precede ancestor
+release/F8 assist. Successful arrival captures its new floor and stops before
+choosing another camp. Failed startup keeps its partial readings and input
+receipts in diagnostics. The owner launcher remains 0.39.30.
+
+VERIFIED initial local sample: one pass, two timing refusals under devbox load.
+First Alienware candidate: 56 passed, five new-route timing refusals. Isolated
+checks traced these to recursive historical-floor/input checks inside every
+source binding callback. Optimizations retain full ancestry checks in the
+source observer and actual physical sampling in both input senders, with a
+final ancestry phase/continuation check after provider callbacks. Immutable
+geometry bytes/digests and flat height-value snapshots avoid repeated parsing
+and copying while retaining nested mutation detection. Source proposal time is
+recorded after preflight when the ticket is created; post-callback state and
+fresh scene checks remain. No position, scene, DOWN or release deadline widened.
+
+VERIFIED final candidate `owner-tools/0.42.54-validation-14`: **173 passed in
+197.83 seconds**, output SHA
+`d4f251ee0749a77ba58a578c7c03c3fc60becddf56798ed18435e828ae20aee6`.
+Covers retained camp startup/walk/arrival, F8/F9 during startup/movement/replies,
+physical-input refusal, component/lease/deadline/policy changes, late ancestor
+cancellation, nested height/envelope mutation, and existing source/step runtime
+and camp behavior. Actual watchdog/OS-pipe writes; all game state, source geometry
+and scene admission are synthetic. Private source publication pending.
+
+NOT VERIFIED: exact standard seven-probe holds followed by source travel; the
+new integrated route test uses one .02s forward probe and explicitly supplied
+synthetic motion. The seven-probe tests elsewhere stop before source routing or
+use synthetic receipts. This is the next focused integration check, followed
+by a concrete owner launch-path provider and new-camp entry. No game input,
+input-device creation, character action, login or protected-prefix change.
+G0 remains passed; no repeat/new owner test. Current level, XP/hour, deaths and
+camp unknown; no accepted real 1–20 or fresh hands-off 1–50 run.
+
 ## 2026-11-14 18:40 UTC — source 0.42.53 privately published
 
 VERIFIED Alienware `owner-tools/0.42.53/source`, revision

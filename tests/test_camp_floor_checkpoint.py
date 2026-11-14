@@ -35,12 +35,16 @@ def test_fork_keeps_exact_arrival_layer_without_keeping_old_observer_active(chec
 
 
 @pytest.mark.parametrize('fault',('floor','reference','height','reader','zone','log_epoch','partial',
-                                 'source','static','policy','model','payload'))
+                                 'source','static','policy','model','payload',
+                                 'height_value','height_raw','height_flag'))
 def test_mutated_history_or_source_scope_is_permanently_discarded(checkpoint,fault,tmp_path):
     f=checkpoint;c=f.checkpoint
     if fault=='floor':c._chain.seed_evidence_sha256='f'*64
     elif fault=='reference':c._reference=object()
     elif fault=='height':c._height_bytes=b'{}'
+    elif fault=='height_value':object.__setattr__(c._calibration,'raw_z_minus_source_z',9.)
+    elif fault=='height_raw':object.__setattr__(c._calibration.evidence.first.raw_fix,'log_epoch',999)
+    elif fault=='height_flag':object.__setattr__(c._calibration.evidence.first,'geometry_verified',False)
     elif fault=='reader':c._reader=object()
     elif fault=='zone':f.reader.zone_generation+=1
     elif fault=='log_epoch':f.reader.tail.epoch+=1

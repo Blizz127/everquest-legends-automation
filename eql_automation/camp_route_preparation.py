@@ -94,7 +94,8 @@ class CampRoutePreparation:
                 plan, payload, digest = self._itinerary_state
                 if self.itinerary is not plan or plan.payload is not payload or plan.sha256 != digest:
                     raise ValueError('Prepared camp itinerary changed')
-                plan.record()
+                # Canonical bytes were validated when this plan was retained.
+                # Exact immutable payload identity and digest are pinned above.
             if self._record_state is not None and (self.payload, self.sha256) != self._record_state:
                 raise ValueError('Camp route evidence changed')
             if fresh is not None:

@@ -60,6 +60,28 @@ def height_record(calibration):
     return result
 
 
+def height_snapshot(calibration):
+    """Value snapshot for repeated identity checks, without JSON/deep copying.
+
+    Descend into the actual evidence and raw fixes, so mutation of a nested
+    frozen dataclass is still detected. This does not establish live validity.
+    """
+    from .camp_source_height import CampSourceHeight
+    nodes=[calibration]
+    if type(calibration) is ObservedHeightCalibration:
+        e=calibration.evidence
+        nodes.extend((e,e.first,e.second,e.first.raw_fix,e.second.raw_fix))
+    elif type(calibration) is CampSourceHeight:
+        nodes.extend((calibration.first,calibration.second))
+    elif type(calibration) is not HeightCalibration:
+        raise ValueError('Unknown height evidence type')
+    # Every nested record is included separately. Flat dictionaries keep the
+    # immutable coordinates/dates/scalars; node identities and field types
+    # also detect replacement or bool/int coercion, without deep copying.
+    return tuple((type(node),id(node),tuple((key,type(v)) for key,v in vars(node).items()),
+                  dict(vars(node))) for node in nodes)
+
+
 def current_height_allowed(calibration, *, mode, route_sha256=None, owner_binding=None):
     """Recognize this narrow evidence without promoting it into full auto.
 

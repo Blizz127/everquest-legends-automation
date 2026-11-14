@@ -9,7 +9,7 @@ import json
 
 from .native_region_policy import encoded
 from .ground_binding import finite
-from .observed_height import height_record
+from .observed_height import height_record,height_snapshot
 from .route_floor_commit import _chain_snapshot
 from .source_motion import SourceReceiptLedger
 from .source_observer import SourceItineraryObserver
@@ -38,6 +38,7 @@ class CampFloorCheckpoint:
         self._chain=ledger.chain.fork();self._chain_state=_chain_snapshot(self._chain)
         self._reference=reference;self._reference_state=observer._observation_snapshot(reference)
         self._calibration=calibration;self._height_bytes=encoded(height_record(calibration))
+        self._height_state=height_snapshot(calibration);self._height_identity=self._height_bytes
         self._reader=reader;self._reader_state=_reader_identity(reader)
         self._terrain,self._static,self._bsp=ledger.terrain,ledger.static,ledger.bsp
         self._policy=observer.policy;self._classifier=self._policy.classifier
@@ -101,7 +102,8 @@ class CampFloorCheckpoint:
                 or sha256(self._payload).hexdigest()!=self.sha256
                 or _chain_snapshot(self._chain)!=self._chain_state
                 or SourceItineraryObserver._observation_snapshot(self._reference)!=self._reference_state
-                or encoded(height_record(self._calibration))!=self._height_bytes
+                or self._height_bytes is not self._height_identity
+                or height_snapshot(self._calibration)!=self._height_state
                 or _reader_identity(self._reader)!=self._reader_state or self._reader.tail.partial
                 or self._reader.tail.identity is None
                 or _source_storage(self._terrain,self._static)!=self._storage

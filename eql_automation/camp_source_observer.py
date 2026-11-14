@@ -10,13 +10,14 @@ from datetime import datetime
 import json
 import threading
 
-from .camp_probe_floor import CampProbeFloorReference
+from .camp_probe_floor import CampProbeFloorReference,assert_camp_ancestry
 from .camp_probe_preparation import _raw_record, _height_state
 from .camp_route_preparation import CampRoutePreparation, CampRouteStart
 from .camp_source_height import CampSourceHeight
 from .ground_binding import finite, point
 from .location_log import RawLocationFix
 from .native_region_policy import encoded
+from .observed_height import height_snapshot
 from .route_floor_commit import _chain_snapshot
 from .route_geometry import RouteMotionBounds
 from .source_observer import SourceItineraryObserver
@@ -77,6 +78,8 @@ class CampSourceObserver(SourceItineraryObserver):
                     self.policy.wld_sha256, h.raw_z_minus_source_z, measured['residual_limit'],
                     h.second.log_line_seq, h.observed_at, expires_at, h.expires_at)
                 self._height_bytes = encoded(self.calibration.record())
+                self._height_state = height_snapshot(self.calibration)
+                self._height_identity = self._height_bytes
                 self._identity = self._reader_identity()
                 self._payload = self.itinerary.payload
                 self.start_xy = h.package_xyz[:2]
@@ -146,6 +149,7 @@ class CampSourceObserver(SourceItineraryObserver):
             self.scope_check()
             mode, generation = self.mode_reader(), self.generation_reader()
             now = self.clock()
+            assert_camp_ancestry(self.preparation.checkpoint)
             h, c = self.start.height, self.calibration
             if (self.cancelled or any(a is not b for a,b in zip(self._objects,
                     (self.preparation, self.start, self.lock, self.scope_check, self.mode_reader,
@@ -156,7 +160,8 @@ class CampSourceObserver(SourceItineraryObserver):
                     or self.preparation.itinerary is not self.itinerary or self.itinerary.payload is not self._payload
                     or self.preparation.checkpoint._policy is not self.policy
                     or self.policy.classifier is not self._classifier or encoded(self.policy.record()) != self._policy_bytes
-                    or encoded(c.record()) != self._height_bytes
+                    or self._height_bytes is not self._height_identity
+                    or height_snapshot(c) != self._height_state
                     or h.sha256 != c.measured_height_sha256 or h.first is not c.first or h.second is not c.second
                     or encoded([_raw_record(h.first), _raw_record(h.second)]) != self._start_bytes
                     or (id(h), _height_state(h), self.start.preparation_sha256,

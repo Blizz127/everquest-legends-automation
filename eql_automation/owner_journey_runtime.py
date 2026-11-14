@@ -356,14 +356,18 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                 basis=token.motion_basis,binding=binding,clock=clock,floor=token.floor_checkpoint)
             j.location_binding=token.pending['binding']
 
-        def _camp_current(self,*,allow_pending_level=False):
+        def _camp_current(self,*,allow_pending_level=False,observe_input=True):
             if not super()._camp_current(allow_pending_level=allow_pending_level):return False
             j=self.journey;camp=self.camp_session
             if j is None or j.phase!='camp':return True
             monitor=j.camp_motion
             if monitor is None:return False
             try:
-                monitor.check(self._camp_motion_binding())
+                if observe_input:monitor.check(self._camp_motion_binding())
+                # Source route/location senders sample the exact retained
+                # physical observer at admission and through release. Their
+                # nested binding checks need ownership, not another recursive
+                # physical sample and full historical-floor serialization.
                 monitor.check_binding(self._camp_motion_binding())
                 if self.journey is not j or j.camp_motion is not monitor or self.camp_session is not camp:
                     raise ValueError('Camp owner changed during input observation')

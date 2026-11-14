@@ -112,6 +112,22 @@ def test_start_adoption_is_single_use_and_does_not_renew_age(adopted):
     with pytest.raises(ValueError):h.camp_observer.check()
 
 
+def test_classifier_callback_cannot_cancel_ancestor_after_full_scan(adopted,monkeypatch):
+    h=adopted;o=h.camp_observer;p=h.route;checked=[]
+    prepare_check=p.check
+    def checked_preparation(*args,**kwargs):
+        result=prepare_check(*args,**kwargs);checked.append(True);return result
+    monkeypatch.setattr(p,'check',checked_preparation)
+    classify=type(o.policy).check_classifier
+    def cancelled(policy):
+        result=classify(policy)
+        if checked:h.route_tx.cancel('Ancestor stopped in final classifier callback')
+        return result
+    monkeypatch.setattr(type(o.policy),'check_classifier',cancelled)
+    with pytest.raises(ValueError):o.check()
+    assert o.cancelled and h.route_tx.phase=='stopped'
+
+
 def test_new_start_must_still_be_fresh_when_adopted(route):
     h=route;p=h.route;p.prepare();start=fresh(h);h.now=start.expires_at+.01
     with pytest.raises(ValueError):

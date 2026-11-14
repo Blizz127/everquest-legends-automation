@@ -13,6 +13,8 @@ from .camp_stopped_height import measure_camp_stopped_height
 from .camp_probe_preparation import CampProbePreparation
 from .camp_probe_runtime import CampProbeRuntime
 from .camp_probe_calibration import reduce_camp_probes
+from .camp_source_runtime import CampSourcePlan,CampSourceRuntime
+from .camp_floor_checkpoint import CampFloorCheckpoint
 from .motion_calibration import CalibrationUnavailable
 from .owner_camp_probe import CampProbePlan
 from .ground_binding import finite
@@ -43,16 +45,17 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
             return None
 
         def _camp_position_current(self,p):
-            if self.camp_position is not p or p.cancelled:
+            if self.camp_position is not p or p.cancelled or p.route_runtime is not p._route_runtime:
                 raise ValueError('Camp position collection ended')
             p.lease.check();p.hotkey.check()
-            current=self._camp_current()
+            current=self._camp_current(observe_input=p.route_runtime is None)
             window=window_identity(self.gate,require_focus=True)
             now=clock()
             probing=p.probe_plan is not None
             if probing and type(p.probe_plan) is not CampProbePlan:
                 raise ValueError('Camp probe plan changed')
-            key=(p.runtime.current_input_key() if p.runtime is not None else
+            key=(p.route_runtime.current_input_key() if p.route_runtime is not None else
+                 p.runtime.current_input_key() if p.runtime is not None else
                  HOTKEY_CODES[p.hotkey.key_name] if p.sending else None)
             deadline=(p.probe_started+p.probe_plan.maximum_seconds if probing else p.started+8)
             if (not current or self.camp_position is not p or p.cancelled
@@ -91,13 +94,15 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
 
         def _camp_probe_input_permitted(self):
             p=self.camp_position
-            if (p is None or not p.busy or p.runtime is None or not p.runtime.busy
+            if p is None:return False
+            runtime=p.route_runtime if p.route_runtime is not None else p.runtime
+            if (not p.busy or runtime is None or not runtime.busy
                     or getattr(p.sender,'_eql_route_operation',None) is None
-                    or p.runtime.current_input_key() is None):return False
+                    or runtime.current_input_key() is None):return False
             try:
                 self._camp_position_current(p)
-                return (self.camp_position is p and not p.cancelled and p.runtime.busy
-                        and p.runtime.current_input_key() is not None)
+                return (self.camp_position is p and not p.cancelled and runtime.busy
+                        and runtime.current_input_key() is not None)
             except (OSError,ValueError,RuntimeError):return False
 
         def _camp_probe_plan(self,p):
@@ -128,7 +133,8 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     generation=self.cancel_generation,settings=settings_identity(self.settings),
                     recovery=camp.recovery,released_at=camp.recovery.last_stand_completed_at,
                     started=clock(),busy=False,sending=False,releasing=False,cancelled=False,reason='',
-                    collector=None,request=None,result=None,events=[],runtime=None,
+                    collector=None,request=None,result=None,events=[],runtime=None,route_runtime=None,_route_runtime=None,
+                    route_record=None,route_complete=False,
                     probe_plan=None,probe_plan_state=None,probe_started=None,probe_record=None,
                     position_record=None,probe_complete=False)
                 p.owner_binding=('camp-position',id(j),id(camp),id(p.sender),id(p.ui),
@@ -177,6 +183,9 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
             if p.releasing:return
             p.releasing=True
             try:
+                if p._route_runtime is not None and (p._route_runtime.busy or p.sender.held
+                        or getattr(p.sender,'_eql_route_operation',None) is not None):
+                    raise ValueError('Camp route still owns input or work')
                 if p.runtime is not None:p.runtime.release()
                 else:p.lease.release()
             finally:
@@ -195,6 +204,12 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                         probe=p.probe_record if p.probe_record is not None else p.runtime.snapshot(),
                         movement_sent=any(e['kind']=='camp_probe_pulse' and e['receipt'] is not None
                                           for e in p.runtime.events))
+                if p._route_runtime is not None:
+                    route=p.route_record if p.route_complete else p._route_runtime.snapshot()
+                    self.camp_position_last_result.update(
+                        outcome='route_complete' if p.route_complete else 'stopped',route=route,
+                        movement_sent=self.camp_position_last_result['movement_sent'] or any(
+                            e['kind']=='source_pulse' for e in p._route_runtime.events))
                 self.trace('camp_position_stopped',**self.camp_position_last_result)
 
         def _start_camp_probe(self,p,record):
@@ -258,6 +273,19 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     p.runtime.route_preparation.check_start(p.runtime.route_start)
                     p.probe_record.update(p.runtime.snapshot())
                     p.probe_complete=True
+                    factory=p.probe_plan.route_plan_factory
+                    if factory is not None:
+                        plan=factory(p.runtime,p.probe_record['calibration'])
+                        self._camp_position_current(p)
+                        if type(plan) is not CampSourcePlan:
+                            raise ValueError('Explicit camp route execution plan required')
+                        p.route_runtime=p._route_runtime=CampSourceRuntime(p.runtime,plan,
+                            check_current=lambda:self._camp_position_current(p),
+                            mode_reader=lambda:'camp_route' if not p.cancelled else 'off',
+                            generation_reader=lambda:self.cancel_generation,generation=p.generation)
+                        self._camp_position_current(p)
+                        self.emit('Starting next camp route · F8 assist · F9 stops')
+                        return
                     self.stop_action('Next camp route prepared · execution is not connected')
             except Exception as error:
                 self._stop_camp_position(p,error)
@@ -265,7 +293,30 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 p.busy=False
                 if p.cancelled:self._release_camp_position(p)
 
+        def _camp_source_tick(self,p):
+            if p.busy:
+                self._camp_position_current(p)
+                return
+            p.busy=True
+            try:
+                self._camp_position_current(p);p.route_runtime.tick()
+                if p.route_runtime.phase=='stopped':self._stop_camp_position(p,p.route_runtime.reason)
+                elif p.route_runtime.phase=='complete':
+                    self._camp_position_current(p)
+                    # Capture the actual newly observed floor before stop closes
+                    # the ancestor scope. Do not resume the camp we just left.
+                    reached=CampFloorCheckpoint(p.route_runtime.ledger)
+                    p.route_record=p.route_runtime.snapshot()
+                    p.route_record['arrival']=reached.snapshot()
+                    self._camp_position_current(p);p.route_complete=True
+                    self.stop_action('Next camp route reached · stopped before camp selection')
+            except Exception as error:self._stop_camp_position(p,error)
+            finally:
+                p.busy=False
+                if p.cancelled:self._release_camp_position(p)
+
         def _camp_position_tick(self,p):
+            if p.route_runtime is not None:return self._camp_source_tick(p)
             if p.runtime is not None:return self._camp_probe_tick(p)
             if p.busy:
                 self._camp_position_current(p)
@@ -313,6 +364,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
             p=self.camp_position
             if p is not None:
                 p.cancelled=True;p.reason=str(reason)
+                if p._route_runtime is not None:p._route_runtime.cancel(reason)
                 if p.runtime is not None:p.runtime.cancel(reason)
                 if p.collector is not None:p.collector.cancel(reason)
                 p.lease.active=False
@@ -338,6 +390,9 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     result['phase']=('Planning next camp route' if self.camp_position.runtime.route_guide is not None
                                      else 'Measuring camp movement')
                     result['camp_probe_phase']=self.camp_position.runtime.phase
+                if self.camp_position.route_runtime is not None:
+                    result['phase']='Traveling to next camp'
+                    result['camp_route_phase']=self.camp_position.route_runtime.phase
             result['camp_position_last_result']=self.camp_position_last_result
             return result
 

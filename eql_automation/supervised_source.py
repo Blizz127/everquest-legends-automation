@@ -144,7 +144,9 @@ class SupervisedSourcePolicy:
         self.ledger.validate_reference()
 
     def authorize(self,ticket,scene):
-        self.validate_scene(scene);self.ledger.check_pending(ticket)
+        # These checks send nothing. Validate the scene after the pending-ticket
+        # callback, once, immediately before publishing authorization.
+        self.ledger.check_pending(ticket)
         self.validate_scene(scene)
         if (ticket.reference is not scene.reference
                 or self.reserved_hold+ticket.maximum_actual_hold>self.declaration.maximum_total_hold):
@@ -158,14 +160,15 @@ class SupervisedSourcePolicy:
         return self._authorization
 
     def still_authorized(self,authorization,scene):
+        if type(authorization) is not SupervisedSourceAuthorization:
+            raise RouteHalt('Source authorization changed')
+        self.ledger.check_pending(authorization.ticket)
         self.validate_scene(scene)
         if (type(authorization) is not SupervisedSourceAuthorization
                 or authorization is not self._authorization
                 or authorization.declaration is not self.declaration
                 or authorization.scene_reference is not scene.reference):
             raise RouteHalt('Source authorization changed')
-        self.ledger.check_pending(authorization.ticket)
-        self.validate_scene(scene)
         return True  # expires_at is the DOWN deadline, not the release deadline.
 
     def snapshot(self):

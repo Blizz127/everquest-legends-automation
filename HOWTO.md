@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.53** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.54** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -640,25 +640,36 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Source 0.42.53 is privately published on Alienware at:
+Source 0.42.54 passed its focused checks; private publication is pending at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.53/source
+~/.local/share/eql-automation/owner-tools/0.42.54/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.42.53 adds an explicit camp-start observer that the existing
-source movement ledger and walk driver can consume. It uses a new height
-correspondence from the actual camp-route start, then requires another genuinely
-new pair for movement startup. The original reader, stop lock and bounded scope
-remain required. A caller must explicitly tighten the probe's requested-hold
-limit to at most 0.1 seconds for ordinary route movement; other bounds stay
-unchanged. Returned movement observations and later arrival checkpoints retain
-that distinct camp provenance.
+above. The optional camp plan can now supply `route_plan_factory`, returning
+an explicit `CampSourcePlan` with current motion/heading, tightened route bounds,
+lateral tolerance and a source movement policy factory. There is no default
+plan or policy. The retained engine adopts the prepared route, collects a new
+startup pair, and uses the existing source walk/step loop. Every movement needs
+new stopped observations before the next step. The original probe scope,
+reader, sender, monitor, stop lock and time limit remain active.
 
-The owner camp loop does not yet launch this observer/driver or supply an
-unattended movement policy. Preview **0.39.30** and its controls stay unchanged.
-No new owner test or G0 repeat is needed.
+F8/F9 cancel the child route before releasing the ancestor scope. Keys and
+sender operations must finish cleanup before the reader is released or F8
+assist starts. Successful arrival is captured and the bot stops before choosing
+a new camp; it does not resume the camp it just left. This path does not supply
+independent scene detection or certify unattended movement bounds.
+
+The exact standard seven-probe sequence followed by routing is the next
+integration check. The checked route handoff uses explicitly supplied synthetic
+motion after one probe. Preview **0.39.30** and its controls stay unchanged.
+No new owner test or G0 repeat is needed. Full 1–20 and fresh hands-off 1–50 are still unaccepted.
+
+Source 0.42.53 added the distinct camp-start height/observer consumed by this
+path, with new startup positions rather than replaying the route-start pair.
+Probe holds must be explicitly tightened to <=0.1 seconds for ordinary routing;
+body, speed, actual-hold and position-error bounds remain unchanged.
 
 Source 0.42.52 can retain the completed probe scope for onward route
 planning when its explicit `CampProbePlan` supplies `route_guide`. It collects
@@ -666,7 +677,7 @@ a new stopped pair, rebuilds the guide from the exact reached floor, then
 collects a further matching pair after geometry checks. The same reader,
 sender, input monitor and original time limit remain in use. F8/F9 cancel this
 stage and wait for key release before assist/cleanup. Completion records the
-prepared route and stops; the next route's execution is not connected yet.
+prepared route and stops unless the 0.42.54 explicit execution factory is supplied.
 No default provider/guide or owner control is added, so preview **0.39.30**
 retains its existing behavior. No new owner test or G0 repeat is needed.
 

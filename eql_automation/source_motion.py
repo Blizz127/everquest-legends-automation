@@ -224,7 +224,7 @@ class SourceReceiptLedger:
         """Create the proposal only after watchdog READY, without doing geometry."""
         with self.lock:
             try:
-                now=self._check()
+                self._check()
                 self.observer.validate(self.reference,self.chain,maximum_age=.5)
                 if (self.phase!='prepared' or self._prepared is None
                         or geometry is not self._prepared[0] or self._state()!=self._prepared[3]
@@ -233,6 +233,14 @@ class SourceReceiptLedger:
                         or not self.bounds.minimum_requested_hold<=requested_seconds<=self.bounds.maximum_requested_hold):
                     raise RouteHalt('No exact prepared source movement')
                 geometry.record()
+                # Timestamp the actual proposal after its preflight, rather
+                # than spending its 50ms DOWN window on work done before the
+                # ticket exists. Fresh-scene/reference checks still apply.
+                now=self._check()
+                if (self.phase!='prepared' or self._prepared is None or geometry is not self._prepared[0]
+                        or self._state()!=self._prepared[3]
+                        or _chain_snapshot(self._prepared[1])!=self._prepared[2]):
+                    raise RouteHalt('Source proposal cancelled during final check')
                 self.serial+=1
                 ticket=SourceMotionTicket(self.reference,geometry,self.serial,now,requested_seconds,
                     self.bounds.maximum_actual_hold,{'forward':103,'left':105,'right':106}[geometry.kind])
