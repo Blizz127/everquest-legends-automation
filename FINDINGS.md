@@ -1,5 +1,63 @@
 # FINDINGS
 
+## 2026-11-14 19:50 UTC — concrete continuation provider and local preview 0.39.31
+
+Source 0.42.58 wires `owner_camp_probe_plan` into a new owner entrypoint and
+preview builder. The GUI captures an initially unchecked continuation choice
+with the travel request; queued mutation, non-boolean values and later intent
+changes cannot enable it. Ordinary travel without that choice stays unchanged.
+The provider requires a fresh camp-log level increase and retains the original
+monitor/reader/recovery scope. It checks the canonical arrival basis against the
+actual retained floor, copies only its declared bounds as historical hypotheses,
+and changes the request cap to .15 seconds for the standard probes. The later
+route returns to .10 seconds and takes steering from the exact fresh reducer
+output, sealed before planning. Fit edits, changed transaction identities and
+stale route-start pairs are refused; old confirmation timestamps are not renewed.
+
+VERIFIED copied map/guide reads: level 7/10 stays at Slave Mines; 11/12 has no new
+packaged hint; 13–17 selects North Wall; 18/20 has no new packaged hint. The North
+Wall guide has 230 walk hints, 7 step hints and 1307.5937891227334 units of walk
+length. INFERRED: the earlier five-minute total budget is too short at the
+historically observed roughly 30-unit/second movement with repeated stopped
+pairs and turns. Continuation now uses the existing destination travel maximum
+of 1500 seconds, anchored once at camp probe start; its probe-measurement window
+remains 120 seconds. Per-pulse DOWN/UP, actual-hold and stopped-pair limits are
+unchanged. Source height correspondence remains subordinate to that original
+absolute job deadline and each fresh location check.
+
+A distinct `camp_continuation` declaration records
+`owner_supervised_continuation=True` and `open_flat_clear=False`. It does not
+reissue the first starting area's open-ground statement at a later camp.
+Independent scene, dynamic clearance and motion bounds remain unverified.
+The source policy keeps the exact original veto reader and input observer.
+
+VERIFIED **17 passed in 16.28 seconds**, provider/fit/level scheduling checks,
+JUnit SHA `8bb3e492c9a849cb3da06e47fae5173973b159aaa218df13531bfead42e988a3`. VERIFIED additional declaration
+checks: **4 passed in 1.91 seconds**, JUnit SHA `e6bb1f2a115a5dc59fac8ab4b295b43294f4da3ffdf7b4f5680376cd21e4ccc9`.
+These include genuine source transaction/floor objects with deterministic
+synthetic observations and a small retained-engine position test. One separate
+full real-watchdog/OS-pipe continuation attempt **failed before its first movement
+receipt** with `Release watchdog did not confirm key down` under measured devbox
+load above 200 on 48 CPUs. No completed movement receipt was recorded and
+production deadlines were not loosened. That end-to-end check is unresolved; do not count the focused runs as a replacement or call it accepted.
+
+VERIFIED local candidate `owner-build-drafts/0.39.31-candidate2`: all 197 runtime
+modules match current source bytes; source manifest and offscreen Qt startup
+pass. GUI smoke SHA `69e4c3ecf14800399fb89e7926a2e76bcb06139c634c6e3a05954a521cba8f84`. Checkbox is visible, enabled and
+unchecked; worker_started/game_input_sent/settings_saved are all false. The
+candidate1 screenshot was visually inspected; candidate2 retains the same UI.
+The displayed level 13 is a smoke-test argument, **not** Legira's observed level.
+A dedicated private devbox `python-ui` environment now supplies Qt for these
+no-input startup checks. No client/prefix/character changes or input occurred.
+
+Alienware SSH port 22 still timed out in this turn. Neither source 0.42.58 nor
+preview 0.39.31 is published there; source 0.42.55/preview 0.39.30 remain the last
+verified publications. Preserve and retrieve the old 0.42.56 candidate3 remote
+result when the host returns; its process/result state is unknown. Next: new-camp
+combat entry after onward arrival, plus Trainer/Throne coverage and later real
+acceptance. G0 remains passed; no repeat requested. Full 1–20 and fresh hands-off
+1–50 remain incomplete; actual current level/XP/hour/deaths/camp unknown.
+
 ## 2026-11-14 19:39 UTC — observed level-up reconsideration (source 0.42.57)
 
 VERIFIED focused local checks: **15 passed in 5.21 seconds**, JUnit

@@ -18,6 +18,7 @@ from .camp_floor_checkpoint import CampFloorCheckpoint
 from .camp_session import CampLevelAdvance
 from .flat_record import flat_record_state
 from .motion_calibration import CalibrationUnavailable
+from .native_region_policy import encoded
 from .owner_camp_probe import CampProbePlan
 from .ground_binding import finite
 from .location_hotkey import HOTKEY_CODES, OwnerLocationHotkey, send_location_hotkey
@@ -127,7 +128,8 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 # Ordinary stationary camping still checks once. A configured
                 # continuation provider can reconsider only a new current-log
                 # level increase, after automatic spell preparation finishes.
-                if (probe_plan_provider is None or type(advance) is not CampLevelAdvance
+                if (probe_plan_provider is None or not j.continue_camps
+                        or type(advance) is not CampLevelAdvance
                         or advance is j.last_considered_level_advance
                         or advance.generation!=camp.generation
                         or advance.generation!=j.generation or advance.generation!=self.cancel_generation
@@ -159,6 +161,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     collector=None,request=None,result=None,events=[],runtime=None,route_runtime=None,_route_runtime=None,
                     route_record=None,route_complete=False,
                     probe_plan=None,probe_plan_state=None,probe_started=None,probe_record=None,
+                    calibration_seal=None,
                     position_record=None,probe_complete=False,probe_log_veto=None,_probe_log_veto=None,
                     _probe_veto_state=None,level_advance=advance,
                     level_advance_state=None if advance is None else flat_record_state(advance))
@@ -267,7 +270,8 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 pump=pump,probes=plan.probes,maximum_seconds=plan.maximum_seconds,log_veto=p.probe_log_veto)
             self._camp_position_current(p)
             self.trace('camp_probe_started',initial_height_sha256=p.result.sha256,
-                floor_checkpoint_sha256=p.floor.sha256,real_client_accepted=False)
+                floor_checkpoint_sha256=p.floor.sha256,destination_id=plan.destination_id,
+                real_client_accepted=False)
             self._camp_position_current(p)
             self.emit('Measuring camp movement · F8 assist · F9 stops')
             return True
@@ -294,6 +298,11 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                         calibration=dict(status='unavailable',reason=str(error))
                     self._camp_position_current(p)
                     p.probe_record['calibration']=calibration
+                    # Freeze the actual reducer result before route planning
+                    # advances the reader. Later travel must not substitute a
+                    # saved fit or quietly edit its estimates during callbacks.
+                    p.calibration_seal=(calibration,encoded(calibration),p.runtime.reference,
+                        tuple(p.runtime.transactions),tuple(p.runtime.results))
                     if p.probe_plan.route_guide is not None:
                         p.runtime.prepare_route(p.probe_plan.route_guide)
                         self._camp_position_current(p)
@@ -430,6 +439,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     result['phase']=('Planning next camp route' if self.camp_position.runtime.route_guide is not None
                                      else 'Measuring camp movement')
                     result['camp_probe_phase']=self.camp_position.runtime.phase
+                    result['journey_next_destination_id']=self.camp_position.probe_plan.destination_id
                 if self.camp_position.route_runtime is not None:
                     result['phase']='Traveling to next camp'
                     result['camp_route_phase']=self.camp_position.route_runtime.phase

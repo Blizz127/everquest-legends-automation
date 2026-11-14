@@ -1,11 +1,29 @@
 # STATUS
 
-Updated 2026-11-14 19:39 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 19:50 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.58 and preview candidate 0.39.31 built locally.** Concrete
+  continuation provider is wired to a copied, fixed owner choice. It selects a
+  packaged map-compatible next destination from the current observed level,
+  preserves historical bounds as assumptions, and uses the sealed fresh fit for
+  steering. No old open-ground declaration is renewed. One 25-minute trip
+  deadline covers measurement/planning/travel; measurement still has 120 seconds.
+  VERIFIED **17 provider/fit/scheduling checks + 4 declaration checks pass**.
+  JUnit SHAs `8bb3e492c9a849cb3da06e47fae5173973b159aaa218df13531bfead42e988a3` and
+  `e6bb1f2a115a5dc59fac8ab4b295b43294f4da3ffdf7b4f5680376cd21e4ccc9`. GUI startup/manifest pass, checkbox
+  visible and unchecked, no worker/input/settings write; smoke SHA `69e4c3ecf14800399fb89e7926a2e76bcb06139c634c6e3a05954a521cba8f84`.
+  Candidate path: `owner-build-drafts/0.39.31-candidate2` on devbox only.
+  Actual full watchdog/pipe continuation attempt stopped before its first movement
+  receipt: DOWN confirmation timeout under heavy devbox load. It has not passed;
+  focused checks do not substitute for that or real-client acceptance. Alienware
+  SSH still times out; no publication. Installed preview remains 0.39.30.
+  Next: finish new-camp combat entry and reconcile the pending actual pipe run
+  when a suitable execution host is available. Trainer/Throne paths remain
+  unfinished; G0 passed; current real level/XP/hour/deaths/camp unknown.
 - **Source 0.42.57 local; level-up reconsideration checked.** A strictly
   increasing fresh camp-log level event can schedule a new stopped-position /
   optional plan pass after spell preparation. Duplicate messages, configured

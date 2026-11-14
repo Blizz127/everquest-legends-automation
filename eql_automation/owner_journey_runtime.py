@@ -4,7 +4,7 @@ Only an explicit travel job opens navigation. Arrival is an in-memory stopped
 receipt from that same job; saved reports cannot start a camp. No login or game
 launch, and no claim that copied geometry establishes live camp safety.
 """
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 import time
 
@@ -33,6 +33,12 @@ class Journey:
     location_binding: object = None
     height_check_done: bool = False
     last_considered_level_advance: object = None
+    continue_camps: bool = False
+    _continue_camps: bool = field(init=False,repr=False)
+
+    def __post_init__(self):
+        if type(self.continue_camps) is not bool:raise ValueError('Explicit camp continuation choice required')
+        self._continue_camps=self.continue_camps
 
 
 @dataclass(frozen=True)
@@ -75,6 +81,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             j = self.journey
             return (j is not None and j.phase in {'setup', 'travel'}
                     and j.generation == self.cancel_generation
+                    and j.continue_camps is j._continue_camps
                     and (j.destination_assets is None or j.destination_assets.destination_id==j.destination_id)
                     and j.settings == settings_identity(self.settings) and not self.stopping)
 
@@ -93,6 +100,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             if self.journey is not None:
                 data['journey_phase'] = self.journey.phase
                 data['journey_destination_id'] = self.journey.destination_id
+                data['journey_continue_camps'] = self.journey.continue_camps
                 if self.journey.camp_motion is not None:
                     data['camp_input_continuity']=self.journey.camp_motion.snapshot()
             data['journey_last_result'] = self.journey_last_result
@@ -155,18 +163,21 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                     return
                 if self.journey is not None or self._navigation_busy() or self.camp_session is not None:
                     self.stop_action('Stop the current activity before requesting travel/setup'); return
-                selected='slave-mines'
+                selected='slave-mines';continuation=False
                 if name==SOURCE_JOB:
                     declaration=value.get('declaration')
                     try:
-                        if not isinstance(declaration,dict) or not set(declaration)<={'open_flat_clear','destination_id'}:
+                        if not isinstance(declaration,dict) or not set(declaration)<={'open_flat_clear','destination_id','continue_camps'}:
                             raise ValueError('Invalid source destination request')
                         selected=destination_spec(declaration.get('destination_id','slave-mines')).identifier
+                        continuation=declaration.get('continue_camps',False)
+                        if type(continuation) is not bool:raise ValueError('Invalid camp continuation choice')
                     except ValueError as error:
                         self.emit('Travel did not start: '+str(error));return
                     value=dict(value,declaration={'open_flat_clear':declaration.get('open_flat_clear')})
                 self.journey = Journey(self.cancel_generation, settings_identity(self.settings),
-                    'setup' if name == HOTKEY_TEST_JOB else 'travel',destination_id=selected)
+                    'setup' if name == HOTKEY_TEST_JOB else 'travel',destination_id=selected,
+                    continue_camps=continuation)
                 self._journey_f11_release = True
                 result = super().handle_job(name, value)
                 if not self._navigation_busy(): self.journey = None
@@ -361,6 +372,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             if not super()._camp_current(allow_pending_level=allow_pending_level):return False
             j=self.journey;camp=self.camp_session
             if j is None or j.phase!='camp':return True
+            if j.continue_camps is not j._continue_camps:return False
             monitor=j.camp_motion
             if monitor is None:return False
             try:

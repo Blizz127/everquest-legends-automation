@@ -67,10 +67,12 @@ def test_separated_probe_contradictions_refused(fitter,fault):
 
 
 @pytest.fixture
-def completed(probe,tmp_path):
+def completed(probe,tmp_path,request):
     """Genuine transactions, synthetic receipts; no sender or game execution."""
     h=probe;bounds=replace(h.probe.bounds,maximum_requested_hold=.15,maximum_actual_hold=.18,
                          forward_speed_upper_bound=10.)
+    if getattr(request,'param',None)=='provider':
+        bounds=replace(bounds,maximum_actual_hold=.16,forward_speed_upper_bound=11.,heading_error_degrees=2.)
     root=CampProbePreparation(h.checkpoint,h.height,h.lease,probe_kind='forward',bounds=bounds,
         bounds_basis=h.probe.bounds_basis,owner_binding=h.camp_binding,
         binding_reader=h.probe.binding_reader,clock=h.clock,local_wall_clock=h.wall)
@@ -80,7 +82,8 @@ def completed(probe,tmp_path):
     r=CampProbeRuntime(root,sender=h.sender,hotkey=hotkey,
         owner_input=SimpleNamespace(sample=lambda:None),stop_lock=lock,
         movement_policy_factory=lambda tx:None,check_current=lambda:None,
-        command_state_clear=lambda:True,pump=lambda:None,probes=PROBES)
+        command_state_clear=lambda:True,pump=lambda:None,probes=PROBES,
+        maximum_seconds=1500. if getattr(request,'param',None)=='provider' else 120.)
     h.runtime=r;x,y=4.,2.;heading=0.;p=root
     for i,step in enumerate(PROBES):
         p.prepare();released=h.now

@@ -30,13 +30,14 @@ class SupervisedRouteDeclaration:
     maximum_distance: float
     maximum_total_hold: float
     scope: str = 'local_trial'
+    owner_supervised_continuation: bool = False
 
 
 def scope_limits(scope):
     """Separate explicit actions; a local trial never inherits travel limits."""
     if scope == 'local_trial':
         return (120., 32, 20., 2.)
-    if scope == 'destination_travel':
+    if scope in ('destination_travel','camp_continuation'):
         return (1500., 3000, 10000., 600.)
     if scope == 'zone_crossing':
         return (15., 1, 10., .2)

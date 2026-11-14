@@ -11,7 +11,8 @@ from build_nov12_preview import RUNTIME_FILES, sha256, PROJECT
 from owner_nov12_entry_03913 import verify_snapshot
 
 
-def build(source, output, *, version='0.39.26', change=None):
+def build(source, output, *, version='0.39.26', change=None, extra_patches=(),
+          entry_name='owner_nov12_entry_03926.py'):
     if output.exists() or output.is_symlink():
         raise ValueError('Refusing to replace an owner preview')
     if source.is_symlink() or not source.is_dir():
@@ -36,18 +37,23 @@ def build(source, output, *, version='0.39.26', change=None):
             shutil.copy2(path,work/'eql_automation'/path.name)
         patch=PROJECT/'patches/nov12-7e3cd28-camp-destinations.patch'
         subprocess.run(['patch','--batch','--forward','-p1','-i',str(patch)],cwd=work,check=True,capture_output=True)
+        patches=[patch]
+        for name in extra_patches:
+            extra=PROJECT/'patches'/name
+            subprocess.run(['patch','--batch','--forward','-p1','-i',str(extra)],cwd=work,check=True,capture_output=True)
+            patches.append(extra)
         shutil.copy2(PROJECT/'HOWTO.md',work/'HOWTO.md')
         pins={str(p.relative_to(work)):sha256(p) for p in sorted(work.rglob('*'))
               if p.is_file() and p.name!='BUILD_INFO.json'}
         (work/'SOURCE_HASHES.json').write_text(json.dumps(pins,indent=2,sort_keys=True)+'\n')
         manifest=sha256(work/'SOURCE_HASHES.json')
-        entry=(PROJECT/'tools/owner_nov12_entry_03926.py').read_text()
+        entry=(PROJECT/'tools'/entry_name).read_text()
         assert entry.count('@MANIFEST_SHA256@')==1
         (work/'owner_nov12_entry.py').write_text(entry.replace('@MANIFEST_SHA256@',manifest))
         info=work/'BUILD_INFO.json';record=json.loads(info.read_text())
         record.update(version=version,source_manifest_sha256=manifest,
             entry_sha256=sha256(work/'owner_nov12_entry.py'),preview_hashes=pins,
-            patch_sha256=[*record['patch_sha256'],sha256(patch)],
+            patch_sha256=[*record['patch_sha256'],*(sha256(p) for p in patches)],
             change=change or 'Existing assist plus explicitly selected Slave Mines or North Wall travel with fixed destination and fresh stopped camp handoff',
             mode='F8 owner-targeted assist; explicit travel then camp button; F11 stationary camp/off; F9 OFF; no loot input',
             real_camp_acceptance=False,real_route_acceptance=False)

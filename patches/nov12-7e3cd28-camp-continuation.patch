@@ -1,0 +1,57 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -453,6 +453,10 @@
+             self.source_destination.addItem("Slave Mines  ·  map hint 7–10", "slave-mines")
+             self.source_destination.addItem("North Wall and Castle  ·  map hint 13–17", "north-wall")
+             column.addWidget(self.source_destination)
++            self.continue_camps = QCheckBox("After level-ups, travel to the next supported camp")
++            self.continue_camps.setObjectName("journeyContinueCampsBox")
++            self.continue_camps.setToolTip("Supervised test: uses newly observed levels and stops on arrival at the next camp. Missing routes keep the current camp. F8 assist; F9 stops.")
++            column.addWidget(self.continue_camps)
+             self.supervised_source = QPushButton("Travel to selected camp…")
+             self.supervised_source.setObjectName("supervisedSourceTravelButton")
+             self.supervised_source.clicked.connect(self.configure_supervised_source)
+@@ -681,6 +685,7 @@
+             state = autopilot.get("state", "off")
+             if not measurement_only:
+                 self.source_destination.setEnabled(not bool(autopilot.get("journey_phase")))
++                self.continue_camps.setEnabled(not bool(autopilot.get("journey_phase")))
+             badge = (state, autopilot.get("journey_phase"), autopilot.get("journey_destination_id"))
+             if badge != self.ap_badge:
+                 self.ap_badge = badge
+@@ -797,6 +802,7 @@
+             from eql_automation.crushbone_source_guide import destination_spec
+             identifier = self.source_destination.currentData()
+             selected = destination_spec(identifier)
++            continuation = self.continue_camps.isChecked()
+             dialog = QDialog(self)
+             dialog.setWindowTitle("Travel to " + selected.label + ", then camp")
+             layout = QVBoxLayout(dialog)
+@@ -810,6 +816,8 @@
+                           "After a four-second focus countdown, seven short calibration presses precede planning.\n\n"
+                           "Stay present. F9/F11 or Stop autopilot cancels; F8 switches to assist. Travel is limited to 25 minutes. "
+                           "The helper stops on an observed attack or zone change; it does not recover automatically.")
++            if continuation:
++                text.setText(text.text() + "\n\nAfter a newly observed level-up and spell preparation, the helper may measure again and travel to a supported later camp. This additional trip is limited to 25 minutes and stops on arrival; combat at the new camp is not yet connected. Missing routes keep the current camp. Stay present throughout.")
+             text.setWordWrap(True)
+             layout.addWidget(text)
+             confirmation = QCheckBox("I will supervise; the starting calibration area is clear, flat and open.")
+@@ -823,7 +831,7 @@
+             buttons.rejected.connect(dialog.reject)
+             layout.addWidget(buttons)
+             if dialog.exec() == QDialog.DialogCode.Accepted and confirmation.isChecked():
+-                self.post("supervised_crushbone_source_travel", {"open_flat_clear": True, "destination_id": identifier})
++                self.post("supervised_crushbone_source_travel", {"open_flat_clear": True, "destination_id": identifier, "continue_camps": continuation})
+ 
+         def confirm_chat_closed(self):
+             if self.worker is None or measurement_only:
+@@ -1023,6 +1031,9 @@
+                     "journey_travel_enabled": window.supervised_source.isEnabled(),
+                     "journey_destination_ids": [window.source_destination.itemData(i) for i in range(window.source_destination.count())],
+                     "journey_destination_current": window.source_destination.currentData(),
++                    "journey_continue_camps_checked": window.continue_camps.isChecked(),
++                    "journey_continue_camps_enabled": window.continue_camps.isEnabled(),
++                    "journey_continue_camps_text": window.continue_camps.text(),
+                     "journey_destination_visible": window.source_destination.isVisible(),
+                     "journey_destination_enabled": window.source_destination.isEnabled(),
+                     "camp_button_enabled": window.findChild(QPushButton, "stationaryCampButton").isEnabled(),

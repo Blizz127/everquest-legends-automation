@@ -34,7 +34,8 @@ def camp(h,checkpoint,monkeypatch):
     # The synthetic source fixture has a separate, monotonic wall-clock epoch.
     base_time=time.monotonic();base_wall=f.wall()
     e.camp_wall=lambda:base_wall+timedelta(seconds=time.monotonic()-base_time)
-    j=e.journey=Journey(e.cancel_generation,settings_identity(e.settings),'camp',arrival_floor=f.checkpoint)
+    j=e.journey=Journey(e.cancel_generation,settings_identity(e.settings),'camp',arrival_floor=f.checkpoint,
+        continue_camps=getattr(h,'camp_continuation_enabled',False))
     hotkey=OwnerLocationHotkey.configured('F4',confirmation_id='synthetic-current-owner-test',
         configuration_paths=(h.game/'eqclient.ini',h.game/'Probe_private_LO1.ini'))
     class Observer:

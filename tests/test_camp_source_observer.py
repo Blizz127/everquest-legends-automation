@@ -137,6 +137,17 @@ def test_new_start_must_still_be_fresh_when_adopted(route):
     assert p.phase=='stopped'
 
 
+def test_long_source_trip_keeps_its_original_deadline(route):
+    h=route;p=h.route;p.prepare();start=fresh(h);expires=h.now+1000.
+    observer=CampSourceObserver(p,start,scope_check=lambda:None,mode_reader=lambda:'camp_route',
+        generation_reader=lambda:1,generation=1,expires_at=expires,
+        walk_half_width=.25,stop_lock=h.route_tx.lock,route_bounds=p.bounds)
+    assert observer.calibration.valid_until_monotonic==expires
+    h.now=expires+.01
+    with pytest.raises(ValueError):observer.check()
+    assert observer.cancelled
+
+
 @pytest.mark.parametrize('provider',('scope','mode','generation'))
 def test_slow_final_provider_cannot_adopt_an_expired_start(route,provider):
     h=route;p=h.route;p.prepare();start=fresh(h);calls=[]

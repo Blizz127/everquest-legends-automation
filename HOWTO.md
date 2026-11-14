@@ -1,9 +1,12 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.57** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.58** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-Source 0.42.57 is local development only; 15 focused level-up checks pass.
-Private publication is pending Alienware SSH availability. The launchable owner preview remains 0.39.30.
+Source 0.42.58 and preview candidate 0.39.31 are local development builds.
+Private publication is pending Alienware SSH availability. The latest full
+continuation pipe run stopped on a watchdog confirmation timeout; it is not a
+completed route check. Focused checks and the local GUI startup are separate
+evidence, not real-client acceptance. The launchable owner preview remains 0.39.30.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -29,6 +32,26 @@ pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
 Preview 0.39.24 switches between assist and the repeated stationary camp test without a
 restart. Preview 0.39.30 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
+
+## Next candidate — 0.39.31 (not installed on Alienware)
+
+The local candidate keeps the existing rotation and adds an unchecked
+**After level-ups, travel to the next supported camp** option beside the travel
+destination. Starting travel captures that choice; it cannot change during the
+trip. After a new level is observed in the current log and spell preparation
+finishes, it can measure movement again and travel to a supported later camp.
+It uses the same input monitor and hazard log. F8 returns to assist; F9 stops.
+
+The copied map currently supplies only Slave Mines (7–10) and North Wall/Castle
+(13–17) with packaged guides. Levels 11–12 and 18–20 have no packaged next route;
+the current camp continues and still checks each live target. No route is
+invented from the gap. The extra trip has one 25-minute deadline, including its
+measurement and planning; the seven-probe measurement itself remains limited
+to 120 seconds. **The helper stops on reaching the next camp. Starting combat
+there is not yet connected.** This is supervised testing, not the full 1–20 path.
+
+Do not use a new launch command yet: candidate 0.39.31 has not been published.
+Continue to use the installed 0.39.30 command below.
 
 ## Choose a travel/camp destination — preview 0.39.30
 
@@ -653,8 +676,8 @@ Source builds are development tools, not replacements for the owner launchers
 above. Local source **0.42.57** lets an explicitly configured continuation provider
 reconsider after a newly observed level-up and finished spell preparation. It
 checks each increase once, ignores duplicate level messages and retains F8/F9
-cancellation. The provider is not yet connected to the owner launcher; this
-does not turn on automatic camp relocation. Sources 0.42.56/0.42.57 have not
+cancellation. The provider is connected only in local candidate 0.39.31; the installed
+owner launcher still does not relocate automatically. Sources 0.42.56 through 0.42.58 have not
 been published on Alienware. Source **0.42.56** supplies a concrete `SupervisedCampProbeScope` and
 per-probe policy. It retains the same physical-input monitor, log veto, original
 deadline and total movement allowance across all seven probes. The veto starts
@@ -662,8 +685,8 @@ before the first recovered-position pair, and the source route must reuse it.
 Activity, focus loss, hazards, changed context or exhausted budgets stop input.
 The short DOWN permission does not interrupt required key-release cleanup.
 This is supervised operation; it does not certify independent scene clearance
-or motion bounds. An explicit continuation plan/provider and new-camp entry
-still need wiring into the owner launcher. Its current controls remain those
+or motion bounds. Source 0.42.58 supplies the explicit continuation plan/provider in local
+candidate 0.39.31. New-camp entry still needs wiring. Its current controls remain those
 of **0.39.30** above.
 
 The optional camp plan can now supply `route_plan_factory`, returning

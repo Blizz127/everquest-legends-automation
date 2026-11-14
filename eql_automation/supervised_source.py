@@ -42,7 +42,7 @@ class SupervisedSourcePolicy:
                  expected_window,topology_generation,check_current):
         if (type(ledger) is not SourceReceiptLedger
                 or type(declaration) is not SupervisedRouteDeclaration
-                or declaration.scope not in ('local_trial','destination_travel')
+                or declaration.scope not in ('local_trial','destination_travel','camp_continuation')
                 or type(expected_window) is not GameWindowIdentity
                 or type(log_veto) is not SceneLogVeto
                 or type(topology_generation) is not int or topology_generation<0
@@ -50,11 +50,14 @@ class SupervisedSourcePolicy:
             raise ValueError('Explicit source measurement scope and observation providers required')
         seconds,steps,distance,hold=scope_limits(declaration.scope)
         d,b=declaration,ledger.bounds
+        declared=(d.owner_supervised_continuation is True and d.open_flat_clear is False
+            if d.scope=='camp_continuation' else
+            d.open_flat_clear is True and d.owner_supervised_continuation is False)
         if (not all(type(s) is str and s for s in
                 (d.record_id,d.route_sha256,d.motion_record_id,d.planning_bounds_record_id))
                 or d.route_sha256!=ledger.observer.itinerary.sha256
                 or d.motion_record_id!=b.calibration_record_id
-                or d.planning_bounds_record_id!=b.record_id or d.open_flat_clear is not True
+                or d.planning_bounds_record_id!=b.record_id or not declared
                 or not all(finite(v) for v in (d.maximum_seconds,d.maximum_distance,d.maximum_total_hold))
                 or not 0<d.maximum_seconds<=seconds or not 0<d.maximum_distance<=distance
                 or not 0<d.maximum_total_hold<=hold or type(d.maximum_steps) is not int

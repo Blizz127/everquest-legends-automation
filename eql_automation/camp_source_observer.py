@@ -71,7 +71,7 @@ class CampSourceObserver(SourceItineraryObserver):
                 scope_check()
                 preparation.check_start(start)
                 h = start.height
-                if not h.observed_at <= preparation.clock() <= expires_at <= h.observed_at+300.:
+                if not h.observed_at <= preparation.clock() <= expires_at <= h.observed_at+1500.:
                     raise ValueError('Camp source correspondence needs a current bounded deadline')
                 measured = json.loads(h.payload)
                 self.calibration = CampSourceHeight(h.first, h.second, self.owner, h.sha256,

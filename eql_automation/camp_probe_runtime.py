@@ -34,7 +34,7 @@ class CampProbeRuntime:
                     command_state_clear,pump,getattr(owner_input,'sample',None)))
                 or type(probes) is not tuple or not 1<=len(probes)<=7
                 or log_veto is not None and type(log_veto) is not SceneLogVeto
-                or not finite(maximum_seconds) or not 0<maximum_seconds<=300):
+                or not finite(maximum_seconds) or not 0<maximum_seconds<=1500):
             raise ValueError('Fresh preparation, explicit policy and finite retained runtime required')
         b=preparation.bounds
         if (any(type(p) is not Probe or p.key not in ('forward','left','right')
@@ -93,7 +93,9 @@ class CampProbeRuntime:
                 or self.route_guide is not None and (type(self.route_guide) is not SourceItineraryGuide
                     or (id(self.route_guide),_guide_snapshot(self.route_guide))!=self._route_guide_state)
                 or self.route_preparation is not self._route_preparation
-                or not finite(now) or not self.started<=self.last_at<=now<=self.started+self.maximum_seconds):
+                or not finite(now) or not self.started<=self.last_at<=now<=self.started+self.maximum_seconds
+                # A long destination trip never extends the measurement window.
+                or self.index<len(self.probes) and now>self.started+min(120.,self.maximum_seconds)):
             raise ValueError('Camp probe runtime context changed or budget expired')
         route=self._route_preparation
         if route is not None and (route.checkpoint is not self.reference or route.guide is not self.route_guide

@@ -37,6 +37,7 @@ def h(tmp_path, retained, monkeypatch, request):
     monkeypatch.setattr(route_fixture,'make_owner_route_trial_engine',combined)
     generator=route_fixture.h.__wrapped__(tmp_path,retained,monkeypatch)
     h=next(generator);e=h.engine
+    h.camp_continuation_enabled=getattr(request,'param',None)=='level_provider'
     e.measurement_only=False;e.settings.level=7
     del e.send;del e.read_log
     e.tail=e.make_tail();e.tail.poll();e.zone='crushbone'
