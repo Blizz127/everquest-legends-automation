@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 00:59 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 01:09 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -68,6 +68,17 @@ portal. The future controller must feed one segment at a time, guard every
 motion pulse, and advance only on a fresh stopped raw fix. Exporting the plan
 does not implement those runtime constraints or accept the historic start
 as the character's current position.
+Source 0.41.49 implements the fixed-segment decision layer with the existing
+helper's steering classes. It integrates actual completed holds and uses
+two fresh stopped raw fixes for endpoint advancement. Rejected commands
+cannot become predicted movement, and assist/cancellation invalidates queued
+proposals. Eighteen focused checks passed. The copied GFay replay completed
+all 155 segments in 2,147 idealized steps; 29 endpoint samples used only an
+adjacent selected polygon within the portal acceptance disk. This replay
+samples endpoint terrain, not the full swept movement footprint; it does
+not verify real pulse precision, live alignment, collision or safe mobs.
+Next: independent scene/calibration and the checked timed input connection.
+No playable 1–20 leg or automated XP gain is accepted.
 The Crushbone alternatives let the planner compare same-zone options before
 committing to the unresolved Cauldron→Unrest crossing; they do not authorize
 F11 or a pull. The helper's protected-target rules must still exclude

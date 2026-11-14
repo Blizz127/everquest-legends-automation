@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.48 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.49 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,9 +19,25 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.48 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.48/source`; the runnable
+Source tools 0.41.49 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.49/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.49 adds a fixed-route controller using the existing bot's steering
+classes. It proposes one segment at a time, integrates actual completed holds,
+and advances only after two new stopped position readings match the endpoint.
+Assist/OFF or cancellation invalidates pending proposals. Eighteen focused
+checks passed. An idealized replay completed all 155 copied GFay segments;
+it uses synthetic positions and exact timing, not the real client. Dynamic
+obstacles, the complete movement footprint, live UI/alignment/speed and the
+owner-preview timed-sender connection remain unverified or unimplemented.
+F11 stays unavailable. This source release needs no new owner command.
+
+Developer-only replay (devbox copied-data store required; sends no input):
+
+```bash
+~/.local/share/eql-automation/python-nav/bin/python tools/replay_fixed_route.py --help
+```
 
 Source 0.41.48 connects the read-only input observer to the future G2 scene
 provider. It brackets a fresh UI observation with input scans and rejects

@@ -1,7 +1,22 @@
 # STATUS
 
-Updated 2026-11-14 01:01 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:09 UTC for coordinator task `829a00229b29`.
 
+- Source **0.41.49** adds the fixed-route controller using the retained
+  rotation bot's steering classes. Eighteen focused checks passed: actual
+  completed holds only, fresh stopped raw endpoint pairs, no short-segment
+  skips, mode/cancel refusal, and narrow/long-segment steering corrections.
+- **VERIFIED idealized replay:** all 155 copied GFay segments completed in
+  2,147 steps (1,384 simulated seconds; 11.10 seconds of offline execution).
+  This is synthetic motion and endpoint terrain sampling, not real movement
+  or a swept-volume check. Final artifact SHA
+  `b468b2be658f21f3dbeac3197d89bbf82627460d8a8ab59b91eaec1eab27d99e`.
+- Live status unchanged: old G0 visible stop passed; no accepted 1–20 leg,
+  automated XP or level gain. Current level, XP/hour, deaths and camp remain
+  unobserved beyond Legira7 GFay. Next: pending owner-ready Current Zone/UI
+  capture, live alignment/speed and a checked timed-sender connection.
+  The new controller produces proposals only and does not enable F11.
+  Recommended assist remains 0.39.6; separate G0 candidate remains 0.39.7.
 - Private source **0.41.48**, commit `b671d2d`, is staged at Alienware
   `~/.local/share/eql-automation/owner-tools/0.41.48/source`. Archive SHA
   `2cbc8b52a66849121480ae686fd2f1fe5c00634686a9c01ea03783647a99cb05`

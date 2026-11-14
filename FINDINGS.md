@@ -1,5 +1,69 @@
 # FINDINGS
 
+## Fixed-route controller and complete copied GFay replay — 2026-11-14 01:09 UTC
+
+**VERIFIED implementation:** `fixed_route_follower.py` loads an explicitly
+hash-pinned segment export and reuses the retained `eqnav.steer` Motion,
+PoseEstimator and PathFollower. It creates one follower for each proposal,
+with no implicit path search, heading probe, back/jump or recovery. It pivots
+separately from forward movement. Only an actual completed hold receipt is
+integrated; a rejected proposal halts and cannot be predicted on a later tick.
+The controller has no input device or sender. External scene/geometry checks,
+release watchdog and cancellation release remain caller responsibilities.
+
+Two new aligned raw fixes after release/settle must agree before endpoint
+advancement. The current mesh/calibration, zone/log generation, sequence,
+XY and height must match; predicted arrival cannot advance the cursor. The
+raw-WLD to helper-frame XY swap is explicit at the observation boundary.
+A change to assist/OFF or cancellation invalidates pending proposals.
+Eighteen focused integration tests passed using the actual hash-pinned
+retained helper classes, with synthetic alignment and location observations.
+No device or live game was accessed by these tests.
+
+**VERIFIED defects found and corrected by copied-route replay:**
+
+- Maximum-size pulses could leave a final distance below the chosen minimum
+  pulse. Requested holds now partition the remaining distance; a minimum
+  hold that overshoots beyond the endpoint radius refuses. This is estimated
+  timing, not proof of actual sender precision or bounded displacement.
+- A new legacy follower starts its projection at s0 with a 60-unit search
+  window. Beyond that window it could steer backward. The new wrapper seeds
+  its progress from the observed point on the current fixed segment.
+- Default lookahead and turn tolerance let a small heading error drift beyond
+  the 1.2-unit strip on a long leg. Lookahead now scales with that strip, with
+  smaller turn thresholds. The requested turn targets the same lookahead
+  point as the existing follower. A long-corridor regression exercises it.
+
+**VERIFIED idealized execution:** `tools/replay_fixed_route.py` drives the
+actual retained steering and new controller over the pinned copied GFay
+plan. Version v5 completed 155/155 segments in 2,147 steps, 1,384.17 simulated
+seconds and 11.10 seconds of offline computation. Its motion assumes exactly
+30.77 units/second and a 0.02-second minimum hold; neither is current live
+calibration. Synthetic stopped fixes use copied detail-surface heights.
+Twenty-nine endpoint samples fall just across a portal and consult only the
+adjacent selected polygon within the 0.25-unit endpoint disk, retaining its
+height. Full swept motion, dynamic obstacles, actual timing and client UI
+are not checked by this replay. No route or real-client acceptance is gained.
+
+Private artifacts under `nav-candidates/`:
+
+| Artifact | SHA-256 | Result |
+| --- | --- | --- |
+| `gfay-fixed-controller-replay-0.41.49.json` | `e4bf8c5bb966124ef5c84bbec36f483f149a2c8cc138e76ce2d7e009abfb01d5` | Stops after four segments; final-step sizing defect |
+| `gfay-fixed-controller-replay-0.41.49-v2.json` | `dacc683b2d5e8cc2bd28cb3c647f678914992dced4a06febad706221c72250f3` | Stops after five; reseeded progress defect |
+| `gfay-fixed-controller-replay-0.41.49-v3.json` | `ee47bc4d68c09adccbd00349b1437e91e7d6bb911b36e1e834fd16fc3e60b7bc` | Stops at26; endpoint sampling lacked adjacent polygon |
+| `gfay-fixed-controller-replay-0.41.49-v4.json` | `497daeb80d7b2456dcc0ee4b09f6203d6c2d293cebe8e69d9e415019075d11e3` | Stops at113; narrow-strip drift |
+| `gfay-fixed-controller-replay-0.41.49-v5.json` | `b468b2be658f21f3dbeac3197d89bbf82627460d8a8ab59b91eaec1eab27d99e` | All155, idealized only |
+
+The last report pins controller source
+`44cf7315fd15e3db296bb4f45f5c06cef25fc1fd413e4cee2788f2606a51be1d`
+and replay source
+`5a3376e6c85e6f9286c8f0b99d5ea040e14077108c41063d7ef1d45f01b013a9`.
+Current live metrics remain unobserved beyond the prior Legira7 GFay report;
+old G0 visible stop remains passed. The pending owner-ready map/current-scene
+capture, live alignment/speed, swept-control check and owner-preview timed
+sender are next. Assist remains0.39.6; no extra owner test is requested.
+
 ## Source 0.41.48 private publication — 2026-11-14 01:01 UTC
 
 **VERIFIED:** Source commit `b671d2d` is staged at Alienware
