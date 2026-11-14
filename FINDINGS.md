@@ -1,5 +1,49 @@
 # FINDINGS
 
+## Stationary camp integration — 2026-11-14 15:17 UTC
+
+**VERIFIED implementation and focused checks:** source 0.42.33 connects a bounded
+one-kill camp directly to the retained rotation Engine and KeySender. It shares
+the sender/cancellation generation with assist; there is no extra input process.
+The engine remains inactive during acquisition, and fresh exact-name/level
+consideration is required before casting. A separate camp authorization prevents
+the legacy retaliation/previous-target branches from approving another target.
+The camp uses the prepared spell rotation, respecting heal priority and mana
+reserve, while excluding native melee, stance chords, Bash/Smite, movement,
+rest/vendor and loot input. Log replacements skip history and terminate camp.
+Completion stops combat too; F8 explicitly replaces camp with assist.
+
+All **29 focused checks passed** on Devbox against the retained Engine/KeySender,
+synthetic feedback and actual OS pipes. Initial test setup lacked evdev; the
+fixture now reads Linux key constants directly without importing a device API.
+An initial fixture expected the wrong nuke slot; the actual retained mapping is
+gem 3. Later tests cover F9 during every command type and late providers/startup,
+queued starts, replacement logs, other targets/adds, locked encounters, expired
+replies, zone/focus loss, low resources and kills during consideration refresh.
+No game input, owner login or real kill acceptance was performed.
+
+**VERIFIED retained evidence:** `owner-traces/eqlog-Legira-20261113.txt` under the
+private data store is 1,858,221 bytes, SHA
+`d622b3c12567f903d411860d3de1a0be28e4e8b38be7bbdc2bebfdd62c60f04e`.
+The exact Clan Crushbone intervals contain explicit NPC selections, matching
+considerations and kills. For example, lines 7778/7781 and 7817/7819 pair an NPC
+selection with the same centurion name's level-3/level-1 consideration. These are
+historical candidate names, not nearby spawns, current targets or safe camps.
+Protected/slave/pet/service names and legacy explicit avoid entries are excluded.
+Runtime candidate collection uses at most the final 4 MiB of the owner's current
+log and hashes those exact bytes; pair line numbers are relative to that suffix.
+
+**OBSERVED range discrepancy:** the copied client map `crushbone_3.txt`, SHA
+`4b1c009838988b13507797afd1ccbce8ba23e1ca99adbafd1065956cfd71bda0`, labels Slave
+Mines 7–10, Trainer Hill 10–13, North Wall/Castle 13–17 and Throne Room 17–22.
+The legacy guide uses differing ranges and mixed external/log guidance. Only the
+client labels are retained as route hints; neither source establishes camp safety.
+
+**Remaining real-client gates:** owner-run 0.39.21 traversal and owner-run finite
+camp targeting/HP/mana/casting/kill observation. Camp repetition, verified rest,
+loot, movement-to-combat handoff and hands-off leveling are unfinished. Current
+level, XP/hour, deaths and camp remain unknown. G0 passed; no repeat.
+
 ## Owner source-route integration and private preview — 2026-11-14 15:05 UTC
 
 **VERIFIED implementation:** source 0.42.32 connects the source itinerary and

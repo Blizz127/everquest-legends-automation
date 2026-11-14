@@ -28,6 +28,9 @@ def make_owner_nov12_engine(base_engine: type) -> type:
     """Restrict the November engine to supervised, owner-targeted rotation."""
 
     class OwnerNov12Engine(base_engine):
+        def owner_extra_command_permitted(self, command):
+            return False
+
         def send(self, command: str):
             if command in {"/attack on", "/attack off"}:
                 return None  # The owner alone controls native melee.
@@ -40,7 +43,8 @@ def make_owner_nov12_engine(base_engine: type) -> type:
             else:
                 permitted = (command == "/consider" or
                              bool(_PREP.fullmatch(command)) and self.preparing or
-                             bool(_ROTATION.fullmatch(command)))
+                             bool(_ROTATION.fullmatch(command)) or
+                             self.owner_extra_command_permitted(command))
             if not permitted:
                 raise ValueError("Command is outside this owner's rotation scope")
             if self.sender is not None and self.sender.unfinished:

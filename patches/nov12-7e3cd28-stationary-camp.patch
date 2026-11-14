@@ -1,0 +1,62 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -384,7 +384,7 @@
+             self.ap_default_status = (
+                 "Only the G0 movement-stop check is available: one 0.15-second forward pulse. F9/F11 cancel."
+                 if measurement_only else
+-                "Travel is unavailable in this assist preview. Movement and targeting stay manual.")
++                "F11 runs one stationary spell-only kill, then stops. Turn native melee OFF and stand at your chosen camp. F8 returns to assist; F9 stops. No travel, loot input or resting.")
+             self.ap_status = QLabel(self.ap_default_status)
+             self.ap_status.setWordWrap(True)
+             column.addWidget(self.ap_status)
+@@ -394,8 +394,10 @@
+             self.ap_info.setWordWrap(True)
+             column.addWidget(self.ap_info)
+             row = QHBoxLayout()
+-            start = QPushButton("Start autopilot  ·  F11")
+-            start.setObjectName("primary")
++            start = QPushButton("One stationary kill  ·  F11")
++            start.setObjectName("stationaryCampButton")
++            start.setToolTip("Uses NPC names observed in your log, checks the selected target, casts spells and stops after one kill or a failed check. Supervise this test.")
++
+             start.clicked.connect(lambda: self.post("autopilot_later"))
+             if measurement_only:
+                 start.setText("Leveling autopilot disabled in measurement mode")
+@@ -437,7 +439,7 @@
+                 scroll.setWidget(page)
+                 return scroll
+
+-            column.addWidget(QLabel("Camps from the leveling guide (select one for the buttons below)"))
++            column.addWidget(QLabel("Historical guide hints below are not the camp test’s routing instructions"))
+             self.camps = QTableWidget(0, 5)
+             self.camps.setHorizontalHeaderLabels(["Levels", "Zone", "Camp", "Autopilot", "Anchor"])
+             self.camps.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+@@ -908,6 +910,8 @@
+                     "travel_tab_enabled": window.tabs.isTabEnabled(3),
+                     "travel_tab_label": window.tabs.tabText(3),
+                     "chat_recovery_enabled": window.chat_recovery.isEnabled(),
++                    "camp_button_text": window.findChild(QPushButton, "stationaryCampButton").text(),
++                    "camp_button_enabled": window.findChild(QPushButton, "stationaryCampButton").isEnabled(),
+                 }, indent=2) + "\n")
+             app.quit()
+         QTimer.singleShot(400, render)
+@@ -918,7 +922,7 @@
+ 1. Enter your Paladin + Cleric loadout. A third class is optional; this profile does not depend on one.
+ 2. Choose your character and current level above. Set the starting level once; future level-up log messages update it while this helper runs.
+ 3. Stand somewhere safe, out of combat. Focus EverQuest and press F6. Preparation exports your learned spellbook and memorizes ONLY spells you own and can use at your selected level. Each gem waits for EverQuest's own "finished memorizing" message (about 2 seconds for a gem that already holds the spell), so /log must be on. F9 cancels.
+-4. Press F8 to turn combat on, heal low HP, and maintain prepared buffs even with no enemy selected. Repeated F8 presses leave it on. It checks for the enemy you select, fights it, then waits for your next selection after the kill. F9 turns combat off. F7 is a single on/off toggle (on like F8, off like F9) for controllers that map a button to F7; the helper consumes F7 so EQ's own Target Nearest PC does not also fire. F8 combat never selects, pulls or moves; F11 travel and F12 recording are disabled in this preview. You control melee yourself; F9 stops further helper input but does not turn melee off or cancel a spell already cast.
++4. Press F8 to turn combat on, heal low HP, and maintain prepared buffs even with no enemy selected. Repeated F8 presses leave it on. It checks for the enemy you select, fights it, then waits for your next selection after the kill. F9 turns combat off. F7 is a single on/off toggle (on like F8, off like F9) for controllers that map a button to F7; the helper consumes F7 so EQ's own Target Nearest PC does not also fire. F8 assist never selects or moves. F11 starts/stops a stationary one-kill camp test with automatic target selection; F8 switches back to assist. F12 recording stays disabled. You control melee yourself; F9 stops further helper input but does not turn melee off or cancel a spell already cast.
+ 5. At full health, click Find / calibrate HP, check the proposed inner red gauge, and Save only when that outline and full HP are correct. Drag a corrected rectangle if needed. Automatic healing requires this reading. F10 requests your fast heal even without calibration.
+ 6. Optional: calibrate the blue mana bar. Below 25% mana the assistant saves mana for healing; at 35% or less it also skips buffs, stuns and the Smite ability.
+
+@@ -958,8 +962,8 @@
+ At low levels, prioritize a useful weapon, shield/armor, and heal efficiency over dumping all mana into damage. At higher levels, raise damage cadence only as sustain allows. The tool does not claim a simulated best-in-slot DPS rotation; it favors a simple, durable solo setup.
+
+ TRAVEL STATUS
+-F11 travel and F12 recording are disabled in this preview. Routes for levels 1–20 are being built from copied client geometry; real movement validation is incomplete. You do not need to record routes by hand.
+-The separate --measure-navigation mode offers only the supervised G0 stop check. Passing G0 does not enable leveling or certify a route.
++F11 runs one stationary spell-only kill test using names evidenced in your own log. Stand at your chosen camp, turn native melee OFF and prepare spells first. It stops after a matching kill or a failed check. No movement, loot input, rest or vendors. F8 returns to assist; F9 stops.
++The complete 1–20 path is unfinished. Use separate preview 0.39.21 for movement. G0 passed; do not repeat it.
+
+ SOURCE OF SPELL LEVELS
+ The installed client's spells_us.txt is authoritative for this installation. The progression tab is a preview; your live bar is filtered against a fresh /outputfile spellbook export. No third-class skills are assumed.

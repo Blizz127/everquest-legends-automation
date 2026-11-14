@@ -1,8 +1,8 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.32** · rotation preview **0.39.13** · movement preview **0.39.21** · crossing preview **0.39.19** · approach preview **0.39.18**.
+Source **0.42.33** · assist/camp test **0.39.22** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-**The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
+**The 1–20 autopilot is not ready. In 0.39.22, F11 runs one stationary kill test; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -11,7 +11,8 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Mode | What is available today | Controls |
 | --- | --- | --- |
 | Assist / rotation | Supervised preview using the existing rotation bot. Blizz moves, chooses his target and controls melee. | F8 arm, F7 toggle, F9 stop, F10 request heal. |
-| Full auto | In development; no accepted 1–20 or 1–50 run. | F11 is disabled. There is no live switch to full auto yet. |
+| Full auto | In development; no accepted 1–20 or 1–50 run. | No complete leveling mode yet. |
+| Stationary camp test | In 0.39.22, automatically searches observed NPC names, checks a fresh consideration reply, uses prepared spells and stops after one matching kill or a failed check. | F11 starts/stops; F8 switches to assist; F9 stops all helper input. |
 | Read-only position observation | One owner-triggered capture; no commands, keys or clicks sent. | **Observe current position**, F9/Stop to cancel. |
 | Stationary location-hotbutton test | Sends one explicitly configured key, then checks the log for one fresh position reply. No route movement or combat. | **Test /location hotbutton…**, F9/F11/Stop to cancel. |
 | Supervised motion measurement | Four short forward presses and three turns on owner-confirmed open ground; saves relative observations and stops. | **Supervised motion measurement…**, F9/F11/Stop to cancel. |
@@ -23,7 +24,47 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
-The requested seamless assist/full-auto switch is still unfinished.
+Preview 0.39.22 switches between assist and the finite camp test without a
+restart. Switching between movement and the complete full-auto mode is unfinished.
+
+## Assist and one stationary kill — preview 0.39.22
+
+Close the older helper first, then run on Alienware:
+
+```bash
+cd ~/.local/share/eql-automation/owner-assist/0.39.22
+EQL_ROTATION_TRACE="$HOME/eql-camp-trace.jsonl" ./launch.sh
+```
+
+F8 runs the existing assist rotation on your target. Movement, target selection,
+looting, camps and native melee remain yours in assist. F9 stops; F10 requests a
+heal. F6 prepares the spell bar as before.
+
+For the new camp test, stand at your chosen camp, turn native melee off, close
+chat and prepare the spell bar with F6. Set the helper's correct character level
+(1–20); HP must read at least 70% and mana at least 50%. Focus EverQuest and
+press **F11**, or click **One stationary kill** and return to the game during
+the four-second countdown. Supervise this first test.
+
+The helper searches up to eight NPC names backed by paired NPC-selection and
+consideration messages plus kills in your own log history. The historical zone
+is only a name-selection hint. Each attempt requires a new, exact-name
+consideration reply with a level between your configured level minus three
+and your level. History is never used as current-target permission. If the log
+has no such candidates, it stops with that reason; there is no guessed fallback.
+
+The test stays stationary, casts prepared spells, observes one matching kill,
+waits two seconds for loot messages, then stops. It does not turn native melee
+on or off, open loot, rest, navigate, vendor or recover from death. Loot messages
+do not prove that looting finished. It stops on focus/input interruption, a
+changed target or log, zoning, an additional attacker, encounter lock or timeout;
+it does not resume by itself. **F9 stops immediately; F11 stops the camp;
+F8 replaces the camp with owner-targeted assist.** No re-login is needed.
+
+This is a testable combat increment, not the hands-off 1–20 path. Current HP
+calibration, actual targeting/consideration/kill behavior and the live camp still
+need owner acceptance. Same-name log messages cannot prove a unique entity ID.
+Use 0.39.21 separately for the source-route movement test below; **do not repeat G0**.
 
 Source 0.42.31 adds the step controller to the movement core. It uses the same
 sender and stop lock, keeps the confirmed floor during a partial step, waits

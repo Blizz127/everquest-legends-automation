@@ -1,11 +1,22 @@
 # STATUS
 
-Updated 2026-11-14 15:05 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 15:17 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.33 / candidate preview 0.39.22:** a bounded stationary camp now
+  reuses the actual retained engine, sender and spell rotation. History supplies
+  observed NPC names only; new exact-name/level consideration is required before
+  casting. One matching kill ends the session after passive loot observation.
+  F8 switches to assist, F11 starts/stops the finite camp, F9 cancels. No movement,
+  native melee, rest or loot input. **29 focused checks pass**, using the retained
+  engine/KeySender, synthetic feedback and OS pipes. F9 during target/con/cast,
+  late startup/provider callbacks, log replacement, encounter lock, heal/mana
+  priorities and kills during refresh are covered. Packaging/startup pending.
+  **Next:** owner preview publication and live one-kill acceptance, then camp
+  repetition/rest and source-travel handoff. Level/XP/hour/deaths/camp unknown.
 - **G0 passed:** owner-confirmed visible stop plus trace evidence; no repeat.
   Current assist is **0.39.13**, built on the existing rotation bot:
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
