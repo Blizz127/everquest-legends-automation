@@ -66,6 +66,15 @@ route-trial JSON or `~/eql-route-trial-trace.jsonl`; the owner test remains
 pending without repeated polling. G0 stays passed. Current level, XP/hour,
 deaths and camp remain unknown; no automated XP or real route accepted.
 
+Source `aaa744cbee21d8824c438976ea1d00cf126bee03` is privately staged on
+Alienware at `owner-tools/0.42.11/source`. Startup builds a fresh two-polygon
+synthetic destination route through the retained NavMesh, verifies the initial
+floor chain is not advanced, and rejects a displaced reverse portal. All 134
+pre-existing runtime modules match owner preview 0.39.15. No worker, device,
+input or install change occurs. Archive SHA
+`452b228978b7f1b2647696b4c851286dead6841f24de9d17286cb12d156a457f`;
+startup SHA `d496086fb74b5ca323f64316f5b42bcf3424c1665e5f96e03a562e166cfe5cf9`.
+
 ## Same-action owner route runtime — 2026-11-14 11:18 UTC
 
 **VERIFIED implementation and pipe tests:** source 0.42.10 composes the retained

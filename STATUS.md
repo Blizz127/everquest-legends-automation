@@ -25,6 +25,10 @@ Updated 2026-11-14 11:31 UTC for coordinator task `829a00229b29`.
   runtime, then verify actual traversal and camps. Owner trial 0.39.15 and
   assist 0.39.13 remain unchanged. One result check found no new owner trace or
   route JSON; no polling loop. Level/XP/hour/deaths/camp remain unknown.
+  Source `aaa744c` is staged at Alienware `owner-tools/0.42.11/source`;
+  fresh two-polygon planning and displaced-reverse refusal startup pass without
+  input. Startup SHA
+  `d496086fb74b5ca323f64316f5b42bcf3424c1665e5f96e03a562e166cfe5cf9`.
 - **Source 0.42.10 / route preview 0.39.15 staged:** one owner action
   now retains the motion experiment's input observer/heading, collects fresh
   stopped positions, creates the short current-XY plan, checks fresh height,
