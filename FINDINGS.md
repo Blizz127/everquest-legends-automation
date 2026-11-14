@@ -1,5 +1,22 @@
 # FINDINGS
 
+## 2026-11-14 18:06 UTC — source 0.42.48 privately published
+
+VERIFIED Alienware `owner-tools/0.42.48/source`, revision
+`3503f060d0f467a1b19a055b0f4c6eec4366da9f`. Runtime/tests/tools match the
+89-pass validation snapshot. Imports, diagnostic CLI startup and copied-data
+pins pass. Archive SHA `eae0b93a5abc5603808017efe31e59d5e17e7cdf9aa0ef9c8ec821098af9648f`;
+startup SHA `b92660f0dcd12694701b8accf5246b66312c58b3a712caf329315809b39008db`.
+Publication record: `releases/eql-automation-0.42.48-staging.json`.
+
+This source increment continues checked probe floors across a synthetic
+seven-probe sequence. It does not connect actual movement or new owner controls.
+Preview stays 0.39.30. No helper worker, input device, game input, login,
+character action or protected-prefix edit. G0 remains passed; no repeat.
+Next: finite camp runtime plus sender/collection integration with explicit
+current movement policy. No real 1–20/1–50 acceptance; current level, XP,
+XP/hour, deaths and camp remain unknown.
+
 ## 2026-11-14 18:05 UTC — source 0.42.48, reached-floor probe continuation
 
 VERIFIED a fresh exact confirmed `CampProbeResult` can be consumed once into

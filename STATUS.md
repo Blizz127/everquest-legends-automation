@@ -1,19 +1,22 @@
 # STATUS
 
-Updated 2026-11-14 18:05 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 18:06 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.48 validated; private publication pending.** Exact confirmed
+- **Source 0.42.48 privately published; preview stays 0.39.30.** Exact confirmed
   probe endpoints now continue through a private floor reference and genuinely
   new stopped pairs. The original checkpoint/calibration stays unchanged; all
   probes share the reader lease and stop lock. A seven-transaction synthetic
   sequence passes, including ancestor cancellation. 89 focused local checks
   pass; 89 Alienware checks pass in 4.90 seconds, output SHA
   `3638485e58194b50ab6bcbd2a120e5e835f0bf818b213bf609e8e4c2ae835db9`.
-  Preview stays 0.39.30. Next: camp-specific runtime/sender adapter before the
+  Published at Alienware `owner-tools/0.42.48/source`, revision `3503f06`.
+  Runtime/tests/tools match the validated snapshot; imports/CLI/copied-data pins
+  pass. Startup SHA `b92660f0dcd12694701b8accf5246b66312c58b3a712caf329315809b39008db`.
+  Next: camp-specific runtime/sender adapter before the
   post-recovery position scope releases, then current scene/motion producers.
   No game input, live relocation or real leveling acceptance. G0 passed; no
   new owner check. Current level/XP/hour/deaths/camp remain unknown.
