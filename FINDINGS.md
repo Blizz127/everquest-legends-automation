@@ -1,5 +1,23 @@
 # FINDINGS
 
+## Private 0.41.61 staging — 2026-11-14 03:33 UTC
+
+**VERIFIED:** Source commit `b5cd4a50eabe2e8d9c719505b283c6e4153c00bc` and
+archive SHA `06896aff0ba6794a9ee394906171de5e4e9c685021e81fa1aded7c48298baf15`
+matched at Alienware `~/.local/share/eql-automation/owner-tools/0.41.61/source`.
+Fourteen synthetic/startup checks passed remotely, including static-wall
+refusal, exact terrain-cell binding, fresh unbound log collection, changed
+process/transition refusal, timing pairing, three CLI help paths and invalid
+static-replay options. No client assets, input devices or actual UI capture
+were opened. `../smoke.json` and the private local record
+`releases/eql-automation-0.41.61-staging.json` preserve the exact checks.
+
+The owner can run `python3 tools/capture_owner_location.py --character Legira
+--server freeport` from that source directory, then manually issue `/location`
+once while standing still with the map on Current Zone. HOWTO has the complete
+procedure. The lead has not run a live capture; no repeated G0 is requested.
+This is an unbound observation collector, not F11 or a movement permit.
+
 ## Static-inclusive GFay replay and stationary capture tool — 2026-11-14 03:32 UTC
 
 **VERIFIED source 0.41.61:** The revised GFay route completes all 155 segments

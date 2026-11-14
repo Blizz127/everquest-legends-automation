@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 03:32 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 03:33 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No real-client 1–20 route, automated level gain
   or fresh-character hands-off 1–50 run is accepted.
@@ -21,7 +21,10 @@ Updated 2026-11-14 03:32 UTC for coordinator task `829a00229b29`.
   omits the chat crop and preserves unknown zone/alignment/character identity.
   It pairs a manual fresh `/location` with UI crop timing without another G0
   pulse or zone transition. 48 focused tests and 14 local smoke checks pass.
-  Actual paired capture has not been run. Private source staging is next.
+  Actual paired capture has not been run. Source commit `b5cd4a5` is staged at
+  Alienware `~/.local/share/eql-automation/owner-tools/0.41.61/source`; archive
+  SHA `06896aff0ba6794a9ee394906171de5e4e9c685021e81fa1aded7c48298baf15`
+  matched and all 14 no-input remote startup/guard checks passed.
 - **Next:** whole-footprint BSP hazard checks, owner-run fresh scene/position
   observation, bounded speed/drift measurement and checked sender integration.
   Same-zone GFay remains the practical Legira candidate; Butcherblock then
