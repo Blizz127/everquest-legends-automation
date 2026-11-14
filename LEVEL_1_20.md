@@ -1,9 +1,16 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 06:32 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 06:41 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.82 connects optional chat-input geometry/crops to the same frame
+as HP/mana/combat features, retaining unknown focus and no saved chat pixels.
+After a 150 ms measured real layout load, it prepares the retained parser before
+observation and rechecks complete source/selection fingerprints in every frame.
+Fifty-one focused checks pass. This removes repeated parsing and adds actual
+feature integration; current live scene and motion acceptance remain missing.
 
 Source 0.41.81 resolves dynamic chat pages and input outer/client geometry
 from copied binary/XML semantics. Seventeen focused checks and a retained-loader

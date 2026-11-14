@@ -1,5 +1,54 @@
 # FINDINGS
 
+## Prepared layout and same-frame chat integration 0.41.82 — 2026-11-14 06:41 UTC
+
+**OBSERVED bottleneck:** a read-only Alienware call to the actual retained
+`UiLayout.load` on installed sources took 150.386 ms for 168 source files and
+7,836 elements. This alone exceeds the 100 ms observation budget. The earlier
+frame benchmarks explicitly excluded real layout loading. The real saved
+combat-widget rectangle is 16×33 pixels; the HP/mana rectangles are each
+330×17 pixels at saved scale 1.25. No game frame or input was used for the probe.
+
+**VERIFIED implementation:** `PreparedUiLayout` brackets the retained parser
+with full source fingerprints before an observation. Every use checks file
+contents and actual selection rules: exact/suffix character INIs, optional
+`eqclient.ini`, skin-directory fallback, first nonempty skin/default include
+manifest, variants before normal files, and selected-skin precedence within
+each variant. Empty and fully overridden includes remain dependencies, including
+subdirectory/non-XML suffix includes. New overlays, manifests, INIs or changed
+contents invalidate the cache. Each use returns a new layout/cache and INI copy;
+parsed XML remains explicitly borrowed read-only internal data. The frame
+sample carries the full fingerprint verifier through the feature pass, so
+post-load manifest/overlay changes are also rejected. No source changes or
+reparsing are hidden inside an observation.
+
+`PreparedUiFrameReader` can now receive the inspected copied-runtime identity
+for optional chat features. `chat_ui_frame` resolves and crops the input outer/
+client regions from that same sample, requires source coverage and refuses
+missing/offscreen geometry. Reports retain geometry, crop hashes and the parent
+frame hash, without saving pixels or recognizing text. Chat focus/draft remain
+unknown for both empty and nonempty crops. Both numerical and XML preparation
+costs are retained separately; feature/source-check time remains in the full
+observation interval. Owner launchers and controls are unchanged.
+
+**VERIFIED focused checks:** 49 cache/chat/frame-reader cases passed in 2.97
+seconds; two subsequent whole-fingerprint hook cases passed in 2.92 seconds.
+They cover selection/content invalidation, preparation races, independent
+per-frame layout caches, same-frame crop binding, changed pixels/sources,
+missing crop provenance, delayed work and post-feature manifest/overlay checks.
+Compile and whitespace checks pass. No full suite ran. A read-only listing at
+06:35 UTC still found zero owner position pairs; no capture was initiated.
+
+**Remaining integration gap found by source review:** the input monitor yields
+activity/held/contact counts, not chat focus. Measurement executors currently
+pass only request and phase to their independent observer, with no immutable
+submitted-prefix receipt. Sender `unfinished` is marked before a DOWN attempt
+to preserve uncertainty; that does not prove the client opened an owned draft.
+Current client focus/draft transitions and an exact submitted-prefix interface
+remain required. No empty crop, absent caret, quiet scan or successful kernel
+write is promoted to evidence that chat is closed. G0 remains passed with no
+repeat; live scene/motion calibration and route acceptance remain unfinished.
+
 ## Chat focus cue — bounded static finding, 2026-11-14 06:34 UTC
 
 **VERIFIED static:** in copied binary `fe41a8db…7146bf36`, Editbox vtable

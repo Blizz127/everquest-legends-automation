@@ -11,6 +11,8 @@ from pathlib import Path
 import re
 import time
 
+from .prepared_ui_layout import PreparedLayoutView
+
 DEFAULT_OUTPUT = Path.home() / ".local/share/eql-automation/g2-ui-observations"
 WINDOWS = ("PlayerWindow", "TargetWindow", "MainChat", "MapViewWnd")
 CONTROLS = (
@@ -68,9 +70,12 @@ class UiFrameSample:
     sources: dict
     source_paths: frozenset
     metadata: dict
+    source_verifier: object = None
 
     def check_sources(self):
-        if self.sources != {str(p): file_sha(p) for p in self.source_paths if p.is_file()}:
+        current=(self.source_verifier() if self.source_verifier is not None else
+                 {str(p):file_sha(p) for p in self.source_paths if p.is_file()})
+        if self.sources != current:
             raise RuntimeError("Client UI files changed while observing the frame")
 
 
@@ -119,8 +124,17 @@ def sample_focused_ui(*, gate, layout_loader, game, character, server,
 
     ini_exact = game / f"UI_{character}_{server}.ini"
     ui_ini = [ini_exact] if ini_exact.is_file() else sorted(game.glob(f"UI_{character}_{server}_*.ini"))
-    source_paths = {game / "eqclient.ini", *layout.sources.values(), *ui_ini}
-    sources = {str(path): file_sha(path) for path in source_paths if path.is_file()}
+    source_verifier=None
+    if isinstance(layout,PreparedLayoutView):
+        # The cache already checked this complete dependency set after capture.
+        # Keep its verifier for the end of the same feature pass, including
+        # manifests and overlays omitted by ordinary layout.sources.
+        sources=dict(layout.source_hashes)
+        source_paths={Path(path) for path in sources}
+        source_verifier=layout.source_verifier
+    else:
+        source_paths = {game / "eqclient.ini", *layout.sources.values(), *ui_ini}
+        sources = {str(path): file_sha(path) for path in source_paths if path.is_file()}
     still_current()
     final_focus = gate.focused_window()
     if (final_focus is None or final_focus.id != focused.id or
@@ -150,8 +164,10 @@ def sample_focused_ui(*, gate, layout_loader, game, character, server,
         "map_label_requires_current_zone_selection": True,
         "missing_or_offscreen_crops": [name for name, box in crops.items() if box is None],
     }
+    if isinstance(layout,PreparedLayoutView):
+        metadata['layout_preparation']=dict(layout.preparation)
     metadata["sample_finished_monotonic"]=clock()
-    return UiFrameSample(image,layout,crops,sources,frozenset(source_paths),metadata)
+    return UiFrameSample(image,layout,crops,sources,frozenset(source_paths),metadata,source_verifier)
 
 
 def capture_focused_ui(*, label, gate, layout_loader, game, character, server,

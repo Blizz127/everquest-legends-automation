@@ -13,6 +13,8 @@ from .combat_ui_match import (CONTROL, rank_combat_sprites, decal_sizes,
                               _numpy_backend, _compile_template, _score_positions)
 from .combat_ui_atlas import CombatUiAtlas
 from .owner_ui_observation import UiFrameSample, sample_focused_ui
+from .chat_ui_frame import chat_regions_from_sample
+from .chat_ui_layout import ChatLayoutUnavailable
 
 
 class PreparedUiFrameReader:
@@ -24,7 +26,8 @@ class PreparedUiFrameReader:
     Preparation is neither a previous scene nor a latency/authorization claim.
     """
     def __init__(self, *, gate, layout_loader, game, character, server, atlas,
-                 gauge_reader, saved_scale, still_current=lambda:None, clock=time.monotonic):
+                 gauge_reader, saved_scale, chat_runtime_sha256=None,
+                 still_current=lambda:None, clock=time.monotonic):
         if (not isinstance(atlas,CombatUiAtlas) or not callable(layout_loader)
                 or not callable(gauge_reader) or not callable(clock) or not callable(still_current)):
             raise ValueError('Source atlas, layout and gauge readers required')
@@ -61,7 +64,8 @@ class PreparedUiFrameReader:
                 raise ValueError('Saved skin/scale changed after reader preparation')
             return layout
         self.arguments=dict(gate=gate,layout_loader=bound_layout,game=game,character=character,
-            server=server,atlas=atlas,gauge_reader=gauge_reader,still_current=still_current,clock=clock)
+            server=server,atlas=atlas,gauge_reader=gauge_reader,chat_runtime_sha256=chat_runtime_sha256,
+            still_current=still_current,clock=clock)
 
     def __call__(self):
         if decal_sizes(self.atlas,self.scale)!=self.sizes:
@@ -82,7 +86,7 @@ def _crop(sample, name):
     return sample.image.crop(box)
 
 
-def analyze_ui_frame(sample, *, atlas, gauge_reader, still_current=lambda:None,
+def analyze_ui_frame(sample, *, atlas, gauge_reader, chat_runtime_sha256=None, still_current=lambda:None,
                      clock=time.monotonic):
     """Use the retained gauge reader and source sprites, without PNG round trips.
 
@@ -127,6 +131,14 @@ def analyze_ui_frame(sample, *, atlas, gauge_reader, still_current=lambda:None,
     combat=_crop(sample,CONTROL)
     ranking=(None if combat is None else rank_combat_sprites(combat,atlas,
         saved_scale=sample.metadata['ui_scale_from_saved_ini']))
+    chat_input=dict(status='not_requested',focus='unknown',draft='unknown')
+    if chat_runtime_sha256 is not None:
+        still_current()
+        try:
+            chat_input=chat_regions_from_sample(sample,
+                copied_binary_sha256=chat_runtime_sha256).summary()
+        except ChatLayoutUnavailable as error:
+            chat_input=dict(status='unavailable',reason=str(error),focus='unknown',draft='unknown')
     sample.check_sources()
     still_current()
     if sha256(sample.image.tobytes()).hexdigest()!=sample.metadata['frame_rgb_sha256']:
@@ -134,11 +146,12 @@ def analyze_ui_frame(sample, *, atlas, gauge_reader, still_current=lambda:None,
     finished=clock()
     if type(finished) not in (int,float) or not math.isfinite(finished) or finished<began:
         raise ValueError('Invalid feature observation clock')
-    return dict(format='eql-ui-frame-features-v1',gauges=gauges,combat=ranking,
+    return dict(format='eql-ui-frame-features-v1',gauges=gauges,combat=ranking,chat_input=chat_input,
         frame_rgb_sha256=sample.metadata['frame_rgb_sha256'],window_size=sample.metadata['window_size'],
         game_session=sample.metadata['game_session'],focused_window_id=sample.metadata['focused_window_id'],
         atlas_manifest_sha256=atlas.manifest_sha256,source_sha256_postcapture=dict(sample.sources),
         crop_boxes=dict(sample.boxes),saved_skin=atlas.saved_skin,
+        layout_preparation=sample.metadata.get('layout_preparation'),
         sample_started_at=first,capture_started_at=captured,sample_finished_at=sampled,
         feature_started_at=began,feature_finished_at=finished,
         capture_seconds=sample.metadata['capture_duration_monotonic_seconds'],
@@ -152,7 +165,8 @@ def analyze_ui_frame(sample, *, atlas, gauge_reader, still_current=lambda:None,
 
 
 def read_focused_ui_features(*, gate, layout_loader, game, character, server,
-                             atlas, gauge_reader, still_current=lambda:None,clock=time.monotonic):
+                             atlas, gauge_reader, chat_runtime_sha256=None,
+                             still_current=lambda:None,clock=time.monotonic):
     """Borrow an existing gate for one read-only sample and feature pass.
 
     The caller must invoke this only within its owner-started observation. It
@@ -161,7 +175,7 @@ def read_focused_ui_features(*, gate, layout_loader, game, character, server,
     sample=sample_focused_ui(gate=gate,layout_loader=layout_loader,game=game,
         character=character,server=server,include_chat=False,still_current=still_current,clock=clock)
     result=analyze_ui_frame(sample,atlas=atlas,gauge_reader=gauge_reader,
-        still_current=still_current,clock=clock)
+        chat_runtime_sha256=chat_runtime_sha256,still_current=still_current,clock=clock)
     still_current()
     focused=gate.focused_window()
     if (focused is None or focused.id!=result['focused_window_id']

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:34 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:41 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,13 @@ Updated 2026-11-14 06:34 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.82:** optional chat regions now come from the same frame as
+  gauge/combat features, with crop/source identity and unknown focus retained.
+  Actual Alienware layout loading measured 150 ms alone; a prepared layout now
+  checks complete content/selection fingerprints around each feature pass while
+  reusing its parse. Fifty-one focused cache/chat/frame checks pass. Both setup
+  costs and all per-frame verification time remain visible. Current owner
+  helpers are unchanged; combined installed-layout timing is next.
 - **Source 0.41.81:** copied binary resolves the dynamic chat Page/ChatWindow
   hierarchy, frame overlap and forced input border. The new isolated resolver
   supplies source-derived input outer/client proposals without guessing tab
@@ -150,9 +157,9 @@ Updated 2026-11-14 06:34 UTC for coordinator task `829a00229b29`.
   button and manual `/location` flow. It additionally saves private copied
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
-  turn (2026-11-14 06:29 UTC) found zero paired records. No lead capture was initiated.
-- **Next / real-client gate:** integrate the source-derived input geometry
-  and focus evidence into the scene reader (caret is a positive-focus candidate
+  turn (2026-11-14 06:35 UTC) found zero paired records. No lead capture was initiated.
+- **Next / real-client gate:** measure the combined prepared source/layout reader;
+  integrate current focus evidence and immutable submitted-command prefixes (caret is a positive-focus candidate
   only; its absence cannot establish closed chat); validate the new selected-skin chat geometry and source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported
   initial travel envelope and current scene, then supply the checked sender

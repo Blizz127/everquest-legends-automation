@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.81** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.82** · rotation preview **0.39.6** · observation candidate **0.39.10**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -108,13 +108,16 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.81/source
+~/.local/share/eql-automation/owner-tools/0.41.82/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.81 adds a source-derived chat input geometry diagnostic;
-its proposed crop does not establish live alignment or chat focus. The prepared
-frame reader initializes its templates before the timed observation;
+above. Source 0.41.82 connects the optional chat-input diagnostic to the same
+frame used for gauge/combat reading. It records crop hashes without saving chat
+pixels or interpreting focus. Prepared client layout parsing avoids repeating
+XML parsing; full source content and selection checks still bracket the feature
+pass. Source changes refuse the prepared layout. Both XML and numerical
+preparation costs are retained separately;
 each call still captures a new frame and records the complete observation time.
 Preparation grants no scene or movement permission. The copied-source route
 work and remaining live checks are tracked in [LEVEL_1_20.md](LEVEL_1_20.md).
