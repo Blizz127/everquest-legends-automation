@@ -1,5 +1,24 @@
 # FINDINGS
 
+## 2026-11-14 18:40 UTC — source 0.42.53 privately published
+
+VERIFIED Alienware `owner-tools/0.42.53/source`, revision
+`b193de1e5f54f7846d9f5a28ad072a77abc9896d`. Runtime/tests/tools match the
+83-pass final observer/source-movement/walk/step-transfer candidate. Imports,
+diagnostic CLI startup and copied-data pins pass. Archive SHA
+`a7d5f224f447ae29edc4d09a5ded68d10ec038542ec476db900743bf9fc02018`;
+startup SHA `b31779f6f00b04d47c02848006ada719448782f257d6b37bb11285f06815c31e`.
+Publication record: `releases/eql-automation-0.42.53-staging.json`.
+
+The existing movement ledger accepts the distinct fresh camp observer, with an
+actual watchdog/OS-pipe roundtrip and subsequent arrival capture verified under
+synthetic game feedback. The owner camp runtime still needs explicit observer,
+driver and movement-policy wiring; no default path is enabled. Preview remains
+0.39.30. No game input, input-device creation, character action or protected-prefix
+change. Current independent scene/supported motion producers remain unfinished.
+G0 passed, no new owner test. Actual level/XP/hour/deaths/camp unknown; no real
+1–20 or fresh hands-off 1–50 acceptance.
+
 ## 2026-11-14 18:39 UTC — source 0.42.53, explicit camp observer and existing movement driver
 
 Implemented `CampSourceObserver`, which consumes an exact `CampRouteStart`

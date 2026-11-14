@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 18:39 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 18:40 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.53 validated; publication pending, preview stays 0.39.30.**
+- **Source 0.42.53 privately published; preview stays 0.39.30.**
   The source ledger/walk driver now explicitly accept a camp-start observer.
   It consumes the fresh route start once, retains a separate measured height
   record, and requires new startup replies. Original lease/lock/scope remain
@@ -19,7 +19,10 @@ Updated 2026-11-14 18:39 UTC for coordinator task `829a00229b29`.
   `c07fa7ab5d669365f15e3960d0a5dbe0c01c57daa10fa62e94b75dd2e91ada65`. No game input or new owner test. Next: camp runtime
   integration with explicit movement policy; current independent scene/motion
   producers remain needed. Actual level/XP/hour/deaths/camp unknown; G0 passed;
-  no accepted real 1–20/1–50 run.
+  no accepted real 1–20/1–50 run. Published at Alienware
+  `owner-tools/0.42.53/source`, revision `b193de1`. Runtime/tests/tools
+  match the final checked snapshot; imports/CLI/copied-data pins pass. Startup
+  SHA `b31779f6f00b04d47c02848006ada719448782f257d6b37bb11285f06815c31e`.
 - **Source 0.42.52 privately published; preview stays 0.39.30.** Optional
   onward guide now retains the original probe scope, collects a new stopped
   pair, rebuilds the source itinerary from its actual reached floor, and needs
