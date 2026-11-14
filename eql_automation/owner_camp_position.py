@@ -16,6 +16,7 @@ from .camp_probe_calibration import reduce_camp_probes
 from .camp_source_runtime import CampSourcePlan,CampSourceRuntime
 from .camp_floor_checkpoint import CampFloorCheckpoint
 from .camp_session import CampLevelAdvance
+from .owner_camp_arrival import capture_camp_arrival,continue_camp_arrival
 from .flat_record import flat_record_state
 from .motion_calibration import CalibrationUnavailable
 from .native_region_policy import encoded
@@ -341,7 +342,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
             if p.busy:
                 self._camp_position_current(p)
                 return
-            p.busy=True
+            p.busy=True;token=None;reached=None
             try:
                 self._camp_position_current(p);p.route_runtime.tick()
                 if p.route_runtime.phase=='stopped':self._stop_camp_position(p,p.route_runtime.reason)
@@ -353,11 +354,31 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     p.route_record=p.route_runtime.snapshot()
                     p.route_record['arrival']=reached.snapshot()
                     self._camp_position_current(p);p.route_complete=True
-                    self.stop_action('Next camp route reached · stopped before camp selection')
+                    if p.probe_plan.destination_id is not None:
+                        token=capture_camp_arrival(self,p,reached)
+                    else:
+                        self.stop_action('Next camp route reached · stopped before camp selection')
             except Exception as error:self._stop_camp_position(p,error)
             finally:
                 p.busy=False
                 if p.cancelled:self._release_camp_position(p)
+                if reached is not None and token is None:reached.invalidate('No new camp adopted the reached floor')
+            if token is None:return
+            try:
+                # No key or route operation remains. Return the reader before
+                # the existing camp startup drains logs and prepares spells.
+                self._release_camp_position(p)
+                result=continue_camp_arrival(self,token,clock)
+                self.camp_position_last_result=dict(outcome='route_complete',route=p.route_record,
+                    probe=p.probe_record,initial_position=p.position_record,continuation=result,
+                    movement_sent=any(e['kind']=='source_pulse' for e in p.route_runtime.events),
+                    real_client_accepted=False)
+                self.trace('camp_position_complete',**self.camp_position_last_result)
+            except Exception as error:
+                # A callback may already have consumed F8/F9. Never create a
+                # second stop generation and erase that owner's assist request.
+                if self.journey is p.journey:self._stop_camp_position(p,error)
+                token.checkpoint.invalidate(str(error))
 
         def _camp_position_tick(self,p):
             if p.route_runtime is not None:return self._camp_source_tick(p)

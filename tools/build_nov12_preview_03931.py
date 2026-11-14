@@ -14,5 +14,5 @@ if __name__=='__main__':
     build(args.source,args.output,version='0.39.31',
         extra_patches=('nov12-7e3cd28-camp-continuation.patch',),
         entry_name='owner_nov12_entry_03931.py',
-        change='Existing assist/travel/camp with an explicit supervised next-camp option; reconsider current log level after preparation, measure fresh movement and travel only to a packaged map-compatible destination; stop before new-camp selection')
+        change='Existing assist/travel/camp with an explicit supervised next-camp option; reconsider current log level after preparation, measure fresh movement and travel only to a packaged map-compatible destination; transfer stopped arrival to fresh spell preparation and target checks')
     print(args.output)

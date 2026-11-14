@@ -13,6 +13,23 @@ from .camp_floor_checkpoint import CampFloorCheckpoint
 
 
 def arrival_motion_basis(runtime, pending):
+    if pending['session'].record_id!=runtime.ledger.bounds.calibration_record_id:
+        raise ValueError('Arrival bounds and original calibration differ')
+    return _arrival_basis(runtime)
+
+
+def camp_route_motion_basis(runtime, calibration):
+    """Record fresh route steering separately from its historical bound ID."""
+    fit=calibration['estimate'];estimate=fit['estimate'];motion=runtime.ledger.motion
+    if (calibration['status']!='conditional' or any(getattr(motion,k)!=estimate[k]
+            for k in ('run_speed','turn_rate','right_sign','turn_latency'))):
+        raise ValueError('Arrival motion differs from its sealed camp fit')
+    return _arrival_basis(runtime,dict(camp_fit_record_id=fit['record_id'],
+        camp_fit_sha256=sha256(json.dumps(calibration,sort_keys=True,separators=(',',':'),
+            allow_nan=False).encode()).hexdigest(),motion_bounds_verified=False))
+
+
+def _arrival_basis(runtime, extra=None):
     ledger=runtime.ledger;reference=runtime.completed_arrival.reference
     heading=ledger.pose.heading
     if type(heading) not in (int,float) or not math.isfinite(heading) or not 0<=heading<360:
@@ -23,8 +40,9 @@ def arrival_motion_basis(runtime, pending):
         arrival_position=reference.package_xyz,arrival_log_seq=reference.raw_fix.log_line_seq,
         arrival_received_at=reference.raw_fix.received_monotonic,
         arrival_heading_estimate=heading,motion=asdict(ledger.motion),bounds=asdict(ledger.bounds),
-        calibration_record_id=pending['session'].record_id,
+        calibration_record_id=ledger.bounds.calibration_record_id,
         current_heading_verified=False,current_motion_verified=False,movement_authorized=False)
+    record.update(extra or {})
     return json.dumps(record,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
 
 
@@ -81,6 +99,20 @@ class CampInputContinuity:
         if self.closed:return
         self.closed=True
         self.observer.close()
+
+    def transfer_to(self,successor):
+        """Retire this historical scope without closing the shared observer."""
+        if (type(successor) is not CampInputContinuity or successor is self
+                or successor.observer is not self.observer or successor.topology!=self.topology
+                or successor.floor is None or successor.floor is self.floor):
+            raise ValueError('New camp must own the same observer and a new reached floor')
+        self.check_binding(self.binding)
+        successor.check_binding(successor.binding)
+        if (self.last_observed_at is not None and (successor.last_observed_at is None
+                or successor.last_observed_at<self.last_observed_at)):
+            raise ValueError('New camp input observation cannot move backward')
+        self.invalidate('Input observer transferred to the newly reached camp')
+        self.closed=True
 
     def snapshot(self,*,include_basis=False):
         result=dict(valid=self.valid,closed=self.closed,reason=self.reason,samples=self.samples,

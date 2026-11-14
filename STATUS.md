@@ -1,11 +1,31 @@
 # STATUS
 
-Updated 2026-11-14 19:50 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 19:58 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.59 / preview 0.39.31 candidate4 built locally.** A completed
+  next-camp route now transfers its exact stopped arrival to a new stationary
+  camp, fresh spell preparation and new target checks. The old camp is retired;
+  the same physical observer continues with a new floor/binding. F8/F9 cancel
+  setup without rearming combat; late ancestor cleanup cannot close the new
+  observer. VERIFIED **37 focused lifecycle/input checks passed in 5.82s**
+  (seven unrelated cases deselected), JUnit SHA
+  `5b655a18fa0421b98675d47310fa914699b28a147cf5e6d53fc8bdac0edac98e`.
+  These include synthetic arrival tokens with genuine floor objects and the
+  retained engine; they do not establish full route execution. The separate
+  production-provider/watchdog attempt **failed after one movement receipt**,
+  before arrival, on DOWN confirmation timeout; JUnit SHA
+  `ab709e58b26d3362920e3d1f20d0c9acf725630274849c1cd7571daa73feae2e`.
+  No production timeout changed. GUI startup/manifest and all 198 copied runtime
+  modules pass; no worker/input/settings write. SSH to Alienware still times
+  out, so this is not installed; published source/preview stay 0.42.55/0.39.30.
+  G0 remains VERIFIED passed by trace plus owner stop confirmation. Current
+  level/XP/XP-hour/deaths/camp unknown. Next: complete a full continuation check
+  on an available suitable host; finish Trainer/Throne route gaps. No real
+  1–20 acceptance or fresh hands-off 1–50 run.
 - **Source 0.42.58 and preview candidate 0.39.31 built locally.** Concrete
   continuation provider is wired to a copied, fixed owner choice. It selects a
   packaged map-compatible next destination from the current observed level,

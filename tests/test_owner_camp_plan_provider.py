@@ -111,7 +111,7 @@ def test_production_plan_uses_fresh_fit_and_same_scope_through_route(camp,monkey
             return result
         return replace(result,route_plan_factory=onward)
     e._camp_probe_plan=plan
-    p=finish_standard(h)
+    p=finish_standard(h,camp_handoff=True)
     assert p.route_runtime.policy.log_veto is p.probe_log_veto
     assert p.route_runtime.policy.owner_input is p.monitor.observer
     assert p.route_runtime.policy.declaration.maximum_seconds<=1500.

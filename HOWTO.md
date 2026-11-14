@@ -2,7 +2,7 @@
 
 Source **0.42.58** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-Source 0.42.58 and preview candidate 0.39.31 are local development builds.
+Source 0.42.59 and preview candidate 0.39.31 are local development builds.
 Private publication is pending Alienware SSH availability. The latest full
 continuation pipe run stopped on a watchdog confirmation timeout; it is not a
 completed route check. Focused checks and the local GUI startup are separate
@@ -47,8 +47,10 @@ The copied map currently supplies only Slave Mines (7–10) and North Wall/Castl
 the current camp continues and still checks each live target. No route is
 invented from the gap. The extra trip has one 25-minute deadline, including its
 measurement and planning; the seven-probe measurement itself remains limited
-to 120 seconds. **The helper stops on reaching the next camp. Starting combat
-there is not yet connected.** This is supervised testing, not the full 1–20 path.
+to 120 seconds. A fresh stopped arrival now starts a new camp session, prepares
+learned spells again and requires new target checks before combat. F8/F9 can
+cancel the handoff. Focused handoff checks pass; the complete movement-to-camp
+pipe check remains unresolved. This is supervised testing, not the full 1–20 path.
 
 Do not use a new launch command yet: candidate 0.39.31 has not been published.
 Continue to use the installed 0.39.30 command below.

@@ -6,7 +6,7 @@
              column.addWidget(self.source_destination)
 +            self.continue_camps = QCheckBox("After level-ups, travel to the next supported camp")
 +            self.continue_camps.setObjectName("journeyContinueCampsBox")
-+            self.continue_camps.setToolTip("Supervised test: uses newly observed levels and stops on arrival at the next camp. Missing routes keep the current camp. F8 assist; F9 stops.")
++            self.continue_camps.setToolTip("Supervised test: uses newly observed levels and prepares a fresh camp after stopped arrival. Missing routes keep the current camp. F8 assist; F9 stops.")
 +            column.addWidget(self.continue_camps)
              self.supervised_source = QPushButton("Travel to selected camp…")
              self.supervised_source.setObjectName("supervisedSourceTravelButton")
@@ -32,7 +32,7 @@
                            "Stay present. F9/F11 or Stop autopilot cancels; F8 switches to assist. Travel is limited to 25 minutes. "
                            "The helper stops on an observed attack or zone change; it does not recover automatically.")
 +            if continuation:
-+                text.setText(text.text() + "\n\nAfter a newly observed level-up and spell preparation, the helper may measure again and travel to a supported later camp. This additional trip is limited to 25 minutes and stops on arrival; combat at the new camp is not yet connected. Missing routes keep the current camp. Stay present throughout.")
++                text.setText(text.text() + "\n\nAfter a newly observed level-up and spell preparation, the helper may measure again and travel to a supported later camp. This additional trip is limited to 25 minutes. After stopped arrival, the helper prepares learned spells again and checks new targets before combat. Missing routes keep the current camp. Stay present throughout.")
              text.setWordWrap(True)
              layout.addWidget(text)
              confirmation = QCheckBox("I will supervise; the starting calibration area is clear, flat and open.")

@@ -1,5 +1,54 @@
 # FINDINGS
 
+## 2026-11-14 19:58 UTC — stopped next-camp arrival enters fresh combat preparation
+
+Source 0.42.59 adds an in-memory `CampArrival` transition after the optional
+next-camp route completes. Capture requires the actual completed source runtime,
+its exact stopped receipt, new floor checkpoint, unchanged destination and
+sealed fit. The basis retains the original motion-bound assumption ID and
+separately records the newly measured steering fit ID/hash; it never claims
+current heading or independently verified bounds. No timestamp is renewed.
+
+The old probe/reader lease is released before new-camp startup. A scoped
+`replacing_camp` hook verifies the exact old camp/autopilot again after callbacks
+and uses the existing one-generation stop transition. A new camp session starts
+with spell preparation due, no retained target and new target/consider checks.
+The same physical observer transfers to a new monitor/floor while the old
+wrapper is retired without closing the device. Input observation time cannot
+move backward. F8/F9 interruption wins during gauge reading, controlled stop and
+input transfer; cleanup does not consume the deferred F8 request.
+
+VERIFIED focused checks: **37 passed, seven deselected in 5.82 seconds**, JUnit
+SHA `5b655a18fa0421b98675d47310fa914699b28a147cf5e6d53fc8bdac0edac98e`.
+The new handoff tests use the actual retained engine and genuine source-floor
+objects with a synthetic arrival token. They cover stale/changed arrivals,
+physical input, reader ownership, generation/settings, callback replacement,
+F8/F9 and fresh preparation. They are not route execution acceptance.
+
+The separate complete production-provider/watchdog/pipe attempt **failed after
+one movement receipt** with `Release watchdog did not confirm key down`, before
+new-camp arrival. JUnit SHA
+`ab709e58b26d3362920e3d1f20d0c9acf725630274849c1cd7571daa73feae2e`.
+The devbox was heavily loaded (observed load average 167.62 on this turn's first
+check); causation is not independently proven. No production deadline was
+loosened and this is not counted as passed. The full test now asserts a new camp
+and retained observer on successful completion; that end-to-end result remains
+unresolved.
+
+VERIFIED local owner candidate `owner-build-drafts/0.39.31-candidate4`: all 198
+runtime Python modules equal source; manifest and offscreen GUI startup pass.
+Build-info SHA `c3a209bbbb086cdb85c5ec2f715f75c9144ae4161579120e37e8dc8fccc86cb7`;
+GUI metadata SHA `69e4c3ecf14800399fb89e7926a2e76bcb06139c634c6e3a05954a521cba8f84`.
+Screenshot inspected: assist OFF, continuation unchecked, both packaged choices.
+The displayed level 13 is a smoke argument, not observed character progress.
+Worker/input/settings-write flags are false. No game client was controlled.
+
+Alienware SSH port 22 timed out again; source0.42.55/preview0.39.30 remain the
+last verified publications. The retained0.42.56 candidate3 result still could
+not be read; no duplicate remote test was launched. Current character level,
+XP/hour, deaths and camp remain unknown. G0 already passed and was not repeated.
+Trainer/Throne route gaps and full real 1–20/1–50 acceptance remain unfinished.
+
 ## 2026-11-14 19:50 UTC — concrete continuation provider and local preview 0.39.31
 
 Source 0.42.58 wires `owner_camp_probe_plan` into a new owner entrypoint and

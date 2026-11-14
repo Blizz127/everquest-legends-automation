@@ -92,7 +92,7 @@ def standard_execution(h,monkeypatch,legacy,*,policy_provider=None,source_veto_p
     e._camp_probe_plan=plan
 
 
-def finish_standard(h):
+def finish_standard(h,*,camp_handoff=False):
     e=h.engine;h.recovered();p=e.camp_position
     deadline=time.monotonic()+125.
     while e.camp_position is not None and time.monotonic()<deadline:
@@ -111,7 +111,15 @@ def finish_standard(h):
     assert p.route_runtime.lease is p.lease and p.route_runtime.probe is p.runtime
     assert record['route']['route']['completed_movements']==len(h.receipts)-7
     assert not record['real_client_accepted'] and not e.sender.held and not h.commands
-    assert e.live_zone_tracker.lease is None and e.camp_session is None and e.journey is None
+    assert e.live_zone_tracker.lease is None
+    if camp_handoff:
+        assert record['continuation']['camp_started']
+        assert e.camp_session is not None and e.camp_session is not p.camp
+        assert e.camp_session.preparation_due and e.journey is p.journey
+        assert p.monitor.closed and e.journey.camp_motion.observer is p.monitor.observer
+        assert not h.observer_closed and e.journey.camp_motion.valid
+        assert not p.floor.valid and e.journey.arrival_floor.valid
+    else:assert e.camp_session is None and e.journey is None
     return p
 
 

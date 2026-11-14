@@ -114,11 +114,14 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 return candidates
             return load_owner_candidates(self.settings.server, zone, client=client, excluded=excluded)
 
-        def start_stationary_camp(self, *, arrival_check=None):
+        def start_stationary_camp(self, *, arrival_check=None, replacing_camp=None):
             entry_generation = self.cancel_generation
+            if replacing_camp is not None and (not callable(arrival_check)
+                    or self.camp_session is not replacing_camp or self.autopilot is not replacing_camp):
+                raise ValueError('A checked arrival must own the camp being replaced')
             if arrival_check is not None: arrival_check()
             if (self.measurement_only or self.preparing or self.stopping or self.recorder is not None
-                    or self.autopilot_running() or self.pointer is not None):
+                    or self.autopilot_running() and replacing_camp is None or self.pointer is not None):
                 self.emit('Camp did not start: stop the other activity first'); return False
             if not auto_prepare:
                 if not self.prepared or self.prepared_level != self.settings.level or self.rotation is None:
@@ -132,6 +135,11 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 self.emit('Camp did not start: focus EverQuest, close chat and release keys'); return False
             if self.cancel_generation != entry_generation:
                 return False
+            if replacing_camp is not None:
+                arrival_check()
+                if (self.cancel_generation!=entry_generation or self.camp_session is not replacing_camp
+                        or self.autopilot is not replacing_camp):
+                    raise ValueError('Arrival no longer owns the camp being replaced')
             generation = entry_generation+1
             self._camp_start_stop('Camp starting · spell-only · '+('repeat to level 20' if repeat else 'one kill')+' · F9 stops')
             self.read_log()  # Drain existing replies before creating this scope.
@@ -173,7 +181,8 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             self.cancelled = False; self.active = False; self.deferred = None
             self.trace('camp_start', **self.camp_session.snapshot())
             self.emit('Acquiring observed NPC · '+('repeated camp to level 20' if repeat else 'one kill')+' · spell-only · F9 stops')
-            return True
+            return (self.camp_session is camp and self.autopilot is camp
+                    and self.cancel_generation==generation and not self.stopping)
 
         def _camp_gauges_ok(self):
             return all(type(v) in (float, int) and math.isfinite(v) and lower <= v <= 1.
