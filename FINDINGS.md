@@ -1,5 +1,24 @@
 # FINDINGS
 
+## Private source 0.41.89 staged — 2026-11-14 07:50 UTC
+
+**VERIFIED:** source `79aeeea2aea0e39324d9cc3b500e87835f38ebe9`, archive SHA
+`808175304076a030dab4bfb740bb887d1369d283d0a1fa4542ffabe5c0280b87`,
+is staged at Alienware `owner-tools/0.41.89/source`. Six startup checks pass:
+version/import, CLI help, complete synthetic report matching devbox output
+with a relocated byte-identical mesh, wrong-pair-pin refusal, incomplete-route
+argument refusal and unchanged saved inputs. Remote pixels, coordinates,
+catalog and route/mesh were all synthetic. This does not extend the local
+real-source GFay experiment into a live-client result.
+
+Remote `owner-pair-smoke.json` SHA
+`35b14bfcf813a6380e51b81c1fe389e9f60383d5b6b3b1e3a699b0f22ecaf134`;
+normalized comparison SHA
+`a00c08ceddadd6c5e2da32ea6ed268ddb18459856eef8c78784039467505322b`.
+Local staging record: `releases/eql-automation-0.41.89-staging.json`.
+No game capture, input, device creation, protected-prefix write or owner helper
+change occurred. The pending observation and live route bindings are unchanged.
+
 ## Saved-position and offline-route diagnostic 0.41.89 — 2026-11-14 07:49 UTC
 
 **VERIFIED:** the new saved-pair reader validates the existing 0.39.10 format,

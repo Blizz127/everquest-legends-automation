@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 07:49 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 07:50 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -15,6 +15,9 @@ The caller-supplied label hypothesis resolved to catalog ID 54; it was not
 recognized from pixels. This proves format compatibility, not a current-start
 query. At 07:48 UTC no owner pair was saved. Current zone/scene/ground and
 motion bindings remain missing; no route input is enabled. G0 remains passed.
+Source `79aeeea` is privately staged on Alienware; six no-input startup checks
+pass, including exact synthetic report reproduction with a relocated mesh.
+Owner assist and observation launchers remain unchanged.
 
 Source 0.41.88 corrects the probe's DC setup and records bitmap reuse. The
 client's SetMapMode import was previously mislabeled as SetBkMode; corrected

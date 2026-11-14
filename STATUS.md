@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:49 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:50 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -25,7 +25,12 @@ Updated 2026-11-14 07:49 UTC for coordinator task `829a00229b29`.
   owner observation store still contained zero pairs. Next: analyze the
   already requested pair when available, then bind actual zone/scene/ground
   and measured motion before the first checked live route step. G0 needs no
-  repeat. Owner helpers are unchanged.
+  repeat. Source `79aeeea` is privately staged at `owner-tools/0.41.89/source`;
+  six no-input remote startup checks pass. The complete synthetic report
+  matches devbox output after accounting for the relocated mesh path.
+  Remote artifact SHA
+  `35b14bfcf813a6380e51b81c1fe389e9f60383d5b6b3b1e3a699b0f22ecaf134`.
+  Owner helpers are unchanged.
 - **Source 0.41.88:** corrected a native import-labeling error: the client
   calls SetMapMode(MM_TEXT), not SetBkMode(TRANSPARENT), and its glyph bitmap
   is reused. The version-2 probe records actual DC modes and three reset
