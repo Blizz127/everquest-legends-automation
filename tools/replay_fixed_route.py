@@ -70,10 +70,52 @@ def local_seam_diagnostic(view, footprint, reference, component, window, detail_
                                   component=component, vertical_window=window)
 
 
+class ClientObservationError(ValueError):
+    def __init__(self,message,evidence):
+        super().__init__(message)
+        self.evidence=evidence
+
+
+def client_observation_pair(observer,physical_position,*,route,segment_index,
+                            height_calibration,motion_calibration_record_id,floor_chain,
+                            release,sequence):
+    """Model two client log observations without modifying the simulated pose.
+
+    The physical source floor generates raw Z. The real ground producer then
+    independently samples source and baked heights at the printed XY. These
+    synthetic observations exercise steering, never establish live calibration.
+    """
+    from eql_automation.location_log import RawLocationFix
+    from tools.probe_route_ground_observer import synthetic_location
+    physical_xy=tuple(physical_position[:2])
+    source_z,_=(observer.source.source_floor_at(physical_xy) if floor_chain is None
+                else floor_chain.floor_at(physical_xy))
+    coordinates,body=synthetic_location(physical_position,source_z,
+        height_calibration.raw_z_minus_source_z,client_format=True)
+    pair=[]
+    for index,offset in enumerate((.13,.53),1):
+        at=release+offset
+        raw=RawLocationFix(height_calibration.zone_id,height_calibration.zone_display_name,
+            coordinates,datetime(2026,11,14),at,height_calibration.log_epoch,
+            sequence+index,height_calibration.zone_generation)
+        try:
+            pair.append(observer.observe(raw,route=route,segment_index=segment_index,
+                height_calibration=height_calibration,
+                motion_calibration_record_id=motion_calibration_record_id,now=at,
+                floor_chain=floor_chain))
+        except ValueError as error:
+            raise ClientObservationError(str(error),{
+                'raw_coordinates':coordinates,'synthetic_log_body':body,
+                'physical_source_z':source_z,'log_line_seq':sequence+index,
+                'received_monotonic':at}) from error
+    return tuple(pair),{'physical_source_z':source_z,'synthetic_log_body':body}
+
+
 def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=False,
         shorten_ground_step=False, plan=PLAN, plan_sha256=PLAN_SHA, precision_portals=False,
         source_z_limit=.6, wall_budget=35., precision_overlaps=False, maximum_portal_ulp_steps=1,
-        tile_rounding=False,source_floor_chain=False,static_objects=False,bsp_volume=False):
+        tile_rounding=False,source_floor_chain=False,static_objects=False,bsp_volume=False,
+        client_observations=False):
     began = time.monotonic()
     began_cpu = time.process_time()
     sys.path[:0] = [str(PROJECT), str(HELPER)]
@@ -103,6 +145,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         raise ValueError('Static occupancy requires a checked source-floor chain')
     if bsp_volume and not static_objects:
         raise ValueError('BSP volume requires terrain and static occupancy checks')
+    if client_observations and not source_floor_chain:
+        raise ValueError('Client-format observations require committed source-floor context')
     pins = dict(PINS)
     pins[plan] = plan_sha256
     for path in (Path(__file__), PROJECT / "eql_automation/fixed_route_follower.py",
@@ -119,6 +163,14 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                    'mesh_geometry','material_audit','map_alignment','ground_sweep_view','tile_rounding'):
         path = PROJECT/'eql_automation'/(module+'.py')
         pins[path] = sha256(path.read_bytes()).hexdigest()
+    format_evidence=None
+    if client_observations:
+        from eql_automation.ground_observer import RouteGroundObserver
+        from tools.probe_route_ground_observer import LOCATION_LOG,LOCATION_LOG_SHA,observed_location_format
+        pins[LOCATION_LOG]=LOCATION_LOG_SHA
+        for path in (PROJECT/'tools/probe_route_ground_observer.py',
+                     PROJECT/'eql_automation/ground_observer.py',PROJECT/'eql_automation/location_log.py'):
+            pins[path]=sha256(path.read_bytes()).hexdigest()
     if precision_portals:
         if local_seam_experiment or not ground_sweep:
             raise ValueError('Precision retry requires ground checks and excludes the older seam experiment')
@@ -165,6 +217,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         if any(p.is_symlink() or sha256(p.read_bytes()).hexdigest() != h for p, h in pins.items()):
             raise ValueError("Replay source changed")
     verify()
+    if client_observations:
+        format_evidence=observed_location_format(LOCATION_LOG.read_text(errors='replace'))
     route = FixedRoute.load(plan, expected_sha256=plan_sha256, mesh_sha256=MESH_SHA)
     if floor_evidence is not None:
         baseline=FixedRoute.load(FLOOR_SEED_PLAN,
@@ -230,6 +284,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     proof_sha = sha256(json.dumps(proof,sort_keys=True).encode()).hexdigest()
     geometry = GroundGeometryEvidence(route.zone, MESH_SHA, source_view.archive_sha256,
         source_view.wld_sha256, proof_sha, source_z_limit, tuple(sorted(portal_pairs)), True)
+    observer=(RouteGroundObserver(mesh=mesh,ground=ground_view,source=source_view,
+        geometry_evidence=geometry,reciprocal_links=links) if client_observations else None)
     motion = steer.Motion(run_speed=speed, turn_rate=170., right_sign=-1,
                           turn_latency=.03, back_speed=speed / 2)
     runner = FixedRouteFollower(route, legacy=steer, motion=motion, heading=heading,
@@ -244,6 +300,9 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     precision_retries = []
     ground_observations = {'count':0, 'minimum_baked_minus_source_z':None,
                           'maximum_baked_minus_source_z':None, 'last':None}
+    observation_failure=None
+    observation_bounds={'maximum_physical_observed_xy_difference':0.,
+                        'maximum_raw_height_residual':0.}
     floor_chain=None;floor_trials=[];initial_floor_step=None
     if floor_evidence is not None:
         if floor_evidence['source_wld_sha256']!=source_view.wld_sha256:
@@ -255,7 +314,37 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
             body_height=floor_evidence['hypothetical_body_height'])
         initial_footprint=tuple(tuple(p) for p in json.loads(SOURCE_PROFILE.read_text())['cells'][0]['footprint'])
     def stopped_pair(release):
-        nonlocal seq, clock
+        nonlocal seq, clock, observation_failure
+        if observer is not None:
+            try:
+                aligned,metadata=client_observation_pair(observer,position,route=route,
+                    segment_index=runner.index,height_calibration=height_calibration,
+                    motion_calibration_record_id=calibration,floor_chain=floor_chain,
+                    release=release,sequence=seq)
+            except ValueError as exception:
+                observation_failure={**getattr(exception,'evidence',{}),
+                    'physical_package_xyz':list(position),'segment':runner.index,
+                    'floor_chain_index':floor_chain.index,'reason':str(exception)}
+                raise RouteHalt('Client-format ground observation: '+str(exception)) from exception
+            last=aligned[-1];observed=last.mesh_projection.package_xyz
+            source_z=last.source_floor.ground_wld_xyz[2]
+            delta=observed[2]-source_z
+            ground_observations['count']+=1
+            for key,operation in (('minimum_baked_minus_source_z',min),('maximum_baked_minus_source_z',max)):
+                old=ground_observations[key]
+                ground_observations[key]=delta if old is None else operation(old,delta)
+            ground_observations['last']={**metadata,'physical_package_xyz':list(position),
+                'package_xyz':observed,'raw_coordinates':last.raw_fix.raw_coordinates,
+                'source_z':source_z,'source_surface_ids':last.source_floor.source_surface_ids,
+                'polygon':last.mesh_projection.polygon,'floor_chain_index':floor_chain.index}
+            observation_bounds['maximum_physical_observed_xy_difference']=max(
+                observation_bounds['maximum_physical_observed_xy_difference'],math.dist(position[:2],observed[:2]))
+            observation_bounds['maximum_raw_height_residual']=max(
+                observation_bounds['maximum_raw_height_residual'],
+                abs(last.raw_fix.raw_coordinates[2]-height_calibration.raw_z_minus_source_z-source_z))
+            seq=last.raw_fix.log_line_seq;clock=last.raw_fix.received_monotonic
+            runner.observe_stopped(*aligned,released_at=release,now=clock)
+            return
         segment = route.segments[runner.index]
         support = None
         for other,portal in ((runner.index, None), (runner.index-1, segment.start),
@@ -433,6 +522,14 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                 history.append({"step": step, "segment": index, "next_segment": runner.index,
                                 "forward": proposal.forward, "turn": proposal.turn,
                                 "hold": seconds, "position": list(position), "phase": runner.phase})
+            if client_observations:
+                record={'observed_package_xyz':ground_observations['last']['package_xyz'],
+                        'raw_coordinates':ground_observations['last']['raw_coordinates']}
+                recent[-1].update(record)
+                if history and history[-1]['step']==step:history[-1].update(record)
+            if step%250==0:
+                print(json.dumps({'replay_step':step,'segment':runner.index,
+                                  'client_observations':client_observations}),flush=True)
         else:
             raise RouteHalt("Offline replay step budget exceeded")
     except RouteHalt as exception:
@@ -463,6 +560,11 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
               "cpu_seconds": time.process_time() - began_cpu,
               "position": position, "history": history, "recent": recent,
               "ground_observations":ground_observations,
+              "client_observations":client_observations,
+              "client_location_format":format_evidence,
+              "observation_bounds":observation_bounds if client_observations else None,
+              "observation_failure":observation_failure,
+              "sweep_pose_source":"simulated physical pose and heading; not live observation guard integration",
               "ground_binding_fixture":proof,
               "adjacent_portal_samples": portal_samples,
               "continuous_ground_sweep": ground_sweep, "sweep_checks": sweep_checks,
@@ -532,6 +634,8 @@ def main():
                         help='Offline only: add parity-checked all-flag static occupancy to every accepted terrain trial')
     parser.add_argument('--bsp-volume',action='store_true',
                         help='Offline only: require no copied BSP labels in each complete possible-motion prism')
+    parser.add_argument('--client-observations',action='store_true',
+                        help='Drive steering with client-formatted raw positions through the exact ground producer')
     parser.add_argument('--source-z-limit',type=float,default=.6,
                         help='Diagnostic source/baked height-difference limit, not live calibration (default .6)')
     parser.add_argument('--wall-budget',type=float,default=35.,
@@ -564,6 +668,8 @@ def main():
         parser.error('--static-objects requires --source-floor-chain')
     if args.bsp_volume and not args.static_objects:
         parser.error('--bsp-volume requires --static-objects')
+    if args.client_observations and not args.source_floor_chain:
+        parser.error('--client-observations requires --source-floor-chain')
     output = args.output.expanduser()
     if (output.parent.resolve() != (STORE / "nav-candidates").resolve() or output.exists()
             or output.is_symlink() or output.suffix != ".json"
@@ -580,7 +686,8 @@ def main():
         source_z_limit=args.source_z_limit,wall_budget=args.wall_budget,
         precision_overlaps=args.precision_overlaps,maximum_portal_ulp_steps=args.maximum_portal_ulp_steps,
         tile_rounding=args.tile_rounding,source_floor_chain=args.source_floor_chain,
-        static_objects=args.static_objects,bsp_volume=args.bsp_volume)
+        static_objects=args.static_objects,bsp_volume=args.bsp_volume,
+        client_observations=args.client_observations)
 
 
 if __name__ == "__main__":

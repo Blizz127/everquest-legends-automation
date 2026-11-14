@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 04:23 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 04:34 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,14 @@ Updated 2026-11-14 04:23 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.67 in verification:** the actual retained follower now consumes
+  printed-format raw fixes through `RouteGroundObserver`, with separate physical
+  simulated pose and newly checked terrain/static/BSP footprints. Four focused
+  checks pass, including straight and turning feedback. Full copied replay is
+  running under PID 1470863 (tool session 10379); last observed step 1,500,
+  segment 104/155. Output will be private
+  `nav-candidates/gfay-client-observation-replay-0.41.67.json`. No result or live
+  acceptance is claimed until that process finishes; do not restart a live run.
 - **Source 0.41.66:** **VERIFIED** copied observation probe uses the two-decimal
   location format found in 68 retained client log examples and reconstructs
   all 2,192 committed source-floor cells with identical proofs. **211/211
