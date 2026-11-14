@@ -12,6 +12,13 @@ unproven. A pinned static audit replays the chain without native execution or
 input. Next: correlate the decoded relations with the current floor and consume the
 pending owner 0.39.12 motion/current scene. No new owner test or G0 repeat.
 
+Source `62d8088` is privately staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.5/source`. Read-only startup
+checks verified the installed executable/resource identities, both getter
+bindings and all 16 span hashes. No engine or input was used. Archive SHA
+`b113ed8d9f3db8e0c062da078ea0dc25a7eafe4de98b521a75e7957c8f3680fa`;
+startup SHA `e49ca9be658cfa593c3ca4d3dc3d66821ca5613002b52e3c02def0770e4c5add`.
+
 Source 0.42.4 binds the installed executable's region-label callback and maps
 its exact flags onto copied GFay, Butcherblock and Crushbone regions. Later
 record precedence and untyped regions remain explicit. Fifty-five focused

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 10:17 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 10:19 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -20,6 +20,9 @@ Updated 2026-11-14 10:17 UTC for coordinator task `829a00229b29`.
   relations with the current source floor and pending owner 0.39.12 motion
   plus current scene for the first GFay leg. Assist 0.39.13 and passed G0 are
   unchanged. No real route/XP or current character metrics are accepted.
+  Source `62d8088` is staged at Alienware `owner-tools/0.42.5/source`;
+  installed-file identity/binding/startup checks pass without engine or input.
+  Startup SHA `e49ca9be658cfa593c3ca4d3dc3d66821ca5613002b52e3c02def0770e4c5add`.
 - **Source 0.42.4:** the current executable's region callback is statically
   bound to the graphics Scene setter. Added its exact flag/prefix model and
   copied type-record precedence; GFay, Butcherblock and Crushbone inventories

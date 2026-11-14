@@ -76,6 +76,13 @@ leg. G0 remains passed, assist 0.39.13
 unchanged; no new owner test is introduced. Current level, XP/hour, deaths and
 camp remain unknown. This is not a level 1–20 or fresh 1–50 completion.
 
+Source `62d8088` is privately staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.5/source`. Read-only startup
+checks verified the installed executable/resource identities, both getter
+bindings and all 16 span hashes. No engine or input was used. Archive SHA
+`b113ed8d9f3db8e0c062da078ea0dc25a7eafe4de98b521a75e7957c8f3680fa`;
+startup SHA `e49ca9be658cfa593c3ca4d3dc3d66821ca5613002b52e3c02def0770e4c5add`.
+
 ## Native region callback and actor samples — 2026-11-14 10:10 UTC
 
 **VERIFIED static chain:** retained
