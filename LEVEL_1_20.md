@@ -1,21 +1,22 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 02:58 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 03:20 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
-Source 0.41.59 now carries the selected terrain floor through actual offline
-follower footprints. Fixing a comparison against a platform 74 units overhead
-moves replay from segment 87 to segment 125/step 1,820, where baked detail
-face 166882 has grade 2.08764 against limit 1.0. Shortening to the minimum
-hypothetical pulse does not pass. The maximum source/baked difference on
-passing trials is 1.174968 units, within the explicit 2.0 diagnostic limit;
-this is not a certified regional or live bound. Terrain-only source tracking
-still passes the full 2,399-cell corridor, but static objects, dynamics,
-current scene/position/speed and sender checks remain open. No live movement
-or automated XP is claimed. Your G0 stop remains passed; no repeat or new
-owner command is requested. Detailed hashes are in [FINDINGS.md](FINDINGS.md).
+Source 0.41.60 completes the revised same-zone GFay terrain follower replay:
+all 155 segments, 2,191 steps, no geometry refusal or exhausted budget. The
+repaired crossings avoid both narrow steep baked triangles while retaining
+width/grade checks. Exact tile-gap attribution also repairs the missing
+reference at a rounded boundary. All 2,192 source-floor cells (including the
+initial seed) pass conditional terrain occupancy. This does not include static
+objects or dynamics in the follower yet, or establish current live calibration.
+The separate static adapter matches the retained bake's 57,751 solid object
+triangles, and its cell-bound guard passes focused checks; integrating it into
+the full replay is next. No live route/F11 or automated XP is accepted. Your G0
+stop remains passed, and no repeat/new owner command is needed. Detailed hashes
+are in [FINDINGS.md](FINDINGS.md).
 
 | Levels | Planned camp | Route needed | Current evidence |
 | --- | --- | --- | --- |

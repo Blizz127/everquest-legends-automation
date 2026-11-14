@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.59 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.60 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,20 +19,21 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.59 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.59/source`; the runnable
+Source tools 0.41.60 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.60/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
-Source 0.41.59 binds the copied terrain-floor tracker into the offline
-follower. The replay now reaches segment 125 of 155 before a steep baked face
-refuses movement. It checks all terrain heights for body clearance, then
-compares only the supporting baked height band with the selected source floor.
-The complete source-only chain still passes all 2,399 cells; placed objects,
-dynamics, current scene/position/speed and real movement remain unverified.
-The source status reader also reports exact gross logged XP percentage gains,
-separately from raw or net XP. That field is not yet wired into this assist GUI.
-64 focused checks pass. F11 stays unavailable. Your G0 stop remains passed;
-no repeat or new owner command is needed, and assist 0.39.6 is unchanged.
+Source 0.41.60 completes the revised copied GFay terrain replay: all 155
+segments arrive in 2,191 idealized steps. Four relocated crossings avoid narrow
+steep baked triangles, and exact tile-gap correction preserves the ground and
+source-height checks. This is an offline result under hypothetical movement
+and body bounds. The new static-instance adapter reproduces all 57,751 solid
+object triangles used by the retained bake; its separate occupancy guard is
+prepared but has not yet been connected to the full follower replay. Dynamics,
+fresh scene/position/speed and real movement remain unverified. 88 focused
+checks pass. F11 stays unavailable; no live 1–20 leveling is claimed.
+Your G0 stop remains passed. Assist 0.39.6 is unchanged and no new owner command
+is requested. The source XP-gain metric is still separate from the assist GUI.
 
 Detailed source-release history and hashes are in [FINDINGS.md](FINDINGS.md).
 The current playable-route status is in [LEVEL_1_20.md](LEVEL_1_20.md).

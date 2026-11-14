@@ -1,5 +1,156 @@
 # FINDINGS
 
+## Completed conditional GFay terrain follower — 2026-11-14 03:20 UTC
+
+**VERIFIED source 0.41.60:** The eastern/southern repaired plan completes all
+155 segments in 2,191 idealized steps, with 2,191 passing motion-footprint checks
+and 2,192 committed terrain-floor cells including the seed. It arrives without
+a geometry refusal or exhausted budget. Elapsed time 356.25 seconds, CPU 86.31
+seconds; the difference is consistent with measured shared-host scheduling.
+The entire 2,138-trial prefix matches the earlier time-limited report exactly.
+Only the wall allowance changed; no movement or geometric limit was relaxed.
+
+The three missing-reference tile-gap trials pass their complete corrected
+checks. Maximum measured source/baked difference remains 1.174967554 under
+the explicit 2.0 diagnostic sensitivity; default 0.6 is unchanged. Body height 8,
+speed, latency and drift remain hypotheses. This is a terrain-only simulated
+follower result, not full collision, trusted live calibration or route acceptance.
+
+Artifact `gfay-east-tracked-long-replay-0.41.60.json`, SHA
+`87457cb38f7474c54afccdcda186266153d2f10179cc50f39dc3c3d35669da84`;
+last floor proof `dbc2128db3c931665dc52ce44183258a42cbe7e6b19becc475e8c0f10a9ca4f8`.
+All 29 input pins rechecked after completion; source baseline `1e961fc`.
+The original complete static scan is explicitly NOT claimed for this repaired
+plan: only its unchanged first-leg seed is reused, with every actual footprint
+checked again. The final plan SHA is
+`5ea1024a8196a96f07e6cb73e259bd4e55cdb47e7a982e559a2c5eb60476743b`.
+
+**VERIFIED static guard preparation:** A separate guard binds static occupancy
+to the exact accepted terrain-cell digest, retaining the original selected
+floor IDs. Static faces may obstruct that floor but cannot become a new floor.
+Changed footprints/terrain, identity collisions, failed terrain and query-budget
+refusals remain stopped; no query is truncated. Five focused checks pass.
+Together with 65 floor/precision/tile checks, 10 seed checks and 8 static-adapter
+checks, 88 focused checks passed. Six pure startup checks and all three source
+CLI help commands also pass locally without input or client assets.
+
+**Next:** Connect the parity-checked static inventory and guard to each replay
+trial, then evaluate complete occupancy and hazards. Fresh scene, independent
+position/height/speed observations and checked sender integration still gate
+real-client acceptance. No real 1–20 route, automated level gain, fresh-character
+run or level 50 completion is claimed. G0 remains passed; assist 0.39.6 and
+G0 candidate 0.39.7 are unchanged. The owner alone drives his live session.
+
+## Eastern GFay crossings and complete replay attempt — 2026-11-14 03:16 UTC
+
+**OBSERVED source attribution:** The remaining late slope cells share detail
+157769 in polygon 18957, baked grade 1.53314345, over coplanar original source
+1577/16 and 1577/17 at grade 0.28129395. Both late crossings can move toward
+their southeast endpoint, away from the narrow steep baked wedge.
+
+**VERIFIED local candidate:** Move portals 150 and 151 to fraction 0.40. Package
+crossings become (52.683950806,1814.747509766) and
+(53.403952026,1815.467480469). All 12 radius 1.2 ground-tube cells on affected
+segments 150–152 pass; maximum grade 0.427195481. Both turn checks, three strip
+checks and 376 whole-centerline BSP spans pass. Plan
+`gfay-east-tile-portal-plan-0.41.60.json`, SHA
+`5ea1024a8196a96f07e6cb73e259bd4e55cdb47e7a982e559a2c5eb60476743b`.
+Repair report SHA `43aa14eac101be1ad4d4ca6b1bb10cdc5bf29f7715380addc09a57de8a4f82f7`.
+
+**VERIFIED first replay:** With exact missing-reference gap attribution, the
+replay reached segment 149/step 2,138 without another geometry refusal, then
+exhausted its 300-second wall budget. This is a passing prefix, not a completed
+route. Three reference-gap trials passed their complete corrected checks.
+Artifact `gfay-east-tracked-replay-0.41.60.json`, SHA
+`43ffacf88272a05c5e9c1e0bc39744df882df0c642f4576631490df182ac64a5`.
+The binding correctly reports 125 unchanged initial segments and explicitly
+marks the old complete static scan as inapplicable to this changed plan.
+
+The same route was rerun with an explicit 600-second offline wall budget;
+no geometry, speed or controller tolerance is increased. Default budget 35
+remains unchanged. The report now records CPU seconds separately so shared
+host scheduling delays can be distinguished from geometry work. No live
+movement or 1–20 acceptance follows from these copied-data checks.
+
+## Static-instance source parity and reference-gap attribution — 2026-11-14 03:10 UTC
+
+**VERIFIED copied static inventory:** The new all-height query transforms
+2,799 placements into 109,932 source faces, with unique per-instance identities
+above the terrain fragment range. It preserves all flags/materials, vertical
+faces and all heights. Thirty parked placements are explicitly recorded using
+the retained baker's Z<=-31768 rule. The actual 79 placed model meshes come from
+84 exact static actor definitions; no unmatched or partially parsed actor is
+silently accepted. Only the observed 40-byte single-component actor layout is
+supported, preventing multi-component actors from losing geometry unnoticed.
+
+The adapter passes relative vertices and center separately into the pinned
+helper `model` transform and preserves final float32 coordinates. Its 57,751
+nondegenerate flag-zero triangles match the retained baker's complete static
+triangle multiset **exactly**, with zero missing/extra triangles. For parity
+only, 30 zero-area solid faces are omitted, matching the baker; they remain in
+the source query. Another 52,151 flag 16 faces also remain in source queries.
+The retained whole scene has 130,423 triangles (72,672 terrain +57,751 static),
+reproducing the original bake input count. Eight focused adapter checks pass.
+
+Artifact `gfay-static-source-inventory-0.41.60.json`, SHA
+`2fe5feee285285c36245d5fe96d4fc9e2e63b7bf25f94aceee71007c9014037a`;
+inventory digest `dc489aff256243b2a84ad3979c2222d5011bbdc2865afa78534d0d43df99dcd4`.
+All 14 code/data pins rechecked. This adapter is not yet connected to follower
+occupancy and does not prove live collision behavior or include dynamics.
+
+**VERIFIED replay diagnosis:** The southern plan passed the former slope and
+reached segment 128/step 1,857, then stopped at `reference_ground_not_supported`.
+Its reference Y 1343.38757324221 is about 2.25e-11 above the lower tile edge,
+inside the exact modeled gap. That origin-support check occurs before the
+usual uncovered-area failure, so the prior precision path never ran. Artifact
+`gfay-south-tracked-replay-0.41.60.json`, SHA
+`7457783698c734b8ac01d137106520afbd523725490470662646ced7cd88dedf`;
+source baseline `055a646`, elapsed 198.55 seconds.
+
+The new retry requires the reference strictly inside a positive exact tile gap
+and portal span, with no original in-window triangle supplying XY support. It
+then runs the same corrected coverage, reference-height, grade, area, component
+and source checks. A wrong Z, existing XY support or missing exact-tile evidence
+still refuses. Attribution is retained per trial; this is not a general retry
+for missing ground. 65 focused floor/precision/tile checks and 10 seed checks
+pass. Static and reference-gap code baseline is `041ae28`. No game input,
+mesh edits, live route acceptance or new owner test occurred.
+
+## Southern GFay crossings avoid the segment 125 slope — 2026-11-14 03:03 UTC
+
+**OBSERVED copied source attribution:** Bad detail 166882 belongs to the required
+next polygon 20488. Segment 125's centerline misses it, but the uncertainty
+footprint overlaps its thin tip; the following segment 126 centerline also
+crosses that tip. Pulse shortening alone cannot remove the planned crossing.
+The original terrain covering the failure footprint is fragment 1576/face 71,
+flag 0/Diffuse, grade 0.1724407411. Its height differs by about 0.346 units from
+the bad baked patch, whose plane grade is 2.087641816. This is evidence of a
+narrow baked-triangle slope problem, not steep underlying source terrain.
+
+**VERIFIED local candidate:** Move portals 125 and 126 to raw endpoint fraction
+0.65, giving package XY (194.043804932,1279.817620850) and
+(192.483808899,1279.817620850). All 49 radius 1.2 ground-tube cells on affected
+segments 125–127 pass; maximum grade 0.273627. Both turn checks, all three strip
+checks and 376 full-centerline BSP spans pass. The polygon sequence is unchanged.
+A raw tube run failed only the last cell's small tile gap. Explicit exact-tile
+precision, backed by source terrain, repairs that cell with source/baked
+maximum difference 0.501262. Default tolerances and the stored mesh are unchanged.
+
+Raw report SHA `2ce0f381a678f112d7b8795a14fc05d73861acb57cdfa985c8398703047d6e48`.
+Corrected report `gfay-south-tile-portal-repair-0.41.60.json`, SHA
+`7daa50b71fd15e0d8ffa37b73ed94d243f224a86d9e0a552238768e230760a5a`.
+Plan `gfay-south-tile-portal-plan-0.41.60.json`, SHA
+`898cf06b03674656dd5af62a63f8b57329a799ad75ea1378eb1a5d3a4cdca5ac`.
+All 25 repair pins rechecked; code baseline `055a646`. Full replay is pending.
+
+The replay now explicitly binds the original conditional floor seed only when
+the candidate's first leg, zone, mesh and width are identical. A changed suffix
+does not inherit the old complete static-scan claim; every actual footprint
+still runs source continuity, occupancy and ground checks. Seventeen focused
+seed/trial tests pass, including changed-start/mesh/zone/width refusal and
+changed routes falsely claiming the same artifact identity. This remains
+copied-data simulation; no live input, current calibration or F11 acceptance.
+
 ## Private 0.41.59 staging — 2026-11-14 02:59 UTC
 
 **VERIFIED:** Commit `c783b99`, archive SHA
