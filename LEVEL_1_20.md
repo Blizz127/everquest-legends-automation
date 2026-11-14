@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 09:46 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 09:42 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.

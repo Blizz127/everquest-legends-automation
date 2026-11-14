@@ -1,6 +1,6 @@
 # FINDINGS
 
-## Automatic source-step continuation — 2026-11-14 09:46 UTC
+## Automatic source-step continuation — 2026-11-14 09:42 UTC
 
 **VERIFIED implementation:** source 0.42.1 indexes full source boundary edges,
 groups exact projected lines, requires opposite floor interiors, and clips
