@@ -1,5 +1,79 @@
 # FINDINGS
 
+## Geometry-to-pixel font sampling 0.41.94 — 2026-11-14 08:28 UTC
+
+**OBSERVED existing source gap:** the geometry module computed compensated
+per-glyph rectangles and a separately rounded caret, while the prefix matcher
+still received raw GDI concatenations. Retained shader-key/viewport evidence
+supports a conditional projection hypothesis. It does not establish active
+font, atlas history, inherited blend/color state or live raster equivalence.
+The neutral forced edit border has no demonstrated focus-dependent variant;
+an absent caret can mean blink-off. Neither can establish closed chat or
+selection absence. These missing booleans are not filled by the new sampler.
+
+**VERIFIED implementation:** `font_raster.py` samples each corrected geometry
+quad at pixel centers, with explicit projection offset, tint, pipeline-evidence
+pin and output rectangle. Its declared model uses bilinear alpha4 samples and
+source-alpha ADD composition of a tinted white texture. Float64 reference
+interpolation/byte rounding is not claimed identical to GPU rasterization.
+The sampler rejects changed geometry and clipped output. It uses known texels
+only inside each glyph's cx-by-cy extent; a nonzero contribution from outside
+that extent marks the destination pixel unknown. It does not clamp to a glyph
+edge, use arbitrary probe padding, or invent transparent neighboring atlas
+cells. Reused transparent DIBs refuse because their interiors lack the required
+history independence. Unknown pixels stay conservative through overlapping draws.
+
+`PrefixRendering` now carries an optional immutable 0/255 known-pixel mask.
+The matcher computes the intersection over every rendering/origin and scores
+all candidates, including blank, on that same set. Unknown pixels cannot
+improve one candidate selectively. Extra unexplained ink on known pixels still
+counts. Shared-known uniqueness is reported separately; any unknown pixel
+keeps complete-field and full-model-match claims false. Text, focus, ownership,
+delivery and input authority remain unverified.
+
+The offline importer accepts `--sample-pixels` only with the explicit raster
+contract. Sampled images/masks are separate from legacy raw PNGs; it records
+code hashes and never alters the owner's installation. Missing options refuse
+before output creation. A first smoke using a nonexistent input received the
+existing file-stat error; the valid retained-input retry specifically verified
+the missing-contract refusal and absence of output.
+
+**VERIFIED checks:** 58 initial sampler/matcher checks passed. Focused parser,
+geometry, matcher and reader checks then passed 130 tests under system Python;
+22 reader tests skipped for missing NumPy and all 22 passed under the existing
+private numerical interpreter. Coverage includes exact texel centers, bilinear
+weights, alpha4 conversion, unknown right/bottom neighbors, independent caret
+rounding, tint, clipping, altered geometry, shared-mask fairness and blank ties.
+
+**VERIFIED copied-font experiment, not live pixels:** the retained corrected
+height-19 clear-each probe (`e4458657…`) and copied font (`83b14d85…`) produced
+all 18 prefix/caret cases at base height 15 and scale 1.25, with explicit +.5/+.5
+projection, white tint, full alpha and the retained shader-key evidence pin.
+Unknown output counts range from 23 to 247. Every generated comparison frame
+was synthetic, including deliberately different values in unknown pixels.
+All 18 comparisons distinguished the expected prefix on 11,045 shared known
+pixels, while complete-field comparison and live equivalence remained false.
+This is model self-consistency plus independent arithmetic tests, not actual
+GPU/client comparison or acceptance.
+
+Private artifacts under `~/.local/share/eql-automation/`:
+
+- `font-probes/sampled-arial-19-0.41.94/manifest.json`, SHA
+  `da3d84a9bf006fa241968a8fde2a6db6428e287ba7b8fb703be8386c3e422e0f`.
+- `evidence/sampled-font-matcher-0.41.94.json`, SHA
+  `8a1744f0cbe9ec54f0909f8f4b7874d19f87d137fa30e16b0de3b38373b907de`.
+
+The prior turn implemented phase-aware command evidence composition; this turn
+connects its text-analysis dependency to the corrected source geometry. Current
+owner pixels, closed/focused/selected chat discrimination and calibrated target/
+combat classification still gate input, alongside zone/height/motion/body bounds.
+No game/native process, capture, login or input ran this turn; no prefix or
+character changed. G0 remains passed and needs no repeat. Assist 0.39.6 and
+observation 0.39.10 are unchanged, with the existing stationary observation
+pending. Level/XP/hour/deaths/camp remain unknown; no playable 1–20 or fresh
+hands-off 1–50 acceptance exists.
+
+
 ## Private source 0.41.93 staged — 2026-11-14 08:20 UTC
 
 **VERIFIED:** source `67d51602343b6bfd8d773c2b448ba2d0a9c80061`, archive SHA

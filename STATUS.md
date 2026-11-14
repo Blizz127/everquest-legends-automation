@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 08:20 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 08:28 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,21 @@ Updated 2026-11-14 08:20 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.94:** corrected per-glyph/caret geometry now feeds a
+  conditional pixel sampler and the existing prefix matcher. Atlas/DIB edge
+  samples outside known glyph extents remain explicitly unknown; all prefix
+  and caret alternatives use one shared known-pixel intersection. Partial
+  comparisons never become complete-field or focus/ownership permissions.
+  Focused checks: 130 passed on system Python; 22 reader tests skipped there
+  for missing NumPy then all 22 passed with the private interpreter. The pinned
+  native height-19 probe produced 18 sampled cases with 23–247 unknown pixels.
+  All 18 synthetic comparison frames distinguished their prefixes on 11,045
+  shared known pixels while retaining incomplete-field/live-unknown results.
+  Evidence SHA `8a1744f0cbe9ec54f0909f8f4b7874d19f87d137fa30e16b0de3b38373b907de`.
+  A neutral border or absent caret still cannot establish closed chat; text
+  selection and active font/blend/background binding remain unresolved.
+  This implements a needed pixel stage, not the complete live classifier.
+  G0 remains passed; assist 0.39.6, observation 0.39.10 and F11-off unchanged.
 - **Source 0.41.93:** the checked location executor now has a concrete
   phase-aware input provider. It reuses the independent input/focus/log scope,
   requires exact draft/caret/selection evidence while typing, and closed chat

@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.93** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.94** · rotation preview **0.39.6** · observation candidate **0.39.10**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -108,11 +108,21 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.93/source
+~/.local/share/eql-automation/owner-tools/0.41.94/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.93 adds the checked `/location` observation provider. It
+above. Source 0.41.94 connects corrected glyph/caret geometry to conditional
+pixel sampling. Unknown atlas-edge pixels have explicit masks. The matcher
+compares every prefix on the same known pixels and cannot promote a partial
+comparison to a complete-field match. The offline font importer now offers
+`--sample-pixels` with explicit geometry, projection, tint and pipeline evidence;
+see `python3 tools/analyze_font_gdi.py --help`. It saves separate sampled PNGs
+and known-pixel masks below the private font-probe store. These are rendering
+hypotheses, not live chat focus/closure/selection classifications. No owner
+launcher, control or pending observation changes.
+
+Source 0.41.93 adds the checked `/location` observation provider. It
 brackets each independent UI classification with owner-input, focus and log
 checks. Start/end require observed closed chat; intermediate keys require
 the exact complete focused draft, with the insertion point at its end and

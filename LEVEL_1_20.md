@@ -1,9 +1,19 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 08:20 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 08:28 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.94 joins corrected glyph/caret placement with conditional
+bilinear alpha sampling and prefix comparison. Unknown atlas-edge pixels
+are masked consistently for all competitors; partial comparisons cannot
+establish complete text/focus/closure. The retained native font produced all
+18 prefix/caret cases. Synthetic comparison frames distinguished each prefix,
+with live-equivalence flags still false. The 130 focused tests and 22 reader
+checks passed using the appropriate existing interpreters. Closed chat,
+selection and calibrated live scene classification are still missing; this
+pixel-stage improvement enables no route control or live leg.
 
 Source 0.41.93 supplies phase-aware evidence composition for the route's
 checked `/location` calls. Independent input/focus/log checks bracket each

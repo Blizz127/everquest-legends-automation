@@ -184,3 +184,34 @@ def test_invalid_or_unbounded_template_bank_refuses(change):
         args['origins']=tuple((i,0) for i in range(25))
         templates=[replace(t,width=2048,height=64,rgba=b'\xff'*2048*64*4) for t in templates]
     with pytest.raises(ValueError):CommandTextMatcher(templates,**args)
+
+
+def test_unknown_pixels_are_shared_by_every_competitor_and_never_complete_match():
+    templates=[rendering(p) for p in PREFIXES]
+    mask=bytearray([255])*templates[0].width*templates[0].height
+    mask[1]=0
+    templates[0]=replace(templates[0],known_pixels=bytes(mask))
+    prepared=CommandTextMatcher(templates,source_sha256='a'*64,origins=((2,2),),pixel_tolerance=0)
+    image=frame('/loc');image.images['client'].putpixel((3,2),(255,0,255))
+    result=prepared(image,snapshot('/loc'),phase='command_key',capture_started_at=1.)
+    assert result['unknown_pixel_count']==1 and result['prefix_unique_on_shared_known_pixels']
+    assert result['expected_candidate']['squared_error']==0
+    assert not result['exact_prefix_unique_under_declared_model']
+    assert not any(row['declared_pixel_model_match'] for row in result['ranked_candidates'])
+    assert not result['complete_field_compared'] and not result['input_authorized']
+
+
+def test_hiding_all_distinguishing_pixels_cannot_win_against_blank():
+    templates=[replace(rendering(p),known_pixels=bytes(len(p)*5*7)) for p in PREFIXES]
+    prepared=CommandTextMatcher(templates,source_sha256='a'*64,origins=((2,2),),pixel_tolerance=0)
+    result=prepared(frame('/location'),snapshot('/location'),phase='command_key',capture_started_at=1.)
+    assert not result['prefix_unique_on_shared_known_pixels']
+    assert not result['exact_prefix_unique_under_declared_model']
+    assert all(row['squared_error']==0 for row in result['ranked_candidates'])
+
+
+@pytest.mark.parametrize('mask',[b'bad',bytearray(35),bytes([1])*35])
+def test_invalid_unknown_mask_refuses(mask):
+    templates=[rendering(p) for p in PREFIXES]
+    templates[0]=replace(templates[0],known_pixels=mask)
+    with pytest.raises(ValueError):CommandTextMatcher(templates,source_sha256='a'*64,origins=((2,2),),pixel_tolerance=0)

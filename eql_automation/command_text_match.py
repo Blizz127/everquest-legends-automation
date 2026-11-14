@@ -25,6 +25,9 @@ class PrefixRendering:
     width: int
     height: int
     rgba: bytes
+    # None is a fully specified hypothesis. Zero means the source sampler
+    # cannot determine that pixel, never transparent or background.
+    known_pixels: bytes | None = None
 
 
 @dataclass(frozen=True,init=False)
@@ -62,6 +65,10 @@ class CommandTextMatcher:
                     or not 1<=t.width<=2048 or not 1<=t.height<=64
                     or type(t.rgba) is not bytes or len(t.rgba)!=t.width*t.height*4):
                 raise ValueError('Bounded immutable RGBA rendering required')
+            if (t.known_pixels is not None and (type(t.known_pixels) is not bytes
+                    or len(t.known_pixels)!=t.width*t.height
+                    or any(v not in (0,255) for v in t.known_pixels))):
+                raise ValueError('Known-pixel mask must contain one immutable 0/255 byte per pixel')
             image=Image.frombytes('RGBA',(t.width,t.height),t.rgba)
             support=image.getchannel('A').point([0]+[255]*255)
             if support.getbbox() is None:raise ValueError('Empty glyph rendering')
@@ -105,10 +112,23 @@ class CommandTextMatcher:
                for t in self.renderings for x,y in self.origins):
             return dict(base,reason='rendering_bank_clips_chat_crop')
         rgb=crop.tobytes();crop_digest=sha256(rgb).hexdigest()
-        background=tuple(_median(channel.histogram()) for channel in crop.split())
+        # Every model, including blank, is compared on the SAME intersection.
+        # A candidate cannot improve its score by hiding its own extra glyphs.
+        shared=Image.new('L',crop.size,255)
+        for t in self.renderings:
+            if t.known_pixels is None:continue
+            known=Image.frombytes('L',(t.width,t.height),t.known_pixels)
+            for x,y in self.origins:
+                box=(x,y,x+t.width,y+t.height)
+                shared.paste(ImageChops.darker(shared.crop(box),known),box)
+        known_count=shared.histogram()[255]
+        if not known_count:return dict(base,reason='no_shared_known_pixels')
+        unknown_count=crop.width*crop.height-known_count
+        shared_mask=shared if unknown_count else None
+        background=tuple(_median(channel.histogram(shared_mask)) for channel in crop.split())
         difference=ImageChops.difference(crop,Image.new('RGB',crop.size,background))
-        whole=_stats(difference,self.tolerance)
-        right_errors,right_counts=_right_suffixes(difference,self.tolerance)
+        whole=_stats(difference,self.tolerance,shared_mask)
+        right_errors,right_counts=_right_suffixes(difference,self.tolerance,shared_mask)
         rows=[]
         for t in self.renderings:
             rgba=Image.frombytes('RGBA',(t.width,t.height),t.rgba)
@@ -120,24 +140,27 @@ class CommandTextMatcher:
                 predicted=Image.new('RGB',rgba.size,background)
                 predicted.paste(rgba,mask=rgba.getchannel('A'))
                 delta=ImageChops.difference(observed,predicted)
-                old=_stats(difference.crop(box),self.tolerance)
-                patch=_stats(delta,self.tolerance)
-                glyph=_stats(delta,self.tolerance,support)
+                mask=shared.crop(box) if shared_mask is not None else None
+                old=_stats(difference.crop(box),self.tolerance,mask)
+                patch=_stats(delta,self.tolerance,mask)
+                glyph=_stats(delta,self.tolerance,support if mask is None else ImageChops.darker(support,mask))
                 squared=whole[0]-old[0]+patch[0]
                 mismatches=whole[1]-old[1]+patch[1]
                 right=(right_errors[x+t.width],right_counts[x+t.width])
                 rows.append(dict(prefix=t.prefix,variant=t.variant,origin=(x,y),rgba_sha256=digest,
-                    squared_error=squared,mean_squared_error=squared/(3*crop.width*crop.height),
+                    squared_error=squared,mean_squared_error=squared/(3*known_count),
                     mismatching_pixels=mismatches,outside_glyph_squared_error=squared-glyph[0],
                     outside_glyph_mismatching_pixels=mismatches-glyph[1],
                     right_of_rendering_squared_error=right[0],right_of_rendering_mismatching_pixels=right[1],
-                    declared_pixel_model_match=mismatches==0))
+                    shared_known_pixels_match=mismatches==0,
+                    declared_pixel_model_match=unknown_count==0 and mismatches==0))
         # Blank is a competing pixel model only; it never establishes closure.
         rows.append(dict(prefix='',variant='constant_background',origin=None,rgba_sha256=None,
-            squared_error=whole[0],mean_squared_error=whole[0]/(3*crop.width*crop.height),
+            squared_error=whole[0],mean_squared_error=whole[0]/(3*known_count),
             mismatching_pixels=whole[1],outside_glyph_squared_error=whole[0],
             outside_glyph_mismatching_pixels=whole[1],right_of_rendering_squared_error=whole[0],
-            right_of_rendering_mismatching_pixels=whole[1],declared_pixel_model_match=whole[1]==0))
+            right_of_rendering_mismatching_pixels=whole[1],shared_known_pixels_match=whole[1]==0,
+            declared_pixel_model_match=unknown_count==0 and whole[1]==0))
         rows.sort(key=lambda row:row['squared_error'])
         expected=next(row for row in rows if row['prefix']==submission.submitted_prefix)
         alternate=next(row for row in rows if row['prefix']!=submission.submitted_prefix)
@@ -149,6 +172,13 @@ class CommandTextMatcher:
             crop_rgb_sha256=crop_digest,crop_size=crop.size,capture_started_at=capture_started_at,
             background_model='shared_per_channel_median_constant_rgb',background_rgb=background,
             pixel_tolerance=self.tolerance,ranked_candidates=rows,expected_candidate=expected,
+            shared_known_pixel_count=known_count,unknown_pixel_count=unknown_count,
+            complete_field_compared=unknown_count==0,
+            shared_known_mask_sha256=sha256(shared.tobytes()).hexdigest(),
+            prefix_unique_on_shared_known_pixels=(any(row['shared_known_pixels_match']
+                and row['prefix']==submission.submitted_prefix for row in rows)
+                and not any(row['shared_known_pixels_match']
+                and row['prefix']!=submission.submitted_prefix for row in rows)),
             best_alternate_candidate=alternate,matching_expected_candidates=matching_expected,
             expected_error_margin=alternate['squared_error']-expected['squared_error'],
             exact_prefix_unique_under_declared_model=(matching_expected>0
@@ -173,11 +203,13 @@ def _stats(difference,tolerance,mask=None):
     return squared,sum(maximum[tolerance+1:])
 
 
-def _right_suffixes(difference,tolerance):
+def _right_suffixes(difference,tolerance,mask=None):
     """One whole-field pass, never a whole tail scan per hypothesis."""
     errors=[0]*(difference.width+1);counts=[0]*(difference.width+1)
     values=iter(difference.tobytes())
+    known=None if mask is None else mask.tobytes()
     for index,(red,green,blue) in enumerate(zip(values,values,values)):
+        if known is not None and not known[index]:continue
         x=index%difference.width
         errors[x]+=red*red+green*green+blue*blue
         counts[x]+=max(red,green,blue)>tolerance
