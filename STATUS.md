@@ -1,16 +1,29 @@
 # STATUS
 
-Updated 2026-11-13 18:08 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 18:20 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
-- Owner assist 0.39.5 is privately staged on Alienware. **Find / calibrate
-  HP** now proposes the crop from the saved client UI, highlights it, and
-  retains the owner's full-HP Save/manual correction flow. Thirteen focused
-  tests passed; Alienware no-device rotation smoke plus full/partial/blue
-  synthetic dialog smokes passed. No worker/input/settings change occurred.
-  Archive SHA-256 `2161c8996305a4c1620a024074a3194908aaf7a908f2fcca9f124b8605806e2c`
-  matched locally/remotely. Live HP and healing still need the owner test;
-  F11 remains disabled, level/XP/hour/deaths unobserved since prior report.
+- Owner assist **0.39.6** is privately staged on Alienware. F9 now invalidates
+  a queued GUI preparation; explicit **Chat recovery** clears only local
+  draft bookkeeping while stopped, sends no keys, and requires a fresh F8.
+  Travel is visibly unavailable; measurement mode shows only G0. Twenty-five
+  focused adapter/recovery tests passed, plus original-engine and offscreen
+  GUI smokes on Alienware with no worker, game input or settings save.
+  Final archive SHA-256 `7e750589a9f4c83e875e8a9a982be062e538ad78c54e635acb2494ad853f727c`
+  matched locally/remotely. The inherited 0.39.5 HP proposal remains present;
+  live HP/healing and recovery behavior still need owner feedback.
+- G0 remains passed by the owner's visible-stop confirmation and retained
+  trace. No playable 1–20 leg or F11 route is accepted. Current live level,
+  XP/hour, deaths and camp activity have not been observed since the last
+  owner report (Legira level 7, GFay). Next real-client step is owner-run
+  HP/current-scene observation before bounded G2/follower validation.
+- Read-only Crushbone source probe found flat Z=0 ground beneath all 65
+  sample points at cut 658→623, where the baked detail surface reaches
+  Z=1.70. A source wall begins nearby, so this is not a clearance waiver.
+  The new `--comparison detail` bake option isolates sample spacing 6→3.
+  It has not run: measured devbox pressure was 116 runnable processes and
+  100% CPU. Next offline step is that one-thread bounded probe when pressure
+  permits; same-zone GFay remains the first movement candidate.
 - Controlled Crushbone full-zone bake comparison completed: identical
   copied source/baker reproduced all 65 baseline ground heights exactly.
   Halving horizontal cell size reduced the inner-ring error at 658→623,

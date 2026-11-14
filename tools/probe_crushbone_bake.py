@@ -3,7 +3,7 @@
 
 The full ordered triangle set preserves the original grid origin. A repeated
 baseline must reproduce the retained mesh's local heights before cell-size
-sensitivity is attempted. Every product stays in the private data store.
+or detail-sampling sensitivity is attempted. Every product stays private.
 """
 from __future__ import annotations
 
@@ -91,7 +91,13 @@ def sample_ground(mesh) -> dict:
     return {"polygon": int(poly), "center_z": center_z, "rings": rings}
 
 
-def run(output: Path) -> dict:
+def run(output: Path, comparison: str = "cell") -> dict:
+    variants = {
+        "cell": (("baseline", {}), ("half_cell", {"cell_size": 0.3})),
+        "detail": (("baseline", {}), ("half_detail_distance", {"detail_sample_dist": 3})),
+    }
+    if comparison not in variants:
+        raise ValueError("comparison must be cell or detail")
     check_sources()
     project = Path(__file__).resolve().parents[1]
     local_sources = {path: digest(path) for path in
@@ -125,6 +131,7 @@ def run(output: Path) -> dict:
     bake.write_eqtr(eqtr, geometry.triangles, nodes)
     reference = sample_ground(NavMesh.load(REFERENCE))
     record = {"format": "eql-crushbone-bake-probe-v1", "offline_only": True,
+              "comparison": comparison,
               "game_input_sent": False, "route_accepted": False,
               "real_client_accepted": False, "probe_frame": "helper_package_WLD_Y_X_Z",
               "center": list(CENTER), "pins": {str(p): h for p, h in PINS.items()},
@@ -134,9 +141,9 @@ def run(output: Path) -> dict:
               "reference": reference, "variants": {}, "baseline_reproduced": False,
               "completed": False}
     checkpoint(output, record)
-    params = dict(bake.DEFAULT_PARAMS, detail_sample_max_error=0.25)
-    for name, cell_size in (("baseline", 0.6), ("half_cell", 0.3)):
-        variant_params = dict(params, cell_size=cell_size)
+    params = dict(bake.DEFAULT_PARAMS, cell_size=0.6, detail_sample_max_error=0.25)
+    for name, overrides in variants[comparison]:
+        variant_params = dict(params, **overrides)
         product = output / f"{name}.eqnm"
         command = [str(BAKER), str(eqtr), str(product), "--threads", "1"]
         for key, value in variant_params.items():
@@ -194,7 +201,7 @@ def run(output: Path) -> dict:
             if path.is_file():
                 entry[stream + "_sha256"] = digest(path)
     record["completed"] = all(record["variants"].get(name, {}).get("status") == "sampled"
-                              for name in ("baseline", "half_cell"))
+                              for name, _ in variants[comparison])
     report = output / "report.json"
     checkpoint(output, record)
     print(json.dumps({"report": str(report), "sha256": digest(report),
@@ -206,6 +213,8 @@ def run(output: Path) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--comparison", choices=("cell", "detail"), default="cell",
+                        help="change only horizontal cell size or detail sample distance")
     args = parser.parse_args()
     output = args.output.expanduser()
     if (output.exists() or output.is_symlink() or
@@ -214,7 +223,7 @@ def main() -> None:
     os.umask(0o077)
     os.nice(15)
     try:
-        run(output)
+        run(output, args.comparison)
     except (OSError, ValueError, RuntimeError) as error:
         parser.exit(1, f"Offline bake probe refused: {error}\n")
 

@@ -1,5 +1,69 @@
 # FINDINGS
 
+## Owner assist 0.39.6 stop and draft recovery — 2026-11-13 18:20 CST
+
+**VERIFIED original-engine offline behavior and Alienware GUI, no game
+input:** The 0.39.5 adapter retained `sender.unfinished` after owner
+Escape/Enter, while the inherited F6/F8/F10 gate kept rejecting it. Its
+instruction to clear chat and retry could not recover. Separately, a GUI
+`prepare_later` queued before F9 carried no cancellation generation; it could
+schedule preparation after that stop. Both cases were reproduced using the
+retained engine methods without opening input devices.
+
+New `owner_nov12_recovery.py` layers on the existing restricted adapter,
+preserving earlier preview sources. Start jobs receive a generation and
+stale/missing generations are rejected, including delayed preparation. An
+explicit GUI confirmation captures the current generation before its dialog.
+The worker accepts it only while stopped, with no held keys, no movement or
+pointer mode and an actual pending draft. It clears local bookkeeping and
+old target approval, invalidates queued starts, stays OFF, and sends no keys.
+The owner must first close game chat themselves and later press F8. Cancel
+and stale confirmations cannot resume assist. Existing F11/F12 blocking and
+manual melee remain unchanged; UI labels and guide now accurately say so.
+Measurement mode shows only the G0 stop button and its stop control.
+
+Twenty-five focused adapter/recovery tests passed. The final isolated
+preview's Alienware no-device smoke ran the original engine post/stop/job/
+reset methods: a pre-F9 Prepare was discarded, recovery made no sender call,
+old F8/Prepare jobs remained canceled, and a fresh F8 could arm while
+unfocused. Offscreen assist and measurement GUI smokes reported
+`worker_started=false`, `game_input_sent=false`, `settings_saved=false`.
+Their rendered windows were inspected, including the fully visible G0 button.
+No live helper was running from this candidate path when the initial cramped
+layout candidate was retained separately and replaced before release.
+
+Final private preview: `~/.local/share/eql-automation/owner-assist/0.39.6`
+on Alienware. Local/remote archive SHA-256 matched
+`7e750589a9f4c83e875e8a9a982be062e538ad78c54e635acb2494ad853f727c`.
+Final GUI SHA-256:
+`baa9ba1400cd4bbe995b97ecb68d9d1757ab40bcf14d5475d1c03998c09fbff3`.
+Recovery module SHA-256:
+`efdf13c8b63efc31154be0c889d7be85ea6f8736a340334a99c3486c9a1a5a34`.
+The launcher pins both adapter modules as well as engine/UI/HP sources.
+**Unverified:** live recovery, live HP/healing, strict target identity and
+chat observation, G2, route following and automated leveling. F9 stops further
+helper input; native melee and an already-started game cast are owner/client
+controlled. The owner-visible G0 stop result remains accepted separately.
+
+## Crushbone detail-sampling next experiment — 2026-11-13 18:20 CST
+
+**VERIFIED read-only source probe by delegated audit:** All 65 existing
+center/ring samples around helper-frame `(-180.14373779,98.74378967)` are
+covered by EQTR face 15356 at Z=0. Other covering faces are sky at about
+Z=625.8. The closest raised wall starts roughly 2.17 units from the center,
+so flat source ground does not establish body clearance. The input EQTR
+SHA-256 is `ad521d7df14c0d4a578923595316794cb06181672bb8f22b21f0925ec43e9da5`;
+its private location is `nav-candidates/crushbone-cell-sensitivity-0.41.42/`.
+**INFERRED:** Detail interpolation may explain part of the local baked bump;
+this must be tested, not flattened or waived.
+
+`tools/probe_crushbone_bake.py --comparison detail` now reproduces the
+baseline and changes only `detail_sample_dist` 6→3, preserving the full
+ordered source and 90-second/one-thread limits. The CLI/startup check passed;
+the new comparison has **not run**. `vmstat` showed 116 runnable processes,
+92% user + 8% system CPU and zero idle, so this bake was held while the small
+owner preview shipped. No route or movement acceptance changed.
+
 ## Owner assist 0.39.5 proposes HP from client layout — 2026-11-13 18:08 CST
 
 **VERIFIED build and synthetic Alienware GUI, no game input:** The new

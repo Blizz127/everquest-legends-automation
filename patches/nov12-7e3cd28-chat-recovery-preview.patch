@@ -1,0 +1,186 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -214,14 +214,14 @@
+             banner.setObjectName("banner")
+             banner_layout = QHBoxLayout(banner)
+             banner_layout.setContentsMargins(16, 14, 16, 14)
+-            self.state_badge = QLabel("●  MEASUREMENT ONLY" if measurement_only else "●  STOPPED")
++            self.state_badge = QLabel("●  MEASUREMENT ONLY" if measurement_only else "●  ASSIST OFF")
+             self.state_badge.setObjectName("state")
+             banner_layout.addWidget(self.state_badge)
+             banner_layout.addStretch()
+             banner_layout.addWidget(QLabel(
+                 "MEASUREMENT ONLY    F9/F11 STOP    COMBAT + LEVELING DISABLED" if measurement_only else
+                 "F6  PREPARE    F8  ON    F9  OFF    F7  ON/OFF    F10  HEAL    "
+-                "F11  AUTOPILOT    F12  ROUTE POINT"))
++                "F11/F12  DISABLED"))
+             layout.addWidget(banner)
+             controls = QGridLayout()
+             self.character = QComboBox()
+@@ -310,7 +310,10 @@
+             stop = QPushButton("STOP")
+             stop.setObjectName("stop")
+             stop.clicked.connect(lambda: self.post("stop"))
+-            for button in [prep, hp_button, mana_button, stop]:
++            self.chat_recovery = QPushButton("Chat recovery…")
++            self.chat_recovery.setEnabled(not measurement_only)
++            self.chat_recovery.clicked.connect(self.confirm_chat_closed)
++            for button in [prep, hp_button, mana_button, self.chat_recovery, stop]:
+                 buttons.addWidget(button)
+             tab_layout.addLayout(buttons)
+             self.tabs.addTab(combat, "Combat")
+@@ -342,12 +345,15 @@
+                     self.tabs.setTabEnabled(index, False)
+                 self.tabs.setTabText(3, "Movement measurement")
+                 self.tabs.setCurrentIndex(3)
++            else:
++                self.tabs.setTabText(3, "Travel unavailable")
++                self.tabs.setTabEnabled(3, False)
+             layout.addWidget(self.tabs, 1)
+             footer = QLabel(
+-                "Measurement only · use Calibrate movement · F9/F11 stop · focus loss or owner movement pauses"
++                "G0 stop check only · one short pulse · F9/F11 cancel · leveling disabled"
+                 if measurement_only else
+                 "F6 prepares  ·  F8 turns persistent combat on  ·  F9 turns it off  ·  F7 toggles on/off  ·  "
+-                "F11 starts or stops the autopilot  ·  F12 records a route point")
++                "Movement, targeting and melee are manual  ·  F11/F12 disabled")
+             footer.setWordWrap(True)
+             footer.setObjectName("muted")
+             layout.addWidget(footer)
+@@ -376,10 +382,9 @@
+             self.ap_state.setObjectName("state")
+             column.addWidget(self.ap_state)
+             self.ap_default_status = (
+-                "Combat and leveling are disabled. Calibrate movement runs only a bounded zig-zag; F9/F11 stop it."
++                "Only the G0 movement-stop check is available: one 0.15-second forward pulse. F9/F11 cancel."
+                 if measurement_only else
+-                "F11 in the game starts the autopilot at your level's camp; F11 again stops it. "
+-                "It never runs without a live HP reading.")
++                "Travel is unavailable in this assist preview. Movement and targeting stay manual.")
+             self.ap_status = QLabel(self.ap_default_status)
+             self.ap_status.setWordWrap(True)
+             column.addWidget(self.ap_status)
+@@ -395,6 +400,7 @@
+             if measurement_only:
+                 start.setText("Leveling autopilot disabled in measurement mode")
+                 start.setEnabled(False)
++                start.hide()
+             stop = QPushButton("Stop measurement" if measurement_only else "Stop autopilot")
+             stop.setObjectName("stop")
+             stop.clicked.connect(lambda: self.post("autopilot_stop"))
+@@ -402,6 +408,10 @@
+             calibrate.setToolTip("Stand on open, flat ground: the character walks a short zig-zag to measure "
+                                  "run speed and turning.")
+             calibrate.clicked.connect(lambda: self.post("nav_calibrate_later"))
++            calibrate.setText("Full movement calibration unavailable")
++            calibrate.setEnabled(False)
++            if measurement_only:
++                calibrate.hide()
+             for button in (start, stop, calibrate):
+                 row.addWidget(button)
+             if measurement_only:
+@@ -415,7 +425,7 @@
+ 
+             if measurement_only:
+                 limits = QLabel(
+-                    "This test measures run speed, turn rate, input latency, and turn direction only. "
++                    "G0 checks release of one forward pulse; it does not calibrate turning or certify a route. "
+                     "It does not start mesh travel, combat, targeting, route recording, or leveling, and "
+                     "it does not determine character radius, height, climb, or slope limits.")
+                 limits.setWordWrap(True)
+@@ -710,6 +720,28 @@
+                     self.worker.engine.cancelled = True
+                 self.worker.engine.post(name, value)
+ 
++        def confirm_chat_closed(self):
++            if self.worker is None or measurement_only:
++                return
++            engine = self.worker.engine
++            if engine.active or engine.preparing:
++                self.status.setText("Press F9 and wait for assist to stop before chat recovery.")
++                return
++            if engine.sender is None or not engine.sender.unfinished:
++                self.status.setText("No interrupted helper draft is pending. Assist stays OFF.")
++                return
++            generation = engine.cancel_generation
++            result = QMessageBox.question(
++                self, "Confirm game chat is closed",
++                "First close the unfinished chat draft yourself in EverQuest.\n"
++                "Is the chat entry now closed?\n\n"
++                "OK clears only the helper's paused state. It sends no keys and leaves assist OFF. "
++                "Press F8 in the game afterwards when ready.",
++                QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel,
++                QMessageBox.StandardButton.Cancel)
++            if result == QMessageBox.StandardButton.Ok:
++                self.post("owner_chat_closed", {"chat_closed": True, "generation": generation})
++
+         def changed(self, *_):
+             data = asdict(self.settings)
+             data.update(character=self.character.currentText(), level=self.level.value(),
+@@ -754,10 +786,11 @@
+                                         and not state["preparing"])
+             self.status.setText(state["status"])
+             active, preparing = state["active"], state["preparing"]
++            self.chat_recovery.setEnabled(not measurement_only and not active and not preparing)
+             if (active, preparing) != self.badge:
+                 self.badge = (active, preparing)
+                 self.state_badge.setText("●  MEASUREMENT ONLY" if measurement_only else
+-                                        "●  COMBAT ON" if active else "●  PREPARING" if preparing else "●  STOPPED")
++                                        "●  ASSIST ON" if active else "●  PREPARING" if preparing else "●  ASSIST OFF")
+                 self.state_badge.setStyleSheet("color: #7addac;" if active else "color: #f5ca72;" if preparing else "color: #a9b5c5;")
+             known = state["known"]
+             self.book_status.setText(f"{known} learned Paladin/Cleric spells read · Bar {'prepared' if state['prepared'] else 'needs preparation'}" if known is not None else
+@@ -866,6 +899,16 @@
+                     "game_input_sent": False,
+                     "settings_saved": False,
+                 }, indent=2) + "\n")
++            else:
++                smoke_path.with_suffix(".json").write_text(json.dumps({
++                    "worker_started": window.worker is not None,
++                    "game_input_sent": False,
++                    "settings_saved": False,
++                    "state_badge": window.state_badge.text(),
++                    "travel_tab_enabled": window.tabs.isTabEnabled(3),
++                    "travel_tab_label": window.tabs.tabText(3),
++                    "chat_recovery_enabled": window.chat_recovery.isEnabled(),
++                }, indent=2) + "\n")
+             app.quit()
+         QTimer.singleShot(400, render)
+     app.exec()
+@@ -875,12 +918,13 @@
+ 1. Enter your Paladin + Cleric loadout. A third class is optional; this profile does not depend on one.
+ 2. Choose your character and current level above. Set the starting level once; future level-up log messages update it while this helper runs.
+ 3. Stand somewhere safe, out of combat. Focus EverQuest and press F6. Preparation exports your learned spellbook and memorizes ONLY spells you own and can use at your selected level. Each gem waits for EverQuest's own "finished memorizing" message (about 2 seconds for a gem that already holds the spell), so /log must be on. F9 cancels.
+-4. Press F8 to turn combat on, heal low HP, and maintain prepared buffs even with no enemy selected. Repeated F8 presses leave it on. It checks for the enemy you select, fights it, then waits for your next selection after the kill. F9 turns combat off. F7 is a single on/off toggle (on like F8, off like F9) for controllers that map a button to F7; the helper consumes F7 so EQ's own Target Nearest PC does not also fire. F8 combat never selects, pulls or moves; only the F11 autopilot does.
+-5. Optional: at full health, click Calibrate HP and select just the inside of your red HP gauge. Automatic healing requires this reading. F10 requests your fast heal even without calibration.
++4. Press F8 to turn combat on, heal low HP, and maintain prepared buffs even with no enemy selected. Repeated F8 presses leave it on. It checks for the enemy you select, fights it, then waits for your next selection after the kill. F9 turns combat off. F7 is a single on/off toggle (on like F8, off like F9) for controllers that map a button to F7; the helper consumes F7 so EQ's own Target Nearest PC does not also fire. F8 combat never selects, pulls or moves; F11 travel and F12 recording are disabled in this preview. You control melee yourself; F9 stops further helper input but does not turn melee off or cancel a spell already cast.
++5. At full health, click Find / calibrate HP, check the proposed inner red gauge, and Save only when that outline and full HP are correct. Drag a corrected rectangle if needed. Automatic healing requires this reading. F10 requests your fast heal even without calibration.
+ 6. Optional: calibrate the blue mana bar. Below 25% mana the assistant saves mana for healing; at 35% or less it also skips buffs, stuns and the Smite ability.
+ 
+ IMPORTANT SOLO SETUP
+-Use implied healing (Options → Combat) so a heal while targeting your enemy heals its friendly target — normally you while solo tanking. The installer enables this for your existing offline Blizz/Legira character files, with backups. If you use a different character, enable this option there too.
++Use implied healing (Options → Combat) so a heal while targeting your enemy heals its friendly target — normally you while solo tanking. The helper does not change this game setting; check it yourself for the character you play.
++If a command is interrupted, press F9, close its game chat draft yourself, then click Chat recovery and confirm it is closed. Assist stays OFF until a fresh F8. Cancel leaves the paused state unchanged.
+ Keep /log on for automatic level detection and encounter stops. The selected character's log filename must match the character you are playing.
+ When you ding, the current fight finishes using its existing bar. Before the next fight, press F6 or the Prepare spell bar button to refresh learned spells and load upgrades. F8 and F7 only switch combat and never start preparation. New spells still need to be scribed normally. Mote upgrades apply in the game as usual.
+ Calibrated readings are only valid for the captured resolution and UI layout. An unavailable/invalid HP reading disables automatic healing; F10 remains available.
+@@ -913,16 +957,9 @@
+ Automatic stances require verified native bindings in Options → Controls → Stances/Invocations: Ctrl+Shift+1 Balanced, Ctrl+Shift+2 Defense, Ctrl+Shift+3 Divine. The helper reads saved bindings and enables the checkbox only when all match without conflicts. Defense is requested at <=65% HP, Balanced again at >=85%, with Divine invocation. Disable the checkbox for manual choice. Do not bind Ctrl+Shift+F1/F2/F3: KDE desktop shortcuts conflict. The mercenary-only /stance command is never sent.
+ At low levels, prioritize a useful weapon, shield/armor, and heal efficiency over dumping all mana into damage. At higher levels, raise damage cadence only as sustain allows. The tool does not claim a simulated best-in-slot DPS rotation; it favors a simple, durable solo setup.
+ 
+-AUTOPILOT (F11): UNATTENDED LEVELING
+-EverQuest Legends' Rules of Conduct forbid unattended play; running the autopilot is your own accepted risk. It does nothing to hide itself: fixed timings, no avoidance of players or GMs.
+-Before the first run:
+-1. Calibrate HP (Combat tab); the autopilot never runs without a live HP reading. A mana calibration adds mana rests.
+-2. Keep /log on and the default movement keys: Up arrow moves forward, Left and Right arrows turn (not strafe).
+-3. On open, flat ground, click Calibrate movement (Autopilot tab) and switch to the game: the character walks a short zig-zag to measure its speed and turning.
+-4. Record the routes ahead of you. Walk each route once and press F12 at the start, at every turn, about every 40 units on straight paths, at the top and bottom of ramps, and right in front of each zone line; then walk through it. The route splits at the zone line and continues from where you arrive. Finish at the camp in the Autopilot tab. A patrol loop and a camp anchor can be recorded there too.
+-5. Stand at your camp, or on a recorded route, and press F11. Starting within reach of an unrecorded camp makes that spot its anchor.
+-While it runs, it picks the guide's camp for your level, walks there over your routes and zone lines, /targets the camp's mobs by name and accepts only those inside its level window (by default your level minus the larger of 2 and 30%, up to your level + 1). It pulls with your damage spell, fights, lets the client's own auto-loot collect, rests (sits below 70% HP or 50% mana; stands at 98%/95%, after 3 minutes, or at once when hit), refreshes spells after a ding with F6 between fights, and moves on when the camp's band is outgrown. Attackers are always fought back.
+-It stops and says why when it is stuck on a route, a route or camp anchor is missing, the next camp needs a boat, translocator or key, a crossing enters the wrong zone, /location gets no reply, HP has no reading for 30 seconds, or F6 fails twice; and on F9, F11, chat, death or an unplanned zone change. Combat assist stays on after an autopilot stop; F9 turns it off. Leaving the game window or pressing your own movement keys only pauses it.
++TRAVEL STATUS
++F11 travel and F12 recording are disabled in this preview. Routes for levels 1–20 are being built from copied client geometry; real movement validation is incomplete. You do not need to record routes by hand.
++The separate --measure-navigation mode offers only the supervised G0 stop check. Passing G0 does not enable leveling or certify a route.
+ 
+ SOURCE OF SPELL LEVELS
+ The installed client's spells_us.txt is authoritative for this installation. The progression tab is a preview; your live bar is filtered against a fresh /outputfile spellbook export. No third-class skills are assumed.

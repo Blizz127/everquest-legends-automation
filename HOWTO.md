@@ -1,9 +1,9 @@
-# EverQuest Legends automation — project 0.41.43 / owner preview 0.39.5
+# EverQuest Legends automation — project 0.41.44 / owner preview 0.39.6
 
 ## Current availability
 
 This project's full-auto bot remains an **offline simulator and planning
-library**. An isolated, owner-run rotation preview 0.39.5 is staged on the
+library**. An isolated, owner-run rotation preview 0.39.6 is staged on the
 Alienware outside the game install. Blizz runs the game and helper himself;
 the lead has not logged in or sent game input. The installed client points to
 Daybreak's live service. Its published
@@ -19,11 +19,11 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.43 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.43/source`; the runnable
-rotation helper is separately staged under `owner-assist/0.39.5`.
+Source tools 0.41.44 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.44/source`; the runnable
+rotation helper is separately staged under `owner-assist/0.39.6`.
 
-Preview 0.39.5 builds on the existing rotation bot and proposes its HP crop
+Preview 0.39.6 builds on the existing rotation bot and proposes its HP crop
 from the client's saved UI layout. **Find / calibrate HP** opens the captured
 game image with a highlighted rectangle. At full health, confirm the outline
 covers your inner red HP gauge and click **Save**. You can drag to correct it;
@@ -31,6 +31,21 @@ Cancel preserves the previous calibration. Synthetic full/partial/blue-bar
 dialog checks passed on Alienware without starting the engine or changing
 settings. Live HP reading and smart healing remain unverified. References
 to 0.39.4 in the history below describe the retained earlier baseline.
+
+Preview 0.39.6 also fixes queued **Prepare spell bar** surviving F9. An
+interrupted chat draft can now be recovered explicitly: press F9, close the
+game chat entry yourself, click **Chat recovery…**, and confirm it is closed.
+Recovery sends no keys and leaves assist OFF; return to the game and press
+F8 when ready. Cancel preserves the paused state. The confirmation is refused
+while active, preparing, measuring movement or holding keys, or if a later
+stop made it stale. The banner shows ASSIST ON/OFF, and the unavailable travel
+tab is disabled. G0 remains available only in measurement mode. Previous
+previews remain retained; the original rotation tool is unchanged.
+
+Project 0.41.44 adds `--comparison detail` to the bounded Crushbone bake
+probe, changing only detail sample distance from 6 to 3 after reproducing the
+baseline. Its CLI check passed; this new bake has not run yet because the
+devbox was CPU-saturated at release time. It grants no route acceptance.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
 separate-process same-device release timer tested only with a pipe. Version
@@ -263,16 +278,16 @@ historical start and untested zone trigger keep F11 closed.
 The navigation and strict class-set changes are not in the owner preview
 or accepted for real-client movement.
 F11 remains disabled.
-The owner launch steps below are for 0.39.5.
+The owner launch steps below are for 0.39.6.
 
-## Owner-run rotation test on Alienware today: preview 0.39.5
+## Owner-run rotation test on Alienware today: preview 0.39.6
 
 Close any already running Solo Assist window. Blizz starts the game through
 Lutris and logs in himself. In an Alienware terminal, start the isolated
 preview:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.5
+cd ~/.local/share/eql-automation/owner-assist/0.39.6
 EQL_ROTATION_TRACE="$HOME/eql-assist-trace.jsonl" ./launch.sh
 ```
 
@@ -300,6 +315,10 @@ F8 does not prepare gems or select a target. The helper's STOP button or
 closing its window ends the test. The preview suppresses all helper `/attack`
 commands: **Blizz controls melee himself, and F9 does not turn off native
 melee.** Use the game's own attack control to stop it and verify it is off.
+If an interrupted command prevents F8/F6 from working, press F9 and close
+its chat draft in EverQuest yourself. In the helper, click **Chat recovery…**
+and confirm that the chat entry is closed. It sends no game input, discards
+old queued starts, and stays OFF until your next F8. Cancel does nothing.
 F11 movement and F12 route recording are disabled in this preview. The helper
 does not move, retarget, loot, vendor or camp. Do not run two helpers at once.
 
@@ -371,7 +390,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.43/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.44/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -379,7 +398,7 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.43/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.44/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 
@@ -905,7 +924,7 @@ polygons and a 24-polygon offline Detour query path. Its data stays under
 `~/.local/share/eql-automation/nav-candidates/`. No query is an accepted bot
 route or proof of game movement; the active bot still has no verified nav edge.
 
-The owner-run 0.39.5 preview above is built from a pinned copy of the November
+The owner-run 0.39.6 preview above is built from a pinned copy of the November
 helper plus the source patch in `patches/`. Its original working tree at
 `~/Projects/everquest-legends-rotation` was not edited. Do not run the old
 tool's installer: it writes character INIs in the protected Alienware prefix.
@@ -920,7 +939,7 @@ python3 -m pytest -q tests/test_spell_catalog.py tests/test_assist.py
 python3 -m pytest -q tests/test_ui_schema.py
 python3 -m pytest -q tests/test_screen_observer.py
 python3 -m pytest -q tests/test_target_log.py
-python3 -m pytest -q tests/test_owner_nov12_adapter.py tests/test_owner_nov12_entry.py
+python3 -m pytest -q tests/test_owner_nov12_adapter.py tests/test_owner_nov12_recovery.py tests/test_owner_nov12_entry.py
 python3 -m pytest -q tests/test_nav_evidence.py
 python3 -m pytest -q tests/test_melee_stop.py
 python3 -m pytest -q tests/test_nov12_path_quality.py
@@ -933,7 +952,7 @@ python3 -m compileall -q eql_automation
 The staged owner preview also supports a no-input Alienware check:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.5
+cd ~/.local/share/eql-automation/owner-assist/0.39.6
 /usr/bin/python3 -B owner_nov12_smoke.py
 ./launch.sh --dry-run --level 7
 ```
