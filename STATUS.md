@@ -1,7 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 01:15 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:17 UTC for coordinator task `829a00229b29`.
 
+- Private source **0.41.50**, commit `4b34c6a`, is staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.50/source`. Archive SHA
+  `2ff19d67457aa4632704ffe68c99d68c114d24f8b38241dd2e68ead9a5c9b09e`
+  matched; remote startup, three actual-child pipe receipt checks, and
+  offline navigation smoke passed. No input device or game input.
 - Source **0.41.50** adds child DOWN/UP timestamp receipts and late key/
   duration selection after READY under the existing stop/GO lock. The old
   G0 float API is preserved. Interrupted, stale, mismatched or cancelled

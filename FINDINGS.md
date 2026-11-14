@@ -1,5 +1,20 @@
 # FINDINGS
 
+## Source 0.41.50 private publication — 2026-11-14 01:17 UTC
+
+**VERIFIED:** Source commit `4b34c6a` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.41.50/source`. Archive SHA-256
+`2ff19d67457aa4632704ffe68c99d68c114d24f8b38241dd2e68ead9a5c9b09e`
+matched locally/remotely before extraction. Remote API and CLI startup,
+three selected-key pipe receipts (UP/LEFT/RIGHT code values), and the offline
+navigation demo passed. Each child wrote its DOWN/UP sequence to an anonymous
+pipe, not an input device. Receipt timestamps and event counts are retained
+in private `smoke.json`; the simulated demo remains distinct from live travel.
+No input device was opened or created, no game input sent and no character/
+prefix files changed. Existing owner assist0.39.6 and G0 candidate0.39.7 are
+unchanged. Next: scene/swept-motion approval and the owner-preview route
+bridge, with live observations still pending. The full goal remains active.
+
 ## Timestamped watchdog receipts and post-READY selection — 2026-11-14 01:15 UTC
 
 **VERIFIED implementation:** `timed_key_pulse_receipt` returns four child
