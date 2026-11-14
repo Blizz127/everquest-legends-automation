@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 09:50 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 09:52 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -31,6 +31,12 @@ Updated 2026-11-14 09:50 UTC for coordinator task `829a00229b29`.
   waiver or complete classification of later branches. Assist 0.39.13 and
   measurement 0.39.12 are unchanged; no new owner test or G0 repeat. Current
   level, XP/hour, deaths and camp remain unknown; no real route/XP accepted.
+  Source `f314f5c` is staged at Alienware `owner-tools/0.42.2/source`; remote
+  no-input clipping/unknown/step-phase startup checks pass. Startup SHA
+  `b71cdcaeefe38afeb3ec53cc2ac3fb4d8dcc6ed0653fd768ac569b022d0fd01d`.
+  Static region-string tracing found property registration, not a query;
+  null semantics remain unknown. Next native trace is the retained WLD loader
+  at `0x1800f2000–0x1800f2f5b`, with no native execution planned.
 - **Source 0.42.1:** automatic projected-boundary discovery and distance-ranked
   crossing proposals now finish the copied Crushbone source suffix. The run
   replays 1,006 existing terrain/static cells and both prior step certificates,

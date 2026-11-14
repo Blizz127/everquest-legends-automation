@@ -64,6 +64,38 @@ A fresh read-only check still found zero saved owner hotbutton/motion results.
 G0 remains passed, owner builds 0.39.13/0.39.12 stay unchanged, and current level,
 XP/hour, deaths and camp remain unknown. No new owner test was requested.
 
+**VERIFIED private staging:** source commit
+`f314f5c6447fdab70642d9b7e4125d5d6498c57e` is staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.2/source`. Archive SHA
+`20863809c01958b45479a7d962b9b86ec2b9a119519fe7fb305b48e06b31d3aa`.
+Remote no-input startup passes clipped-branch precision, thin-unknown refusal,
+step BSP phases, source discovery/ranking and prefix isolation. Startup SHA
+`b71cdcaeefe38afeb3ec53cc2ac3fb4d8dcc6ed0653fd768ac569b022d0fd01d`.
+All seven raised transfer bands pass the new BSP check; their supported
+endpoint phases retain the refusals described above.
+
+**VERIFIED bounded static follow-up:** retained
+`client-data/font-runtime-20261114T0706Z/EQGraphics.dll`, SHA
+`4f5f18ee9821b3e15ff25980dda7def1b2cfcdfd72a5d359ac02d0b546163168`,
+contains a Scene property-registration function at `0x1800f5220–0x1800f5b5d`.
+It installs vtable `0x1803713f0`, registers `Marked Region Index` from object
+`+0x4e0` at `0x1800f555e–0x1800f5576`, then initializes that integer to `-1`
+at `0x1800f59d8`. This is **not** a region-query/null-result proof. The earlier
+string match only located property setup; neither position selection nor
+absent-child handling has been established.
+
+Root reproduced the bounded `objdump -d -M intel` output and matched SHA
+`173233fe7d753d453814fe497d93059d5d38a76ecb9a0065fa1547cae5e2b596`.
+It is retained privately under `client-data/bsp-region-static-20261114T095149Z/`,
+with `probe.json` SHA
+`6216bd271f582e0e96f5244c9916a293570f7875d770a37892b0b794cd2cd1ea`.
+Portable REA exports/imports were used; no cached deep-analysis session was
+available, and no provider was installed/repaired or executable run. Four DLL
+exports include `CreateGraphicsEngine`, but none names a region query.
+**Next static trace:** WLD-loader candidate `0x1800f2000–0x1800f2f5b`, following
+its world/tree handle; RIP references identify `objects.wld` and `lights.wld`.
+No runtime or null-region interpretation follows from those strings alone.
+
 ## Automatic source-step continuation — 2026-11-14 09:42 UTC
 
 **VERIFIED implementation:** source 0.42.1 indexes full source boundary edges,

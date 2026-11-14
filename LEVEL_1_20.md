@@ -14,6 +14,10 @@ The next investigation is the installed client's actual region lookup/null
 behavior. Fifty-seven focused checks pass; no live acceptance follows from
 those checks. Assist 0.39.13 and measurement 0.39.12 remain the owner builds.
 
+Source `f314f5c` is staged at Alienware `owner-tools/0.42.2/source`;
+no-input startup checks pass, preserving the real thin-unknown refusal. All
+seven raised transfer bands pass BSP; supported endpoints remain unresolved.
+
 Source 0.42.1 finishes the remaining copied-source Crushbone corridor with
 five automatically discovered step crossings. It replays 1,006 accepted cells
 and two earlier step certificates, then checks 40 further connector/cap cells
