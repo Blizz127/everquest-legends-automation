@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:29 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:32 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,13 @@ Updated 2026-11-14 06:29 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.81:** copied binary resolves the dynamic chat Page/ChatWindow
+  hierarchy, frame overlap and forced input border. The new isolated resolver
+  supplies source-derived input outer/client proposals without guessing tab
+  height or chat focus. Seventeen focused checks pass; copied-client geometry
+  artifact SHA `a10a6b628aa00490b511bfb7f60417861fe062a87e341074415b2bbf6c56a44c`.
+  Scaling, clipping, current placement and focus remain unverified; no owner
+  controls or helper versions changed.
 - **Source 0.41.80:** explicit frame-reader preparation compiles copied-source
   templates and initializes numerical work before observation. Each call still
   takes a fresh frame and retains all observation time. Sixty-seven focused
@@ -141,7 +148,7 @@ Updated 2026-11-14 06:29 UTC for coordinator task `829a00229b29`.
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
   turn (2026-11-14 06:29 UTC) found zero paired records. No lead capture was initiated.
-- **Next / real-client gate:** implement selected-skin dynamic chat-page resolution and validate the source-derived scene templates against the
+- **Next / real-client gate:** validate the new selected-skin chat geometry and source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported
   initial travel envelope and current scene, then supply the checked sender
   with measured whole-motion bounds; obtain the

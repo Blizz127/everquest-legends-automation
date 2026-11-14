@@ -1,9 +1,14 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 06:28 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 06:32 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.81 resolves dynamic chat pages and input outer/client geometry
+from copied binary/XML semantics. Seventeen focused checks and a retained-loader
+copied-data check pass. Runtime chat focus, clipping, scale/alignment and active
+tab remain unverified; this source-only diagnostic enables no route input.
 
 Source 0.41.80 prepares the source templates and numerical backend before a
 new observation. The source is privately staged; eleven no-input remote checks

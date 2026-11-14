@@ -1,5 +1,66 @@
 # FINDINGS
 
+## Dynamic chat input geometry 0.41.81 — 2026-11-14 06:32 UTC
+
+**VERIFIED static reconciliation:** copied `eqgame.exe` SHA
+`fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36`
+constructs a Page under `CCW_ChatWindows`, then a ChatWindow under that Page
+(`0x14011c330`, clone/add path `0x140621c30`, ChatWindow ctor `0x1403d7b70`).
+The input lookup is at `0x1403d7c3b`. This explains why the retained static
+XML-only walker returned no `CW_ChatInput` despite the source element existing.
+
+The page sizing routine `0x140622320` uses `PageBorder.LeftTop.width`,
+`RightTop.width` and `Bottom.height`; its top is runtime tab height minus
+`TabBorder.LeftBottom.height` plus `PageBorder.Top.height`. Fresh Page/TabBox
+constructors do not force a border, matching their omitted/false source border
+styles. No extra page-border inset should be applied. Tab height depends on
+font/animation state; the old generic 22-unit constant is not established for
+these chat tabs. Bottom-anchored input bounds do not need that unknown top.
+
+The common frame transform `0x140628950` uses the maximum of each edge's three
+corresponding source pieces, then subtracts that edge's overlap without a
+second clamp. Thus selected `default_light/WDT_Chat` has effective insets
+L21/T10/R0/B7; its 35-unit right overlap cancels its art width. ChatWindow
+construction at `0x1403d7c89` forces input style bits `0xc0`, including border,
+despite XML `Style_Border=false`. Input outer and client/text boxes therefore
+differ. The full ChatWindow constructor preserves its XML stretch/fill flags;
+no outer-size override was found there. Later runtime layout is not proven.
+Private bounded disassembly artifact (272 lines, three ranges):
+`evidence/chat-layout-native-0.41.81.json`, SHA
+`f928a9392c86e4051b16a2429fb1c9438357c374bf08c99b21655d510758afde`.
+
+**VERIFIED implementation:** isolated `chat_ui_layout` resolves that dynamic
+hierarchy using the retained UiLayout and the inspected copied-binary pin.
+It carries unknown page top through the calculation, requires missing source
+references instead of silently using zero-sized art, and distinguishes forced
+input border/client bounds. It changes no retained layout or owner control,
+and reports chat focus, draft and active tab as unknown. Pixel projection is
+explicitly an unverified proposal using the retained rounding model.
+
+**VERIFIED checks:** 17 focused tests pass in 0.24 seconds. Cases cover unequal
+page corner/middle dimensions, edge corner maxima, overlaps exceeding width,
+forced input border, unknown top propagation, missing/unsupported source data,
+no double page border and non-mutating/no-input reports. Compile and whitespace
+checks pass. No full suite ran.
+
+**OBSERVED copied-data result:** the retained loader still reports no static
+input, while the new resolver returns source-unit outer
+`(99,1206,558,1227)` and client `(120,1206,537,1227)` for the copied MainChat
+placement. At the saved 1.25 scale its pixel proposals are outer
+`(124,1508,698,1534)` and client `(150,1508,671,1534)`. These are not accepted
+live crop coordinates. The saved manager has two tabs in one container, not
+two independent visible chat windows. Evidence pins 38 parsed elements and
+all copied input files in `evidence/chat-layout-0.41.81.json`, SHA
+`a10a6b628aa00490b511bfb7f60417861fe062a87e341074415b2bbf6c56a44c`.
+The animations supplement is the earlier copied `EQUI_Animations.xml` SHA
+`c1b787f5b6e5aa6a556c4aa236377494303a96a184b67ffe470c76ade1c3ac35`.
+
+**Still unverified:** current placement/clipping/active tab, final scaling and
+rounding, active runtime binding and chat focus/draft. An empty crop is not
+proof of closed chat. No game capture, login, input or character mutation ran.
+G0 remains passed; assist 0.39.6, observation 0.39.10 and F11/F12 disabled are
+unchanged. No accepted real 1–20 route or automated XP is claimed.
+
 ## Private source 0.41.80 staged — 2026-11-14 06:29 UTC
 
 **VERIFIED:** commit `ba00f00a8323a96da2ed4de834521e65d1cd961c`, archive SHA
