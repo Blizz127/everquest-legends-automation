@@ -60,6 +60,14 @@ A source loader checks its digest, client-data pins, guide hash and bounded
 operations without requiring Devbox recipe files. Read-only SSH verification
 matches the staged file; no prefix write, worker or game input occurred.
 
+**VERIFIED private source publication:** commit `2f9207f` is staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.30/source`. All 79 selected
+startup checks pass without skips; imports, CLI, copied-data pins and private
+guide validation pass. No worker/device/game input or install modification.
+Archive SHA `8f108fb0620b7deba3377c67768ce01c90dd11206feceb2a6f99018fde35dcf3`;
+startup SHA `523d45be9a53193765cb783840b33be3f034a2e47bedd9e6ac6351e4842f260c`;
+test output SHA `ebbaed227f7118846ba56b9b037f4d412ab23c336cbb14c5b05ef9f894cc462c`.
+
 **Remaining:** typed fresh transition observations, continued pulses while
 astride a riser, bounded settling and actual landing-cap acknowledgment, then
 the owner runtime using its existing sender, input observer and log lease.

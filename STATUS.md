@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 14:43 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 14:44 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -27,8 +27,11 @@ Updated 2026-11-14 14:43 UTC for coordinator task `829a00229b29`.
   `88aecac52585363add569d3f66ed9ba19921725e81e3a1626e96c50cfdc847e7`.
   **Next:** typed transition observations and pulse/settling/landing controller,
   then owner-runtime integration with the existing sender/reader/stop lock.
-  Source publication pending. No new owner build or game input; movement
-  0.39.20/assist 0.39.13 unchanged. G0 passed; current level/XP/hour/deaths/camp
+  Source `2f9207f` staged at Alienware `owner-tools/0.42.30/source`; all 79
+  selected startup checks pass with zero skips, imports/CLI/copied pins and
+  private guide match. Startup SHA
+  `523d45be9a53193765cb783840b33be3f034a2e47bedd9e6ac6351e4842f260c`.
+  No worker/device/game input. Owner movement 0.39.20/assist 0.39.13 unchanged. G0 passed; current level/XP/hour/deaths/camp
   unknown. No accepted 1–20 route or fresh-character 1–50 run.
 - **Source 0.42.29:** source-only observation, receipt/landing acknowledgment,
   supervised sender and ordinary walk driver are implemented. Actual OS-pipe
