@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 16:50 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 16:51 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.39 / preview 0.39.27 candidate:** empty character history can
+- **Source 0.42.39 / published preview 0.39.27:** empty character history can
   bootstrap NPC names from the pinned reduced owner observations on Freeport:
   GFay five names, Crushbone four, Butcherblock none. Existing character history
   wins; fresh target/level checks remain. Fixed camp casting refusal after a
@@ -15,7 +15,10 @@ Updated 2026-11-14 16:50 UTC for coordinator task `829a00229b29`.
   84 focused checks also pass on Alienware in 44.36 seconds including the full
   fallback travel→camp handoff fixture. Output SHA
   `69b7341fb562869340fb0efeaeccdde094475a9e2f4557c12022c5c4acd22f4c`.
-  Private publication/startup checks are in progress. Private
+  Published at Alienware `owner-assist/0.39.27` and `owner-tools/0.42.39/source`,
+  source `056a9cb`; runtime/test files match the validated candidate. Manifest,
+  installed client/spell pins, both guides, reduced history and GUI startup pass.
+  Startup SHA `788a91164797fed01a3da3c93e98e12c4cc8bfaa8c4377dd2e3ba0c418e490cf`. Private
   artifact SHA `0d43373b543d09a41e43f76aa42bfee9e6d892dda898ea238a4cac2fe8d73676`.
   No game input or character action. G0 remains passed. Next: owner-run camp
   acceptance, current-level camp selection and continuous motion evidence for

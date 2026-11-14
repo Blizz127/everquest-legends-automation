@@ -1,5 +1,31 @@
 # FINDINGS
 
+## 2026-11-14 16:51 UTC — 0.39.27 published on Alienware
+
+VERIFIED: source 0.42.39 revision `056a9cb5ab570091ac03565a426c1f28baa8f84b` and owner preview
+0.39.27 are published under Alienware `~/.local/share/eql-automation/` at
+`owner-tools/0.42.39/source` and `owner-assist/0.39.27`. Runtime and test bytes
+match the 84-pass validated candidate. Manifest, installed executable/spell
+pins, both route guides, reduced owner NPC history and GUI startup pass.
+The GUI image hash is unchanged from the previously inspected 0.39.26 image.
+
+- Archive SHA: `5defdd3054e2f3aa72f4fb22f1b69127f1cb6465cff257d318af7c49819e9f49`.
+- Startup SHA: `788a91164797fed01a3da3c93e98e12c4cc8bfaa8c4377dd2e3ba0c418e490cf`.
+- Check output SHA: `69b7341fb562869340fb0efeaeccdde094475a9e2f4557c12022c5c4acd22f4c`.
+- Publication record: `releases/eql-owner-journey-0.39.27-staging.json`.
+
+Existing rotation/GUI code is retained. No worker, device, game input, settings
+write, prefix modification, login, character action or session interruption.
+The owner can close the previous helper and launch
+`~/.local/share/eql-automation/owner-assist/0.39.27/launch.sh`.
+F8 assist, F9 stop, F10 heal and F11 stationary camp/OFF are unchanged.
+G0 remains passed, including the owner's visible-stop confirmation; no repeat.
+
+No real-client traversal, camp acceptance or automated level gain was established
+by these checks. Full 1–20/1–50 remains unfinished. Actual current level, XP,
+XP/hour, deaths and camp remain unknown. Next: owner-run camp acceptance and
+preserved motion/heading observations through camp before enabling relocation.
+
 ## 2026-11-14 16:50 UTC — fresh-character candidate fallback and NPC-selection fix
 
 VERIFIED: source 0.42.39 derives a 5,370-byte private NPC-name artifact from
