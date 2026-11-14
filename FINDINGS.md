@@ -22,6 +22,13 @@ queued starts, replacement logs, other targets/adds, locked encounters, expired
 replies, zone/focus loss, low resources and kills during consideration refresh.
 No game input, owner login or real kill acceptance was performed.
 
+The first Alienware candidate passed all 29 checks but its GUI smoke caught
+the inherited disabled travel tab, which also disabled the new camp button.
+That candidate and its failed startup evidence were retained as unpublished
+artifacts after verifying no process was using either directory. The tab and
+mode indicators are corrected in the replacement candidate; no process was
+stopped and no game input was sent by the smoke.
+
 **VERIFIED retained evidence:** `owner-traces/eqlog-Legira-20261113.txt` under the
 private data store is 1,858,221 bytes, SHA
 `d622b3c12567f903d411860d3de1a0be28e4e8b38be7bbdc2bebfdd62c60f04e`.

@@ -1,5 +1,32 @@
 --- a/eql_rotation.py
 +++ b/eql_rotation.py
+@@ -221,7 +221,7 @@
+             banner_layout.addWidget(QLabel(
+                 "MEASUREMENT ONLY    F9/F11 STOP    COMBAT + LEVELING DISABLED" if measurement_only else
+                 "F6  PREPARE    F8  ON    F9  OFF    F7  ON/OFF    F10  HEAL    "
+-                "F11/F12  DISABLED"))
++                "F11  CAMP TEST    F12  DISABLED"))
+             layout.addWidget(banner)
+             controls = QGridLayout()
+             self.character = QComboBox()
+@@ -346,14 +346,14 @@
+                 self.tabs.setTabText(3, "Movement measurement")
+                 self.tabs.setCurrentIndex(3)
+             else:
+-                self.tabs.setTabText(3, "Travel unavailable")
+-                self.tabs.setTabEnabled(3, False)
++                self.tabs.setTabText(3, "Stationary camp test")
++                self.tabs.setTabEnabled(3, True)
+             layout.addWidget(self.tabs, 1)
+             footer = QLabel(
+                 "G0 stop check only · one short pulse · F9/F11 cancel · leveling disabled"
+                 if measurement_only else
+                 "F6 prepares  ·  F8 turns persistent combat on  ·  F9 turns it off  ·  F7 toggles on/off  ·  "
+-                "Movement, targeting and melee are manual  ·  F11/F12 disabled")
++                "F8 assist: manual movement/targeting  ·  F11: one stationary kill  ·  Melee is manual")
+             footer.setWordWrap(True)
+             footer.setObjectName("muted")
+             layout.addWidget(footer)
 @@ -384,7 +384,7 @@
              self.ap_default_status = (
                  "Only the G0 movement-stop check is available: one 0.15-second forward pulse. F9/F11 cancel."
@@ -31,7 +58,31 @@
              self.camps = QTableWidget(0, 5)
              self.camps.setHorizontalHeaderLabels(["Levels", "Zone", "Camp", "Autopilot", "Anchor"])
              self.camps.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
-@@ -908,6 +910,8 @@
+@@ -647,7 +649,7 @@
+             state = autopilot.get("state", "off")
+             if state != self.ap_badge:
+                 self.ap_badge = state
+-                kind = "MEASUREMENT" if measurement_only else "AUTOPILOT"
++                kind = "MEASUREMENT" if measurement_only else "CAMP TEST"
+                 label = {"running": "RUNNING", "paused": "PAUSED", "halted": "STOPPED"}.get(
+                     state, "IDLE" if measurement_only else "OFF")
+                 self.ap_state.setText(f"●  {kind} {label}")
+@@ -787,10 +789,11 @@
+             self.status.setText(state["status"])
+             active, preparing = state["active"], state["preparing"]
+             self.chat_recovery.setEnabled(not measurement_only and not active and not preparing)
+-            if (active, preparing) != self.badge:
+-                self.badge = (active, preparing)
++            camp_running = (state.get("autopilot") or {}).get("state") == "running"
++            if (active, preparing, camp_running) != self.badge:
++                self.badge = (active, preparing, camp_running)
+                 self.state_badge.setText("●  MEASUREMENT ONLY" if measurement_only else
+-                                        "●  ASSIST ON" if active else "●  PREPARING" if preparing else "●  ASSIST OFF")
++                                        "●  CAMP TEST" if camp_running else "●  ASSIST ON" if active else "●  PREPARING" if preparing else "●  ASSIST OFF")
+                 self.state_badge.setStyleSheet("color: #7addac;" if active else "color: #f5ca72;" if preparing else "color: #a9b5c5;")
+             known = state["known"]
+             self.book_status.setText(f"{known} learned Paladin/Cleric spells read · Bar {'prepared' if state['prepared'] else 'needs preparation'}" if known is not None else
+@@ -908,6 +911,8 @@
                      "travel_tab_enabled": window.tabs.isTabEnabled(3),
                      "travel_tab_label": window.tabs.tabText(3),
                      "chat_recovery_enabled": window.chat_recovery.isEnabled(),
