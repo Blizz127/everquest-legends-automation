@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:26 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:28 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -17,10 +17,16 @@ Updated 2026-11-14 07:26 UTC for coordinator task `829a00229b29`.
   Eighteen copied-font/saved-layout cases pass; `/l` and `/locatio` place the
   caret one pixel beyond simple concatenation. Evidence SHA
   `2155dec6b579789458ed3b22b97aec03311546f1692305661dbb595022278064`.
+  Source `b8e5c07` is staged at `owner-tools/0.41.87/source`; six remote
+  no-input startup/model checks pass. All 18 geometry reports reproduce
+  devbox results exactly; remote artifact SHA
+  `8e0a7b6c016985c0b985a680e3ff873dec277e206462a2940ba172c97afaa110`.
   The factory-interface mapping is resolved; the source default filter is
   linear min/mag, point mip. Final GPU projection remains separate: the copied
   shader text and native constant upload declare different buffer layouts, so
-  their combination is not assumed. No game runtime/capture/input occurred.
+  their combination is not assumed. Thirty-four small installed TS shaders
+  are now copied for static selection/reflection analysis. No game runtime,
+  capture or input occurred.
   Owner controls remain unchanged. At 07:26 UTC no stationary observation
   pair was saved. Next: resolve the selected shader path and use the pending
   owner observation for actual scene/position binding; motion/height/envelope

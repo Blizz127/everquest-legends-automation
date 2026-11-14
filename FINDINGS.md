@@ -1,5 +1,32 @@
 # FINDINGS
 
+## Private source 0.41.87 staged — 2026-11-14 07:28 UTC
+
+**VERIFIED:** source `b8e5c07db40c03543b5feccac2993a3946052925`, archive SHA
+`0bc8d770626ec2dcebbe625cc65d295334a35497d0951eeb678cdf3282d28c10`,
+is staged at Alienware `owner-tools/0.41.87/source`. Six focused no-input
+checks pass: startup/import, retained probe/font pins, exact reproduction of
+all 18 devbox geometry reports, false live/input flags, mismatched probe-height
+refusal and CLI startup. Remote `font-geometry-smoke.json` SHA
+`8e0a7b6c016985c0b985a680e3ff873dec277e206462a2940ba172c97afaa110`.
+Canonical geometry digest is
+`be8963b1a7dde5f8391f67a76d580120c06c4d3d88ed69fb8a7a9de85985a129`;
+local staging record is `releases/eql-automation-0.41.87-staging.json`.
+No device, live capture, game input or protected write was used.
+
+Additional bounded static render/metric evidence is retained as
+`evidence/font-render-state-native-0.41.87.json`, SHA
+`a442cf3d777cede9c68efe8c1a309acd580e646af78ce36a593e7811faf168b5`.
+The copied pipeline table contains two entries with the font FVF layout;
+neither supplies its compiled shader filename. All 34 small installed
+`RenderEffects/TS/*.cso` files (122,880 bytes total) were copied read-only for
+static signature/reflection/selection analysis to the private shader store's
+`TS/` directory. Its manifest SHA is
+`be83e0d4e7591940302af0f6edeb955ef57a3bee546c847d1eef9450a49a7d0c`.
+These are retained source artifacts, not proof of an active shader binding.
+The owner launchers and pending stationary check are unchanged. G0 remains
+passed; no live route/leveling acceptance is added.
+
 ## Source font geometry 0.41.87 — 2026-11-14 07:26 UTC
 
 **VERIFIED static linkage:** `CreateGraphicsEngine` constructs the interface
