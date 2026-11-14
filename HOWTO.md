@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.50** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.51** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -640,14 +640,22 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Source 0.42.50 is privately published on Alienware at:
+Source 0.42.51 passed focused validation; private publication is pending at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.50/source
+~/.local/share/eql-automation/owner-tools/0.42.51/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.42.50 adds an optional camp-position→probe handoff in the
+above. Source 0.42.51 fits a completed standard seven-probe camp sequence using
+its actual separate before/after readings and the existing rotation tool's
+calibration fitter. Later confirmations and planning readings retain their own
+timestamps. Unexplained translation, changed ownership or inconsistent turns
+prevent a fit. The completion trace includes the conditional estimate or a
+specific reason it is unavailable. This does not install live calibration,
+certify a maximum speed or authorize onward movement.
+
+Source 0.42.50 adds an optional camp-position→probe handoff in the
 retained engine. It preserves the same reader lease, sender, configured hotbutton
 and input monitor. A separate branch admits only the active probe driver's key;
 combat and unrelated input stay blocked. F8/F9 stop the runtime and return the
@@ -657,8 +665,8 @@ not resume the old camp at a changed position.
 
 No probe plan provider is installed by default, so the owner launcher and
 preview **0.39.30** retain their existing behavior. Current movement admission,
-independent scene/motion producers, calibration reduction and next-route
-adoption remain unfinished. No new owner test or G0 repeat is needed.
+independent scene/motion producers and next-route adoption remain unfinished.
+The new conditional calibration reducer is connected to probe completion. No new owner test or G0 repeat is needed.
 
 Source 0.42.49 adds a finite `CampProbeRuntime` and camp-specific
 watchdog sender. It sequences source preparation, fresh starts, movement,

@@ -12,6 +12,8 @@ from types import SimpleNamespace
 from .camp_stopped_height import measure_camp_stopped_height
 from .camp_probe_preparation import CampProbePreparation
 from .camp_probe_runtime import CampProbeRuntime
+from .camp_probe_calibration import reduce_camp_probes
+from .motion_calibration import CalibrationUnavailable
 from .owner_camp_probe import CampProbePlan
 from .ground_binding import finite
 from .location_hotkey import HOTKEY_CODES, OwnerLocationHotkey, send_location_hotkey
@@ -231,6 +233,15 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     p.probe_record=p.runtime.snapshot()
                     p.probe_record['results']=[json.loads(r.payload) for r in p.runtime.results]
                     p.probe_record['preparations']=[tx.preparation.snapshot() for tx in p.runtime.transactions]
+                    import navigation  # Existing retained rotation tool's fitter.
+                    try:
+                        fit=reduce_camp_probes(p.runtime,legacy=navigation,
+                            record_id='camp-'+p.runtime.results[-1].sha256)
+                        calibration=dict(status='conditional',estimate=fit)
+                    except CalibrationUnavailable as error:
+                        calibration=dict(status='unavailable',reason=str(error))
+                    self._camp_position_current(p)
+                    p.probe_record['calibration']=calibration
                     p.probe_complete=True
                     # A later planner must explicitly adopt the reached reference.
                     # Do not resume the old stationary camp after movement.

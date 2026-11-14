@@ -77,6 +77,8 @@ def test_real_camp_collection_hands_same_scope_to_probes_then_stops(camp,monkeyp
     record=e.camp_position_last_result
     assert record['outcome']=='probe_complete',h.notices
     assert record['probe']['completed_probes']==2 and len(record['probe']['results'])==2
+    assert record['probe']['calibration']['status']=='unavailable'
+    assert 'standard seven-probe' in record['probe']['calibration']['reason']
     assert [k for kind,k,v in h.events if kind==1 and v==1 and k!=62]==[103,106]
     assert not h.commands and not e.sender.held and scope.runtime.closed
     assert e.live_zone_tracker.lease is None and e.camp_session is None and e.journey is None

@@ -1,5 +1,36 @@
 # FINDINGS
 
+## 2026-11-14 18:26 UTC — source 0.42.51, conditional camp calibration
+
+Implemented a separate-leg reducer which retains all 14 actual immediate
+before/after pairs rather than inventing an eight-pair chain. Each transaction's
+first post-release pair supplies displacement; its later post-geometry pair is
+confirmation evidence. Increasing sequence/time, stationary collection gaps,
+source-height correspondence and exact continued transaction ownership are
+checked. The standard seven keys/durations and the existing retained fitter's
+latency/direction/left-turn checks remain required. The original eight-pair
+measurement API retains its report format.
+
+The optional retained-engine handoff now records a conditional estimate or an
+explicit unavailable reason at completion. Successful or failed fitter callbacks
+must leave ownership/evidence intact. No saved live calibration is written and
+no next route is started. Future speed bounds, client input-consumption timing,
+full-turn ambiguity and current heading remain unverified.
+
+Initial local focused run: VERIFIED 46 passed, one failure from numeric zone IDs
+at the generic reducer boundary. The adapter now uses a tagged zone identity,
+retaining the actual numeric ID/display in raw evidence. VERIFIED final Alienware candidate
+`owner-tools/0.42.51-validation-1`: **58 checks passed in 19.09 seconds**, output
+SHA `85b139a2c149785140de2cf08616a0e4034751d9e7e993cb81ba47aa2eb30514`.
+Scope: new per-leg/transaction reduction, original calibration behavior and
+retained-engine handoff/F8/F9 checks. Private publication pending. All positions/receipts in new ledger tests are synthetic; source
+floor transactions and the retained fitter are real code. Existing engine tests
+use actual watchdog/OS-pipe writes with synthetic game feedback. No game input,
+character action or prefix edits. Preview stays 0.39.30; G0 passed, no repeat.
+Current level, XP/hour, deaths and camp unknown. Full 1–20 and hands-off 1–50
+remain unaccepted. Next: explicit current movement policy and reached-reference
+adoption for onward routing.
+
 ## 2026-11-14 18:21 UTC — source 0.42.50 privately published
 
 VERIFIED Alienware `owner-tools/0.42.50/source`, revision

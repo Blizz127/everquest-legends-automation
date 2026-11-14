@@ -106,10 +106,32 @@ def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
     retains raw samples, timing and conditional uncertainty for later review.
     It cannot be fed to the legacy saved-calibration loader as a live result.
     """
-    if (len(pairs) != 8 or len(receipts) != 7 or not isinstance(record_id, str)
+    if len(pairs) != 8:
+        raise CalibrationUnavailable("Need eight stopped pairs")
+    return _reduce_legs(pairs[:-1], pairs[1:], receipts, pairs=pairs,
+        legacy=legacy, horizontal_error=horizontal_error, record_id=record_id,
+        separated=False)
+
+
+def reduce_probe_legs(before, after, receipts, *, legacy, horizontal_error, record_id):
+    """Fit seven individually observed probes without inventing shared pairs.
+
+    Each before/after pair is kept at its actual time. Quiet gaps are checked
+    for translation; unchanged heading across those gaps remains an assumption.
+    The seven keys and requested durations must match PROBES exactly.
+    """
+    if len(before) != 7 or len(after) != 7:
+        raise CalibrationUnavailable("Need seven distinct before/after pairs")
+    pairs = [pair for leg in zip(before, after) for pair in leg]
+    return _reduce_legs(before, after, receipts, pairs=pairs, legacy=legacy,
+        horizontal_error=horizontal_error, record_id=record_id, separated=True)
+
+
+def _reduce_legs(before, after, receipts, *, pairs, legacy, horizontal_error,
+                 record_id, separated):
+    if (len(receipts) != 7 or not isinstance(record_id, str)
             or not record_id.strip() or not finite(horizontal_error) or horizontal_error <= 0):
-        raise CalibrationUnavailable("Need eight pairs, seven receipts and an explicit positive position-error assumption")
-    points, radii = [], []
+        raise CalibrationUnavailable("Need seven receipts and an explicit positive position-error assumption")
     binding = None
     previous = None
     for pair in pairs:
@@ -136,10 +158,15 @@ def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
         if (not .4 - 1e-9 <= b.at - a.at <= 2.5 or drift > .25
                 or abs(a.raw_yxz[2] - b.raw_yxz[2]) > .25):
             raise CalibrationUnavailable("Positions do not form a stopped pair")
-        points.append(tuple((x + y) / 2 for x, y in zip(a.raw_yxz, b.raw_yxz)))
-        radii.append(horizontal_error + drift / 2)
     if pairs[-1].second.at - pairs[0].first.at > 120:
         raise CalibrationUnavailable("Finite experiment exceeded its 120-second analysis window")
+
+    if separated:
+        for index in range(6):
+            p, r = pair_geometry(after[index], horizontal_error)
+            q, s = pair_geometry(before[index+1], horizontal_error)
+            if math.dist(p[:2], q[:2]) > min(.25, r+s) or abs(p[2]-q[2]) > .25:
+                raise CalibrationUnavailable("Unexplained translation between probe legs")
 
     for index, (probe, receipt) in enumerate(zip(PROBES, receipts)):
         if not isinstance(receipt, PulseReceipt):
@@ -152,25 +179,27 @@ def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
                 or not stamps[0] <= stamps[1] < stamps[2] <= stamps[3]
                 or not 0 < receipt.maximum_held_seconds <= .2
                 or stamps[2] - stamps[1] < probe.seconds - 1e-9
-                or not 0 <= stamps[0] - pairs[index].second.at <= .5
-                or not .12 - 1e-9 <= pairs[index + 1].first.at - stamps[3] <= 2.5):
+                or not 0 <= stamps[0] - before[index].second.at <= .5
+                or not .12 - 1e-9 <= after[index].first.at - stamps[3] <= 2.5):
             raise CalibrationUnavailable("Wrong key/duration, cancelled receipt, overrun or out-of-order stopped observation")
-        if abs(points[index + 1][2] - points[index][2]) > .25:
+        start, start_error = pair_geometry(before[index], horizontal_error)
+        end, end_error = pair_geometry(after[index], horizontal_error)
+        if abs(end[2] - start[2]) > .25:
             raise CalibrationUnavailable("Experiment changed height")
-        if (probe.key != "forward" and math.dist(points[index][:2], points[index + 1][:2])
-                > min(.25, radii[index] + radii[index + 1])):
+        if (probe.key != "forward" and math.dist(start[:2], end[:2])
+                > min(.25, start_error + end_error)):
             raise CalibrationUnavailable("Turn translated the character; possible strafe or residual movement")
 
     legs = []
     for index in (0, 2, 4, 6):
-        legs.append(measure_forward(index, pairs[index], pairs[index+1], receipts[index],
+        legs.append(measure_forward(index, before[index], after[index], receipts[index],
                                     legacy=legacy, horizontal_error=horizontal_error))
     # An overlap is needed before treating four legs as a constant-speed fit.
     speed, speed_low, speed_high = common_speed(legs)
 
     turns = []
-    for index, before, after in zip((1, 3, 5), legs, legs[1:]):
-        turns.append(measure_turn(index, before, after, receipts[index], legacy=legacy))
+    for index, left_leg, right_leg in zip((1, 3, 5), legs, legs[1:]):
+        turns.append(measure_turn(index, left_leg, right_leg, receipts[index], legacy=legacy))
     short, long, left = turns
     if short["delta"] * long["delta"] <= 0 or short["delta"] * left["delta"] >= 0:
         raise CalibrationUnavailable("Right/left direction measurements contradict one another")
@@ -202,7 +231,7 @@ def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
             (left["seconds"], left["delta"]), now=0.)
     except legacy.CalibrationError as exc:
         raise CalibrationUnavailable("Retained fit domain not resolved: " + str(exc)) from exc
-    return dict(format="eql-conditional-motion-estimate-v1", record_id=record_id,
+    result = dict(format="eql-conditional-motion-estimate-v1", record_id=record_id,
         zone_binding=dict(zone=binding[0], generation=binding[2],
                           source='unbound' if binding[0] is None else 'supplied_log_binding'),
         input_authorized=False, real_client_accepted=False, live_calibration_verified=False,
@@ -228,3 +257,11 @@ def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
         independent_left_residual_degrees=abs(left["delta"]) - expected,
         forward_legs=legs, turns=turns, pairs=[asdict(p) for p in pairs],
         receipts=[asdict(r) for r in receipts], proposed_sequence=[asdict(p) for p in PROBES])
+
+    if separated:
+        result.update(format="eql-conditional-separated-motion-estimate-v1",
+            before_pairs=[asdict(p) for p in before], after_pairs=[asdict(p) for p in after],
+            final_observed_at=after[-1].second.at, current_heading_verified=False)
+        result.pop("pairs")
+        result["assumptions"].append("no unobserved heading change between probe legs")
+    return result
