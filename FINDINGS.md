@@ -1,5 +1,31 @@
 # FINDINGS
 
+## 2026-11-14 16:43 UTC — 0.39.26 published on Alienware
+
+VERIFIED: source 0.42.38 revision
+`33b7fc9e58eeb3d0fd2e2af6137bf3149bd01e1c` and owner preview 0.39.26 are
+published at `owner-tools/0.42.38/source` and `owner-assist/0.39.26` under the
+Alienware private store. The release's runtime and test files match the
+40-pass validated candidate byte for byte. No broad repeated suite was run.
+Both guide pins, packaged source manifest, installed executable/spell pins,
+GUI startup and obsolete measurement-flag refusal pass. The GUI was visually
+inspected: destination selector and travel button are visible and enabled.
+Its saved Legira/level-7 settings do not establish the current character state.
+
+- Release archive: `15ee2da1a72ef27c44c79f1f3e276dcd39e23f353540381a0fca1df7a7b3644c`.
+- Startup evidence: `75e1980e2bf9f4ccd8825db5cc5b0313e00ff35b7034ee4c1fb7dcf2251d42e0`.
+- GUI screenshot: `ccbcc1b39cf3fbd8f4262848df736d8cbe2db64cf58fc75a1c36c173927287ad`.
+- Local publication record: `releases/eql-owner-journey-0.39.26-staging.json`.
+- Local inspected GUI: `owner-build-drafts/0.39.26/alienware-camp-gui.png`.
+
+No worker/device/game input, settings write, prefix modification or owner
+session interruption during staging. Existing native engine hash is unchanged.
+No live traversal, camp suitability, automated level gain or complete 1–20/1–50
+acceptance. Owner can now explicitly test North Wall/Castle from near Slave
+Mines; current-floor rebuilding and all movement limits still apply. Automatic
+level-based camp relocation, earlier levels and later destinations remain
+unfinished. G0 stays passed; no repeat. Current level/XP/hour/deaths/camp unknown.
+
 ## 2026-11-14 16:40 UTC — North Wall copied route checked; owner candidate
 
 VERIFIED: the compacted reverse guide from Slave Mines `(426,74)` to the

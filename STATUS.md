@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 16:40 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 16:43 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.38 / candidate preview 0.39.26:** the compacted Slave Mines →
+- **Source 0.42.38 / published preview 0.39.26:** the compacted Slave Mines →
   North Wall/Castle path passes full copied terrain/static/BSP/native checks:
   237 guide operations, 247 checked cells, seven steps, 126.24 seconds including
   retained-prefix replay. Private guide SHA
@@ -18,10 +18,15 @@ Updated 2026-11-14 16:40 UTC for coordinator task `829a00229b29`.
   connector refusals); preserved evidence is in FINDINGS. All **40 focused
   checks pass on Alienware** in 322.79 seconds. Output SHA
   `3d5bc125e878da71b31c5664631daf882ccf20ff5184f962723e5bfba94929f3`.
-  Publication and GUI/startup checks remain pending. No game input,
-  character action or protected-prefix edit. Next: finish validation/startup,
-  publish the explicit destination test, then real owner acceptance and further
-  level progression. Current actual level/XP/hour/deaths/camp remain unknown.
+  **Published on Alienware:** source `33b7fc9` at `owner-tools/0.42.38/source`,
+  preview at `owner-assist/0.39.26`. Runtime/test bytes match the validated
+  candidate. Both guides, manifest, installed executable/spell pins and
+  GUI/startup checks pass. Selector and travel button visually inspected.
+  Startup SHA `75e1980e2bf9f4ccd8825db5cc5b0313e00ff35b7034ee4c1fb7dcf2251d42e0`.
+  No game input, settings write, character action, prefix edit or interruption.
+  Next: owner-run North Wall acceptance, automatic level-based relocation and
+  remaining early/later progression. Current actual level/XP/hour/deaths/camp
+  remain unknown. This is a supervised destination choice, not full 1–20.
 - **Source 0.42.37 / later-camp transit:** 23 focused checks pass for long source-face
   proposals, reversed retained guides and full itinerary validation. The copied
   Slave Mines prefix replays exactly: 1,065 cells, seven steps, final proof
