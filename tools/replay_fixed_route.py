@@ -65,7 +65,7 @@ def local_seam_diagnostic(view, footprint, reference, component, window, detail_
 
 
 def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=False,
-        shorten_ground_step=False):
+        shorten_ground_step=False, plan=PLAN, plan_sha256=PLAN_SHA):
     began = time.monotonic()
     sys.path[:0] = [str(PROJECT), str(HELPER)]
     from eql_automation.fixed_route_follower import FixedRoute, FixedRouteFollower, RouteHalt
@@ -75,6 +75,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     from eql_automation.location_log import RawLocationFix
     from eqnav import steer
     pins = dict(PINS)
+    pins[plan] = plan_sha256
     for path in (Path(__file__), PROJECT / "eql_automation/fixed_route_follower.py",
                  PROJECT / "eql_automation/bsp_detail_view.py",
                  PROJECT / "eql_automation/portal_surface_audit.py"):
@@ -97,7 +98,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         if any(p.is_symlink() or sha256(p.read_bytes()).hexdigest() != h for p, h in pins.items()):
             raise ValueError("Replay source changed")
     verify()
-    route = FixedRoute.load(PLAN, expected_sha256=PLAN_SHA, mesh_sha256=MESH_SHA)
+    route = FixedRoute.load(plan, expected_sha256=plan_sha256, mesh_sha256=MESH_SHA)
     mesh = BspDetailMeshView.load(MESH, zone=route.zone)
     sweep_view = None
     if ground_sweep:
@@ -253,6 +254,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument('--plan', type=Path, help='Optional explicitly pinned private fixed-plan candidate')
+    parser.add_argument('--plan-sha256', help='Required SHA-256 when --plan is supplied')
     parser.add_argument("--speed", type=float, default=30.77,
                         help="Explicit idealized speed; default is historical G0, not current calibration")
     parser.add_argument("--min-hold", type=float, default=.02,
@@ -264,6 +267,15 @@ def main():
     parser.add_argument('--shorten-ground-step', action='store_true',
                         help='Offline only: recheck successively shorter forward holds down to --min-hold')
     args = parser.parse_args()
+    plan, plan_sha256 = PLAN, PLAN_SHA
+    if args.plan is not None or args.plan_sha256 is not None:
+        if (args.plan is None or args.plan_sha256 is None or len(args.plan_sha256) != 64
+                or any(c not in '0123456789abcdef' for c in args.plan_sha256)):
+            parser.error('--plan and its lowercase --plan-sha256 must be supplied together')
+        plan, plan_sha256 = args.plan.expanduser(), args.plan_sha256
+        if (plan.parent.resolve() != (STORE/'nav-candidates').resolve() or plan.is_symlink()
+                or not plan.is_file() or not 0 < plan.stat().st_size <= 10*1024*1024):
+            parser.error('Plan must be a bounded regular private nav-candidates file')
     if (args.local_seam_experiment or args.shorten_ground_step) and not args.ground_sweep:
         parser.error('Ground experiments require --ground-sweep')
     output = args.output.expanduser()
@@ -275,7 +287,8 @@ def main():
     os.umask(0o077)
     os.nice(15)
     run(output, speed=args.speed, min_hold=args.min_hold, ground_sweep=args.ground_sweep,
-        local_seam_experiment=args.local_seam_experiment, shorten_ground_step=args.shorten_ground_step)
+        local_seam_experiment=args.local_seam_experiment, shorten_ground_step=args.shorten_ground_step,
+        plan=plan, plan_sha256=plan_sha256)
 
 
 if __name__ == "__main__":

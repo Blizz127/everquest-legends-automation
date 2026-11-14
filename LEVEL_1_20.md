@@ -202,3 +202,10 @@ plane grade 1.3266 against limit 1.0. Adaptive shorter holds allow two extra
 steps but the minimum hypothetical hold still fails. The next correction
 must resolve the source/route geometry at that face. No G2/F11 leg or level
 progress is accepted by these copied-data runs.
+
+Source 0.41.53 relocates the two crossings around GFay segment 6 westward,
+keeping the same 155-polygon corridor. The three changed segments pass filled
+radius-1.2 ground tubes, legacy strips/turns and the complete centerline BSP
+audit. The guarded follower now reaches segment 11, where another reciprocal
+one-ULP tile gap refuses coverage. The original meshes and client data remain
+unchanged. These conditional copied-data results still do not enable F11.

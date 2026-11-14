@@ -1,7 +1,22 @@
 # STATUS
 
-Updated 2026-11-14 01:33 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:40 UTC for coordinator task `829a00229b29`.
 
+- Source **0.41.53** repairs the GFay steep-section route by moving two
+  portal crossings west. The same 155-polygon corridor is retained; all three
+  changed segments pass continuous radius-1.2 ground tubes and existing
+  strip/turn clearance checks. Full centerline BSP: 376 clear spans.
+- **VERIFIED:** A midpoint control still fails and exports no plan. The
+  guarded follower clears the repaired section and reaches segment 11,
+  step 143, before a second one-ULP tile gap stops it. Replay SHA
+  `26c21993ea75bbf0dcfd6c893adacd2f58737e42031de2bdee2d94041e7f3113`.
+  Wrong/missing plan pins are refused; no source mesh is changed.
+- Next: generalize the bounded reciprocal-portal precision correction with
+  source support and replay the remaining route. Live scene, calibration,
+  complete collision/hazard checks and input integration remain unaccepted.
+  Current level/XP/XP-hour/deaths/camp are unknown beyond owner-reported
+  Legira 7 in GFay. G0 visible stop passed; no accepted 1–20 leg or automated
+  XP. Assist 0.39.6 and separate G0 candidate 0.39.7 remain unchanged.
 - Private source **0.41.52**, commit `96f9576`, is staged at Alienware
   `~/.local/share/eql-automation/owner-tools/0.41.52/source`. Archive SHA
   `f356e21c212df80339cfc400ebf114c7ed362abb4f0917f17082ba239eed270f`

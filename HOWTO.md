@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.52 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.53 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,9 +19,18 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.52 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.52/source`; the runnable
+Source tools 0.41.53 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.53/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.53 adds explicit portal relocation for offline route repairs.
+Moving two GFay crossings west passes all three affected 1.2-radius ground
+tubes, the existing strip/turn clearance checks, and the full route's 376 BSP
+spans. The follower replay then gets through the steep section and reaches
+segment 11, where a second one-ULP tile gap stops it. The unsafe midpoint
+control is rejected and exports no plan. These are copied-data diagnostics;
+no playable 1–20 leg or real movement is accepted. F11 remains unavailable,
+and this source release needs no new owner command.
 
 Source 0.41.52 reconciles the tiny GFay portal gap against the copied client
 terrain. The entire failed footprint lies inside one source path triangle.
@@ -523,7 +532,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.52/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.53/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 

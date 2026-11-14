@@ -1,5 +1,57 @@
 # FINDINGS
 
+## GFay westward portal repair — 2026-11-14 01:40 UTC
+
+**VERIFIED source comparison:** The failed step-63 footprint is wholly inside
+copied `gfaydark.wld` fragment 698 face 21, flag 0, Diffuse grass material.
+Its source grade is 0.2222886, versus the baked face 248932 grade 1.3265971.
+Source reference Z is 0.4118495 below the baked reference. The private source
+comparison artifact records exact triangle vertices, containment and hashes;
+it does not certify static objects, collision or live movement. A separate
+read-only helper probe observed no placed-object triangle near the failed
+footprint and normal BSP at its reference. Those observations motivated
+routing around the baked face rather than flattening geometry or relaxing
+slope limits.
+
+**VERIFIED repair:** `tools/repair_fixed_route_portals.py` accepts a pinned
+private plan and explicit raw-endpoint portal fractions. For the retained
+GFay route, crossings after segments 5 and 6 moved to fraction 0.6, west of
+the steep detail face. It recomputes each side's own detail height and keeps
+the full polygon sequence. All three changed segments pass the original
+strip/clearance constraints; both relocated portals pass their sampled turn
+checks. Their complete radius-1.2 ground tubes are partitioned into overlapping
+convex capsules, each of which is checked across its entire area. This
+radius is an offline geometric constraint, not a verified body measurement.
+The complete 155-segment centerline has 376 clear copied-BSP spans at the two
+existing height offsets, with the positive zone-line frame control retained.
+These checks do not constitute a continuous body/headroom/BSP sweep.
+
+The tool exports only after these checks pass. A midpoint control fails the
+ground tube and exports no plan. Incorrect source SHA is refused without
+writing a report/plan; the replay also requires a hash with any supplied plan.
+The new plan preserves historical start and unverified camp-marker semantics.
+Neither this tool nor replay sends input or modifies any mesh/client data.
+
+**VERIFIED follower replay:** The updated plan gets through the former steep
+section and reaches segment 11, step 143. It stops at another precision gap:
+reciprocal polygons 30749 and 31681 have X boundaries 1607.6439208984375 and
+1607.64404296875. Their other portal endpoint coordinates match. The uncovered
+footprint area is about 0.000097938 square units. This second gap remains
+refused; the first seam's narrowly scoped experiment cannot apply to it.
+Next is a bounded source-supported generalization for reciprocal one-ULP
+portal discrepancies, followed by replay of the remaining route.
+
+Private `nav-candidates/` artifacts:
+
+| Artifact | SHA-256 | Result |
+| --- | --- | --- |
+| `gfay-steep-source-comparison-0.41.53.json` | `3b434747a12232806f1deeab980bf7763e5bf954a0eb874a72b9b018811a5eec` | Entire failed footprint has gentle copied source terrain |
+| `gfay-west-portal-repair-0.41.53.json` | `e7dae014ddea26ef4161cdf31c6581b7dda1b1ecd3cf1f770ab483bee691ae09` | Changed tubes/strips/turns and full centerline BSP pass |
+| `gfay-west-portal-plan-0.41.53.json` | `9207b689d3ca462f0eb0b6d45af87deb902662c237dd33f5172ab613021e12f6` | Same 155 polygons, two portal relocations |
+| `gfay-midpoint-control-repair-0.41.53.json` | `7c84738b66b82cf06863b72731a26b9a2cc47f985be948fc076f79b74a6b5952` | Refused; no exported plan |
+| `gfay-west-portal-replay-0.41.53.json` | `26c21993ea75bbf0dcfd6c893adacd2f58737e42031de2bdee2d94041e7f3113` | Reaches segment 11 then refuses the next precision gap |
+
+
 ## Private 0.41.52 staging — 2026-11-14 01:33 UTC
 
 **VERIFIED:** Commit `96f9576` archive SHA
