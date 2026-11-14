@@ -1,12 +1,18 @@
 # STATUS
 
-Updated 2026-11-14 20:48 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 20:50 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.62 built locally; owner preview remains 0.39.32.** VERIFIED
+- **Source tools 0.42.62 privately published; owner preview remains 0.39.32.**
+  Installed at `owner-tools/0.42.62/source`; all 518 pinned files match. Imports
+  and both auditor startup checks pass on Alienware. Bundle SHA
+  `ee878910ea73d95f5ec76257eef5ce9ef5a36bac923881a51c60f1c938fa5008`;
+  startup receipt SHA
+  `ac265a722022644589cdf3f9ed1deb9948d63d3a52962bfee60402bb74dda945`.
+  Owner launcher/runtime unchanged; no helper restart or input. VERIFIED
   30 focused checks across internal-edge steps, walking shortcuts, exact upper
   surface coverage and staircase topology. Two earlier Throne route crossings
   repaired; the new source proposal passes three steps before refusing a narrow

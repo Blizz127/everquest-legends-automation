@@ -1,5 +1,22 @@
 # FINDINGS
 
+## 2026-11-14 20:50 UTC — source tools 0.42.62 privately published
+
+VERIFIED installed `~/.local/share/eql-automation/owner-tools/0.42.62/source`
+on Alienware from local revision `9e8b57e10479c5f68c8222161ed2ce0ae7520e62`.
+All 518 pinned Python source/test files match the validated local snapshot.
+The bundle includes the 30 passing focused checks and their hash-verified JUnit
+records. Imports and both auditor command-line startup checks pass remotely.
+This is an offline tooling release; owner preview/runtime remain **0.39.32 /
+0.42.61**, and its launcher hash is unchanged. No helper restart or game input.
+
+Bundle SHA `ee878910ea73d95f5ec76257eef5ce9ef5a36bac923881a51c60f1c938fa5008`;
+startup receipt SHA `ac265a722022644589cdf3f9ed1deb9948d63d3a52962bfee60402bb74dda945`.
+Local receipt: `releases/eql-source-tools-0.42.62-staging.json` in the private store.
+No Throne guide or staircase body-clearance acceptance was published. Next work
+is the explicit stair-flight body/region model. G0 remains passed, full 1–20 and
+fresh 1–50 remain unfinished, and current real run metrics are unknown.
+
 ## 2026-11-14 20:48 UTC — source 0.42.62: underlay repair and explicit staircase gate
 
 VERIFIED offline development, **not real-client acceptance**. Owner preview stays
