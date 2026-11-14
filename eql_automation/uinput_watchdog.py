@@ -31,6 +31,18 @@ class PulseError(RuntimeError):
     pass
 
 
+class PulsePermitExpired(PulseError):
+    """The child explicitly refused DOWN; timings diagnose permit consumption."""
+    def __init__(self, *, expires_at, selected_at, stop_checked_at, sent_at, replied_at):
+        self.timing=dict(permit_expires_at=expires_at,selection_returned_at=selected_at,
+            stop_checked_at=stop_checked_at,go_sent_at=sent_at,reply_received_at=replied_at)
+        super().__init__('Release watchdog rejected expired key-down permit '
+            f'(selection slack {(expires_at-selected_at)*1000:.3f} ms; '
+            f'final check slack {(expires_at-stop_checked_at)*1000:.3f} ms; '
+            f'GO slack {(expires_at-sent_at)*1000:.3f} ms; '
+            f'reply delay {(replied_at-sent_at)*1000:.3f} ms)')
+
+
 class PulseInterrupted(PulseError):
     """A cancelled pulse with a validated child DOWN/UP timing receipt.
 
@@ -202,6 +214,7 @@ def _run_pulse(device_fd, key_code, seconds, *, before_down=None, select_after_r
                 key_code, seconds, expires_at = selection.key_code, selection.seconds, selection.expires_at
             else:
                 expires_at = before_down() if before_down is not None else None
+            selected_at = time.monotonic()
             if expires_at is not None and (not isinstance(expires_at, (int, float)) or
                                            isinstance(expires_at, bool) or not math.isfinite(expires_at)):
                 raise PulseError("Invalid key-down permit deadline")
@@ -209,6 +222,7 @@ def _run_pulse(device_fd, key_code, seconds, *, before_down=None, select_after_r
                 raise PulseError("Selected pulse requires a key-down deadline")
             if should_stop is not None and should_stop():
                 raise PulseError("Pulse cancelled before GO")
+            stop_checked_at = time.monotonic()
             command = (f"GO2 {key_code} {seconds!r} {expires_at!r}\n".encode("ascii") if dynamic else
                        b"GO\n" if expires_at is None else f"GO:{expires_at:.9f}\n".encode("ascii"))
             try:
@@ -217,8 +231,12 @@ def _run_pulse(device_fd, key_code, seconds, *, before_down=None, select_after_r
                 # No reentrant stop here: once GO is queued, OFF must not
                 # return until DOWN is acknowledged or the child is killed
                 # and UP written. READY and UP waits still pump owner input.
-                if _read_status(child.stdout, time.monotonic() + 0.30) != "DOWN":
-                    raise PulseError("Release watchdog did not confirm key down")
+                status = _read_status(child.stdout, time.monotonic() + 0.30)
+                if status == "EXPIRED" and expires_at is not None:
+                    raise PulsePermitExpired(expires_at=expires_at,selected_at=selected_at,
+                        stop_checked_at=stop_checked_at,sent_at=sent_at,replied_at=time.monotonic())
+                if status != "DOWN":
+                    raise PulseError("Release watchdog did not confirm key down: "+repr(status))
                 started = True
             except BaseException:
                 # OFF shares this lock. Do not let it return while GO could

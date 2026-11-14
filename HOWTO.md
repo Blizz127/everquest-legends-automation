@@ -1,14 +1,14 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.58** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.60** · travel/camp test **0.39.31** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-Source 0.42.59 and preview candidate 0.39.31 are local development builds.
-Private publication is pending Alienware SSH availability. The latest full
-continuation pipe run stopped on a watchdog confirmation timeout; it is not a
-completed route check. Focused checks and the local GUI startup are separate
-evidence, not real-client acceptance. The launchable owner preview remains 0.39.30.
+Preview 0.39.31 adds optional camp relocation after observed level-ups and fresh
+combat preparation after stopped arrival. The full continuation passed a
+synthetic-game/watchdog-pipe check on Alienware. Real-client travel and leveling
+still need owner-run acceptance. This guide describes this release; publication
+receipts and the latest installed version are recorded in STATUS.md.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.31 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -31,11 +31,11 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
 Preview 0.39.24 switches between assist and the repeated stationary camp test without a
-restart. Preview 0.39.30 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
+restart. Preview 0.39.31 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
 
-## Next candidate — 0.39.31 (not installed on Alienware)
+## Optional next-camp continuation — 0.39.31
 
-The local candidate keeps the existing rotation and adds an unchecked
+This release keeps the existing rotation and adds an unchecked
 **After level-ups, travel to the next supported camp** option beside the travel
 destination. Starting travel captures that choice; it cannot change during the
 trip. After a new level is observed in the current log and spell preparation
@@ -49,18 +49,14 @@ invented from the gap. The extra trip has one 25-minute deadline, including its
 measurement and planning; the seven-probe measurement itself remains limited
 to 120 seconds. A fresh stopped arrival now starts a new camp session, prepares
 learned spells again and requires new target checks before combat. F8/F9 can
-cancel the handoff. Focused handoff checks pass; the complete movement-to-camp
-pipe check remains unresolved. This is supervised testing, not the full 1–20 path.
+cancel the handoff. This is supervised testing, not the full 1–20 path.
 
-Do not use a new launch command yet: candidate 0.39.31 has not been published.
-Continue to use the installed 0.39.30 command below.
-
-## Choose a travel/camp destination — preview 0.39.30
+## Choose a travel/camp destination — preview 0.39.31
 
 Close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.30/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.31/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
@@ -94,25 +90,27 @@ back to you**; F9/F11 stops and closing the helper releases the monitor.
 This monitor is read-only and sends no keys. It applies to a camp reached by
 the Travel button; standalone F11 camp behavior is unchanged.
 
-Preview 0.39.30 also remembers the floor reached by travel while you camp.
+The preview remembers the floor reached by travel while you camp.
 Stop, assist, manual input or a changed game/log binding discards that record.
-It does not yet move you to another camp automatically. The next trip still
-needs fresh position and motion observations; old calibration is not renewed.
+With the continuation option unchecked, camp relocation stays off. With it
+checked, each next trip needs fresh position and motion observations; old
+calibration is not renewed.
 
-In **0.39.30**, after the first kill and completed rest at a camp reached by
+After the first kill and completed rest at a camp reached by
 travel, the helper automatically requests two new positions with the same
 location hotbutton you tested before travel. It checks that you remain on the
 reached floor, then resumes the same camp. The status reads **Checking stopped
-position after recovery**. It performs this check once per reached camp;
-standalone F11 camping is unchanged. Missing replies, a changed height/floor,
+position after recovery**. It performs this check once per reached camp, and can reconsider after a new
+level when continuation was selected. Standalone F11 camping is unchanged. Missing replies, a changed height/floor,
 manual input or changed focus stop the camp. F9 cancels; F8 waits for the
 hotbutton release, then switches to assist. No movement or target command is
-sent by this check, and it does not enable automatic camp relocation.
+sent by the position check itself; only the captured continuation option can
+then start separately checked movement probes and travel.
 
 The North Wall path passed copied terrain/object/region checks and a bounded
 long-leg fixture. It has **not been traversed or accepted in the real client**.
-A start without a checked connection is refused. Later-camp relocation is still
-an explicit selection; it is not automatically triggered by a level-up. GFay
+A start without a checked connection is refused. Later-camp relocation requires the initially selected continuation option;
+ordinary assist and standalone F11 do not enable it. GFay
 entry, Trainer Hill, the full 1–20/1–50 route, buying/scribing, active looting,
 vendors and death recovery remain unfinished.
 
@@ -668,33 +666,31 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Last verified private source package on Alienware (0.42.55):
+Source package for this release:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.55/source
+~/.local/share/eql-automation/owner-tools/0.42.60/source
 ```
 
-Source builds are development tools, not replacements for the owner launchers
-above. Local source **0.42.57** lets an explicitly configured continuation provider
-reconsider after a newly observed level-up and finished spell preparation. It
-checks each increase once, ignores duplicate level messages and retains F8/F9
-cancellation. The provider is connected only in local candidate 0.39.31; the installed
-owner launcher still does not relocate automatically. Sources 0.42.56 through 0.42.58 have not
-been published on Alienware. Source **0.42.56** supplies a concrete `SupervisedCampProbeScope` and
-per-probe policy. It retains the same physical-input monitor, log veto, original
-deadline and total movement allowance across all seven probes. The veto starts
-before the first recovered-position pair, and the source route must reuse it.
-Activity, focus loss, hazards, changed context or exhausted budgets stop input.
-The short DOWN permission does not interrupt required key-release cleanup.
-This is supervised operation; it does not certify independent scene clearance
-or motion bounds. Source 0.42.58 supplies the explicit continuation plan/provider in local
-candidate 0.39.31. New-camp entry still needs wiring. Its current controls remain those
-of **0.39.30** above.
+Source builds are development tools, not replacements for the owner launcher
+above. Source 0.42.60 includes the explicit continuation provider, shared probe
+scope, sealed fresh motion fit and stopped new-camp handoff. The runtime keeps
+the same reader/input monitor and hazard log through measurement and travel.
+F8/F9 cancel every stage. New-camp startup prepares learned spells and obtains
+new target checks. Missing later-camp guides keep the current camp.
+
+The watchdog now distinguishes an explicitly expired key-down permit from an
+acknowledgment failure, including timing diagnostics in the trace. One duplicate
+sender validation was removed before the mandatory final scene/sender check;
+the 50 ms DOWN deadline, physical/log sampling and release cleanup are unchanged.
+A full production-provider continuation and focused cancellation/permit checks
+passed on Alienware with synthetic game observations and OS-pipe writes.
+They do not establish actual client movement, level gain or camp suitability.
 
 The optional camp plan can now supply `route_plan_factory`, returning
 an explicit `CampSourcePlan` with current motion/heading, tightened route bounds,
-lateral tolerance and a source movement policy factory. There is no default
-plan or policy. The retained engine adopts the prepared route, collects a new
+lateral tolerance and a source movement policy factory. The 0.39.31 launcher supplies this plan only for the selected continuation
+option. The retained engine adopts the prepared route, collects a new
 startup pair, and uses the existing source walk/step loop. Every movement needs
 new stopped observations before the next step. The original probe scope,
 reader, sender, monitor, stop lock and time limit remain active.

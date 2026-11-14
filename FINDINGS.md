@@ -1,5 +1,72 @@
 # FINDINGS
 
+## 2026-11-14 20:08 UTC — full next-camp continuation passes on Alienware
+
+VERIFIED `owner-tools/0.42.60-validation-2`: **19 passed, 69 deselected in
+75.07 seconds**. The production provider completed its seven real watchdog/pipe
+probe pulses, sealed current fit, source route, stopped arrival and new camp
+startup. The test checks a different camp object, fresh preparation due, old
+floor retirement and the same still-open observer with a new valid floor. Game
+and geometry observations are synthetic; no game client input or level gain
+is established. Output SHA
+`97a3d14da0844fa0effef58cee583771c967c092831d48d216ec2cf4afaacba6`;
+JUnit SHA `fb859e67612f172386a4a8287e6d011c2d6b9cbb064c23102e2db5f587e45111`.
+Archive SHA `6c2a81bae7440e5e81841ddbec75dcdcb1b2acbbe1f13c1c4478a411ba16f92a`.
+The local receipt copies are under `releases/eql-0.42.60-validation-2-*`.
+
+The previous message `Release watchdog did not confirm key down` did not
+identify a timeout: it also covered the child's explicit `EXPIRED` response.
+New `PulsePermitExpired` diagnostics retain selector-return, final-stop-check,
+GO-send and reply timestamps. Initial remote candidate1 failed after 23 movement
+receipts with selection slack **33.770ms**, final-check slack **-0.693ms**, GO
+slack **-0.696ms** and child reply **0.380ms** later. This establishes parent
+validation consumed the permit before GO in that run. It does not retrospectively
+prove the reason for every older generic error. Candidate1 output SHA
+`91229fdce4e8d1af38a2c4f4d447a96491ab86bfb2e71ece33de3c34e1de723c`.
+
+Source sender selection now omits only its duplicate post-authorization full
+sender check. The watchdog still invokes the complete final `should_stop`
+under the same stop lock before GO, including fresh physical/log sampling,
+focus, descriptors, command state and exact authorization. A cheap empty-held-key
+check remains before the sender marks its selected key, so a callback cannot
+hide an already-held matching key. The 50ms permit, all other deadlines and
+independent UP cleanup are unchanged. Focused remote checks include
+before/after-DOWN revocation, authorization callback mutation and expiration
+without DOWN. Two diagnostic checks also passed locally in 0.64 seconds.
+
+Alienware read-only reconciliation: the retained 0.42.56 candidate3 directory
+contains only `source`, with no checks/result artifact; an exact `/proc` scan
+found no matching runner/pytest. That old result is unavailable, not passed.
+The new checks used a separate versioned directory and a runner that persists
+completion/output even on timeout. No old process was restarted or interrupted.
+
+New bounded source-boundary inventory tooling reads the pinned client terrain
+without route search or baking. It preserves exact projected overlaps, opposing
+floor heights and rejected intervals. Initial Trainer/approach scan: 88 examined
+pairs, 19 overlapping pairs; four nonzero step intervals, one narrow interval,
+15 over-height intervals. Neighbor scan includes components `(465,0)` and
+`(512,35)` and finds eight nonzero intervals. Frontier `(448,2)` / `(516,4)`
+connects to `(515,6)`; these are candidate connections inside a possible isolated
+group, not a complete camp route. No zero-gap partial joins were found in these
+scans, no static-floor support was promoted, and no movement bounds changed.
+Artifacts under `nav-candidates/`: initial SHA
+`2da89deeff4f00c85c2c6fd45a0c1297d04a6b537ed912c68ab27b5e7dc6f1d2`,
+neighbor SHA `c584db2b46b8472c29284e3afbaa1cd7c05d21c6d6cc92707d280dab1700a60d`,
+frontier SHA `f012ead2cbabfd0a9d2ad27033be2a636e831a04c817d9403eae62aca5e40ee1`.
+The final frontier `(515,6)` has only edges back into the examined set.
+A combined exact-predicate recheck establishes a closed seven-component island
+under the current full-edge/2-unit-step discovery model; it does not prove
+physical disconnection. Closure artifact SHA `62a9023c3a72d3f5eabd0d15f3398ffdd72f7b215f7650397f2afbb1edac6b90`.
+Next Trainer work needs a supported alternative (such as verified step/jump
+capability or static supporting geometry), not another identical graph search.
+All use copied WLD SHA
+`ce43cea4ea9a83cc0db0b25a666cfbe538543dcc451c34ee3bc984227ef1f9d1`.
+
+Preview0.39.31 candidate5 builds and starts locally with no worker/input/settings
+write. Publication receipt follows separately. G0 remains passed. Current
+character level, XP/hour, deaths and camp remain unknown. Full real-client
+1–20 and fresh hands-off1–50 are still incomplete.
+
 ## 2026-11-14 19:58 UTC — stopped next-camp arrival enters fresh combat preparation
 
 Source 0.42.59 adds an in-memory `CampArrival` transition after the optional

@@ -173,6 +173,24 @@ def test_revocation_before_down_sends_no_input(f,change,tmp_path):
     assert f.ledger.steps==0
 
 
+@pytest.mark.parametrize('change',('input','generation','unfinished','selected_key_held'))
+def test_authorization_callback_is_rechecked_before_watchdog_go(f,change):
+    authorize=f.policy.authorize
+    def revoke(ticket,scene):
+        result=authorize(ticket,scene)
+        if change=='input':f.active=True
+        elif change=='generation':f.generation+=1
+        elif change=='unfinished':f.sender.unfinished=True
+        else:f.sender.held.add(ticket.movement_key)
+        return result
+    f.policy.authorize=revoke
+    with pytest.raises(RuntimeError):f.run()
+    sent=f.drain_events()
+    assert all(not (kind==1 and value==1) for kind,_,value in sent)
+    assert f.sender.held==({103} if change=='selected_key_held' else set())
+    assert f.ledger.steps==0 and f.sender._eql_route_operation is None
+
+
 @pytest.mark.parametrize('change',('cancel','focus','input'))
 def test_revocation_after_down_releases_and_does_not_commit(f,monkeypatch,change):
     chain=f.ledger.chain

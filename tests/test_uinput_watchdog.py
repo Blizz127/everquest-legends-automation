@@ -142,10 +142,31 @@ def test_expired_child_deadline_never_presses_after_parent_stall():
         time.sleep(0.15)
         return expires_at
 
-    with pytest.raises(PulseError, match="did not confirm key down"):
+    with pytest.raises(watchdog.PulsePermitExpired, match="expired key-down permit") as caught:
         timed_key_pulse(write_fd, 17, 0.10, before_down=stale_permit)
+    timing=caught.value.timing
+    assert timing['selection_returned_at']>timing['permit_expires_at']
+    assert timing['selection_returned_at']<=timing['stop_checked_at']<=timing['go_sent_at']<=timing['reply_received_at']
     sent = frames(write_fd, read_fd)
     assert all(not (kind == 1 and value == 1) for kind, _, value in sent)
+
+
+def test_final_stop_check_expiry_is_distinct_from_missing_down_ack():
+    read_fd,write_fd=os.pipe();selected=False
+    def choose():
+        nonlocal selected
+        selected=True
+        return watchdog.PulseSelection(17,.1,time.monotonic()+.05)
+    def stop():
+        if selected:time.sleep(.15)
+        return False
+    with pytest.raises(watchdog.PulsePermitExpired) as caught:
+        watchdog.selected_key_pulse_receipt(write_fd,choose,should_stop=stop,go_lock=threading.RLock())
+    timing=caught.value.timing
+    assert timing['stop_checked_at']>timing['permit_expires_at']
+    assert timing['stop_checked_at']-timing['selection_returned_at']>=.15
+    sent=frames(write_fd,read_fd)
+    assert all(not (kind==1 and value==1) for kind,_,value in sent)
 
 
 def test_parent_kill_still_gets_same_device_key_up():

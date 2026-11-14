@@ -1,11 +1,26 @@
 # STATUS
 
-Updated 2026-11-14 19:58 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 20:08 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.60 / preview 0.39.31 ready for private staging.** Alienware
+  is reachable again. VERIFIED complete production-provider path: seven probes,
+  sealed fresh fit, source travel, stopped arrival and fresh new-camp startup.
+  The focused remote run passed **19 checks, 69 deselected, in 75.07s** with real
+  watchdog/OS-pipe writes and synthetic game/geometry; no game input. Output SHA
+  `97a3d14da0844fa0effef58cee583771c967c092831d48d216ec2cf4afaacba6`, JUnit
+  `fb859e67612f172386a4a8287e6d011c2d6b9cbb064c23102e2db5f587e45111`.
+  The prior error was identified precisely: the child refused an expired DOWN
+  permit; repeated parent validation consumed its remaining 33.770ms. One
+  duplicate sender pass was removed before the mandatory final fresh scene /
+  sender check. Every deadline, final physical/log observation and UP cleanup
+  remains. New tests reject authorization-time owner/input/held-key changes.
+  Local candidate5 manifest/GUI startup passes without worker or input. Next:
+  stage this source/preview on Alienware and continue Trainer/Throne coverage.
+  G0 passed; real level/XP/XP-hour/deaths/camp unknown; full 1–20/1–50 not met.
 - **Source 0.42.59 / preview 0.39.31 candidate4 built locally.** A completed
   next-camp route now transfers its exact stopped arrival to a new stationary
   camp, fresh spell preparation and new target checks. The old camp is retired;

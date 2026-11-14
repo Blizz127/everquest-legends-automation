@@ -83,7 +83,7 @@ def test_slow_selector_does_not_refresh_its_expired_proposal():
         at = time.monotonic()
         time.sleep(.07)
         return PulseSelection(105, .02, at + .03)
-    with pytest.raises(PulseError, match="confirm key down"):
+    with pytest.raises(PulseError, match="expired key-down permit"):
         selected_key_pulse_receipt(write_fd, choose, go_lock=threading.RLock())
     assert all(value != 1 for kind, _, value in close_events(read_fd, write_fd) if kind == 1)
 

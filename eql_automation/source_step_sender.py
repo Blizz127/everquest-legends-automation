@@ -45,7 +45,12 @@ def run_checked_source_step(sender,ledger,*,policy,kind,requested_seconds,
         observed=scene()
         ticket=ledger.stage(geometry,requested_seconds=requested_seconds)
         authorization=policy.authorize(ticket,observed)
-        check_sender()
+        # The watchdog unconditionally calls should_stop under this same lock
+        # after selection and before GO. That pass re-observes the scene and
+        # rechecks sender/ticket/authorization after all provider callbacks.
+        # Do not spend the 50ms permit on an identical extra sender pass here.
+        if sender.held:
+            raise RouteHalt('Source sender acquired a key during authorization')
         if authorization.expires_at>ticket.proposed_at+.05:
             raise RouteHalt('Source DOWN deadline changed')
         key=ticket.movement_key;sender.held.add(key)
