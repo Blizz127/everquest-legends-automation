@@ -16,7 +16,8 @@ Updated 2026-11-13 18:24 CST for coordinator task `829a00229b29`.
   reproduced exactly; distance 6→3 worsened outer-ring maximum angular grade
   from 1.801 to 2.706 and raised warnings 21→439. Reject this candidate.
   Report SHA-256 `b0e7307e43d1b212ce8d5a973c3290014fb9f8eee862e2855de5a4bfa9246780`.
-  Next: attribute the bump to source rasterization/nearby geometry, keeping
+  Coarse polygon 623 corners are identical in both bakes; the bump predates
+  detail sampling. Next: inspect compact spans/contour corner height, keeping
   same-zone GFay as the first route candidate. No live movement or XP gain.
 - A read-only screen capture attempt refused because there was not exactly
   one focused game window/process. No focus change, input, capture or game

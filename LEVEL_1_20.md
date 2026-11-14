@@ -36,7 +36,9 @@ cut 658→623, where the baked surface reaches Z=1.70. Nearby raised source
 geometry still matters to clearance. A completed detail-sampling-only bake comparison
 kept the same polygon graph but worsened the outer-ring maximum angular
 grade from 1.801 to 2.706 and raised warnings from 21 to 439. That candidate
-is rejected; no movement acceptance changed. The owner assist 0.39.6 release fixes stopped-state
+is rejected; no movement acceptance changed. Both bakes retain the same
+elevated coarse polygon corners, so the next attribution is in voxel/contour
+construction, before detail sampling. The owner assist 0.39.6 release fixes stopped-state
 recovery and queued preparation cancellation while this route work continues.
 The Crushbone alternatives let the planner compare same-zone options before
 committing to the unresolved Cauldron→Unrest crossing; they do not authorize

@@ -80,6 +80,35 @@ The ordered EQTR remains
 No client movement, route acceptance or character progress resulted. Next is
 source/voxel attribution; GFay remains the first same-zone route candidate.
 
+## Crushbone bump predates detail sampling — 2026-11-13 18:27 CST
+
+**VERIFIED read-only retained-artifact audit:** Baseline and detail-distance-3
+EQNM products have identical coarse polygon 623 vertices (helper XYZ):
+`(-172.64374,98.74379,2.26251)`, `(-173.84375,99.94379,0.16251)`,
+`(-186.44374,99.94379,1.96251)`, `(-187.64374,98.74379,0.16251)`.
+The source beneath the east high corner includes an actual Z=2 platform
+(face 15339) and Z=0 floor (15376); the west high corner has Z=0 ground
+(15419) and nearby raised wall faces 15424–15427. The 65 center/ring ground
+samples remain Z=0. **INFERRED:** Coarse contour/polygon construction connects
+raised geometry and floor within this long polygon; detail sampling alone
+cannot remove those coarse corner heights.
+
+The retained authorized upstream Recast tree is
+`~/.local/share/eql-automation/toolchains/recastnavigation`, commit
+`9f4ce64458dfae86e1239c525ddc219c4e9e06f1`. Its
+`Recast/Source/RecastContour.cpp` SHA-256 is
+`a9282897a5a5cb56cf8bbab97e0fd5edc3cd394ae8fe5266a28ce4199a4f3bfa`.
+`getCornerHeight` at line 28 takes the maximum Y among up to four connected
+compact spans; `walkContour` emits that height. Supporting source hashes:
+`Recast.cpp` = `865595763451cde0aad5b99088bfab48d4ea35050fefd67f3d4f95885ba38d66`;
+`RecastMesh.cpp` = `9667e69e1886a520fcc84044b2e96154ff75e5c804fa32520b1cc0d991e42fd9`.
+The native baker main source was not found in the approved data store, so
+source-to-binary equivalence is not established. Next diagnostic: inspect the
+local compact spans/contour corner at the two elevated vertices to distinguish
+an elevated voxel from a maximum-neighbor corner lift. Do not waive the
+footprint check or promote either candidate. No forbidden old worktree was
+read or recreated, and no game input was sent.
+
 ## Owner assist 0.39.6 stop and draft recovery — 2026-11-13 18:20 CST
 
 **VERIFIED original-engine offline behavior and Alienware GUI, no game
