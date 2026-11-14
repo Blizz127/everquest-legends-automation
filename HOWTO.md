@@ -17,10 +17,10 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Supervised motion measurement | Four short forward presses and three turns on owner-confirmed open ground; saves relative observations and stops. | **Supervised motion measurement…**, F9/F11/Stop to cancel. |
 | Supervised destination travel | In 0.39.18, measures motion, plans from current GFay coordinates toward Crushbone, checks each movement and stops. No zone crossing or leveling. | **Travel toward Crushbone…**, F9/F11/Stop to cancel. |
 | Supervised zone crossing | In 0.39.19, a separate action measures motion, follows the GFay route into the expected Crushbone zone line, then stops after fresh arrival positions. No combat or leveling. | **Travel into Crushbone…**, F9/F11/Stop to cancel. |
-| Supervised short route trial | In 0.39.15/0.39.16, measures motion, creates a two-unit GFay path from fresh current positions, checks terrain/objects/BSP, follows it if checks pass, then stops. No combat or leveling. | **Supervised short route trial…**, F9/F11/Stop to cancel. |
+| Supervised short route trial | In 0.39.20, measures motion, creates a two-unit GFay or Crushbone path from fresh current positions, checks terrain/objects/region evidence, follows it if checks pass, then stops. No combat or leveling. | **Supervised short route trial…**, F9/F11/Stop to cancel. |
 
 Run only one helper at a time. **G0 passed; do not repeat the movement-stop
-pulse.** Assist still uses the existing rotation bot. Preview 0.39.15 is a
+pulse.** Assist still uses the existing rotation bot. Preview 0.39.20 is a
 separate finite movement test; it cannot switch into assist or full auto.
 The requested seamless assist/full-auto switch is still unfinished.
 

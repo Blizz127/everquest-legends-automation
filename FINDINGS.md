@@ -56,6 +56,15 @@ No worker/device, game input, character action or prefix modification occurred.
 The coordinator received the concrete owner launch/test step; no acknowledgement
 is needed to continue development. Live traversal remains unverified.
 
+**VERIFIED source publication:** commit `b401d14` staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.27/source`. All 30 selected startup
+checks pass without skips, including the complete native owner trial, installed
+file-change stop and old crossing. The copied entrance comparison also passes
+forward/pivot precomputation and exact forward ticket preparation without input.
+Source archive SHA `96d280175a79c62d07f920a92edd3178f8dd2a03a18c3b3c469b564dc7546703`;
+source startup SHA `cdb3dfd06a408dee295df3b04bdaf93e9bc1b249cc0c440605f78352fd1dbf15`;
+remote copied-move report SHA `dbb9b81d64af20b95f31a43d4491b2e66f2b9b7d4a656c3e245aab99ecb3832d`.
+
 **Next:** source-step execution and fresh Crushbone camp routing, using owner
 movement feedback when available. Seven source transfers still need execution
 support; destination planning intentionally still refuses the native policy.

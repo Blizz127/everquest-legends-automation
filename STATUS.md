@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 14:03 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 14:05 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -23,6 +23,9 @@ Updated 2026-11-14 14:03 UTC for coordinator task `829a00229b29`.
   Preview 0.39.20 is staged on Alienware: manifest, GUI, GFay/Crushbone loaders
   and installed executables/assets/catalog match. No worker/device/game input.
   Startup SHA `11d9780b843319980fd7a61c775862935836b86864d125faaf28ad8f18c4c361`.
+  Source `b401d14` staged at Alienware `owner-tools/0.42.27/source`;
+  all 30 selected startup checks and copied move preparation pass.
+  Source startup SHA `cdb3dfd06a408dee295df3b04bdaf93e9bc1b249cc0c440605f78352fd1dbf15`.
   The coordinator has the owner launch/test command. **Next:** source steps
   and camp routing, with real traversal still unverified. G0 passed; current
   level/XP/hour/deaths/camp unknown. No automated leveling acceptance.
