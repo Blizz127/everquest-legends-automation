@@ -1,11 +1,20 @@
 # STATUS
 
-Updated 2026-11-14 17:45 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 17:51 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.46 static movement audit checked; publication pending.**
+  The actual copied client has extra velocity and post-integration position
+  terms, plus an unresolved clock callback. A normal forward-speed sample
+  alone cannot bound final displacement. New reproducible audit pins nine
+  dispatch slots, six constants and 15 source spans; eight focused checks pass.
+  Report SHA `6f589331bafb99b3a65c30d5cef577ac0bde69db766f9250d3d01cf230a84a15`.
+  No current speed bound or input authority is issued. Owner preview remains
+  0.39.30, G0 passed, no new owner check. Next: supported contribution/clock
+  bounds and independent current scene evidence, then checked camp probes.
 - **Source 0.42.45 privately published; preview remains 0.39.30:**
   route-independent probe preparation now binds the actual camp-height record,
   exact floor/reader lease and explicit bounds to a checked all-heading source

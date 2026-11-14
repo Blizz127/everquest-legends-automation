@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.45** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.46** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -640,14 +640,20 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Source 0.42.45 is privately published on Alienware at:
+Source 0.42.46 is the current diagnostic increment, staged after its startup check at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.45/source
+~/.local/share/eql-automation/owner-tools/0.42.46/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.42.45 adds `CampProbePreparation` for a future camp heading
+above. Source 0.42.46 adds a developer-only static movement audit:
+`python3 -B tools/audit_client_motion_update.py --help`. It reads only the
+pinned owner executable and writes evidence under the private client-data
+store. The client has additional movement terms beyond forward speed; this
+audit does not certify a speed cap, enable movement or require an owner test.
+
+Source 0.42.45 adds `CampProbePreparation` for a future camp heading
 measurement. It checks an all-heading source envelope from a fresh stopped
 height and explicit motion hypotheses. It requires another newly collected pair
 at the exact checked position afterward, retains both original timestamps and

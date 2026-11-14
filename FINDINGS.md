@@ -1,5 +1,50 @@
 # FINDINGS
 
+## 2026-11-14 17:51 UTC — source 0.42.46, static movement composition
+
+VERIFIED copied executable SHA `fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36`.
+The constructor binds actor virtual +f0 to `0x14031ebb0`, which returns the
+embedded movement object at actor+21d8. Its virtual +10 is `0x140694a70`.
+The inspected update dispatch calls this before collision processing. The
+update combines a uint32 tick difference times binary32 0.02, a further clock
+callback, forward/input-vector terms, residual velocity and a final position
+hook. The clock callback's units/effective bound are not established here.
+
+VERIFIED static contributions: `0x1403314c0` conditionally adds angle-projected
+terms derived from actor+484/+488, 0.5 and an optional runtime global.
+`0x140331240` can add vertical and horizontal position terms after integration;
+its horizontal term has no additional time-factor multiplication within that
+function. Angle/phase wrapping does not bound their amplitudes. The inspected
+functions have no magnitude clamp for these terms. This is not a claim that
+all movement code lacks a cap. Actual state, producer bounds, alternative
+vtables, clock callback and other position writers remain unobserved.
+
+INFERRED: a bound on the normal forward scalar alone cannot establish a bound
+on the final displacement. Do not promote the prior 40/60/150 hypotheses,
+old fitted speed or a heading-wrap constant into current movement authority.
+
+VERIFIED reproducible tool `tools/audit_client_motion_update.py`: pins the exact
+file, nine virtual-table slots, six constants and 15 bounded source spans;
+writes native evidence only into the private client-data store. Eight focused
+checks passed: reproduced facts, all disassembly hashes, two independently
+checked spans, false input/live flags, wrong-binary refusal, existing-output
+refusal, CLI startup and compilation. Report:
+`client-data/native-motion-update-0.42.46/probe.json`, SHA
+`6f589331bafb99b3a65c30d5cef577ac0bde69db766f9250d3d01cf230a84a15`.
+The report retains `verified_speed_upper_bound=null` and movement authority false.
+
+OBSERVED REA opened/hashed the exact copy, but its native provider is unavailable:
+Ghidra requires a full JDK 21 or newer. No configuration/access changes or
+installation attempted. The REA target was closed; analysis used bounded
+ordinary objdump, not REA decompilation or native execution. Provider status
+is retained beside the report. No game input, login, capture, character action
+or protected-prefix edit occurred. Owner preview stays 0.39.30; G0 passed,
+including the owner's visible-stop confirmation. Source publication pending.
+Current level, XP, XP/hour, deaths and camp remain unknown. Automatic camp
+remeasurement/relocation, real 1–20 acceptance and fresh hands-off 1–50 remain
+unfinished. Next: bound the additional terms/clock or observe them inactive,
+and supply independent current scene evidence before a checked probe.
+
 ## 2026-11-14 17:45 UTC — source 0.42.45 privately published
 
 VERIFIED Alienware publication at `owner-tools/0.42.45/source`, revision
