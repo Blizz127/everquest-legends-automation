@@ -23,6 +23,12 @@ class SourceGuideDestination:
     goal: tuple
     provenance_sha256: str
     arrival_mode: str = 'camp'
+    zone: str = 'crushbone'
+
+    @property
+    def zone_id(self):
+        from .source_zones import source_zone_id
+        return source_zone_id(self.zone)
 
 
 DESTINATIONS=MappingProxyType({

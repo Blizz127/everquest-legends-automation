@@ -9,7 +9,7 @@ import json
 
 from .camp_motion_continuity import CampInputContinuity,camp_route_motion_basis
 from .camp_source_runtime import CampSourceRuntime
-from .crushbone_source_guide import destination_spec
+from .source_destinations import destination_spec
 from .native_region_policy import encoded
 from .owner_navigation_preflight import settings_identity,window_identity
 from .owner_route_trial import zone_binding
@@ -66,7 +66,7 @@ def capture_camp_arrival(engine,p,checkpoint):
         selection=json.loads(plan.destination_evidence),real_client_accepted=False)))
     # Candidate names are historical suggestions; fresh /consider is mandatory
     # in the new camp. Loading while the old scope still owns input is read-only.
-    candidates=tuple(e._load_camp_candidates('crushbone'))
+    candidates=tuple(e._load_camp_candidates(spec.zone))
     if not candidates:raise ValueError('No observed NPC candidates for the newly reached camp')
     checkpoint.check();e._camp_position_current(p)
     now=r.clock()
@@ -78,7 +78,7 @@ def capture_camp_arrival(engine,p,checkpoint):
         raise ValueError('Camp arrival changed during capture')
     token=CampArrival(p,r,receipt,checkpoint,destination,basis,p.settings,
         zone_binding(p.reader),candidates)
-    if token.zone[0]!=58:raise ValueError('Current Crushbone arrival required')
+    if token.zone[0]!=spec.zone_id:raise ValueError('Current selected-zone arrival required')
     # Deliberate transition. The parent runtime is retired next, never rearmed.
     j.phase='handoff';j.settings=p.settings;j.destination_id=spec.identifier
     j.destination_assets=destination;j.arrival_floor=checkpoint;j.candidates=candidates
@@ -125,7 +125,7 @@ def continue_camp_arrival(engine,token,clock):
     e=engine;p=token.pending;j=p.journey
     check=lambda:check_camp_arrival(e,token,clock)
     check()
-    e.zone='crushbone'
+    e.zone=destination_spec(token.destination.destination_id).zone
     started=e.start_stationary_camp(arrival_check=check,replacing_camp=p.camp)
     if e.journey is not j:return dict(camp_started=False,reason='Owner changed the handoff')
     if not started or e.camp_session is None:

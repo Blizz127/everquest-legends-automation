@@ -114,7 +114,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             if name==CROSSING_JOB and crossing_loader is None:
                 raise ValueError('This helper has no expected-zone crossing loader')
             if name==SOURCE_JOB and source_loader is None:
-                raise ValueError('This helper has no Crushbone source-guide loader')
+                raise ValueError('This helper has no source-guide loader')
             if self.route_trial is not None or not self._route_idle():
                 raise ValueError('Finish the current helper action before starting a route trial')
             epoch=(self.cancel_generation,self.supervised_epoch,self.route_session_epoch,
@@ -133,7 +133,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             if name==CROSSING_JOB and type(destination) is not CrossingDestinationAssets:
                 raise ValueError('Crossing requires pinned native line and expected destination')
             if name==SOURCE_JOB and type(destination) is not SourceDestinationAssets:
-                raise ValueError('Source travel requires a pinned Crushbone guide')
+                raise ValueError('Source travel requires a pinned same-zone guide')
             planner=destination.planner if destination is not None else planner_loader(self)
             if not isinstance(planner,CurrentStartPlanner):
                 raise ValueError('Pinned current-zone planner required')
@@ -357,7 +357,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                         maximum_source_z_difference=2.,owner_binding=p['lease'].owner_binding,
                         binding_reader=lambda:self._trial_binding(p),released_at=collector.released_at,
                         record_id=p['trial_id']+'-start',clock=clock,local_wall_clock=local_wall_clock,
-                        allow_overhead_boundary=planner.zone=='crushbone')
+                        allow_overhead_boundary=planner.region_policy is not None)
                     destination=p['continuation']['destination']
                     if type(destination) is SourceDestinationAssets:
                         from .current_source_itinerary import plan_current_source_itinerary

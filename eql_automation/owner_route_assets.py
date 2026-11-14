@@ -98,6 +98,8 @@ def load_gfay_planner(root, *, tile_rounding=False):
 
 def load_owner_planner(engine, *, tile_rounding=False):
     tracker = engine.live_zone_tracker
+    if tracker is not None and tracker.reader.zone_id == 68 and not tile_rounding:
+        return load_owner_butcher_planner(engine)
     if tracker is not None and tracker.reader.zone_id == 58 and not tile_rounding:
         return load_owner_crushbone_planner(engine)
     if tracker is None or tracker.reader.zone_id != 54:
@@ -140,6 +142,34 @@ def load_owner_crushbone_planner(engine):
     if (tracker is not engine.live_zone_tracker or tracker.reader.zone_id != 58
             or tracker.reader.zone_ids != unique or tracker.reader.zone_display_name != planner.zone_name):
         raise ValueError('Current Crushbone identity differs from the copied client catalog')
+    binding.check_policy(planner.region_policy)
+    planner.installed_region_model = binding
+    return planner
+
+
+def load_owner_butcher_planner(engine):
+    """Current Butcherblock local trial, with read-only installed model checks."""
+    from .butcher_assets import DATA_NAME as CB_NAME, DATA_PINS as CB_PINS, load_butcher_assets
+    from .installed_region_model import verify_installed_region_model
+    tracker = engine.live_zone_tracker
+    if tracker is None or tracker.reader.zone_id != 68:
+        raise ValueError('Butcherblock trial needs its current observed zone')
+    game = Path(engine.settings.game_dir)
+    extras = (('butcher.s3d', CB_PINS['butcher.s3d']),
+              ('butcher_obj.s3d', CB_PINS['butcher_obj.s3d']),
+              ('butcher_2_obj.s3d', CB_PINS['butcher_2_obj.s3d']),
+              ('Resources/ZoneNames.txt', CB_PINS['ZoneNames.txt']))
+    binding = verify_installed_region_model(game, additional_pins=extras)
+    engine.emit('Loading copied Butcherblock terrain and objects; no movement yet.')
+    planner = load_butcher_assets(Path.home()/'.local/share/eql-automation/owner-route-data'/CB_NAME,
+                                   native_planning=True).planner
+    binding.check_policy(planner.region_policy)
+    tracker.check_binding()
+    unique, _ = unique_zone_ids_from_text(checked_bytes(
+        game/'Resources/ZoneNames.txt', CB_PINS['ZoneNames.txt']).decode('latin-1'))
+    if (tracker is not engine.live_zone_tracker or tracker.reader.zone_id != 68
+            or tracker.reader.zone_ids != unique or tracker.reader.zone_display_name != planner.zone_name):
+        raise ValueError('Current Butcherblock identity differs from the copied client catalog')
     binding.check_policy(planner.region_policy)
     planner.installed_region_model = binding
     return planner

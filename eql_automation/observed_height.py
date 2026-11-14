@@ -192,7 +192,7 @@ def _bound_initial_floor(plan, observer, route, reader, owner_binding, segment_i
                 NativeRegionPlanningEvidence, encoded as native_encoded)
             if (type(region_policy) is not NativeZeroRegionTrialPolicy
                     or type(native_evidence) is not NativeRegionPlanningEvidence
-                    or route.zone != 'crushbone' or reader.zone_id != 58
+                    or route.zone != region_policy.zone or reader.zone_id != region_policy.zone_id
                     or region_policy.wld_sha256 != chain.inventory_sha256
                     or region_policy.mesh_sha256 != geometry.mesh_sha256
                     or region_policy.archive_sha256 != geometry.source_archive_sha256

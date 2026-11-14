@@ -1,9 +1,37 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 10:29 UTC. This is the prioritized route and acceptance
-record for the owner's requested playable 1–20 path. **F11 is disabled:** none
-of these legs has been driven and accepted in the real client. The owner can
-use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+Updated 2026-11-14 23:54 UTC. This is the prioritized route and acceptance
+record for the owner's requested playable 1–20 path. **No full 1–20 route is
+accepted. G0 passed, including the visible stop; do not repeat it.**
+
+Owner candidate **0.39.35**, source **0.42.75**, adds the copied Newbie Hills
+marker (map hint 1–4) inside Butcherblock to the existing rotation helper.
+Choose a short local travel-and-camp test or movement-only arrival. The camp
+option requires observed Butcherblock NPC history; the movement-only option
+requires none. It does not cross zones or automatically leave for Crushbone.
+Publication state and evidence are in [STATUS.md](STATUS.md); the owner command,
+controls and exact starting conditions are in [HOWTO.md](HOWTO.md).
+
+| Copied map hint | Destination | Current implementation | Real acceptance |
+| --- | --- | --- | --- |
+| 1–4 | Butcherblock Newbie Hills | Short local source-checked guide; owner travel/camp and stop-only options | Not traversed; camp suitability unverified |
+| 4–7 | GFay Orc Camps | Copied map label retained; no owner guide | Not traversed |
+| 5–8 | Butcherblock Dwarf Skeletons / Goblin Camp | Source footprints checked; no connecting owner route | Not traversed |
+| 7–10 | Crushbone Slave Mines | Owner travel/camp guide | Not traversed |
+| 11–12 | Crushbone Trainer Hill | Source discovery has no complete proposal | Not traversed |
+| 13–17 | Crushbone North Wall and Castle | Owner travel/camp guide | Not traversed |
+| 17–22 | Crushbone Throne Room | Stair/contact approach and stationary camp; automatic departure unsupported | Not traversed |
+
+These annotations are copied client hints, not a leveling schedule or evidence
+of live camp suitability. Cross-zone travel, the remaining camp connections,
+looting, vendor work, death recovery and unattended leveling remain unfinished.
+Current real level, XP/hour, deaths and camp are unknown. F8 is strict assist:
+owner movement and target selection. F9 stops. F11 starts the stationary camp
+test; **F12 remains disabled**. The owner performs live acceptance himself.
+
+## Historical development notes
+
+The current table and HOWTO supersede the availability/version statements below.
 
 Source 0.42.6 supplies the missing height-startup producer from two current
 stopped positions and independent terrain samples. Its observed correspondence

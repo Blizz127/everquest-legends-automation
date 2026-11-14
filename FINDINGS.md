@@ -1,5 +1,78 @@
 # FINDINGS
 
+## 2026-11-14 23:55 UTC — zone-bound Newbie Hills owner candidate
+
+VERIFIED source/runtime **0.42.75**, owner candidate **0.39.35**, extends the
+existing retained rotation helper. The selector keeps its four Crushbone
+choices and adds Newbie Hills camp and stop-only approaches in Butcherblock.
+No helper was restarted and no game input, login or character/prefix change
+was performed. G0 remains passed, including the owner's visible-stop report.
+
+The copied catalog binds Butcherblock to **68**, Crushbone to **58**. That
+identity now travels with native region policy, planner/guide, observed height,
+source motion and the retained camp floor. Butcher accepts ordinary walking
+only; step/stair/contact operations remain unavailable there. Next-camp
+selection reads the current zone's copied annotations and cannot choose a
+Crushbone destination from Butcherblock. The default continuation root was
+corrected during integration and covered by a focused regression check.
+
+The new private data directory is
+`~/.local/share/eql-automation/owner-route-data/butcher-camps-20261114/`.
+Its eight inputs are pinned in `eql_automation/butcher_assets.py`, including both
+object libraries. It retains 52,695 terrain faces, 81,683 static faces, 1,862
+applicable placements and 22 explicit parked-record exclusions. Client data
+and generated guides remain outside git. The historical removed working copy
+was not consulted or recreated.
+
+VERIFIED same current-start planner used by the owner runtime: copied geometry
+plus synthetic two-decimal location replies at `(-639.61,2706)` produce 11
+checked cells to the exact Newbie Hills map marker `(-650,2700)`. Result
+`nav-candidates/butcher-newbie-startup-0.42.75-initial.json`, SHA
+`7efee54527957065583e45298b6a42961150045948a7c822859ce320b7a5c6ea`.
+It completed in 55.63 seconds; this is an offline plan, not a real observation.
+At the marker, exact mesh detail Z is about `9.7904`, copied source Z `8.9836`.
+At the rounded start those are about `10.6407` and `9.8766`. Both pass the
+existing two-unit correspondence limit. Old baked-anchor heights do not select
+the floor. No motion/body/time/source-height limit was enlarged.
+
+The checked short spoke is reversed into six ordinary XY hints; it is a local
+approach, not a route from another zone or the whole starter area. Guide hashes:
+- Camp: `5de5e6f7394e00792f8e3ab579578c2f54c8cfb0d0d5e6386e127167da3de212`.
+- Stop-only: `38a2f367aa2e515a249656e45012230101b3d8b8ba2bcca2794f596e21cb9dbd`.
+
+Both retain source provenance
+`36b7d71b078ced64374e5ba2981cc2b751dc7f211155f422934f57ca0e5f0b4a`.
+The copied map suggests levels 1–4; actual camp suitability is unverified.
+The retained NPC history has zero Butcher names. Camp travel therefore requires
+names observed in the owner's current Butcher log or a future verified history;
+it refuses before any input otherwise. Stop-only skips NPC loading and combat.
+
+VERIFIED **127 unique focused checks pass**, with initial failures preserved.
+The six-case Alienware batch passed in 199.87 seconds using anonymous OS pipes,
+synthetic client replies and the retained helper, with no game/device input.
+It covers Butcher and Crushbone travel-to-camp handoff, Butcher stop-only arrival,
+F9 during Butcher movement, next-camp movement and immediate no-NPC refusal.
+All 570 source Python hashes match the tested snapshot. Receipt SHA
+`560a0ae201470446d96cd4f4cb27c9b779c972b718ff132348f871dc4fbe5740`.
+The earlier devbox continuation refusal had negative final permit slack under
+heavy load; the unchanged test passes on Alienware. That does not establish
+load as its only possible cause. Fixture errors (rewound timestamp, renamed
+loader monkeypatch, advancing an already-refused trial) were corrected.
+
+The GUI smoke checked all six choices, Butcher camp/stop dialogs, disabled and
+cleared stop-only continuation, and the retained Throne dialog. Engine creation
+and settings writes were forbidden. Runtime startup passed; all 217 packaged
+runtime modules match current source. Validation SHA
+`217f9bd0d2fba78133b7fd4389e8e55791a34073865722f75911622c42aa08d4`.
+Changes after the geometry rebuild concern version/destination registration and
+owner loading/arrival/continuation wiring; geometric implementations match.
+
+**Not yet installed at this entry.** Owner 0.39.34 remains installed until the
+additive publication receipt below says otherwise. Real travel, camp suitability,
+zone transitions and level gain remain unaccepted. No complete 1–20 or 1–50 run.
+Current level, XP/hour, deaths and camp are unknown. Next: publish this small
+owner test, then connect later early camps and finish the Trainer approach.
+
 ## 2026-11-14 23:39 UTC — early map labels and first Butcher source segment
 
 VERIFIED retained client maps under

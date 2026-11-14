@@ -23,6 +23,7 @@ from .source_stair_hint import SourceStairHint
 from .source_contact_hint import SourceContactHint
 from .source_step_bsp import check_source_step_bsp
 from .static_floor_guard import check_source_static_floor
+from .source_zones import source_zone_id
 
 
 def xy(value):
@@ -69,8 +70,8 @@ class SourceItineraryGuide:
     operations: tuple
 
     def validate(self):
-        if (self.zone != 'crushbone'
-                or not all(digest(p) for p in (self.wld_sha256,
+        source_zone_id(self.zone)
+        if (not all(digest(p) for p in (self.wld_sha256,
                     self.static_inventory_sha256, self.provenance_sha256))
                 or not finite(self.radius) or not .05 <= self.radius <= 10
                 or not finite(self.body_height) or not 0 < self.body_height <= 100
@@ -79,6 +80,8 @@ class SourceItineraryGuide:
             raise ValueError('Bounded pinned source itinerary guide required')
         previous = None
         for index,op in enumerate(self.operations):
+            if self.zone != 'crushbone' and type(op) is not SourceWalkHint:
+                raise ValueError('This source zone supports ordinary walking only')
             if type(op) is SourceContactHint:op.validate()
             if (type(op) not in (SourceWalkHint, SourceStepHint, SourceStairHint,SourceContactHint)
                     or not xy(op.start) or not xy(op.end)

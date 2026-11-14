@@ -14,7 +14,7 @@ from .owner_location_hotkey_test import HOTKEY_TEST_JOB
 from .owner_navigation_preflight import settings_identity, window_identity
 from .owner_route_trial import SOURCE_JOB, make_owner_route_trial_engine, zone_binding
 from .source_walk_driver import SourceWalkFinished
-from .crushbone_source_guide import destination_spec
+from .source_destinations import destination_spec
 from .camp_motion_continuity import CampInputContinuity, arrival_motion_basis
 from .camp_floor_checkpoint import CampFloorCheckpoint
 from .camp_contact_checkpoint import CampContactCheckpoint
@@ -203,11 +203,11 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                     raise ValueError('Loaded source destination differs from the queued choice')
                 j.destination_assets=destination
                 movement_only=destination_spec(j.destination_id).arrival_mode=='stop'
-                candidates = () if movement_only else tuple(super()._load_camp_candidates('crushbone'))
+                candidates = () if movement_only else tuple(super()._load_camp_candidates(destination_spec(j.destination_id).zone))
                 if j is None or self.journey is not j or not navigation_active(self):
                     raise ValueError('Travel cancelled while loading observed camp candidates')
                 if not movement_only and not candidates:
-                    raise ValueError('No observed Crushbone NPC/consider/kill candidates; travel-to-camp unavailable')
+                    raise ValueError('No observed NPC/consider/kill candidates in the selected zone; travel-to-camp unavailable')
                 j.candidates = candidates
             return recipe
 
@@ -251,8 +251,8 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                     or self.journey is not j or not navigation_active(self)):
                 raise ValueError('Arrival changed before movement release')
             tracker = self.live_zone_tracker
-            if tracker is None or tracker.reader is not r.reader or r.zone[0] != 58:
-                raise ValueError('Current Crushbone arrival required')
+            if tracker is None or tracker.reader is not r.reader or r.zone[0] != destination_spec(j.destination_id).zone_id:
+                raise ValueError('Current selected-zone arrival required')
             destination=p['continuation']['destination']
             if destination is not j.destination_assets or destination.destination_id!=j.destination_id:
                 raise ValueError('Source destination changed before arrival')
@@ -320,14 +320,14 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
 
         def _continue_source_journey(self,p,token):
             self._arrival_current(token)
-            self.zone = 'crushbone'  # From the fresh zone-bound arrival, never history.
+            self.zone = destination_spec(token.destination_id).zone  # Fresh zone-bound arrival.
             if destination_spec(token.destination_id).arrival_mode=='stop':
                 result=dict(phase='arrived',destination_id=token.destination_id,
                     itinerary_sha256=arrival_itinerary(token.receipt),
                     stopped_log_seq=arrival_reference(token.receipt).raw_fix.log_line_seq,
                     actual_position=arrival_reference(token.receipt).package_xyz,
                     camp_started=False,real_client_accepted=False)
-                self.stop_action('Stair landing reached · movement stopped')
+                self.stop_action('Destination reached · movement stopped')
                 self.journey_last_result=result
                 self.trace('journey_movement_arrival',**result)
                 return result

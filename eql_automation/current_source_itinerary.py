@@ -25,12 +25,13 @@ class CurrentSourceItinerary:
 def plan_current_source_itinerary(planner, reader, first, second, *, guide,
                                   maximum_seconds=240., clock=time.monotonic,
                                   **start_options):
-    if (type(planner) is not CurrentStartPlanner or planner.zone != 'crushbone'
-            or planner.zone_id != 58 or planner.region_policy is None
-            or type(guide) is not SourceItineraryGuide
+    if (type(planner) is not CurrentStartPlanner or planner.region_policy is None
+            or planner.zone != planner.region_policy.zone
+            or planner.zone_id != planner.region_policy.zone_id
+            or type(guide) is not SourceItineraryGuide or guide.zone != planner.zone
             or not finite(maximum_seconds) or not 0 < maximum_seconds <= 300
             or not callable(clock) or 'length' in start_options):
-        raise ValueError('Current native Crushbone source itinerary context required')
+        raise ValueError('Current native zone-bound source itinerary context required')
     owner = start_options.get('owner_binding')
     binding = start_options.get('binding_reader')
     if not callable(binding):

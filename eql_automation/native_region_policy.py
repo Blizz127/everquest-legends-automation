@@ -1,4 +1,4 @@
-"""Explicit native-zero policy for copied Crushbone geometry and height.
+"""Explicit zone-bound native-zero policy for copied geometry and height.
 
 This does not authorize movement. The original BSP result is retained, and
 terrain/static collision remain separate. Installed binary matching, the
@@ -13,6 +13,7 @@ from .client_region_classification import (
 from .ground_binding import digest
 from .native_body_regions import classify_source_body_regions
 from .static_floor_guard import check_static_floor
+from .source_zones import source_zone_id
 
 
 def encoded(value):
@@ -47,8 +48,14 @@ class NativeZeroRegionTrialPolicy:
     bsp_inventory_sha256: str
     classification_inventory_sha256: str
     classifier: ClientBspClassificationView
+    zone: str = 'crushbone'
+
+    @property
+    def zone_id(self):
+        return source_zone_id(self.zone)
 
     def __post_init__(self):
+        source_zone_id(self.zone)
         if (not all(digest(v) for v in (self.mesh_sha256, self.archive_sha256,
                 self.wld_sha256, self.static_inventory_sha256,
                 self.bsp_inventory_sha256, self.classification_inventory_sha256))
@@ -57,7 +64,7 @@ class NativeZeroRegionTrialPolicy:
         self.check_classifier()
 
     def record(self):
-        return dict(format='eql-native-zero-planning-policy-v2', zone='crushbone',
+        return dict(format='eql-native-zero-planning-policy-v2', zone=self.zone,
             scope='copied_initial_and_per_move_geometry; supervised_measurement_only',
             mesh_sha256=self.mesh_sha256, archive_sha256=self.archive_sha256,
             wld_sha256=self.wld_sha256, static_inventory_sha256=self.static_inventory_sha256,
@@ -75,12 +82,12 @@ class NativeZeroRegionTrialPolicy:
 
     def check_context(self, *, zone, pins, bsp):
         self.check_classifier()
-        if (zone != 'crushbone'
+        if (zone != self.zone
                 or pins != (self.mesh_sha256, self.archive_sha256,
                             self.wld_sha256, self.static_inventory_sha256)
                 or bsp.inventory_sha256 != self.bsp_inventory_sha256
                 or bsp.wld_sha256 != self.wld_sha256):
-            raise ValueError('Native planning policy is only for its pinned Crushbone views')
+            raise ValueError('Native planning policy is only for its pinned '+self.zone.title()+' views')
 
     def _payload(self, terrain, static, bsp, native):
         """Validate every piece, not just the aggregate possible_flags tuple."""

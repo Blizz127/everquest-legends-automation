@@ -32,7 +32,8 @@ from test_route_step_sender import PipeSender,after_down
 @pytest.fixture
 def f(tmp_path,monkeypatch,legacy,request):
     model=files(tmp_path,monkeypatch)
-    f=setup(tmp_path);f.real=False;f.mode='measurement';f.generation=1;f.focus=True;f.active=False
+    zone = 'butcher' if getattr(request, 'param', None) == 'butcher' else 'crushbone'
+    f=setup(tmp_path, zone=zone, native_zone=zone, zone_id=68 if zone=='butcher' else 58);f.real=False;f.mode='measurement';f.generation=1;f.focus=True;f.active=False
     f.clock_hook=None
     def clock():
         hook=f.clock_hook
@@ -46,7 +47,7 @@ def f(tmp_path,monkeypatch,legacy,request):
     f.now=time.monotonic()-2.;f.a=f.position();f.now+=.5;f.b=f.position()
     f.options['released_at']=f.a.received_monotonic-.2
     p=f.planner
-    guide=SourceItineraryGuide('crushbone',p.pins[2],p.pins[3],'f'*64,.1,6.,(4.,3.25),
+    guide=SourceItineraryGuide(zone,p.pins[2],p.pins[3],'f'*64,.1,6.,(4.,3.25),
         (SourceWalkHint((4.,2.),(4.,3.)),))
     if getattr(request,'param',None) in ('contact_preflight','contact_bend','contact_close','contact_route'):
         p.source.sources=tuple(replace(s,vertices_wld=tuple((y*1.5,x,z) for y,x,z in s.vertices_wld))

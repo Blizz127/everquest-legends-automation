@@ -176,7 +176,7 @@ class CurrentStartPlanner:
         if self.region_policy is not self._region_policy:
             raise ValueError('Current-start region policy changed')
         if self.region_policy is not None:
-            if self.zone_id != 58 or self.region_policy.classifier is not self._region_classifier:
+            if self.zone_id != self.region_policy.zone_id or self.region_policy.classifier is not self._region_classifier:
                 raise ValueError('Current-start native classifier or catalog identity changed')
             self.region_policy.check_context(zone=self.zone, pins=self.pins, bsp=self.bsp)
         if (any(a is not b for a, b in zip(self._views,

@@ -20,7 +20,7 @@ MISSING = ((1., 0., 0., 0., 0, 0, 2), leaf(1))
 
 
 def setup(tmp_path, *, native_nodes=MISSING, policy=True, zone='crushbone', old_water=False,
-          wall=False, boundary=False):
+          wall=False, boundary=False, native_zone='crushbone', zone_id=58):
     f = fixture(tmp_path, wall=wall)
     if boundary:
         add_boundary(f)
@@ -30,13 +30,13 @@ def setup(tmp_path, *, native_nodes=MISSING, policy=True, zone='crushbone', old_
         labels_by_region={0:{'water'}} if old_water else {}), region_count=3, wld_sha256=WLD)
     classifier = view(native_nodes, wld_pin=WLD)
     region_policy = NativeZeroRegionTrialPolicy(*old.pins, bsp.inventory_sha256,
-        classifier.inventory_sha256, classifier) if policy else None
+        classifier.inventory_sha256, classifier, zone=native_zone) if policy else None
     f.planner = CurrentStartPlanner(mesh=old.mesh, ground=old.ground, source=old.source,
-        static=old.static, bsp=bsp, zone_short_name=zone, expected_zone_id=58,
+        static=old.static, bsp=bsp, zone_short_name=zone, expected_zone_id=zone_id,
         expected_zone_name=old.zone_name, mesh_sha256=old.pins[0], source_archive_sha256=old.pins[1],
         source_wld_sha256=old.pins[2], static_inventory_sha256=old.pins[3], region_policy=region_policy)
-    f.reader.zone_id = 58
-    f.a = replace(f.a, zone_id=58); f.b = replace(f.b, zone_id=58); f.reader.latest = f.b
+    f.reader.zone_id = zone_id
+    f.a = replace(f.a, zone_id=zone_id); f.b = replace(f.b, zone_id=zone_id); f.reader.latest = f.b
     f.plan = lambda: f.planner.plan(f.reader, f.a, f.b, **f.options)
     return f
 

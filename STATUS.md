@@ -1,11 +1,47 @@
 # STATUS
 
-Updated 2026-11-14 23:39 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 23:53 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
-  XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
-  and old log awards/deaths are not current run metrics.
+  XP/hour, deaths and camp remain **unknown**. Historical Legira level 7/GFay
+  and old log awards/deaths are not current run metrics. **G0 passed**, including
+  the owner's visible-stop confirmation; do not repeat it.
+- **Owner 0.39.35 / source 0.42.75 candidate built; installation pending.**
+  The existing rotation helper now offers Newbie Hills camp and stop-only local
+  approaches inside Butcherblock. Zone 68 stays bound through planner, guide,
+  observations, motion and camp checkpoints; Crushbone stays zone 58. Butcher
+  supports ordinary walking only and cannot select a Crushbone next camp.
+  No history-derived Butcher NPC names were present in the retained candidate
+  store; camp travel refuses without current observed history. The stop-only
+  choice requires no NPC names and starts no combat.
+- **VERIFIED offline current-start check on copied Butcher geometry:** 11
+  checked cells from rounded synthetic start `(-639.61,2706)` to the exact
+  Newbie Hills map marker `(-650,2700)`. Artifact SHA
+  `7efee54527957065583e45298b6a42961150045948a7c822859ce320b7a5c6ea`.
+  Fresh source floors and exact mesh detail support pass the existing two-unit
+  correspondence bound; no bound was enlarged. Both object libraries remain
+  included, with 1,862 placements and 22 explicit parked-record exclusions.
+- **VERIFIED GUI and startup checks:** six destination choices, Newbie Hills
+  camp/stop dialogs, cleared/disabled stop-only continuation and retained Throne
+  behavior. No engine, settings write or game input. VERIFIED **127 unique focused checks pass**. Six runtime cases passed on
+  Alienware in 199.87 seconds: both zone arrivals, Newbie stop-only arrival,
+  F9 during movement, continuation and no-NPC refusal. All 570 Python hashes
+  match. The devbox pipe continuation failure passes there unchanged. Original
+  failures and fixture corrections are retained; deadlines remain unchanged.
+  Validation SHA `217f9bd0d2fba78133b7fd4389e8e55791a34073865722f75911622c42aa08d4`.
+- **Installed build remains owner 0.39.34 / source 0.42.74** until the candidate's
+  additive publication is verified. No helper restart,
+  login, game input, client/prefix edit or character change by the lead.
+  Next: publish the checked small build, then continue
+  missing early-camp connections and Trainer approach discovery. Real travel,
+  live camp suitability, zone crossings and unattended leveling remain unverified.
+
+## Historical development entries
+
+The entries below retain earlier results and blockers. The current publication
+status above supersedes their installed-version and availability statements.
+
 - **Early-camp source work progressed; owner build remains 0.39.34.** VERIFIED
   copied Butcherblock map annotations include Newbie Hills 1–4 and two 5–8
   alternatives; copied GFay map identifies Orc Camps 4–7. A fresh offline
@@ -42,10 +78,7 @@ Updated 2026-11-14 23:39 UTC for coordinator task `829a00229b29`.
   Next: owner-run travel/camp acceptance and remaining low-level route coverage.
   Owner test command and current controls are in HOWTO. Full 1–20/1–50 remain
   unfinished; real metrics unknown. G0 remains passed, with no repeat needed.
-## Historical development entries
 
-The entries below retain earlier results and blockers. The current publication
-status above supersedes their installed-version and availability statements.
 
 - **Source 0.42.74 / owner 0.39.34 local candidate; not installed or accepted.**
   Terminal contact now runs through the shared itinerary/execution loop, retains

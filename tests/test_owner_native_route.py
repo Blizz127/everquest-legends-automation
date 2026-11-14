@@ -11,22 +11,24 @@ from test_native_region_policy import MISSING
 from test_owner_route_trial import h, finish
 
 
-def configure(h,monkeypatch):
+def configure(h,monkeypatch,*,zone='crushbone'):
+    from eql_automation.source_zones import source_zone_id
+    zone_id=source_zone_id(zone)
     model=files(h.game,monkeypatch)
     old=h.loader
     bsp=BspVolumeView(SimpleNamespace(nodes=MISSING,labels_by_region={}),
         region_count=3,wld_sha256=old.pins[2])
     classifier=view(MISSING,wld_pin=old.pins[2])
     policy=NativeZeroRegionTrialPolicy(*old.pins,bsp.inventory_sha256,
-        classifier.inventory_sha256,classifier)
+        classifier.inventory_sha256,classifier,zone=zone)
     planner=CurrentStartPlanner(mesh=old.mesh,ground=old.ground,source=old.source,
-        static=old.static,bsp=bsp,zone_short_name='crushbone',expected_zone_id=58,
+        static=old.static,bsp=bsp,zone_short_name=zone,expected_zone_id=zone_id,
         expected_zone_name='Fixture',mesh_sha256=old.pins[0],source_archive_sha256=old.pins[1],
         source_wld_sha256=old.pins[2],static_inventory_sha256=old.pins[3],region_policy=policy)
     planner.installed_region_model=model
     h.loading[0]=lambda:planner
     h.engine._close_zone_tracker()
-    (h.game/'Resources/ZoneNames.txt').write_text('58^Fixture^0^0\n')
+    (h.game/'Resources/ZoneNames.txt').write_text(f'{zone_id}^Fixture^0^0\n')
     h.engine._service_zone_tracker();h.append('You have entered Fixture.');h.engine._service_zone_tracker()
     return planner
 

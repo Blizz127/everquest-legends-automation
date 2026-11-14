@@ -1,34 +1,32 @@
 # EverQuest Legends automation — current owner guide
 
-Owner test **0.39.34** · runtime/source **0.42.74** · retained assist **0.39.13**.
+Owner test **0.39.35** · runtime/source **0.42.75** · retained assist **0.39.13**.
 Publication status and evidence are recorded in STATUS.md.
 
 **G0 passed, including the visible stop. Do not repeat it.** The complete 1–20
 or 1–50 autopilot is not ready. This build extends the existing rotation bot;
 Blizz starts and supervises the live test himself.
 
-0.39.34 adds **Throne Room** to the travel/camp selector. Its copied map suggests
-levels 17–22. Start near North Wall and Castle: the proposed route climbs the
-stairs and crosses the rug corridor to the exact map marker. After a fresh
-stopped arrival, it can start stationary camping while preserving the actual
-rug position. Optional next-camp selection can choose it after the North Wall
-map range. Departure from a contact camp into a further route is not implemented.
-Do not choose this destination for a low-level character solely because its
-route is available. The map annotation does not establish live camp suitability.
+0.39.35 adds two **Newbie Hills** selections in **Butcherblock Mountains**:
+a short local approach followed by stationary camping, or the same approach
+followed by a stop without combat. The copied map suggests levels 1–4. Start
+near that marker inside Butcherblock; this is not a route from another zone.
+The camp choice requires NPC names already observed in your log in Butcherblock.
+Without that history it refuses before movement; the movement-only choice does
+not need NPC names. There is no packaged next Butcherblock camp yet.
 
-The copied-client geometry rebuild and focused simulated checks passed. On
-Alienware, all five retained pipe checks passed, including the full contact and
-ordinary travel-to-camp handoffs and cancellation. Both timing failures from
-the loaded devbox passed unchanged on Alienware; stop deadlines were not
-relaxed. These checks used synthetic game feedback and OS pipes, not game
-input. Real travel, stairs, camp suitability and leveling remain unverified.
+The approach was checked against copied terrain, static objects and region data.
+Its current-start planner passed using synthetic location replies. Real travel,
+camp suitability and leveling still need owner testing. Source checks do not
+establish that a camp is suitable for your character. STATUS.md records the
+focused runtime and publication checks for this build.
 
 The separate **Throne stair landing · movement test** remains a stop-only
 selection before the contact corridor. It starts near North Wall, disables
 camp continuation and starts no combat. Assist leaves movement and target
 selection to Blizz; F8 selects assist and F9 stops helper input.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.34 offers supervised travel to Slave Mines, North Wall and Castle, or Throne Room, followed by repeated camp combat. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.35 offers supervised local travel and camp tests in Butcherblock and Crushbone. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -40,14 +38,15 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Full auto | In development; no accepted 1–20 or 1–50 run. | No complete leveling mode yet; F12 is disabled. |
 | Stationary camp test | Prepares learned spells, searches observed NPC names, checks targets, fights and recovers. Stops at observed level 20 or a failed check. | F11 starts/stops; F8 switches to assist; F9 stops. |
 | Location-hotbutton test | Sends the configured location key, checks a fresh log reply; no movement or combat. | **Test /location hotbutton…**; F9/F11/Stop cancels. |
-| Travel and camp test | Measures motion, follows the selected Crushbone route, then prepares spells and starts camping after stopped arrival. | **Travel to selected destination…**; F8 assist, F9/F11/Stop cancels. |
+| Travel and camp test | Measures motion, follows the selected route within its zone, then prepares spells and starts camping after stopped arrival. | **Travel to selected destination…**; F8 assist, F9/F11/Stop cancels. |
+| Newbie Hills movement test | Short local approach in Butcherblock, then stops without combat. | Select **Newbie Hills · movement test** and use the travel button. |
 | Stair-landing test | Travels from near North Wall to the top stair landing, then stops without combat. | Select **Throne stair landing · movement test** and use the travel button. |
 
 Run only one helper at a time. G0 is complete. Travel/camp and assist switch in
 the same process without a restart or re-login. The older separate diagnostic
-builds described later in this file are not additional buttons in 0.39.34.
+builds described later in this file are not additional buttons in 0.39.35.
 
-## Optional next-camp continuation — 0.39.34
+## Optional next-camp continuation — 0.39.35
 
 This release keeps the existing rotation and adds an unchecked
 **After level-ups, travel to the next supported camp** option beside the travel
@@ -59,18 +58,20 @@ It uses the same input monitor and hazard log. F8 returns to assist; F9 stops.
 The copied map supplies Slave Mines (7–10), North Wall/Castle (13–17), and
 Throne Room (17–22) with packaged guides. Levels 11–12 have no packaged next route;
 the current camp continues and still checks each live target. No route is
-invented from the gap. The extra trip has one 25-minute deadline, including its
+invented from the gap. Next-camp selection stays in the current zone; it never
+routes from Newbie Hills to Crushbone. No next Butcherblock guide is packaged.
+The extra trip has one 25-minute deadline, including its
 measurement and planning; the seven-probe measurement itself remains limited
 to 120 seconds. A fresh stopped arrival now starts a new camp session, prepares
 learned spells again and requires new target checks before combat. F8/F9 can
 cancel the handoff. This is supervised testing, not the full 1–20 path.
 
-## Choose a travel/camp destination — preview 0.39.34
+## Choose a travel/camp destination — preview 0.39.35
 
 Close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.34/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.35/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
@@ -79,6 +80,11 @@ camp where you stand. The first F11 after travel/setup remains OFF.
 
 In **Travel and camp test**, select the destination:
 
+- **Newbie Hills · Butcherblock · map hint 1–4**: a short local approach to
+  Newbie Hills in Butcherblock followed by stationary camping. Requires observed
+  Butcherblock NPC history; map labels are not used as NPC names.
+- **Newbie Hills · movement test**: the same approach, then stops without
+  combat or camp continuation. It does not repeat G0.
 - **Slave Mines**: the original route. The copied map suggests levels 7–10.
 - **North Wall and Castle**: start near Slave Mines. The route retraces the
   corridor to reach this combined map destination. The copied map suggests
@@ -89,7 +95,8 @@ In **Travel and camp test**, select the destination:
 - **Throne stair landing · movement test**: same starting area, but stops on
   the top landing before the rug corridor and starts no combat.
 
-Start inside Clan Crushbone. Open the map and run **Test /location hotbutton…**
+Start inside the destination's zone: Butcherblock for Newbie Hills, or Clan
+Crushbone for the other four selections. Open the map and run **Test /location hotbutton…**
 using your configured `/location` key. After focusing the game, release all keys,
 mouse buttons and touchpad contacts. **Waiting for still controls** means the
 helper is allowing a focus click or key release to settle; the original eight-second
@@ -100,8 +107,9 @@ Then close map/chat, clear your target,
 turn native melee off and stand on clear, flat ground. Click **Travel to selected
 destination…**, confirm the open starting area and focus EverQuest during the countdown.
 The helper measures motion, checks a route from your current floor and travels
-if those checks pass. A fresh stopped arrival hands over to automatic learned
-spell preparation in gems **1–8**, then repeated stationary fights and recovery.
+if those checks pass. For a camp destination, a fresh stopped arrival hands over
+to automatic learned spell preparation in gems **1–8**, then repeated stationary
+fights and recovery. A movement-test destination stops without starting combat.
 
 Stay present for this test. **F8** switches to assist after movement releases;
 **F9** stops. The selected destination stays fixed throughout that trip and is

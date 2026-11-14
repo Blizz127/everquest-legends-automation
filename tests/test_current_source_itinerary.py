@@ -7,9 +7,10 @@ from eql_automation.source_itinerary import SourceItineraryGuide, SourceWalkHint
 from test_native_region_policy import setup
 
 
-def fixture(tmp_path):
-    f=setup(tmp_path);p=f.planner
-    f.guide=SourceItineraryGuide('crushbone',p.pins[2],p.pins[3],'f'*64,
+def fixture(tmp_path, zone='crushbone'):
+    from eql_automation.source_zones import source_zone_id
+    f=setup(tmp_path, zone=zone, native_zone=zone, zone_id=source_zone_id(zone));p=f.planner
+    f.guide=SourceItineraryGuide(zone,p.pins[2],p.pins[3],'f'*64,
         f.options['bounds'].body_radius,6.,(4.,3.25),
         (SourceWalkHint((4.,2.),(4.,3.)),))
     return f
@@ -20,8 +21,9 @@ def run(f):
         **{k:v for k,v in f.options.items() if k!='length'})
 
 
-def test_real_log_reader_pipeline_keeps_original_current_floor_and_exact_destination(tmp_path):
-    f=fixture(tmp_path);result=run(f);data=result.itinerary.record()
+@pytest.mark.parametrize('zone', ('crushbone', 'butcher'))
+def test_real_log_reader_pipeline_keeps_original_current_floor_and_exact_destination(tmp_path, zone):
+    f=fixture(tmp_path, zone);result=run(f);data=result.itinerary.record()
     assert data['start']==[4.,2.] and data['goal']==[4.,3.25]
     assert result.initial.floor_chain.index==1
     assert data['initial_proof_sha256']==result.initial.floor_chain.previous.proof_sha256

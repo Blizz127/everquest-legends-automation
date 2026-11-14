@@ -13,8 +13,8 @@ from .camp_annotations import read_camp_annotations
 from .camp_probe_runtime import CampProbeRuntime
 from .camp_session import CampLevelAdvance
 from .camp_source_runtime import CampSourcePlan
-from .crushbone_assets import DATA_NAME,DATA_PINS
-from .crushbone_source_guide import DESTINATIONS,destination_spec,load_crushbone_source_guide
+from .crushbone_assets import DATA_PINS
+from .source_destinations import DESTINATIONS,destination_spec,load_source_guide,source_data_name
 from .g2_safety_provider import GameWindowIdentity
 from .ground_binding import finite
 from .motion_calibration import PROBES
@@ -32,14 +32,18 @@ def choose_next_destination(root,current_id,level):
     current=destination_spec(current_id)
     if type(level) is not int or not 1<=level<=50:raise ValueError('Current observed level required')
     if current.arrival_mode!='camp':return None
-    annotations=read_camp_annotations(checked_bytes(Path(root)/'crushbone_3.txt',DATA_PINS['crushbone_3.txt']))
+    map_name=current.zone+'_3.txt'
+    pins=DATA_PINS
+    if current.zone=='butcher':
+        from .butcher_assets import DATA_PINS as pins
+    annotations=read_camp_annotations(checked_bytes(Path(root)/map_name,pins[map_name]))
     def annotation(spec):
         rows=[a for a in annotations if (-a.map_xyz[0],-a.map_xyz[1])==spec.goal]
         if len(rows)!=1:raise ValueError('Packaged guide has no unique copied map annotation')
         return rows[0]
     if annotation(current).hint_includes(level):return None
     eligible=[(spec,annotation(spec)) for spec in DESTINATIONS.values()
-        if spec.arrival_mode=='camp' and spec.identifier!=current_id and annotation(spec).hint_includes(level)]
+        if spec.zone==current.zone and spec.arrival_mode=='camp' and spec.identifier!=current_id and annotation(spec).hint_includes(level)]
     if not eligible:return None
     spec,hint=min(eligible,key=lambda pair:(-pair[1].level_hint[0],pair[0].identifier))
     return spec,encoded(dict(kind='copied_map_next_camp_hint',destination_id=spec.identifier,
@@ -147,13 +151,14 @@ def owner_camp_probe_plan(engine,p,*,root=None):
             or advance.level!=e.settings.level or advance.generation!=p.generation):
         e.trace('camp_continuation_wait',reason='current observed level increase required')
         return None
-    root=Path.home()/'.local/share/eql-automation/owner-route-data'/DATA_NAME if root is None else Path(root)
+    root=(Path.home()/'.local/share/eql-automation/owner-route-data'/source_data_name(p.journey.destination_id)
+          if root is None else Path(root))
     selected=choose_next_destination(root,p.journey.destination_id,camp.level)
     if selected is None:
         e.trace('camp_continuation_wait',reason='no new packaged map hint at this level',level=camp.level)
         return None
     spec,evidence=selected
-    guide=load_crushbone_source_guide(root,spec.identifier)
+    guide=load_source_guide(root,spec.identifier)
     bounds,basis=retained_probe_bounds(p)
     if (guide.radius!=bounds.body_radius or guide.body_height!=bounds.body_height
             or guide.wld_sha256!=p.floor._terrain.wld_sha256

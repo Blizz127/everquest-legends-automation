@@ -1,0 +1,59 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -454,6 +454,8 @@
+             self.source_destination.addItem("North Wall and Castle  ·  map hint 13–17", "north-wall")
+             self.source_destination.addItem("Throne stair landing  ·  movement test", "throne-stair-landing")
+             self.source_destination.addItem("Throne Room  ·  map hint 17–22", "throne-room")
++            self.source_destination.addItem("Newbie Hills · Butcherblock · map hint 1–4", "newbie-hills")
++            self.source_destination.addItem("Newbie Hills · movement test", "newbie-hills-stop")
+             column.addWidget(self.source_destination)
+             self.continue_camps = QCheckBox("After level-ups, travel to the next supported camp")
+             self.continue_camps.setObjectName("journeyContinueCampsBox")
+@@ -702,7 +704,7 @@
+                 label = {"running": "RUNNING", "paused": "PAUSED", "halted": "STOPPED"}.get(
+                     state, "IDLE" if measurement_only else "OFF")
+                 destination = autopilot.get("journey_destination_id")
+-                suffix = {"slave-mines": " · Slave Mines", "north-wall": " · North Wall and Castle", "throne-stair-landing": " · Stair landing", "throne-room": " · Throne Room"}.get(destination, "")
++                suffix = {"slave-mines": " · Slave Mines", "north-wall": " · North Wall and Castle", "throne-stair-landing": " · Stair landing", "throne-room": " · Throne Room", "newbie-hills": " · Newbie Hills", "newbie-hills-stop": " · Newbie Hills stop"}.get(destination, "")
+                 self.ap_state.setText(f"●  {kind} {label}{suffix}")
+                 self.ap_state.setStyleSheet({"running": "color: #7addac;", "paused": "color: #f5ca72;",
+                                              "halted": "color: #ffb9c2;"}.get(state, "color: #a9b5c5;"))
+@@ -808,7 +810,7 @@
+                 self.post("test_location_hotkey", {"key_name": key.currentData(), "confirmed": True})
+ 
+         def refresh_destination_mode(self, *_):
+-            from eql_automation.crushbone_source_guide import destination_spec
++            from eql_automation.source_destinations import destination_spec
+             movement_only = destination_spec(self.source_destination.currentData()).arrival_mode == "stop"
+             if movement_only:
+                 self.continue_camps.setChecked(False)
+@@ -821,9 +823,12 @@
+                     "Start calibration on clear, flat, open ground. Stay present: real stair movement is unverified. "
+                     "F8 returns to assist; F9/F11 stops."
+                     if movement_only else self.camp_travel_help)
++                if destination_spec(self.source_destination.currentData()).zone == "butcher":
++                    ending = "It stops without combat." if movement_only else "It starts stationary camp after arrival, using observed NPC history and fresh target checks."
++                    self.travel_help.setText("Start near the Newbie Hills marker in Butcherblock. This is a short local approach, not travel from another zone. " + ending + " The map suggests levels 1–4; real travel and camp suitability remain unverified. F8 assist; F9/F11 stop.")
+ 
+         def configure_supervised_source(self):
+-            from eql_automation.crushbone_source_guide import destination_spec
++            from eql_automation.source_destinations import destination_spec
+             identifier = self.source_destination.currentData()
+             selected = destination_spec(identifier)
+             movement_only = selected.arrival_mode == "stop"
+@@ -855,6 +860,15 @@
+                              "to the Throne Room map marker, then starts stationary camping after a fresh stopped arrival. "
+                              "The map suggests levels 17–22; real movement and camp suitability are unverified. "
+                              "Stay present. There is no automatic departure from this contact camp yet.\n\n" + text.text())
++            if selected.zone == "butcher":
++                ending = ("The helper stops at the marker without combat." if movement_only else
++                          "After a fresh stopped arrival it starts stationary camping, using observed NPC history and fresh target checks. No history means camp travel will not start.")
++                text.setText("Start near Newbie Hills inside Butcherblock Mountains. This short local approach ends at the copied map marker. "
++                             + ending + " The map suggests levels 1–4; live travel and camp suitability remain unverified. "
++                             "There is no packaged next camp in Butcherblock yet.\n\n"
++                             "First test your /location hotbutton with the map visible. Then close map/chat, clear your target and turn melee off. "
++                             "Start on clear, flat, open ground. Seven short calibration presses follow the four-second focus countdown. "
++                             "Stay present. F8 returns to assist; F9/F11 stops. The trip stops on an observed attack or zone change.")
+             if continuation:
+                 text.setText(text.text() + "\n\nAfter a newly observed level-up and spell preparation, the helper may measure again and travel to a supported later camp. This additional trip is limited to 25 minutes. After stopped arrival, the helper prepares learned spells again and checks new targets before combat. Missing routes keep the current camp. Stay present throughout.")
+             text.setWordWrap(True)

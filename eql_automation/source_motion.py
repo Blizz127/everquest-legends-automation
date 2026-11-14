@@ -130,11 +130,12 @@ class SourceReceiptLedger:
         p=self.observer.policy
         self.bounds.validate_values(calibration_record_id=self.observer.planning_bounds.calibration_record_id,
                                     maximum_step_seconds=.2)
-        p.check_context(zone='crushbone',pins=(p.mesh_sha256,self.terrain.archive_sha256,
+        p.check_context(zone=p.zone,pins=(p.mesh_sha256,self.terrain.archive_sha256,
             self.terrain.wld_sha256,self.static.inventory_sha256),bsp=self.bsp)
         if (any(a is not b for a,b in zip(self._context_objects,
                 (self.observer,self.terrain,self.static,self.bsp,self.bounds,self.model,
                  self.legacy,self.motion,self.clock,self.lock)))
+                or self.observer.reader.zone_id != p.zone_id
                 or self.observer.terrain is not self.terrain
                 or self.bounds is not self.observer.planning_bounds
                 or vars(self.motion)!=self._motion or vars(self.bounds)!=self._bounds

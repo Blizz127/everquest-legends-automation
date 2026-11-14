@@ -61,8 +61,11 @@ def start(h,destination_id=None):
     return route_start(h)
 
 
-def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,monkeypatch):
-    assets=configure(h,monkeypatch,destination_id='north-wall');e=h.engine
+@pytest.mark.parametrize('destination_id', ('north-wall','newbie-hills'))
+def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,monkeypatch,destination_id):
+    from eql_automation.source_destinations import destination_spec
+    zone=destination_spec(destination_id).zone
+    assets=configure(h,monkeypatch,destination_id=destination_id);e=h.engine
     from eql_automation.source_observer import SourceItineraryObserver
     source_check=SourceItineraryObserver.check
     def no_observer_resume(observer):
@@ -83,16 +86,17 @@ def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,
         if token:captured.append(token)
         return token
     e._capture_trial_continuation=keep
-    start(h,'north-wall');assert navigation_active(e)
+    start(h,destination_id);assert navigation_active(e)
     h.due_trial();record=finish(h,timeout=80.)
     assert record is not None and record['outcome']=='arrived','\n'.join(h.notices)
     assert record['continuation']['camp_started'],h.notices
-    assert record['destination']['destination_id']==record['continuation']['destination_id']=='north-wall'
+    assert record['destination']['destination_id']==record['continuation']['destination_id']==destination_id
     assert record['destination']['guide_sha256']==record['continuation']['destination']['guide_sha256']
-    assert captured[0].destination is assets and captured[0].destination_id=='north-wall'
-    assert e.journey_last_result['destination_id']==e.journey.destination_id=='north-wall'
+    assert captured[0].destination is assets and captured[0].destination_id==destination_id
+    assert e.journey_last_result['destination_id']==e.journey.destination_id==destination_id
     assert e.camp_session is not None and e.journey.phase=='camp'
-    assert loads==[(e.settings.server,'crushbone')]
+    assert e.zone==e.camp_session.zone==zone
+    assert loads==[(e.settings.server,zone)]
     assert e.camp_session.candidates==(fallback,)
     assert e.sender is h.sender and not e.sender.held and not h.observer_closed
     assert e.journey.camp_motion.observer is captured[0].pending['observer']
@@ -116,13 +120,14 @@ def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,
     assert not checkpoint.valid and checkpoint._chain is None
 
 
-def test_movement_destination_needs_no_npc_history_and_stops_without_camp(h,monkeypatch):
-    configure(h,monkeypatch,destination_id='throne-stair-landing');e=h.engine
+@pytest.mark.parametrize('destination_id', ('throne-stair-landing','newbie-hills-stop'))
+def test_movement_destination_needs_no_npc_history_and_stops_without_camp(h,monkeypatch,destination_id):
+    configure(h,monkeypatch,destination_id=destination_id);e=h.engine
     import eql_automation.owner_camp_runtime as camp_runtime
     def no_candidates(*args,**kwargs):raise AssertionError('Movement test must not load camp targets')
     monkeypatch.setattr(camp_runtime,'observed_candidates',no_candidates)
     monkeypatch.setattr(camp_runtime,'load_owner_candidates',no_candidates)
-    start(h,'throne-stair-landing');h.due_trial();record=finish(h,timeout=80.)
+    start(h,destination_id);h.due_trial();record=finish(h,timeout=80.)
     assert record is not None and record['outcome']=='arrived',h.notices
     assert record['continuation']['phase']=='arrived' and not record['continuation']['camp_started']
     assert e.journey is None and e.camp_session is None and e.cancelled
@@ -137,6 +142,18 @@ def test_movement_destination_cannot_request_automatic_camp_continuation(h,monke
     e.handle_job(*e.jobs.get_nowait())
     assert e.journey is None and e.route_trial is None and e.camp_session is None
     assert any('camp continuation is unavailable' in str(s) for s in h.notices)
+
+
+def test_butcher_camp_without_observed_npc_history_sends_no_input(h,monkeypatch):
+    import eql_automation.owner_camp_runtime as camp_runtime
+    configure(h,monkeypatch,destination_id='newbie-hills')
+    monkeypatch.setattr(camp_runtime,'observed_candidates',lambda *a,**k:())
+    monkeypatch.setattr(camp_runtime,'load_owner_candidates',lambda *a,**k:())
+    start(h,'newbie-hills');h.tick();h.drain()
+    assert not h.events and not h.commands and not h.sender.held
+    assert h.engine.supervised_motion is None
+    assert h.engine.camp_session is None and h.engine.route_trial is None
+    assert any('No observed NPC' in str(s) for s in h.notices)
 
 
 @pytest.mark.parametrize('stop',('movement','location'))

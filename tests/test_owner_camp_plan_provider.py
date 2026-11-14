@@ -52,6 +52,31 @@ def test_map_ranges_keep_current_camp_and_never_fill_unbuilt_level_gaps(annotati
     with pytest.raises(ValueError):provider.choose_next_destination(root,'slave-mines',13)
 
 
+def test_butcher_level_increase_cannot_select_a_crushbone_route(tmp_path,monkeypatch):
+    from eql_automation import butcher_assets
+    data=b'P 650, -2700, 0, 0, 0, 0, 2, L01-04_Newbie_Hills\n'
+    (tmp_path/'butcher_3.txt').write_bytes(data)
+    monkeypatch.setitem(butcher_assets.DATA_PINS,'butcher_3.txt',sha256(data).hexdigest())
+    for level in (1,4,5,7,10,13,18,20):
+        assert provider.choose_next_destination(tmp_path,'newbie-hills',level) is None
+    assert provider.choose_next_destination(tmp_path,'newbie-hills-stop',1) is None
+
+
+def test_butcher_default_continuation_root_uses_its_own_copied_maps(monkeypatch):
+    from pathlib import Path
+    from eql_automation.camp_session import CampLevelAdvance
+    advance=CampLevelAdvance(4,5,10,3)
+    pending=SimpleNamespace(journey=SimpleNamespace(continue_camps=True,destination_id='newbie-hills'),
+        level_advance=advance,generation=3,
+        camp=SimpleNamespace(last_level_advance=advance,level_source='client_log',level=5))
+    engine=SimpleNamespace(_camp_position_current=lambda p:None,settings=SimpleNamespace(level=5),
+                           trace=lambda *a,**k:None)
+    seen=[]
+    monkeypatch.setattr(provider,'choose_next_destination',lambda root,*a:seen.append(root))
+    assert provider.owner_camp_probe_plan(engine,pending) is None
+    assert seen==[Path.home()/'.local/share/eql-automation/owner-route-data/butcher-camps-20261114']
+
+
 def install_historical_basis(h):
     e=h.engine;j=e.journey;m=j.camp_motion;floor=j.arrival_floor
     historical=floor.snapshot(include_evidence=True)['evidence']
@@ -98,7 +123,7 @@ def test_production_plan_uses_fresh_fit_and_same_scope_through_route(camp,monkey
         (SourceWalkHint((4.,2.),(5.,8.)),))
     monkeypatch.setattr(provider,'choose_next_destination',lambda *a:
         (provider.destination_spec('north-wall'),encoded({'kind':'synthetic-next-destination'})))
-    monkeypatch.setattr(provider,'load_crushbone_source_guide',lambda *a:guide)
+    monkeypatch.setattr(provider,'load_source_guide',lambda *a:guide)
     def plan(p):
         result=provider.owner_camp_probe_plan(e,p)
         assert result.destination_id=='north-wall'

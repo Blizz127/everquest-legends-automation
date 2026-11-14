@@ -49,7 +49,7 @@ def check_source_footprint(prefix, footprint, *, terrain, static, bsp, region_po
     policy_record=encoded(region_policy.record())
     storage=_source_storage(terrain,static)
     def check():
-        region_policy.check_context(zone='crushbone',pins=(region_policy.mesh_sha256,
+        region_policy.check_context(zone=region_policy.zone,pins=(region_policy.mesh_sha256,
             terrain.archive_sha256,terrain.wld_sha256,static.inventory_sha256),bsp=bsp)
         if (prefix.inventory_sha256!=terrain.wld_sha256 or _chain_snapshot(prefix)!=original
                 or region_policy.classifier is not classifier
@@ -119,7 +119,7 @@ def check_source_probe(prefix, reference, *, probe_kind, bounds, terrain, static
         nonlocal last
         check_context()
         now=clock()
-        region_policy.check_context(zone='crushbone',pins=(region_policy.mesh_sha256,
+        region_policy.check_context(zone=region_policy.zone,pins=(region_policy.mesh_sha256,
             terrain.archive_sha256,terrain.wld_sha256,static.inventory_sha256),bsp=bsp)
         if (not finite(now) or not finite(began) or not began<=last<=now<=began+maximum_seconds
                 or _chain_snapshot(prefix)!=state or region_policy.classifier is not classifier

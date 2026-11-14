@@ -60,7 +60,7 @@ class SourceItineraryObserver:
             initial.route, reader, self.owner, 0, height_calibration.evidence.first.raw_fix)
         self._seed = (self._chain.inventory_sha256, self._chain.seed_evidence_sha256,
                       self._chain.seed_ids, self._chain.body_height)
-        if (data['format'] != 'eql-source-itinerary-v1' or data['zone'] != 'crushbone'
+        if (data['format'] != 'eql-source-itinerary-v1' or data['zone'] != self.policy.zone
                 or data['initial_proof_sha256'] != self._chain.previous.proof_sha256
                 or data['initial_seed_sha256'] != self._chain.seed_evidence_sha256
                 or data['initial_chain_index'] != self._chain.index
@@ -145,7 +145,7 @@ class SourceItineraryObserver:
                                                owner_binding=self.owner)
                 or not 0 <= c.valid_from_monotonic <= now <= c.valid_until_monotonic
                 or c.raw_xy_to_wld_transform != 'identity'
-                or c.zone_short_name != 'crushbone' or c.zone_id != 58
+                or c.zone_short_name != self.policy.zone or c.zone_id != self.policy.zone_id
                 or c.source_archive_sha256 != self.policy.archive_sha256
                 or c.source_wld_sha256 != self.policy.wld_sha256
                 or self.reader.tail.partial

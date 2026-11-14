@@ -105,7 +105,7 @@ class CampFloorCheckpoint:
                 or self._height_bytes is not self._height_identity
                 or height_snapshot(self._calibration)!=self._height_state
                 or _reader_identity(self._reader)!=self._reader_state or self._reader.tail.partial
-                or self._reader.tail.identity is None
+                or self._reader.tail.identity is None or self._reader.zone_id != self._policy.zone_id
                 or _source_storage(self._terrain,self._static)!=self._storage
                 or (self._terrain.archive_sha256,self._terrain.wld_sha256,
                     self._static.inventory_sha256,self._bsp.inventory_sha256,self._bsp.wld_sha256)!=self._pins
@@ -118,7 +118,7 @@ class CampFloorCheckpoint:
         """Check historical identity, not current position or expired height validity."""
         try:
             self._assert_intact()
-            self._policy.check_context(zone='crushbone',pins=(self._policy.mesh_sha256,
+            self._policy.check_context(zone=self._policy.zone,pins=(self._policy.mesh_sha256,
                 self._terrain.archive_sha256,self._terrain.wld_sha256,self._static.inventory_sha256),bsp=self._bsp)
             self._model.check_policy(self._policy)
             self._assert_intact()

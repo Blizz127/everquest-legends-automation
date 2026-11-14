@@ -150,9 +150,10 @@ class RouteGeometryPreparer:
             p = self.region_policy
             if (r.mode_reader() != 'measurement' or self.expected_zone_line is not None
                     or p.classifier is not self._classifier or pin(p.record()) != self._region_pin
-                    or r.height_calibration.zone_id != 58
+                    or r.height_calibration.zone_id != p.zone_id
+                    or r.height_calibration.zone_short_name != p.zone
                     or self.ledger.chain.inventory_sha256 != p.wld_sha256):
-                raise ValueError('Native region geometry requires its original Crushbone measurement scope')
+                raise ValueError('Native region geometry requires its original zone-bound measurement scope')
             p.check_context(zone=r.route.zone, pins=(r.route.mesh_sha256,
                 g.source_archive_sha256, g.source_wld_sha256, self.static_inventory_sha256), bsp=self.bsp)
         if (getattr(self.source, 'ground', None) is not self.ground
