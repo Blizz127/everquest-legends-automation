@@ -161,7 +161,12 @@ def sample_focused_ui(*, gate, layout_loader, game, character, server,
             if "PW_CombatStateAnim" in layout.sources else None),
         "saved_layout_is_live_verified": False,
         "map_label_is_current_zone_verified": False,
-        "map_label_requires_current_zone_selection": True,
+        "map_label_requires_current_zone_selection": False,
+        "map_label_expected_eqtype": 1020,
+        "map_label_static_semantics": "current_actor_zone_not_selected_map",
+        "map_label_semantics_executable_sha256": "fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36",
+        "map_label_runtime_refresh_verified": False,
+        "map_label_xml_to_runtime_binding_verified": False,
         "missing_or_offscreen_crops": [name for name, box in crops.items() if box is None],
     }
     if isinstance(layout,PreparedLayoutView):

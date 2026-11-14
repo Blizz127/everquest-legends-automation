@@ -273,14 +273,23 @@ class RouteSessionDriver:
     All other provider contracts are those of run_checked_route_step.
     """
     def __init__(self, session, sender, *, request_location, sample_scene, prepare_step,
-                 authorize_step, still_authorized, command_state_clear, pump):
+                 authorize_step, still_authorized, command_state_clear, pump,
+                 supervised_policy=None):
         if not isinstance(session,RouteSession) or not all(callable(f) for f in
                 (request_location,sample_scene,prepare_step,authorize_step,still_authorized,command_state_clear,pump)):
             raise ValueError('Route session, checked command and independent step providers required')
         self.session, self.sender, self.request_location = session, sender, request_location
         self.sample_scene, self.pump = sample_scene, pump
         self.options = dict(prepare_step=prepare_step,authorize_step=authorize_step,
-            still_authorized=still_authorized,command_state_clear=command_state_clear)
+            still_authorized=still_authorized,command_state_clear=command_state_clear,
+            supervised_policy=supervised_policy)
+        if supervised_policy is not None:
+            from .supervised_route import SupervisedRoutePolicy
+            if (type(supervised_policy) is not SupervisedRoutePolicy
+                    or supervised_policy.ledger is not session.ledger
+                    or session.mode != 'measurement'):
+                raise ValueError('Supervised policy belongs to this measurement route only')
+            session.executor_events.append(supervised_policy.snapshot())
         self.busy = False
 
     def tick(self):
@@ -317,6 +326,10 @@ class RouteSessionDriver:
                     attempt.update(outcome='failed',error=type(error).__name__+': '+str(error))
                     raise
                 else:attempt['outcome'] = 'returned_receipt'
+                finally:
+                    policy = self.options['supervised_policy']
+                    if policy is not None:
+                        s.executor_events.append(dict(policy.snapshot(), record_phase='after_step_attempt'))
                 s.step_released(action,result)
         except BaseException as error:
             s.cancel(str(error))

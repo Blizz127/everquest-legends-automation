@@ -5,6 +5,8 @@ establish the receipt's provenance, and an external live guard must prove that
 the supplied footprint covers the proposed motion with measured bounds and
 current scene/static/BSP/dynamic checks. Identity binding here does not prove
 those facts or turn an offline FloorTrial into movement authority.
+The separate owner-supervised measurement policy retains these as conditional
+planning hypotheses; a committed receipt never upgrades their verification.
 """
 from copy import copy,deepcopy
 from dataclasses import asdict,dataclass,field

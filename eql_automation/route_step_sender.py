@@ -2,9 +2,11 @@
 
 Not installed in an owner helper. All providers are mandatory trusted
 dependencies: in particular an offline FloorTrial is never an authorization.
-The external guard must cover the complete swept body, measured hold/speed/
-drift bounds, static/BSP geometry and current dynamic hazards. This bridge
-checks bindings and revocation, not the truth of those external measurements.
+The default external guard must cover the complete swept body, measured
+hold/speed/drift bounds, static/BSP geometry and current dynamic hazards.
+An explicit supervised measurement policy instead retains owner declarations
+and conditional planning bounds, with their verification fields false. This
+bridge checks bindings and revocation, not the truth of those measurements.
 
 All users of this sender (including device close/replacement) must share the
 ledger's stop lock and respect its exclusive operation marker. A duplicated
@@ -47,6 +49,7 @@ class RouteStepResult:
     guard_record_id: str
     # Device writes alone do not prove client consumption or route acceptance.
     real_client_accepted: bool = False
+    authorization_scope: str = 'external_guard'
 
 
 def _fd_identity(fd):
@@ -56,7 +59,7 @@ def _fd_identity(fd):
 
 def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
                            authorize_step, still_authorized,
-                           command_state_clear, pump):
+                           command_state_clear, pump, supervised_policy=None):
     """Arm, observe, propose, check, send, release, then commit exactly once.
 
     ``prepare_step(proposal, scene)`` stages the complete geometry request on
@@ -70,6 +73,11 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
     merely sender.check(). All callbacks must avoid input and device mutation;
     pump may process OFF, which must cancel/increment the bound generation.
 
+    An explicit SupervisedRoutePolicy may instead supply its separate typed,
+    owner-declared measurement evidence. This does not claim independent UI or
+    motion-bound verification. It retains geometry, timing, release and commit
+    checks and cannot run in full-auto/assist. The default path is unchanged.
+
     Fresh scene checks can exhaust the 50 ms proposal deadline; that refuses
     movement rather than renewing timestamps. After success the follower still
     requires a new stopped-location pair. Assist/off always refuse movement.
@@ -78,6 +86,14 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
             (scene_provider, prepare_step, authorize_step, still_authorized,
              command_state_clear, pump))):
         raise ValueError('A route ledger and all independent live providers are required')
+    if supervised_policy is not None:
+        from .supervised_route import SupervisedRoutePolicy
+        if (type(supervised_policy) is not SupervisedRoutePolicy
+                or supervised_policy.ledger is not ledger
+                or prepare_step is not supervised_policy.geometry
+                or authorize_step != supervised_policy.authorize
+                or still_authorized != supervised_policy.still_authorized):
+            raise ValueError('Supervised route must use its exact geometry and typed policy')
     operation = object()
     owned = False
     pinned_fd = None
@@ -125,11 +141,15 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
                 or (raw.zone_id, raw.zone_display_name, raw.log_epoch, raw.zone_generation) != r.binding
                 or raw.log_line_seq != r.last_seq or raw.received_monotonic != r.last_fix_at
                 or aligned.mesh_projection.package_xyz != (r.pose.x, r.pose.y, r.pose.z)
-                or (reference is not None and aligned is not reference)
-                or not all(v is True for v in (scene.focused, scene.owner_keys_clear,
-                    scene.chat_clear, scene.target_absent, scene.combat_clear,
-                    scene.no_transition, scene.no_incoming_attack))):
+                or (reference is not None and aligned is not reference)):
             raise RouteHalt('Route scene is stale, unsafe or differs from the stopped reference')
+        if supervised_policy is None:
+            if type(scene) is not G2Scene or not all(v is True for v in
+                    (scene.focused, scene.owner_keys_clear, scene.chat_clear, scene.target_absent,
+                     scene.combat_clear, scene.no_transition, scene.no_incoming_attack)):
+                raise RouteHalt('Independent route scene is missing or unsafe')
+        else:
+            supervised_policy.validate_scene(observed, ledger)
         return observed
 
     def select():
@@ -153,7 +173,12 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
                 or not ticket.staged_at <= authorization.issued_at <= now <= authorization.expires_at
                 or authorization.expires_at > proposal.at+.05
                 or not isinstance(authorization.guard_record_id, str) or not authorization.guard_record_id):
-            raise RouteHalt('Missing fresh independent whole-motion authorization')
+            raise RouteHalt('Missing fresh route-step authorization')
+        if supervised_policy is None:
+            if type(authorization) is not RouteStepAuthorization:
+                raise RouteHalt('Default route requires independent authorization')
+        else:
+            supervised_policy.validate_authorization(authorization, observed)
         check_sender()
         key = ticket.preparation.movement_key
         sender.held.add(key)  # Retain until final UP and SYN both succeed.
@@ -229,7 +254,9 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
             if sender.held:
                 raise RouteHalt('Sender acquired a held key after final release')
             floor = ledger.commit(ticket, receipt)
-            return RouteStepResult(receipt, floor.proof_sha256, authorization.guard_record_id)
+            return RouteStepResult(receipt, floor.proof_sha256, authorization.guard_record_id,
+                authorization_scope='external_guard' if supervised_policy is None else
+                                    'owner_supervised_conditional_trial')
     except BaseException:
         ledger.cancel('Checked route sender failed; no floor commit')
         raise

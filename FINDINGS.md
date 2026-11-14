@@ -1,5 +1,70 @@
 # FINDINGS
 
+## Finite supervised route policy and current-zone label correction — 2026-11-14 10:56 UTC
+
+**VERIFIED implementation:** source 0.42.8 adds `SupervisedRoutePolicy` to the
+existing checked route sender and session driver. It is an explicit
+measurement-only path with an owner open-ground declaration, exact route,
+motion and planning-record identities, maximum duration/steps/distance and a
+conservatively reserved total key-hold budget. Actual focus/process, physical
+input and log-veto observations remain required. Terrain, static-object and
+BSP checks, exact pending ticket, watchdog release and receipt-bound floor
+commit remain required. Cancellation during observation/geometry callbacks
+is rechecked before authority can return; callback time counts toward the
+whole-trial deadline.
+
+The policy **does not claim** independently verified chat, target, dynamic
+clearance, body dimensions or motion bounds. Its typed scene/authorization
+records keep those verification fields false. The default unattended sender
+rejects these types, and the policy refuses assist, full-auto and off modes.
+Each session attempt records the declaration, planning bounds and reserved
+hold, including failures. No source job, GUI button or hotkey constructs this
+policy yet, and no saved calibration is accepted as current heading.
+
+**VERIFIED checks:** the focused integration run had 140 passes, one existing
+pipe-test watchdog-arm refusal before its intended final-release injection,
+and one deliberately excluded older full-route pipe case. The failing case
+passed on its isolated recheck; no timeout was relaxed. The final policy-only
+non-pipe run passes all 31 cases, including a new slow-callback deadline case.
+Both new real-pipe tests passed in the integration run: a conditional pulse
+commits only after release, and cancellation during DOWN releases without a
+floor commit. These are synthetic observations and pipe writes, not client
+acceptance. No real route or automated XP has been observed.
+
+**VERIFIED static source; correction of earlier inference:** the copied
+`MRA_ZoneLabel` XML uses EQType 1020. In the pinned executable, the actual
+producer dispatch for 1020 is selector 205 to `0x140547e32`. It reads the
+current actor at `0x140f3a808`, zone field `+0x1ec`, and resolves its name through
+the zone catalog at `0x140f3a7c8` via `0x1406ec290`. It does not read the map
+window's selected-zone field `+0x920`. The adjacent dispatches 1018–1023 and
+two label-update callers were also checked. Missing actor/catalog yields
+empty output; unknown lookup yields `Unknown Zone`; some metadata permits an
+instance-number suffix. The earlier claim that this label necessarily
+represents the browsed map was incorrect and is superseded here.
+
+`tools/audit_current_zone_label.py` reproduces the XML, adjacent dispatch and
+seven bounded native span hashes without native execution. Executable SHA
+`fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36`;
+XML SHA `6bcdcc7b20c6510c5797e044ab3193b8a7fa2386dc87e8d770b5387346fe6419`.
+Private artifact `client-data/current-zone-label-0.42.8/probe.json`, SHA
+`90adaeac3d89d5fc70e6690ad9fa205abb270b50654f91e2544fc2feb107896a`.
+UI capture metadata now distinguishes this static source from unknown live
+refresh/recognition. The complete XML-to-runtime adapter binding, visible
+fresh label capture and loading behavior remain unverified; this finding does
+not establish the owner's current zone or automatically enable route startup.
+
+**Next concrete assembly:** retain the completed motion experiment's observer,
+tested hotbutton, sender, log veto and settings/window bindings through one
+owner-started measure-then-trial job. Acquire the exclusive current-zone
+reader, build a short source-checked plan from current XY rather than the old
+GFay start, request fresh stopped positions for height, then attach the route
+driver. Default motion completion still stops. One read-only Alienware report
+directory check found zero JSON results in `location-hotkey-tests`,
+`motion-measurements` and `g2-ui-observations`; no further polling was needed.
+G0 remains passed. Owner assist 0.39.13 and pending motion 0.39.12 are unchanged.
+Current level, XP/hour, deaths and camp remain unknown. No login, game input,
+protected-install change or public/git push occurred.
+
 ## Live zone tracking and route reader handoff — 2026-11-14 10:41 UTC
 
 **VERIFIED implementation:** source 0.42.7 adds `owner_zone_tracker.py` to the
@@ -3275,8 +3340,9 @@ Private `releases/owner-assist-0.39.8-staging.json` records the smoke scope.
 No live input/session observation through this integration is accepted.
 
 **OBSERVED remaining gap:** There is still no retained real game UI crop or
-paired location/UI record in the local approved store. The browsed-map label
-cannot independently establish current zone. Next implement a tick-driven,
+paired location/UI record in the local approved store. The then-assumed
+browsed-map label semantics were superseded by the source 0.42.8 native audit
+above; live label freshness remains unverified. Next implement a tick-driven,
 owner-invoked location/UI collection session in the helper using the existing
 unbound collector; retain its unknown identity/zone/alignment fields. Then
 wire source-ground observation with live height calibration, rather than
@@ -4688,8 +4754,10 @@ contact reader SHA:
 `uifiles/default/EQUI_MapViewWnd.xml`, SHA
 `6bcdcc7b20c6510c5797e044ab3193b8a7fa2386dc87e8d770b5387346fe6419`,
 defines `MRA_ZoneLabel` with EQType1020 at lines310–327. The Current Zone
-button (`MVW_LoadCurrent`) resets a browsed map to the player's zone; the
-label alone cannot establish current zone. The saved Legira UI INI SHA
+button (`MVW_LoadCurrent`) resets a browsed map to the player's zone. The
+contemporary inference that the label represents the browsed zone is superseded
+by the source 0.42.8 native audit above; live recognition/refresh remains open.
+The saved Legira UI INI SHA
 `5876a4136283b692263bc2826ffc2b12cd7328f4faa320c5f4071f2092fbc76b`
 has the map hidden. The existing pinned layout parser computes a map rectangle
 (1288,476,1198,955) and label (1301,1403,250,15) at2560×1600. Its button

@@ -75,6 +75,10 @@ def test_producer_roundtrip_checks_saved_pixels_without_claiming_live_identity(t
     assert not report['full_frame_hash_revalidated'] and not report['source_files_revalidated']
     assert report['map_zone']['catalog_zone_id']==54 and report['map_zone']['catalog_lookup']=='unique'
     assert not report['map_zone']['current_zone_verified']
+    assert f.meta['map_label_expected_eqtype']==1020
+    assert f.meta['map_label_requires_current_zone_selection'] is False
+    assert not f.meta['map_label_runtime_refresh_verified']
+    assert not f.meta['map_label_xml_to_runtime_binding_verified']
     assert report['route']['segment_count']==2 and report['route']['horizontal_length']==20
     assert report['route']['planned_start']==tuple(report['raw_location']['raw_coordinates'])
     assert report['route']['current_start_query']=='unavailable_unbound_raw_coordinates'
