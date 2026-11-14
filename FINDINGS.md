@@ -1,5 +1,69 @@
 # FINDINGS
 
+## Explicit source-step transitions — 2026-11-14 09:30 UTC
+
+**VERIFIED implementation:** source 0.42.0 keeps ordinary exact-edge floor
+continuity unchanged and adds a separate conditional lift/transfer/settle
+checker. It requires committed departure and independently checked landing
+caps, exact complete support projection, opposite-side source edges and full
+vertical riser coverage. The two source edges may have different lengths.
+Ramp endpoints use a conservative sweep height derived from their minimum
+support heights. Lift/settle retain the original below-floor/numeric margins.
+Transfer classifies every terrain/static face, including both support floors
+and the riser, without exemptions. Touching its body band rejects the move.
+A passed landing has reason `conditional_step_landing_only`, no invented
+ordinary edge joins, and a proof hash bound to the old prefix and step record.
+The parent chain remains unchanged. This is a kinematic hypothesis, not verified
+client climbing, jumping or input authority; BSP remains separately unclassified.
+
+The new exact-edge component precheck overapproximates ordinary floor
+connectivity, including ambiguous edge branches. It retains all goal height
+layers and does not select one by nearest Z. Different components prove a limit
+of the current continuous-floor model, not physical disconnection. Full swept
+terrain/static checks still decide every attempted connection.
+
+**VERIFIED focused checks:** 33 tests pass across step, component, detour and
+floor-chain modules. Cases include ramp endpoints, both step directions,
+complete riser/support requirements, missing/too-narrow landing, transfer-only
+wall, lift-only and settle-only ceiling, source changes, explicit height limits,
+branch isolation and linked suffix continuation. Independent read-only review
+found no concrete geometry, rejoin or false-disconnection defect.
+
+**VERIFIED copied-client probe:**
+`nav-candidates/crushbone-source-steps-and-components-0.42.0.json`, SHA
+`2f4c9a42e293ce4ffcf86d2604f6f88dca31ed48fd843de3c92339aa9ce16f49`.
+The tool replays all 982 prior terrain/static cells and matches their exact
+proof hashes, then checks source-backed approaches and these transitions:
+
+- Up 5/16 unit at the copied 1528/1538 riser. Body radius 1.2/height 6,
+  maximum boundary rise .5 and total-lift hypothesis 1.0. Transition SHA
+  `79d2b339f514f7757495c4a1844a4e706206862c2414cbdf389ee35d2d1876dd`.
+- Down 3/32 unit at the 2489/2485 lip. Same body, rise and clearance settings,
+  with an explicit total-lift hypothesis 2.5 because of the sloping endpoint
+  footprints. This is not a measured client limit. Transition SHA
+  `dcf5d6efdc54118487b1c5e62c9897d58c09072d8b054af7e400283f1a3940b0`.
+
+Both phase checks pass with the actual riser surfaces retained. Six subsequent
+connections to guide points 154, 155, 156, 162, 163 and 164 pass; each has a
+checked connector and endpoint. Component checking skips 157–161, which return
+to the prior western floor. Goal 165 still reaches the bounded search time
+limit; that timeout does not prove an obstacle or global disconnection.
+The complete source view has 6,549 eligible faces and 576 overapproximated
+continuous-floor components. Runtime was 27.46 s. Whole-route and real-client
+flags remain false, and the 866 historical BSP refusals remain in force.
+
+The earlier first-step-only probe is retained as
+`nav-candidates/crushbone-source-step-0.42.0.json`, SHA
+`ec641b5a4819601b283912114f68e728d028cac8bdf698f62ee4d867f32c8d70`;
+it passed the first step but timed out trying the next ordinary-floor leg.
+
+**Remaining:** automatic source-step discovery and continuation beyond waypoint
+164, plus current real motion/scene/zone binding and client acceptance. No game
+input, login, character mutation or automated XP occurred. Level, XP/hour,
+deaths and camp remain unknown. Existing assist 0.39.6 and owner measurement
+0.39.12 are unchanged; G0 remains passed and requires no repeat.
+
+
 ## Automatic source-floor detours — 2026-11-14 09:19 UTC
 
 **VERIFIED implementation:** source 0.41.99 introduces a bounded local A*

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 09:19 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 09:30 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,19 @@ Updated 2026-11-14 09:19 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.0:** explicit source-backed up/down step diagnostics now
+  check departure lift, the complete raised transfer and landing settle,
+  retaining risers and all terrain/static faces. The landing has a distinct
+  step record linked to the old prefix; ordinary floor continuity is unchanged.
+  Thirty-three focused checks pass. The copied Crushbone run replays all 982
+  previous cells with exact matching hashes, then passes the 0.3125 rise and
+  0.09375 drop under explicit lift hypotheses. Six further guide legs pass;
+  waypoint 165 still exhausts bounded search. The new source-component check
+  skips five unnecessary return-west guide points without changing floors.
+  Full route/BSP/live acceptance remain false. **Next:** discover source step
+  links automatically and resolve the remaining corridor beyond waypoint 164;
+  consume the existing owner 0.39.12 motion/current-scene result when present.
+  No game input or new owner test; real level, XP/hour, deaths and camp unknown.
 - **Source 0.41.99:** the offline source planner now searches bounded detours
   and rejoins the original guide automatically. Failed branches preserve the
   accepted floor prefix; each candidate checks full swept terrain/static space

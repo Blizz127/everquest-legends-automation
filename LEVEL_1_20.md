@@ -1,9 +1,20 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 09:19 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 09:30 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.42.0 adds an explicit conditional lift/transfer/settle model for copied
+source risers. It handles sloping departure/landing floors and both directions,
+without treating vertical faces as ordinary walkable joins. The source run
+replayed the prior 982 cells, passed a 0.3125-unit rise and 0.09375-unit drop,
+then passed guide legs to waypoints 154–156 and 162–164. A component precheck
+skipped return-west points 157–161. Search to 165 timed out, so the suffix and
+whole route remain unaccepted. Thirty-three focused tests pass. Step capability,
+body/motion calibration, BSP/dynamics and live movement are not established by
+this geometric model. Automatic discovery of further source step links is next;
+owner helper 0.39.12 and its pending test remain unchanged.
 
 Source 0.41.99 adds automatic bounded source-floor detours. On the copied
 Crushbone route it bypassed the raised corner, low deck and a third obstruction

@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.99** · rotation preview **0.39.6** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
+Source **0.42.0** · rotation preview **0.39.6** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -20,9 +20,10 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** The next owner check is the combined hotbutton + motion measurement
 below. The manual position observation remains available separately.
 
-Source 0.41.99 automatically finds offline detours around three Crushbone
-obstructions. The complete route still needs a step-transition model and live
-validation. This does not change your helper, hotkeys or the next test below.
+Source 0.42.0 adds offline checks for stepping up and down, alongside automatic
+detours. Two Crushbone step transitions pass the geometry model; the remaining
+route and actual client stepping are unverified. Your helper, hotkeys and next
+test below are unchanged.
 
 ## Next owner test on Alienware: 0.39.12
 
