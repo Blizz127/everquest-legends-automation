@@ -1,6 +1,6 @@
 # FINDINGS
 
-## Current-position route producer — 2026-11-14 11:05 UTC
+## Current-position route producer — 2026-11-14 11:03 UTC
 
 **VERIFIED implementation:** source 0.42.9 adds `CurrentStartPlanner`. It uses
 two fresh consecutive stopped log positions bound to the current owner/log
@@ -32,7 +32,7 @@ the existing body-height match remains in the runtime validator.
 **VERIFIED focused checks:** all 29 final producer/detail-loader tests pass.
 They cover translated current starts, overlapping baked/source floors,
 interior holes/static obstacles/water, stale/moving/unbound positions,
-source/process changes, deadline callback changes and same-count foreign
+source/owner-binding changes, deadline callback changes and same-count foreign
 detail meshes. A plan round trip feeds the existing observed-height producer
 and fixed follower with fresh synthetic pairs. A larger focused run had
 68 passes and an existing pipe case stop after release on its timing guard;
@@ -71,6 +71,16 @@ position collection, this producer, height and route driver. No owner control
 is enabled yet. Assist 0.39.13 and motion 0.39.12 stay unchanged; G0 passed and
 needs no repeat. Current level, XP/hour, deaths and camp remain unknown. No
 client input, login, install change or automated XP occurred in this work.
+
+Source `cc2e54f` is privately staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.9/source`. Remote startup
+imports the new producer and builds a translated current-position plan over
+synthetic complete geometry/logs, verifies its new proof hash and false
+acceptance fields, then rejects an expired pair. No helper worker or input
+device is started. Archive SHA
+`cb885406415014ac024a05781b611e177d821fd4fbed65e8666afa73ad65c55d`;
+startup SHA `2aa7c3b6c349496cfa8025774594ac520513a8157320c447d59714399437a328`.
+The source build does not replace the owner assist/motion previews.
 
 ## Finite supervised route policy and current-zone label correction — 2026-11-14 10:56 UTC
 

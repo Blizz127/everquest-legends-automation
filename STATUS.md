@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 11:05 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 11:03 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -23,6 +23,10 @@ Updated 2026-11-14 11:05 UTC for coordinator task `829a00229b29`.
   extend across polygon boundaries toward actual 1–20 camps. Assist 0.39.13,
   motion 0.39.12 and passed G0 unchanged. Current level, XP/hour, deaths and
   camp unknown; no real route or automated XP accepted.
+  Source `cc2e54f` is staged at Alienware `owner-tools/0.42.9/source`; its
+  synthetic current-position planning and stale-pair startup checks pass
+  without input. Startup SHA
+  `2aa7c3b6c349496cfa8025774594ac520513a8157320c447d59714399437a328`.
 - **Source 0.42.8:** finite supervised route policy is connected to the checked
   sender/session driver. Focus, owner input, log veto, terrain/static/BSP,
   watchdog and release checks remain required; conditional assumptions retain
