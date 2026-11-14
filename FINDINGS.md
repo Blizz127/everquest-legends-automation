@@ -1,5 +1,68 @@
 # FINDINGS
 
+## Owner source-route integration and private preview — 2026-11-14 15:05 UTC
+
+**VERIFIED implementation:** source 0.42.32 connects the source itinerary and
+transfer controller to a separate owner-started action in the existing rotation
+helper. Startup retains its sender, physical-input observer, tested location
+hotbutton, cancellation generation, stop lock and exclusive zone-reader lease.
+It measures motion, plans from fresh current Crushbone positions using the
+private guide, measures height on the selected floor, and consumes each new
+startup reply immediately. No second worker, sender or ordinary baked-route
+driver runs beside the source runtime.
+
+Ordinary and partial-step pulses use the same supervised policy and aggregate
+time/hold budgets. Only the stopped-pair collector polls the leased reader;
+nested input pumps recheck scope without consuming it. Settling keeps the same
+receipt/deadline and sends no movement. Stop propagates to the active collector,
+transfer and ordinary ledger. The parent helper persists the result, returns
+the lease and closes its retained physical-input observer. A reproduced final
+collector-clock cancellation could overwrite the runtime's stopped phase; local
+construction plus final ownership checks now prevents that publication.
+
+**VERIFIED focused checks:** all 14 selected cases pass on Alienware in 86.21s:
+nine source-runtime cases, four retained-helper source flows and one existing
+native local-trial compatibility flow. They cover approach/partial landing/
+ordinary continuation, settling with no extra movement, complete startup and
+travel, F9 during movement/location DOWN, changed model rejection, cleanup and
+no rearming. Feedback and geometry are synthetic; actual input writes use OS
+pipes. Six changed source/test files were rehashed against the checked snapshot
+and match. Output SHA
+`834aafd5b28dc206d77da657cc45cfe456b0c1fc13cdd62dbb3a242f50751aa9`;
+private metadata `releases/eql-source-runtime-0.42.32-checks.json`.
+
+Initial Devbox watchdog checks hit scheduling refusals (sample load 255 on 48
+CPUs). Remote full-helper checks then exposed excessive repeated owner checks:
+selection took roughly 30–38ms, leaving about 29–33ms before DOWN; the final
+stop check took roughly 27–35ms. The active source observation binding now
+checks owner/window/generation/lease identity without recursively observing
+physical input/model/files. The policy and watchdog still run full checks
+immediately before GO under the shared lock, during input and after release.
+No deadline or scene requirement was relaxed. The final focused run above
+passes; earlier failed outputs and timing measurements remain in private
+`owner-tools/source-runtime-check-20261114T1507Z`.
+
+**VERIFIED private owner publication:** preview 0.39.21 is staged at Alienware
+`~/.local/share/eql-automation/owner-assist/0.39.21`. Its source manifest,
+offscreen GUI and enabled **Travel to Slave Mines…** action pass; copied
+GFay/Crushbone geometry, the 1,053-operation private guide and installed
+executables/archives/catalog match. Archive SHA
+`73b10ff59e9406f7d35487bf9daff0bee2f8d020ca3d7927dd1d7fb64fc0bb7a`;
+startup SHA `c328b348309c7a1e7243ba72acf35f04408e9b4e72ba5ad4592405156092aa44`;
+GUI SHA `24fa80f0277a01fa90fad30ab75428659ce0a42d3ca725830ebde0aeb58023e6`.
+No engine worker, device or game input was started. No install/prefix/character
+was changed. The loader test used a synthetic zone identity and proves no live
+current-zone observation. Assist 0.39.13 is unchanged.
+
+**Owner action / remaining gate:** close the older helper, then on Alienware run
+`cd ~/.local/share/eql-automation/owner-assist/0.39.21 && ./launch.sh --measure-navigation`.
+Inside Crushbone, complete the existing location-hotbutton setup, then choose
+**Travel to Slave Mines…** on clear starting ground. HOWTO gives the complete
+steps and F9/F11 stop controls. G0 remains passed and must not be repeated.
+Real traversal, step capability, live scene/position acceptance and camp safety
+remain unverified. This preview neither fights nor levels. Current metrics
+unknown; no accepted 1–20 or fresh hands-off 1–50 run.
+
 ## Receipt-bound source step progression — 2026-11-14 14:55 UTC
 
 **VERIFIED implementation:** source 0.42.31 connects the conditional approach

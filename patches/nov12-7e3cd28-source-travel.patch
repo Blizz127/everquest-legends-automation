@@ -1,0 +1,60 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -466,6 +466,11 @@
+                 self.supervised_crossing.setToolTip("Travel from current GFay position through the expected zone line, then stop after arrival.")
+                 self.supervised_crossing.clicked.connect(self.configure_supervised_crossing)
+                 column.addWidget(self.supervised_crossing)
++                self.supervised_source = QPushButton("Travel to Slave Mines…")
++                self.supervised_source.setObjectName("supervisedSourceTravelButton")
++                self.supervised_source.setToolTip("From your current Crushbone position, follow the checked source route toward Slave Mines and stop.")
++                self.supervised_source.clicked.connect(self.configure_supervised_source)
++                column.addWidget(self.supervised_source)
+                 limits = QLabel(
+                     "The supervised measurement saves relative speed/turn observations and finishes stopped. "
+                     "Open ground is your confirmation; this does not independently check obstacles or certify a route. "
+@@ -893,6 +898,36 @@
+             if dialog.exec() == QDialog.DialogCode.Accepted and confirmation.isChecked():
+                 self.post("supervised_crushbone_crossing", {"open_flat_clear": True})
+ 
++        def configure_supervised_source(self):
++            if not measurement_only:
++                return
++            dialog = QDialog(self)
++            dialog.setWindowTitle("Supervised travel to Slave Mines")
++            layout = QVBoxLayout(dialog)
++            text = QLabel("Start inside Clan Crushbone. This measures motion, plans from your current position "
++                          "toward Slave Mines, and stops at the destination or when a check fails. "
++                          "This is a movement test; it does not fight, loot or level. The route and camp safety "
++                          "have not yet been verified in the client.\n\n"
++                          "First open the map and use Test /location hotbutton in this helper. "
++                          "Close the map and chat, clear your target and turn melee off. Start on clear, flat, open ground. "
++                          "After a four-second focus countdown, seven short calibration presses precede planning.\n\n"
++                          "Stay present. F9/F11 or Stop measurement cancels. Travel is limited to 25 minutes. "
++                          "The helper stops on an observed attack or zone change; it does not recover automatically.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            confirmation = QCheckBox("I will supervise; the starting calibration area is clear, flat and open.")
++            layout.addWidget(confirmation)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Start travel to Slave Mines")
++            ok.setEnabled(False)
++            confirmation.toggled.connect(ok.setEnabled)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if dialog.exec() == QDialog.DialogCode.Accepted and confirmation.isChecked():
++                self.post("supervised_crushbone_source_travel", {"open_flat_clear": True})
++
+         def configure_supervised_motion(self):
+             if not measurement_only:
+                 return
+@@ -1121,6 +1156,8 @@
+                     "supervised_destination_enabled": measurement_only and window.supervised_destination.isEnabled(),
+                     "supervised_crossing_visible": measurement_only and window.supervised_crossing.isVisible(),
+                     "supervised_crossing_enabled": measurement_only and window.supervised_crossing.isEnabled(),
++                    "supervised_source_visible": measurement_only and window.supervised_source.isVisible(),
++                    "supervised_source_enabled": measurement_only and window.supervised_source.isEnabled(),
+                     "supervised_motion_visible": measurement_only and window.supervised_motion.isVisible(),
+                     "supervised_motion_enabled": measurement_only and window.supervised_motion.isEnabled(),
+                 }, indent=2) + "\n")

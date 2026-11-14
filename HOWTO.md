@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.31** · rotation preview **0.39.13** · movement preview **0.39.20** · crossing preview **0.39.19** · approach preview **0.39.18**.
+Source **0.42.32** · rotation preview **0.39.13** · movement preview **0.39.21** · crossing preview **0.39.19** · approach preview **0.39.18**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -17,10 +17,11 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Supervised motion measurement | Four short forward presses and three turns on owner-confirmed open ground; saves relative observations and stops. | **Supervised motion measurement…**, F9/F11/Stop to cancel. |
 | Supervised destination travel | In 0.39.18, measures motion, plans from current GFay coordinates toward Crushbone, checks each movement and stops. No zone crossing or leveling. | **Travel toward Crushbone…**, F9/F11/Stop to cancel. |
 | Supervised zone crossing | In 0.39.19, a separate action measures motion, follows the GFay route into the expected Crushbone zone line, then stops after fresh arrival positions. No combat or leveling. | **Travel into Crushbone…**, F9/F11/Stop to cancel. |
+| Supervised source route | In 0.39.21, measures motion and plans from the current Crushbone position toward Slave Mines, with fresh stopped observations after each pulse and explicit step handling. No combat or leveling. | **Travel to Slave Mines…**, F9/F11/Stop to cancel. |
 | Supervised short route trial | In 0.39.20, measures motion, creates a two-unit GFay or Crushbone path from fresh current positions, checks terrain/objects/region evidence, follows it if checks pass, then stops. No combat or leveling. | **Supervised short route trial…**, F9/F11/Stop to cancel. |
 
 Run only one helper at a time. **G0 passed; do not repeat the movement-stop
-pulse.** Assist still uses the existing rotation bot. Preview 0.39.20 is a
+pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
 The requested seamless assist/full-auto switch is still unfinished.
 
@@ -29,8 +30,8 @@ sender and stop lock, keeps the confirmed floor during a partial step, waits
 without movement when height is ambiguous, and resumes ordinary walking only
 after fresh stopped readings confirm a complete landing. Steps up and down,
 stop during input and late callbacks pass focused synthetic/OS-pipe checks.
-The controller retains the existing time and movement budgets. It is not yet
-connected to the owner launcher, so there is no new owner test or command.
+The controller retains the existing time and movement budgets. Source 0.42.32
+connects it to the separate owner action described below.
 
 Source 0.42.30 rebuilds a height-step approach from the actual stopped floor,
 including the full possible movement area and an exit beyond the landing.
@@ -41,9 +42,8 @@ riser edges; they do not label an uncertain or partial step as grounded.
 
 The copied Slave Mines guide is now a pinned private data file on Alienware,
 so the future owner runtime will not need Devbox's old recipe files. This is
-still a source-development build: the owner launcher connection and real
-traversal acceptance remain unfinished. No new owner test is needed;
-G0 remains passed and the launch controls below are unchanged.
+used by the owner source-route action in 0.39.21. Actual traversal and camp
+safety remain unverified. G0 remains passed; do not repeat that pulse.
 
 Source 0.42.29 adds a source-floor movement core for the Slave Mines itinerary.
 Every ordinary move retains the old floor and position until two fresh stopped
@@ -53,10 +53,9 @@ before a normal forward press can reach the riser. Remaining approach cells and
 the actual stopped position stay attached to that handoff. No step or landing
 is accepted merely because its copied geometry passes.
 
-This source core passes synthetic route and OS-pipe checks. It is not connected
-to the owner launcher. It adds no owner
-launch step or repeated G0 check. Continue using 0.39.20 for the short movement
-test or 0.39.13 for assist, as documented below. Both use the existing helper;
+This source core passes synthetic route and OS-pipe checks. The 0.39.21
+movement preview uses it through a separate owner action. Use 0.39.13 for
+assist, as documented below. Both use the existing helper;
 assist continues to leave movement and target selection to Blizz.
 
 Source 0.42.19 can plan from dry ground into the exact copied Crushbone zone-line
@@ -98,6 +97,37 @@ the evidence. This is a development-only step: destination movement and the
 owner driver refuse these new plans until per-move integration is complete.
 The 0.39.19 crossing and 0.39.13 assist launch commands are unchanged. G0 is
 passed; no repeat or additional owner test is requested by this source update.
+
+## Source travel in Crushbone on Alienware: 0.39.21
+
+This is a supervised movement preview toward **Slave Mines**, not the requested
+1–20 leveling bot. It uses the existing rotation helper, but combat and leveling
+stay disabled during this finite test. No hand-recorded route is needed.
+
+Stop and close the older measurement helper yourself so only one helper runs.
+On Alienware:
+
+```bash
+cd ~/.local/share/eql-automation/owner-assist/0.39.21
+./launch.sh --measure-navigation
+```
+
+Start inside Clan Crushbone on clear, flat, open ground. Open the map and use
+**Test /location hotbutton…** in this same helper session. Then close the map
+and chat, clear your target and turn melee off. Choose **Travel to Slave Mines…**.
+It gives a four-second focus countdown, measures motion with seven short
+presses, collects fresh positions and plans the route before starting travel.
+
+Stay present for this test. **F9, F11 or Stop measurement cancels.** The route
+stops at the destination or at a failed check, observed attack or zone change.
+It does not fight, loot, recover from death or restart itself. The 25-minute
+travel limit and movement budgets are shared across ordinary walking and steps.
+An ambiguous step waits without movement and then stops if it cannot resolve.
+
+Results are saved under `~/.local/share/eql-automation/route-trials/`; the GUI
+shows planning, position collection, travel and the final stopped result.
+Real traversal, dynamic clearance, camp safety and leveling remain unverified.
+**G0 already passed. Do not repeat G0.**
 
 ## Short movement in Crushbone on Alienware: 0.39.20
 

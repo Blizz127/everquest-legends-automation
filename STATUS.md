@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 14:55 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 15:05 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,25 @@ Updated 2026-11-14 14:55 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.32 / movement preview 0.39.21:** **Travel to Slave Mines…**
+  is privately staged on Alienware. It uses the existing helper, calibrates and
+  plans from fresh Crushbone positions, executes checked ordinary/step movement,
+  and stops at the destination or a failed check. No combat or leveling.
+  **14 focused runtime/retained-helper checks pass on Alienware**, including
+  partial landing/settling, full startup/travel/cleanup, F9 during both input
+  types, changed installed model and the existing native local-trial flow.
+  Synthetic feedback/OS pipes only. Runtime checks initially consumed the DOWN
+  deadline; repeated identity checks are now separated from full scene checks,
+  preserving the final pre-DOWN checks and all time limits. Final output SHA
+  `834aafd5b28dc206d77da657cc45cfe456b0c1fc13cdd62dbb3a242f50751aa9`.
+  Preview manifest, offscreen GUI, copied geometry/private guide and installed
+  executable/archive/catalog checks pass. Startup SHA
+  `c328b348309c7a1e7243ba72acf35f04408e9b4e72ba5ad4592405156092aa44`.
+  No worker/device/game input or prefix modification. G0 passed; no repeat.
+  **Next / real-client gate:** owner-run traversal and step/scene/position
+  acceptance using the new HOWTO command. Route/camp safety, actual movement,
+  combat integration and automated leveling remain unverified/unfinished.
+  Assist 0.39.13 unchanged; current level/XP/hour/deaths/camp unknown.
 - **Source 0.42.31:** receipt-bound step controller now uses the existing sender,
   observer and stop lock. Actual approach caps can commit; partial steps retain
   the old ordinary floor and cannot masquerade as grounded observations.
