@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 08:46 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 08:45 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -28,6 +28,9 @@ Updated 2026-11-14 08:46 UTC for coordinator task `829a00229b29`.
   live result, bind current scene/zone/height and measure motion for the first
   supervised route leg. No live hotbutton result, real route or XP is accepted.
   G0 remains passed; assist stays 0.39.6 and F11 movement remains disabled.
+  Source `57a7f20` is staged at `owner-tools/0.41.96/source`; no-input imports
+  and reserved-key refusal pass. Startup SHA
+  `9404a1ee7b4a7f229b97b333f6c73e7c60e8cf4919bc7d3de66d2988b10f5a6c`.
 - **Source 0.41.95:** route location acquisition now has a concrete single
   hotbutton alternative, avoiding typed chat and per-character recognition.
   Twenty-seven focused tests pass using the retained helper, actual watchdog

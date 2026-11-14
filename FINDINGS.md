@@ -1,6 +1,6 @@
 # FINDINGS
 
-## Stationary hotbutton test shipped as 0.39.11 — 2026-11-14 08:46 UTC
+## Stationary hotbutton test shipped as 0.39.11 — 2026-11-14 08:45 UTC
 
 **VERIFIED implementation:** source 0.41.96 extracts the existing hotbutton
 transaction into `location_hotkey.py`; the route executor and the new owner
@@ -62,6 +62,14 @@ first route still needs current scene/zone/height/motion bindings and actual
 movement/arrival evidence. Assist 0.39.6, manual observation 0.39.10 and G0's
 passed result remain available; no G0 repeat. Level, XP/hour, deaths and camp
 remain unknown for a real automation run. Task 829a00229b29 is not complete.
+
+**VERIFIED source publication:** commit `57a7f20c7c45d229fff4d49c6cadb4ac8f1bd0f0`
+is staged at Alienware `owner-tools/0.41.96/source`, archive SHA-256
+`353f1af83d103f28035aca254950aca745afbbbf715f00d2691d92c83a6d23e8`.
+Remote source imports and reserved-key refusal pass without constructing an
+engine or sending input. Startup artifact SHA-256
+`9404a1ee7b4a7f229b97b333f6c73e7c60e8cf4919bc7d3de66d2988b10f5a6c`.
+Private staging record: `releases/eql-automation-0.41.96-staging.json`.
 
 ## Private source 0.41.95 staged — 2026-11-14 08:37 UTC
 
