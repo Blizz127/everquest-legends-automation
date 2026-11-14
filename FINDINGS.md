@@ -1,5 +1,49 @@
 # FINDINGS
 
+## Client-format observations and committed floor context — 2026-11-14 04:21 UTC
+
+**VERIFIED source 0.41.66:** The copied ground probe now optionally reconstructs
+committed source-floor cells and models the observed client log representation.
+The retained `owner-traces/eqlog-Legira-20261113.txt` (SHA
+`d622b3c12567f903d411860d3de1a0be28e4e8b38be7bbdc2bebfdd62c60f04e`)
+has 68 location examples, all with two decimal places on each axis. This is
+format evidence from those examples, not a guarantee for every client build.
+Synthetic raw Z is the source floor at the physical position plus offset 2.564;
+it is then printed and parsed along with XY. The physical pose and production
+observer are unchanged. No source height is derived from baked Z or rounded raw Z.
+
+The earlier step-1856 refusal is attributed to a real copied tile gap. The
+planned portal `(148.4438018798828, 1343.3875732421875)` has exact support in
+polygon 20481. Replay motion displaced it by approximately `(3.24e-11, 2.25e-11)`
+into the gap before polygon 20500, whose edge is Y=1343.3876953125. The gap is
+0.0001220703125 (one float32 ULP), classified as an exact tile side. The producer
+correctly refused that idealized raw point. At the observed log representation,
+helper XY `(148.44, 1343.39)` is exactly supported in polygon 20500; source Z is
+-8.658088500271823 and baked Z is -8.171095156657957. No edge snap, endpoint
+canonicalization or wider production tolerance was introduced.
+
+**VERIFIED copied-data run:**
+`nav-candidates/gfay-ground-producer-probe-0.41.66.json`, SHA
+`1a1131ce8454daabe4f44a548e9aa3411e3b1d1b2fb6718609c295dd91b8d3ad`,
+accepts **211/211 samples across 209 distinct steps**. Reconstructing the initial
+cell and all 2,191 committed step cells reproduces every retained floor proof,
+including the final `dbc2128db3c931665dc52ce44183258a42cbe7e6b19becc475e8c0f10a9ca4f8`.
+Source/static/BSP trial step, segment, duration, acceptance and footprint identity
+are checked before reconstruction. Static/BSP traversal is not rerun here.
+Sample observations use the postcommit cell; duplicates and original output order
+are preserved. Maximum raw-height residual is 0.0070871339, XY displacement
+0.0067374863 and baked-height change from the old sample 0.0030731438 units.
+Runtime 89.009742378 wall / 62.048562518 CPU seconds; all 25 input pins rechecked.
+
+**VERIFIED:** 14 focused checks pass for serialization, exact gap refusal,
+source-versus-baked height, postcommit indexing, proof identity, mismatched or
+rejected trial refusal and unchanged chain during sampling. No full suite run.
+**Not verified:** complete steering using quantized observations, live calibration,
+current zone/UI, speed/drift or route execution. Source-floor reconstruction is
+an offline context, not a live bootstrap. No game input, capture or login.
+Read-only Alienware listing at 04:17 UTC still found zero paired position records.
+G0 remains owner-confirmed passed; no repeat or new test is requested.
+
 ## Private source 0.41.65 staging — 2026-11-14 04:14 UTC
 
 **VERIFIED:** Source commit `ae680f284bf44534e4d0158ad0d39ccefa9fbe21`, archive SHA

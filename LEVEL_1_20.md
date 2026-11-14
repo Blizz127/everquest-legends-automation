@@ -1,18 +1,19 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 04:13 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 04:21 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
-Source 0.41.65 implements the ground-observation producer and feeds its
-synthetic output into the retained follower; 42 focused checks pass. It requires
-external current height/frame calibration and rejects unbound positions. An
-exact-XY copied-GFay probe accepts 199/211 retained samples. Eleven all-layer
-source queries refuse without committed floor context; one portal sample has
-no exact detail support where the old replay used a nearby edge. That sample
-must be resolved before treating the replay's point observations as live-ready.
-This adds no movement or new owner test; observation candidate 0.39.9 is unchanged.
+Source 0.41.66 corrects the offline observation model: retained client location
+lines print two decimals, while the older replay fed ideal double coordinates
+as raw observations. It reconstructs the committed source-floor cells rather
+than querying every possible layer. All 211 sampled positions (209 distinct
+steps) now pass, with all 2,192 floor proofs matching and 25 input hashes
+rechecked. Fourteen focused checks pass. Production exact-support checks remain
+unchanged. This is a sampled observation check with fixed simulated motion;
+steering driven by printed positions and real movement remain unverified.
+G0 passed. Assist 0.39.6 and position-observation candidate 0.39.9 are unchanged.
 
 Source 0.41.64 adds an owner-started position/UI collection button to
 candidate 0.39.9 of the existing helper. It accepts the manual `/location`
