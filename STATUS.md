@@ -21,6 +21,10 @@ Updated 2026-11-14 11:52 UTC for coordinator task `829a00229b29`.
   Timing refusals under devbox load are recorded; no deadlines were relaxed.
   Alienware 0.39.16 GUI and copied/installed-data startup pass without input;
   startup SHA `7b5c7df74f3e8f93038fce6ec656f4b949e9c7c7a5ccb0a5e0ec504ce1628fb5`.
+  Source `afcbaa7` is staged at Alienware `owner-tools/0.42.13/source`;
+  all 138 package files match preview 0.39.16. Composition and destination
+  loader startup pass without input; startup SHA
+  `b66e5f0a71f4269fc1d63cf360969f5d0f1de01daf4ada24a928ad926a888c85`.
   **Remaining gate:** owner current-session zone/hotbutton setup and actual
   traversal; no real route or leveling accepted. Next consume travel evidence
   and implement zone/camp execution/current-zone startup. Assist 0.39.13 remains

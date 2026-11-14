@@ -276,7 +276,7 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.12/source
+~/.local/share/eql-automation/owner-tools/0.42.13/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers

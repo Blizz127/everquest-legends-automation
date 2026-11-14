@@ -63,6 +63,14 @@ Archive SHA `ca3be29d31a969fe52ae96a3f92917bc1e408146593d7404289a35c53eaff99b`;
 startup SHA `7b5c7df74f3e8f93038fce6ec656f4b949e9c7c7a5ccb0a5e0ec504ce1628fb5`;
 GUI SHA `a73d8076f2d703a55e736ac5d187ca997e2d46331ce15876714ccfdbe851c3d1`. HOWTO has the command and controls.
 
+Source commit `afcbaa7c9a9fb47fed70aecc5d2da69521a66e6b` is also staged on
+Alienware at `owner-tools/0.42.13/source`. Its 138 package files match the
+0.39.16 preview manifest. Imports, engine class composition and the destination
+loader pass there, with installed archives/catalog/map checked read-only.
+This used a synthetic tracker identity; no worker, device or game input.
+Source archive SHA `e044f7812b32743094a0508021e107215d52d67790a2be3e9d762b982b692c5f`;
+source startup SHA `b66e5f0a71f4269fc1d63cf360969f5d0f1de01daf4ada24a928ad926a888c85`.
+
 **Remaining:** owner-run current-session zone/hotbutton setup and real traversal
 are unverified. The approach does not zone, choose camps, fight, loot, buy/sell,
 recover death or level. Existing assist 0.39.13 remains separate; seamless mode
