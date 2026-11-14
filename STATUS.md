@@ -2,6 +2,13 @@
 
 Updated 2026-11-14 00:50 UTC for coordinator task `829a00229b29`.
 
+- Private source **0.41.47**, commit `b6df01d`, is staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.47/source`. Archive SHA
+  `a6a079824b57520f8564f58bfd194707cfc0e603d0656166cb111eaf02b11aa2`
+  matched locally/remotely; remote API/closed-observer, input/capture CLI
+  startup and offline navigation demo passed. No game input was sent.
+  Owner was asked to open map → Current Zone and leave the game focused;
+  the lead can capture it read-only without another terminal command.
 - Source **0.41.47** corrects the observer's same-descriptor event loss:
   EVIOCGKEY can flush pending key events. Two independent read-only opens now
   separate current-state queries from event history; the new regression

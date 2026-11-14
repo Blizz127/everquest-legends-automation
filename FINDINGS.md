@@ -1,5 +1,23 @@
 # FINDINGS
 
+## Source 0.41.47 private publication — 2026-11-14 00:52 UTC
+
+**VERIFIED:** Source commit `b6df01d` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.41.47/source`. Local/remote archive
+SHA-256 matched
+`a6a079824b57520f8564f58bfd194707cfc0e603d0656166cb111eaf02b11aa2`.
+Remote imports/closed-observer refusal, input-observation and UI-capture CLI
+startup passed. The capture declares the actual map zone label. The offline
+navigation demo reports ARRIVED with `simulation_only=true`; no actual route
+was driven. Private `smoke.json` records results. This final startup smoke
+opened no input devices; the separate documented candidate probe did open
+read-only descriptors. Neither sent game input or modified characters/prefix.
+
+Owner was asked for map → Current Zone with the game left focused, allowing
+the lead to capture read-only without another terminal command. No readiness
+reply or new image has been observed at publication. Recommended assist is
+still 0.39.6, separate G0 candidate 0.39.7; no route acceptance is claimed.
+
 ## Alienware input contacts and event-queue correction — 2026-11-14 00:50 UTC
 
 **VERIFIED read-only installed metadata:** The laptop exposes 26 input event
