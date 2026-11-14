@@ -8,12 +8,15 @@ Engine flags and these evidence envelopes do not establish those facts.
 """
 from dataclasses import asdict, dataclass
 import os
+from uuid import uuid4
 
 from .motion_calibration import finite
 from .motion_collection import (CommandReceipt, ReleasedPulse, LocationRequest,
                                MotionRequest, MotionExperimentSession, CollectionStopped)
 from .route_step_sender import _fd_identity
 from .uinput_watchdog import _EVENT, PulseSelection, selected_key_pulse_receipt
+from .command_submission import (CommandSubmissionJournal, CommandSubmissionSnapshot,
+                                 LOCATION_KEYS)
 
 
 @dataclass(frozen=True)
@@ -23,6 +26,7 @@ class MeasurementInputEvidence:
     observed_at: float
     valid_until: float
     record_id: str
+    submission: CommandSubmissionSnapshot | None = None
 
 
 class _PinnedCommandIO:
@@ -38,6 +42,11 @@ class _PinnedCommandIO:
                 s.binding()
                 if s.evidence is None or s.session.clock() > s.evidence.valid_until:
                     raise CollectionStopped('Per-key command observation expired')
+                snapshot=s.checked_submission
+                if (snapshot is None or s.evidence.submission is not snapshot
+                        or s.journal.revision!=snapshot.revision
+                        or snapshot.uncertain or snapshot.next_key_code!=code):
+                    raise CollectionStopped('Command submission changed after observation')
                 # A write error does not prove the slash/Enter was undelivered.
                 s.chat_started = True
                 s.sender.unfinished = True
@@ -67,6 +76,17 @@ class _Scope:
         self.final_release_at = None
         self.cleanup_error = None
         self.claimed = False
+        self.journal=(CommandSubmissionJournal(uuid4().hex)
+                      if isinstance(request,LocationRequest) else None)
+        self.checked_submission=None
+
+    def timestamp(self):
+        # Receipt diagnostics must never prevent unconditional UP/SYN cleanup.
+        try:
+            now=self.session.clock()
+            return now if finite(now) else None
+        except BaseException:
+            return None
 
     def same_device(self):
         try:
@@ -97,8 +117,21 @@ class _Scope:
         self.binding()
         self.sender.check()
         self.binding()
-        observed = self.owner.check_input(self.request,phase)
-        self.binding()
+        with self.session.lock:
+            self.binding()
+            snapshot=None if self.journal is None else self.journal.snapshot()
+            if snapshot is not None:
+                if (snapshot.uncertain or (phase in ('command_start','command_first_key') and snapshot.writes)
+                        or (phase=='command_key' and (not 1<=snapshot.submitted_key_count<len(LOCATION_KEYS)
+                                                      or snapshot.next_key_code is None))
+                        or (phase=='command_end' and not snapshot.enter_submitted)):
+                    raise CollectionStopped('Command submission is incomplete or uncertain')
+        # No new lock spans the independent observation callback.
+        observed = self.owner.check_input(self.request,phase,snapshot)
+        with self.session.lock:
+            self.binding()
+            if snapshot is not None and self.journal.revision!=snapshot.revision:
+                raise CollectionStopped('Command submission changed during observation')
         if phase in ('command_first_key','command_key') and (
                 self.sender.held or self.sender.dismissed
                 or self.sender.unfinished is not (phase == 'command_key')):
@@ -106,20 +139,46 @@ class _Scope:
         now = self.session.clock()
         if (not isinstance(observed,MeasurementInputEvidence)
                 or observed.request is not self.request or observed.phase != phase
+                or observed.submission is not snapshot
                 or not all(finite(t) for t in (observed.observed_at,observed.valid_until))
                 or not self.request.issued_at <= observed.observed_at <= now <= observed.valid_until
                 or observed.valid_until > observed.observed_at+.1
                 or not isinstance(observed.record_id,str) or not observed.record_id):
             raise CollectionStopped('Independent measurement input evidence unavailable or expired')
         self.evidence = observed
+        self.checked_submission=snapshot
         self.session.executor_events.append(dict(kind='input_check',phase=phase,at=now,
-                                                evidence_id=observed.record_id))
+            evidence_id=observed.record_id,
+            command_operation_id=None if snapshot is None else snapshot.operation_id,
+            submission_revision=None if snapshot is None else snapshot.revision,
+            submitted_prefix=None if snapshot is None else snapshot.submitted_prefix,
+            enter_submitted=False if snapshot is None else snapshot.enter_submitted))
         return observed
 
     def write_event(self, kind, code, value):
+        with self.session.lock:
+            attempt=(None if self.journal is None else self.journal.begin(
+                (kind,code,value),self.timestamp(),_EVENT.size))
+            if attempt is not None and kind==1 and value==1 and attempt.started_at is None:
+                self.journal.finish(attempt,self.timestamp(),outcome='not_submitted',
+                                    error='Command write clock unavailable')
+                raise CollectionStopped('Command write clock unavailable')
+            try:
+                written=self.raw_write_event(kind,code,value)
+            except BaseException as error:
+                if attempt is not None:
+                    self.journal.finish(attempt,self.timestamp(),outcome='exception',
+                                        error=type(error).__name__+': '+str(error))
+                raise
+            if attempt is not None:
+                self.journal.finish(attempt,self.timestamp(),written_bytes=written,
+                                    outcome='complete' if written==_EVENT.size else 'short')
+            if written!=_EVENT.size:
+                raise OSError('Incomplete pinned input write')
+
+    def raw_write_event(self, kind, code, value):
         payload = _EVENT.pack(0,0,kind,code,value)
-        if os.write(self.fd,payload) != len(payload):
-            raise OSError('Incomplete pinned input write')
+        return os.write(self.fd,payload)
 
     def release(self, code):
         # No focus/scene checks during release. Never dereference a replaced UI.
@@ -164,11 +223,12 @@ class _Scope:
                     self.session.cancel(str(self.cleanup_error or error))
                 self.session.executor_events.append(dict(kind='executor_result',
                     operation='location' if isinstance(self.request,LocationRequest) else 'pulse',
-                    phase=self.session.phase, at=self.session.clock(),
+                    phase=self.session.phase, at=self.timestamp(),
                     child_receipt=None if self.receipt is None else asdict(self.receipt),
                     final_release_at=self.final_release_at,
                     held_keys=sorted(self.sender.held), same_device=self.same_device(),
                     pending_releases=sorted(self.pending_releases),
+                    command_submission=None if self.journal is None else asdict(self.journal.snapshot()),
                     error=None if error is None else str(error),
                     cleanup_error=None if self.cleanup_error is None else str(self.cleanup_error)))
         finally:
@@ -216,9 +276,13 @@ def _command_view(scope):
 class MeasurementExecutors:
     """Checked command/pulse callbacks for MotionExperimentDriver.
 
-    check_input(request, phase) returns fresh MeasurementInputEvidence. For
+    check_input(request, phase, submission) returns fresh MeasurementInputEvidence
+    bound to that exact immutable submission object (None for movement). For
     command_key it must understand the helper-owned draft; command_first_key
     runs before the slash and requires closed chat, as do command_start/end.
+    The submission records complete key cycles and all failed attempts, but
+    proves neither client delivery nor chat focus. The independent observer
+    must compare the current draft/transition with this exact submitted prefix.
     pulse_start/held/end
     require current input/scene checks; pulse_start also covers the complete
     initial spatial envelope for the exact key and maximum hold. No such live
@@ -235,6 +299,9 @@ class MeasurementExecutors:
         if not isinstance(request,LocationRequest):
             raise ValueError('Exact pending location request required')
         with _Scope(self,request,'requesting') as s:
+            names=('SLASH','L','O','C','A','T','I','O','N','ENTER')
+            if tuple(getattr(s.sender.codes,'KEY_'+name) for name in names)!=LOCATION_KEYS:
+                raise CollectionStopped('Fixed location key bindings changed')
             s.check('command_start')
             if s.sender.unfinished or s.sender.dismissed or s.sender.held:
                 raise CollectionStopped('Command start is not clear')

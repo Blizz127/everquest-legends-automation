@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:46 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:55 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,18 @@ Updated 2026-11-14 06:46 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.84:** measurement commands now retain immutable records of all
+  attempted writes and expose the exact completed prefix to each observation
+  check. Identity/revision checks reject stale evidence; failed/short writes
+  remain uncertain after unconditional key release. VERIFIED: 43 focused
+  checks passed, followed by both DOWN-SYN/UP-SYN failure cases. The retained
+  sender plus watchdog completed 16 commands, seven pipe pulses, eight synthetic
+  stopped pairs and 696 pipe events. Evidence SHA
+  `898e904fc5dcda6803e020e1817eb716d55de6d1f5510396637138c29d58cccc`.
+  This proves pipe submissions, not client delivery or scene interpretation.
+  Independent live chat/player/target/position observation and motion/height/
+  travel-envelope calibration remain the next gates before route execution.
+  Current owner helper controls are unchanged; G0 must not be repeated.
 - **Source 0.41.83:** unchanged layout selection rules are compiled once;
   complete content, source identity, overlay/directory and INI-selection checks
   still bracket each frame. Thirty-one focused checks pass, including no

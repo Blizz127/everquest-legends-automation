@@ -12,6 +12,7 @@ import pytest
 from test_motion_collection import retained, setup
 from eql_automation.motion_collection import CollectionStopped
 from eql_automation.motion_executors import MeasurementExecutors, MeasurementInputEvidence, _Scope
+from eql_automation.motion_executors import _PinnedCommandIO
 from eql_automation.uinput_watchdog import _EVENT
 
 
@@ -33,7 +34,8 @@ def h(tmp_path, retained):
         if not value.startswith('0x'))
     codes['EV_KEY'] = 1
     h.rd,h.wr = os.pipe(); os.set_blocking(h.rd,False)
-    h.events=[]; h.chat=False; h.focus=True; h.guard_hook=lambda request,phase:None
+    h.events=[]; h.chat=False; h.draft=''; h.submissions=[]
+    h.focus=True; h.guard_hook=lambda request,phase:None
     sender=rotation_engine.KeySender.__new__(rotation_engine.KeySender)
     sender.codes=SimpleNamespace(**codes);sender.ui=PipeUI(h.wr)
     sender.held=set();sender.unfinished=sender.dismissed=False
@@ -49,16 +51,20 @@ def h(tmp_path, retained):
         for at in range(0,len(raw),_EVENT.size):
             event=_EVENT.unpack(raw[at:at+_EVENT.size])[2:]
             h.events.append(event)
-            if event==(1,53,1):h.chat=True
-            if event==(1,28,1):h.chat=False
+            if event==(1,53,1):h.chat=True;h.draft='/'
+            elif event==(1,28,1):h.chat=False;h.draft=''
+            elif event[0]==1 and event[2]==1 and h.chat:
+                h.draft+={38:'l',24:'o',46:'c',30:'a',20:'t',23:'i',49:'n'}.get(event[1],'?')
     h.drain=drain
-    def guard(request,phase):
+    def guard(request,phase,submission):
         drain()
-        if phase=='command_key':assert h.chat
+        h.submissions.append(submission)
+        if phase=='command_key':
+            assert h.chat and submission.submitted_prefix==h.draft
         else:assert not h.chat
         h.guard_hook(request,phase)
         now=h.clock()
-        return MeasurementInputEvidence(request,phase,now,now+.1,'synthetic-scene')
+        return MeasurementInputEvidence(request,phase,now,now+.1,'synthetic-scene',submission)
     h.executors=MeasurementExecutors(h.engine,h.session,check_input=guard)
     def location(request):
         receipt=h.executors.request_location(request)
@@ -92,6 +98,12 @@ def test_retained_command_exact_keys_and_receipt(h):
     assert len(h.events)==40 and not h.sender.held and not h.sender.unfinished
     assert h.engine.sender is h.sender and h.sender.ui.fileno()==h.wr
     assert h.session.executor_events[-1]['pending_releases']==[]
+    snapshots=[s for s in h.submissions if s is not None]
+    assert [s.submitted_prefix for s in snapshots]==['','']+['/location'[:i] for i in range(1,10)]+['/location']
+    assert [len(s.writes) for s in snapshots]==[0,0]+list(range(4,41,4))
+    assert len({s.operation_id for s in snapshots})==1
+    assert snapshots[-1].enter_submitted and snapshots[-1].submitted_key_count==10
+    assert not snapshots[-1].uncertain and not snapshots[-1].client_delivery_verified
 
 
 @pytest.mark.parametrize('change',['draft','dismissed','held','cancelled','assist','recovery','marker'])
@@ -137,7 +149,7 @@ def test_final_callback_cannot_change_sender_state_and_return_success(h,field,ph
 
 def test_release_retry_does_not_depend_on_shared_held_bookkeeping(h,monkeypatch):
     rd,wr=os.pipe();replacement=PipeUI(wr)
-    original=_Scope.write_event
+    original=_Scope.raw_write_event
     failed=[]
     def write(scope,kind,code,value):
         if (kind,code,value)==(1,53,0) and not failed:
@@ -146,31 +158,128 @@ def test_release_retry_does_not_depend_on_shared_held_bookkeeping(h,monkeypatch)
             h.sender.held.clear()  # A concurrent stop used a replacement UI.
             raise OSError('transient original UP failure')
         return original(scope,kind,code,value)
-    monkeypatch.setattr(_Scope,'write_event',write)
+    monkeypatch.setattr(_Scope,'raw_write_event',write)
     try:
         with pytest.raises(OSError,match='transient'):h.first_command()
         assert h.events==[(1,53,1),(0,0,0),(1,53,0),(0,0,0)]
         assert h.sender.unfinished and h.session.executor_events[-1]['pending_releases']==[]
+        submission=h.session.executor_events[-1]['command_submission']
+        assert submission['uncertain'] and submission['submitted_prefix']==''
+        assert [w['outcome'] for w in submission['writes']]==['complete','complete','exception','complete','complete']
         os.set_blocking(rd,False)
         with pytest.raises(BlockingIOError):os.read(rd,4096)
     finally:os.close(rd);os.close(wr)
 
 
 def test_first_down_failure_retains_uncertain_draft_and_releases(h,monkeypatch):
-    original=_Scope.write_event
+    original=_Scope.raw_write_event
     def write(scope,kind,code,value):
         if (kind,code,value)==(1,53,1):raise OSError('DOWN delivery unknown')
         return original(scope,kind,code,value)
-    monkeypatch.setattr(_Scope,'write_event',write)
+    monkeypatch.setattr(_Scope,'raw_write_event',write)
     with pytest.raises(OSError,match='unknown'):h.first_command()
     assert h.sender.unfinished and not h.sender.held
     assert h.events==[(1,53,0),(0,0,0)]
+    submission=h.session.executor_events[-1]['command_submission']
+    assert submission['uncertain'] and submission['attempted_key_codes']==(53,)
+    assert submission['writes'][0]['outcome']=='exception'
+
+
+@pytest.mark.parametrize('substitution',['copy','missing','stale'])
+def test_evidence_must_bind_exact_current_submission_snapshot(h,substitution):
+    original=h.executors.check_input;first=[]
+    def guard(request,phase,submission):
+        evidence=original(request,phase,submission)
+        if not first:first.append(submission)
+        if substitution=='stale' and phase!='command_key':return evidence
+        alternate=(replace(submission) if substitution=='copy' else
+                   None if substitution=='missing' else first[0])
+        return replace(evidence,submission=alternate)
+    h.executors.check_input=guard
+    with pytest.raises(CollectionStopped,match='evidence'):h.first_command()
+    downs=[e for e in h.events if e[0]==1 and e[2]==1]
+    assert downs==([(1,53,1)] if substitution=='stale' else [])
+
+
+def test_journal_change_during_observer_is_rejected(h,monkeypatch):
+    original=_Scope.check
+    def check(scope,phase):h.current_scope=scope;return original(scope,phase)
+    monkeypatch.setattr(_Scope,'check',check)
+    def change(request,phase):
+        if phase=='command_first_key':h.current_scope.write_event(0,0,0)
+    h.guard_hook=change
+    with pytest.raises(CollectionStopped,match='during observation'):h.first_command()
+    assert h.events==[(0,0,0)]
+
+
+def test_journal_change_after_observer_before_down_is_rejected(h,monkeypatch):
+    original=_PinnedCommandIO.write
+    def change(io,kind,code,value):
+        if value:io.scope.write_event(0,0,0)
+        return original(io,kind,code,value)
+    monkeypatch.setattr(_PinnedCommandIO,'write',change)
+    with pytest.raises(CollectionStopped,match='after observation'):h.first_command()
+    assert not any(e[0]==1 and e[2]==1 for e in h.events)
+    assert not h.sender.held
+
+
+@pytest.mark.parametrize('failed_syn',[1,2])
+def test_short_syn_does_not_claim_submitted_prefix_after_cleanup(h,monkeypatch,failed_syn):
+    original=_Scope.raw_write_event;syncs=[]
+    def write(scope,kind,code,value):
+        if (kind,code,value)==(0,0,0):
+            syncs.append(True)
+            if len(syncs)==failed_syn:return 0
+        return original(scope,kind,code,value)
+    monkeypatch.setattr(_Scope,'raw_write_event',write)
+    with pytest.raises(OSError,match='Incomplete'):h.first_command()
+    submission=h.session.executor_events[-1]['command_submission']
+    assert submission['uncertain'] and submission['submitted_prefix']==''
+    failed=submission['writes'][2*failed_syn-1]
+    assert failed['outcome']=='short' and failed['written_bytes']==0
+    assert not h.sender.held and (1,53,0) in h.events
+
+
+def test_clock_failure_after_down_cannot_prevent_release(h,monkeypatch):
+    original=_Scope.raw_write_event
+    def broken():raise RuntimeError('clock unavailable')
+    def write(scope,kind,code,value):
+        result=original(scope,kind,code,value)
+        if (kind,code,value)==(1,53,1):h.session.clock=broken
+        return result
+    monkeypatch.setattr(_Scope,'raw_write_event',write)
+    with pytest.raises(RuntimeError,match='clock unavailable'):h.first_command()
+    assert h.events==[(1,53,1),(0,0,0),(1,53,0),(0,0,0)]
+    assert not h.sender.held
+    assert h.session.executor_events[-1]['command_submission']['uncertain']
+    assert h.session.executor_events[-1]['at'] is None
+
+
+def test_scene_callback_does_not_hold_stop_lock(h):
+    from threading import Thread
+    acquired=[]
+    def check(request,phase):
+        if phase!='command_start':return
+        def observer():
+            got=h.session.lock.acquire(timeout=.1);acquired.append(got)
+            if got:h.session.lock.release()
+        thread=Thread(target=observer);thread.start();thread.join(.3)
+        assert not thread.is_alive()
+    h.guard_hook=check
+    h.first_command()
+    assert acquired==[True]
+
+
+def test_fixed_key_binding_changes_refuse_before_any_write(h):
+    h.sender.codes.KEY_L=99
+    with pytest.raises(CollectionStopped,match='bindings changed'):h.first_command()
+    assert not h.events
 
 
 def test_wrong_request_evidence_refuses_before_input(h):
-    def wrong(request,phase):
+    def wrong(request,phase,submission):
         now=h.clock()
-        return MeasurementInputEvidence(replace(request,serial=999),phase,now,now+.1,'wrong')
+        return MeasurementInputEvidence(replace(request,serial=999),phase,now,now+.1,'wrong',submission)
     h.executors.check_input=wrong
     with pytest.raises(CollectionStopped,match='evidence'):h.first_command()
     assert not h.events

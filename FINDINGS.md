@@ -1,5 +1,41 @@
 # FINDINGS
 
+## Immutable command submission records 0.41.84 — 2026-11-14 06:55 UTC
+
+**VERIFIED implementation:** the measurement executor journals every attempted
+write to its pinned descriptor before submission, then records byte count,
+timestamps and completion/exception/short-write outcome. Immutable snapshots
+advance `/location` only after each complete DOWN/SYN/UP/SYN cycle. Failed or
+out-of-order writes latch uncertainty; successful cleanup cannot repair that
+prefix. Records include attempted key codes, operation identity, revision and
+Enter completion. Existing sender/generation/input guards remain required:
+other writers, including the original sender's F9 releases, are outside this
+scope's journal. Kernel writes do not prove client delivery, ownership or focus.
+
+`check_input(request, phase, submission)` must return evidence referencing that
+exact snapshot. The executor rejects copied or stale evidence and revision
+changes during observation or before the next DOWN. Observation callbacks do
+not newly hold the stop lock. UP/SYN cleanup still runs if observation or its
+clock fails; no Escape, command retry or new device is introduced. The actual
+retained sender's command/character/tap path remains in use.
+
+**VERIFIED checks:** 43 focused checks passed with the private NumPy interpreter;
+both parameterized DOWN-SYN and UP-SYN short-write cases then passed separately
+(two passed, 35 deselected). The initial system-Python run skipped 19 tests for
+missing NumPy and is not counted as verification of those cases. The complete
+retained sender and watchdog collected 16 commands, seven pulses, eight stopped
+pairs and 696 events through a pipe. All 16 command journals contain 40 full
+writes, unique operation identities, complete Enter cycles and false client-
+delivery/focus flags. Scene and position feedback were synthetic. Local private
+artifact `evidence/motion-command-submission-0.41.84.json`, SHA
+`898e904fc5dcda6803e020e1817eb716d55de6d1f5510396637138c29d58cccc`.
+
+**Unverified:** no default live command-draft observer exists, no actual game
+input was sent, and no real route or automated level gain was accepted. Current
+owner assist 0.39.6 and observation 0.39.10 remain unchanged. The pending
+stationary observation, current scene/player/target/chat interpretation and
+motion/height/envelope binding are still needed; G0 passed and needs no repeat.
+
 ## Private source 0.41.83 staged — 2026-11-14 06:46 UTC
 
 **VERIFIED:** `029d39fcc29372da5e1b3299733da85b13550841`, archive SHA
