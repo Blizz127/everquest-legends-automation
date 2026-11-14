@@ -1,5 +1,70 @@
 # FINDINGS
 
+## Finite motion collection 0.41.76 — 2026-11-14 05:55 UTC
+
+**VERIFIED implementation:** `MotionExperimentSession` uses the existing
+`LocationLogReader` to collect eight stopped pairs around the seven proposed
+pulses. It keeps raw timestamps, sequence numbers, log/zone generations, command
+start/completion times, child DOWN/UP receipts and final-release completion.
+It requires an already observed matching zone event; historical startup state
+and bare legacy `Loc` callbacks cannot bootstrap it. One outstanding command
+is tracked, but true client request correlation remains explicitly unverified.
+
+The collector rejects competing reader consumption, batched/unsolicited or
+incomplete replies, resets, transitions, stale requests, changing bindings,
+unresolved forward displacement and ambiguous short turns. Shared estimation
+helpers now enforce the same pair means, uncertainty and direction checks in
+the incremental collector and complete reducer. There is no retry. Rejected
+release attempts remain in partial evidence even when cancellation arrives
+just after final UP. The CLI refuses stopped/incomplete collection records.
+
+`owner_motion_adapter` services the driver from the retained Engine tick chain
+and cancels on stop/new jobs/mode changes. It refuses overlapping position or
+input diagnostics, legacy travel/recording and recovery work. The adapter keeps
+a completed/partial snapshot on the Engine and saves it to an exclusive private
+JSON outside the game/prefix; unavailable persistence is reported and memory
+is retained. Optional Engine tracing is not the sole copy. A job racing driver
+attachment revokes the attempt. No staged owner job/hotkey constructs a driver.
+Checked command/pulse executors, current scene and initial spatial envelope
+remain external dependencies, not fabricated from this experiment.
+
+**VERIFIED focused validation:** 64 checks passed in 10.66 seconds under the
+private NumPy interpreter. Tests compose the actual retained Engine with the
+existing position/preflight/watchdog/rotation wrappers and the new adapter.
+They cover full finite collection, F9/F11/new jobs, settings/process/mode changes,
+reader failures, intermediate movement contradictions, no reply/no retry,
+competing diagnostics, disabled tracing and failed-save memory retention.
+No full suite ran. Compile and whitespace checks pass.
+
+The final real-watchdog pipe run completed seven accepted pulses, eight stopped
+pairs, 16 location requests and 42 input events (including final UP/SYN releases).
+All geometry/positions were synthetic, appended in client log format. No real
+input device, client capture, login or game input was used. Evidence:
+`evidence/motion-collection-0.41.76-release.json`, SHA
+`457f809c1baf1b85dcdfda05dc68b65f3dcf07430e5a5e9d09d8a25ed6a23f3e`.
+
+**OBSERVED timing limitation:** an earlier real-pipe attempt under devbox load
+produced a requested 0.15-second left hold lasting **0.217554784 seconds**.
+The collector refused it against the unchanged 0.20-second limit after five
+accepted pulses, with no next pulse and the attempted release retained. The
+private rejected record SHA is
+`4454dce54c970705c5d004eb2dc3ec1e58e3d6035c40ab877bca346c6b578f61`, under
+`validation/motion-collection-0.41.76-composed/test_real_watchdog_pipe_throug0/saved/`.
+Measured devbox load was 286.84/253.64/222.78 at 05:53 UTC. A prior private
+validation attempt also failed to create its missing parent directory; that
+harness setup was corrected. The older duplicate receipt-only pipe test assumed
+all requested holds met the limit; it is replaced by the engine/collector pipe
+test that verifies either an observed successful collection or a measured
+budget rejection with release and no retry. No production limit was widened.
+The failed run is not live acceptance or a successful calibration, and the
+later passing run does not establish a hard real-time release guarantee.
+
+**Still missing:** pending owner position/UI evidence, current zone/frame/height
+binding, independent live scene and initial travel envelope, checked live
+executors and real route acceptance. Assist remains 0.39.6, observation candidate
+0.39.10; G0 passed and needs no repeat. Current level, XP/hour, deaths and camp
+remain unknown. No accepted 1–20 route or hands-off 1–50 run exists.
+
 ## Private source 0.41.75 staged — 2026-11-14 05:43 UTC
 
 **VERIFIED:** source commit `6e9139d62782c4b7f9e2af295168045b1fef4cd9`,

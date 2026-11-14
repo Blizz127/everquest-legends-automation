@@ -1,9 +1,16 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 05:42 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 05:55 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.76 adds the finite collector and retained-helper tick integration.
+Sixty-four focused checks pass. Actual watchdog pipe writes plus synthetic log
+positions produced seven accepted receipts and eight stopped pairs through the
+full helper wrappers. A separate scheduling overrun was rejected and preserved.
+No live sender/control is enabled; owner current-scene/zone evidence, initial
+travel envelope and real route acceptance remain missing.
 
 Source 0.41.75 resolves the offline speed/turn estimation dependency using
 actual receipt fields and stopped positions with the retained rotation fitter.

@@ -9,13 +9,12 @@ import os
 from pathlib import Path
 import sys
 import subprocess
-import time
 
 import pytest
 
 from eql_automation.motion_calibration import (CalibrationUnavailable, Position, PROBES,
                                              StoppedPair, reduce_experiment)
-from eql_automation.uinput_watchdog import PulseReceipt, timed_key_pulse_receipt, _EVENT
+from eql_automation.uinput_watchdog import PulseReceipt
 
 
 PIN = "69dbc6472447942cc30dbe592a6e1cf02998c0a0b8811a8bb59672655dc4049e"
@@ -60,7 +59,13 @@ def experiment(*, sign=-1, heading=350., speed=30., rate=170., latency=.03,
             heading = (heading+sign*(1 if probe.key == "right" else -1)
                        *rate*(left_multiplier if probe.key == "left" else 1.)
                        *max(0., seconds-latency)) % 360
-        pairs.append(pair(receipt.up_completed_at+.13))
+        # These positions are simulated. When using real child receipts, place
+        # the simulated pair after release and near the next observed DOWN;
+        # child startup delay must not masquerade as a stale-location defect.
+        at = receipt.up_completed_at+.13
+        if actual_receipts is not None and index+1 < len(PROBES):
+            at = max(at, actual_receipts[index+1].down_started_at-.6)
+        pairs.append(pair(at))
     return pairs, receipts, heading
 
 
@@ -154,32 +159,6 @@ def test_large_error_refuses_unresolved_heading(legacy):
         reduce_experiment(pairs, receipts, legacy=legacy, horizontal_error=3., record_id="large-error")
 
 
-def test_actual_child_receipts_on_pipe_then_synthetic_positions(legacy):
-    """The actual watchdog writes only a pipe. All position feedback is simulated."""
-    rd, wr = os.pipe()
-    receipts = []
-    try:
-        for index, probe in enumerate(PROBES):
-            if index:
-                # Make room for the explicit synthetic stopped pair; this is
-                # a test-clock wait, never game input or an owner test.
-                time.sleep(.54)
-            receipts.append(timed_key_pulse_receipt(wr, probe.key_code, probe.seconds))
-    finally:
-        os.close(wr)
-    data = os.read(rd, 65536)
-    os.close(rd)
-    events = [(kind,key,value) for _,_,kind,key,value in _EVENT.iter_unpack(data)]
-    assert len(events) == 42
-    for index, probe in enumerate(PROBES):
-        assert events[index*6:index*6+6] == [(1,probe.key_code,1),(0,0,0),
-            (1,probe.key_code,0),(0,0,0),(1,probe.key_code,0),(0,0,0)]
-    pairs, receipts, _ = experiment(actual_receipts=receipts)
-    report = reduce(legacy, pairs, receipts)
-    assert report["estimate"]["turn_rate"] == pytest.approx(170.)
-    assert report["real_client_accepted"] is False
-
-
 def test_cli_pins_inputs_and_preserves_existing_output(tmp_path):
     if not SOURCE.exists():
         pytest.skip("Requires retained navigation source")
@@ -202,6 +181,15 @@ def test_cli_pins_inputs_and_preserves_existing_output(tmp_path):
     assert not json.loads(original)["input_authorized"]
     assert subprocess.run(command, capture_output=True, env=env).returncode != 0
     assert output.read_bytes() == original
+    stopped=json.loads(path.read_text());stopped['outcome']='stopped'
+    stopped_path=store/'stopped.json';stopped_path.write_text(json.dumps(stopped))
+    cancelled_command=command[:]
+    cancelled_command[3]=str(stopped_path)
+    cancelled_command[5]=sha256(stopped_path.read_bytes()).hexdigest()
+    cancelled_command[-1]=str(store/'stopped-result.json')
+    refused=subprocess.run(cancelled_command,capture_output=True,text=True,env=env)
+    assert refused.returncode!=0 and 'incomplete or stopped' in refused.stderr
+    assert not Path(cancelled_command[-1]).exists()
     command[-1] = str(store/"changed-input.json")
     path.write_text(path.read_text()+"\n")
     result = subprocess.run(command, capture_output=True, text=True, env=env)

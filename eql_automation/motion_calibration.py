@@ -56,6 +56,47 @@ def integer(value):
     return isinstance(value, int) and not isinstance(value, bool) and value >= 0
 
 
+def pair_geometry(pair, horizontal_error):
+    a, b = pair.first.raw_yxz, pair.second.raw_yxz
+    return (tuple((x+y)/2 for x,y in zip(a,b)),
+            horizontal_error + math.dist(a[:2], b[:2])/2)
+
+
+def measure_forward(index, before, after, receipt, *, legacy, horizontal_error):
+    """Shared incremental/complete estimator after validated pair/receipt input."""
+    start, e1 = pair_geometry(before, horizontal_error)
+    end, e2 = pair_geometry(after, horizontal_error)
+    distance, error = math.dist(start[:2], end[:2]), e1 + e2
+    if distance <= error:
+        raise CalibrationUnavailable("Forward displacement cannot resolve a heading")
+    low = receipt.up_started_at - receipt.down_completed_at
+    high = receipt.maximum_held_seconds
+    return dict(index=index, displacement=distance,
+        heading=legacy.bearing(legacy.Loc(*start), legacy.Loc(*end)),
+        heading_error_degrees=math.degrees(math.asin(error/distance)),
+        speed=distance/((low+high)/2),
+        conditional_speed_interval=((distance-error)/high, (distance+error)/low))
+
+
+def common_speed(legs):
+    low = max(leg["conditional_speed_interval"][0] for leg in legs)
+    high = min(leg["conditional_speed_interval"][1] for leg in legs)
+    if low > high:
+        raise CalibrationUnavailable("Forward samples contradict a constant-speed estimate")
+    return min(max(median(leg["speed"] for leg in legs), low), high), low, high
+
+
+def measure_turn(index, before, after, receipt, *, legacy):
+    delta = legacy.wrap180(after["heading"] - before["heading"])
+    error = before["heading_error_degrees"] + after["heading_error_degrees"]
+    if abs(delta) <= error or abs(delta) + error >= 180:
+        raise CalibrationUnavailable("Turn is inactive/ambiguous under the position-error assumption")
+    low = receipt.up_started_at - receipt.down_completed_at
+    high = receipt.maximum_held_seconds
+    return dict(index=index, seconds=(low+high)/2, seconds_interval=(low,high),
+                delta=delta, delta_error=error)
+
+
 def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
     """Analyze eight stationary pairs and seven actual release receipts.
 
@@ -99,7 +140,6 @@ def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
     if pairs[-1].second.at - pairs[0].first.at > 120:
         raise CalibrationUnavailable("Finite experiment exceeded its 120-second analysis window")
 
-    timings = []
     for index, (probe, receipt) in enumerate(zip(PROBES, receipts)):
         if not isinstance(receipt, PulseReceipt):
             raise CalibrationUnavailable("Actual child DOWN/UP receipt required; legacy elapsed time is insufficient")
@@ -114,8 +154,6 @@ def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
                 or not 0 <= stamps[0] - pairs[index].second.at <= .5
                 or not .12 - 1e-9 <= pairs[index + 1].first.at - stamps[3] <= 2.5):
             raise CalibrationUnavailable("Wrong key/duration, cancelled receipt, overrun or out-of-order stopped observation")
-        low, high = stamps[2] - stamps[1], stamps[3] - stamps[0]
-        timings.append((low, high))
         if abs(points[index + 1][2] - points[index][2]) > .25:
             raise CalibrationUnavailable("Experiment changed height")
         if (probe.key != "forward" and math.dist(points[index][:2], points[index + 1][:2])
@@ -124,34 +162,14 @@ def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
 
     legs = []
     for index in (0, 2, 4, 6):
-        start, end = points[index], points[index + 1]
-        distance = math.dist(start[:2], end[:2])
-        error = radii[index] + radii[index + 1]
-        if distance <= error:
-            raise CalibrationUnavailable("Forward displacement cannot resolve a heading")
-        low, high = timings[index]
-        heading = legacy.bearing(legacy.Loc(*start), legacy.Loc(*end))
-        legs.append(dict(index=index, displacement=distance, heading=heading,
-                         heading_error_degrees=math.degrees(math.asin(error / distance)),
-                         speed=distance / ((low + high) / 2),
-                         conditional_speed_interval=((distance - error) / high, (distance + error) / low)))
-    speed = median(leg["speed"] for leg in legs)
+        legs.append(measure_forward(index, pairs[index], pairs[index+1], receipts[index],
+                                    legacy=legacy, horizontal_error=horizontal_error))
     # An overlap is needed before treating four legs as a constant-speed fit.
-    speed_low = max(leg["conditional_speed_interval"][0] for leg in legs)
-    speed_high = min(leg["conditional_speed_interval"][1] for leg in legs)
-    if speed_low > speed_high:
-        raise CalibrationUnavailable("Forward samples contradict a constant-speed estimate")
-    speed = min(max(speed, speed_low), speed_high)
+    speed, speed_low, speed_high = common_speed(legs)
 
     turns = []
     for index, before, after in zip((1, 3, 5), legs, legs[1:]):
-        delta = legacy.wrap180(after["heading"] - before["heading"])
-        error = before["heading_error_degrees"] + after["heading_error_degrees"]
-        if abs(delta) <= error or abs(delta) + error >= 180:
-            raise CalibrationUnavailable("Turn is inactive/ambiguous under the position-error assumption")
-        low, high = timings[index]
-        turns.append(dict(index=index, seconds=(low + high) / 2,
-                          seconds_interval=(low, high), delta=delta, delta_error=error))
+        turns.append(measure_turn(index, before, after, receipts[index], legacy=legacy))
     short, long, left = turns
     if short["delta"] * long["delta"] <= 0 or short["delta"] * left["delta"] >= 0:
         raise CalibrationUnavailable("Right/left direction measurements contradict one another")

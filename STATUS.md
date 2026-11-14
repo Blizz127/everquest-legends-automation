@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 05:43 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:55 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,13 @@ Updated 2026-11-14 05:43 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.76:** finite collection is integrated with the retained helper
+  tick chain, with explicit external command/pulse executors and no owner
+  control enabled. Sixty-four focused checks pass. A real watchdog pipe run
+  with synthetic log feedback completed seven pulses/eight stopped pairs;
+  artifact SHA `457f809c1baf1b85dcdfda05dc68b65f3dcf07430e5a5e9d09d8a25ed6a23f3e`.
+  An earlier 0.2176-second hold exceeded the 0.20 limit and was rejected; its
+  partial receipt evidence is retained. Results save independently of tracing.
 - **Source 0.41.75:** an offline receipt/stopped-position estimator now reuses
   the existing bot's bearing and turn fitter without prior speed/heading/rate.
   It preserves timing/error assumptions and rejects inactive short turns before
@@ -88,7 +95,8 @@ Updated 2026-11-14 05:43 UTC for coordinator task `829a00229b29`.
   with measured whole-motion bounds; obtain the
   pending owner scene/position evidence and current zone/frame/height/speed
   calibration. Source-ground production, checked-step adapter and receipt bookkeeping exist;
-  live providers and owner runtime wiring remain incomplete. No new owner test
+  live providers and owner control wiring remain incomplete. The finite collector
+  now runs on helper ticks with injected executors; none is enabled by default. No new owner test
   is requested, and the existing stationary capture remains pending.
 - Same-zone GFay is the practical Legira candidate; Butcherblock then Crushbone
   for a fresh run, later camps by observed level, XP rate and safety. Owner

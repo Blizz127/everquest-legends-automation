@@ -54,6 +54,8 @@ def main():
         record = json.loads(raw)
         if record["format"] != "eql-motion-experiment-v1":
             raise ValueError("Unknown experiment format")
+        if record.get("outcome", "complete") != "complete":
+            raise ValueError("Experiment collection is incomplete or stopped")
         module = ModuleType("eql_retained_motion_navigation")
         module.__file__ = str(args.navigation)
         sys.modules[module.__name__] = module
