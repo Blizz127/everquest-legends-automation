@@ -1,5 +1,38 @@
 # FINDINGS
 
+## Exact NumPy matching 0.41.79 — 2026-11-14 06:19 UTC
+
+**VERIFIED implementation:** the existing combat matcher's bounded batches
+now use NumPy when installed, retaining the exact Pillow-only fallback.
+The same native signed 32-bit channel bounds and residual formula are used;
+totals use signed 64-bit reduction before conversion to Python integers.
+This matters because the largest supported numerator is 6,379,683,840, beyond
+signed 32-bit range. Fresh readonly residual arrays preserve yielded rows
+across batches. Traversal order, representative ties, filter choices, scores,
+incompatible-channel counts and output schema remain unchanged. No dependency
+was installed on Alienware; the retained gauge reader already uses NumPy.
+
+**VERIFIED focused checks:** 61 matcher/frame-reader checks pass in 2.08 seconds
+under private NumPy 2.5.4/Pillow 13.0.0. Coverage includes every residual at
+random shifted positions, non-square and full-sized templates, alpha edge
+values, overflow, retained batches, full ranking equality, ties, transparent
+sprites and the shared frame reader. A separate Pillow-only interpreter run
+passes 31 checks; its 14 NumPy-specific cases skip as expected. Compile and
+whitespace checks pass; no full suite ran.
+
+**OBSERVED synthetic benchmark:** ten 2560×1600 synthetic frames using the five
+copied client sprites preserve the complete deterministic 0.41.78 reports.
+The loaded devbox's warm median falls from 1.690 seconds to 258.4 ms; cold/max
+is 2.359 seconds. The new private record is
+`evidence/ui-frame-features-0.41.79.json`, SHA
+`5029f0e3bdef2abde532e66b7eb22a530b4695f1d37df45a76205c3c1f750e1b`.
+The first comparison harness compared tuples with saved JSON lists and failed;
+JSON normalization corrected that representation mismatch before the passing
+comparison. No real capture, real layout load, input/log scan or game input is
+included. This does not establish the complete live scene budget or authorize
+movement. Current owner evidence and live scene/motion integration remain
+missing; G0 is passed, with no repeat or additional owner test requested.
+
 ## Private source 0.41.78 staged — 2026-11-14 06:16 UTC
 
 **VERIFIED:** commit `9a5ee313c554ecf0f3b8b9138e703563fd2a03bc`, archive SHA

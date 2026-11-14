@@ -179,3 +179,46 @@ def test_complete_output_and_tie_order_do_not_depend_on_batch_or_cache(monkeypat
     cold=rank_combat_sprites(image,a,saved_scale=1.25)
     monkeypatch.setattr(matcher,'_BATCH_PLACEMENTS',batch_size)
     assert rank_combat_sprites(image,a,saved_scale=1.25)==cold
+
+
+@pytest.mark.parametrize('batch_size',[1,16,64])
+@pytest.mark.parametrize('size',[(3,5),(5,3),(19,17)])
+def test_numpy_and_pillow_residuals_match_at_every_position(monkeypatch,batch_size,size):
+    pytest.importorskip('numpy')
+    rng=random.Random(16411)
+    pixels=bytearray(rng.randrange(256) for _ in range(4*4*4))
+    for i,alpha in enumerate((0,1,127,128,254,255)):pixels[4*i+3]=alpha
+    frame=replace(atlas().frames[0],rgba=bytes(pixels))
+    width,height=size
+    lo,hi,*_=matcher._compile_template(frame,width,height,'bilinear')
+    raw=Image.frombytes('RGB',(19,17),bytes(rng.randrange(256) for _ in range(19*17*3)))
+    observed=Image.frombytes('L',(57,17),raw.tobytes()).point(matcher._CHANNEL_SCALE,'I')
+    monkeypatch.setattr(matcher,'_BATCH_PLACEMENTS',batch_size)
+    expected=list(matcher._score_positions_pillow(observed,width,height,lo,hi))
+    actual=list(matcher._score_positions_numpy(observed,width,height,lo,hi))
+    assert len(actual)==len(expected)>0
+    for (x,y,total,values),(px,py,pt,pv) in zip(actual,expected):
+        assert (x,y,total)==(px,py,pt) and list(values)==list(pv)
+        assert type(total) is int and not values.flags.writeable
+
+
+def test_numpy_accumulates_large_residuals_without_int32_overflow():
+    pytest.importorskip('numpy')
+    frame=replace(atlas().frames[0],rgba=bytes([255,255,255,255])*16)
+    lo,hi,*_=matcher._compile_template(frame,128,128,'nearest')
+    observed=Image.new('I',(128*3,128),0)
+    actual=list(matcher._score_positions_numpy(observed,128,128,lo,hi))
+    expected=list(matcher._score_positions_pillow(observed,128,128,lo,hi))
+    assert len(actual)==1 and actual[0][2]==expected[0][2]>2**31
+    assert list(actual[0][3])==list(expected[0][3])
+
+
+@pytest.mark.parametrize('kind',['ordinary','ties','transparent','no_fit'])
+def test_full_rank_output_matches_with_optional_numpy_disabled(monkeypatch,kind):
+    np=pytest.importorskip('numpy')
+    a=atlas(duplicate=kind=='ties',transparent=kind=='transparent')
+    image=Image.new('RGB',(2,2)) if kind=='no_fit' else render(a,scale=1.25)
+    monkeypatch.setattr(matcher,'_numpy_backend',lambda:np)
+    accelerated=rank_combat_sprites(image,a,saved_scale=1.25)
+    monkeypatch.setattr(matcher,'_numpy_backend',lambda:None)
+    assert rank_combat_sprites(image,a,saved_scale=1.25)==accelerated

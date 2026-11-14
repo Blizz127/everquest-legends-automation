@@ -42,7 +42,52 @@ def _compile_template(frame, width, height, filter_name):
     return lower.tobytes(),upper.tobytes(),mass,opaque,constrained
 
 
+@lru_cache(maxsize=1)
+def _numpy_backend():
+    # The retained gauge reader already uses NumPy on the owner machine.
+    # Offline installations with Pillow alone retain the exact fallback.
+    try:
+        import numpy
+    except ModuleNotFoundError as error:
+        if error.name != 'numpy':raise
+        return None
+    return numpy
+
+
+def _score_positions_numpy(observed, width, height, lower, upper):
+    """Same native-int channel residuals; bounded batches and int64 sums."""
+    import numpy as np
+    source=np.asarray(observed,dtype=np.int32)
+    lo=np.frombuffer(lower,dtype='=i4').reshape(height,3*width)
+    hi=np.frombuffer(upper,dtype='=i4').reshape(height,3*width)
+    positions=[(x,y) for y in range(observed.height-height+1)
+               for x in range(observed.width//3-width+1)]
+    for begin in range(0,len(positions),_BATCH_PLACEMENTS):
+        batch=positions[begin:begin+_BATCH_PLACEMENTS]
+        packed=np.empty((len(batch),height,3*width),dtype=np.int32)
+        for index,(x,y) in enumerate(batch):
+            packed[index]=source[y:y+height,3*x:3*(x+width)]
+        # Every channel fits int32, but a 128x128 template sum can exceed it.
+        residual=np.maximum(lo-packed,packed-hi)
+        np.maximum(residual,0,out=residual)
+        totals=residual.sum(axis=(1,2),dtype=np.int64)
+        pixels=residual.reshape(len(batch),-1)
+        pixels.flags.writeable=False
+        for index,(x,y) in enumerate(batch):
+            yield x,y,int(totals[index]),pixels[index]
+
+
 def _score_positions(observed, width, height, lower, upper):
+    scorer=_score_positions_pillow if _numpy_backend() is None else _score_positions_numpy
+    yield from scorer(observed,width,height,lower,upper)
+
+
+def _incompatible_count(pixels):
+    np=_numpy_backend()
+    return sum(value>0 for value in pixels) if np is None else int(np.count_nonzero(pixels))
+
+
+def _score_positions_pillow(observed, width, height, lower, upper):
     """Yield exact integer residuals in original y/x order, in bounded batches.
 
     RGB channels occupy adjacent columns of one I-mode image. ImageStat's
@@ -117,7 +162,7 @@ def rank_combat_sprites(image, atlas: CombatUiAtlas, *, saved_scale: float):
                             source_rgba_sha256=frame.rgba_sha256,filter_hypothesis=filter_name,
                             crop_box=[x,y,x+width,y+height],alpha_mass_pixels=mass/255,
                             opaque_pixels=opaque,constrained_channels=constrained,
-                            incompatible_channels=sum(value>0 for value in pixels),mean_interval_residual=score)
+                            incompatible_channels=_incompatible_count(pixels),mean_interval_residual=score)
                         ties[frame.animation]=1
                     elif score==prior['mean_interval_residual']:
                         ties[frame.animation]+=1

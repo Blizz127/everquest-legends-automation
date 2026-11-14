@@ -1,9 +1,14 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 06:14 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 06:19 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.79 addresses the measured frame-reading bottleneck with exact
+NumPy batches and the prior Pillow fallback. Sixty-one focused checks plus
+31 fallback checks pass; ten large synthetic frame outputs match 0.41.78.
+This does not resolve live chat/target/player observation or route acceptance.
 
 Source 0.41.78 supplies one-frame gauge/combat feature reading without PNG
 round trips, shared with the existing capture writer. Seventy-two checks pass.

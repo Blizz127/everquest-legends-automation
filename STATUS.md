@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:16 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:19 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,13 @@ Updated 2026-11-14 06:16 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.79:** exact NumPy batches replace Python pixel summation when
+  NumPy is available; Pillow remains the fallback. Sixty-one focused checks
+  and 31 fallback checks pass. Ten synthetic full-frame outputs match 0.41.78
+  exactly; devbox warm median falls from 1.69 seconds to 258 ms. Evidence SHA
+  `5029f0e3bdef2abde532e66b7eb22a530b4695f1d37df45a76205c3c1f750e1b`.
+  Private staging and the Alienware comparison follow these checks. No live
+  state or movement acceptance is added; owner helpers remain unchanged.
 - **Source 0.41.78:** a shared one-frame sampler feeds the retained gauge
   reader and combat matcher without saving/reopening PNGs. Seventy-two focused
   checks pass. Ten synthetic 2560×1600 frames with actual copied source sprites
