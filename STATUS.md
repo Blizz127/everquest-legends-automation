@@ -2,6 +2,13 @@
 
 Updated 2026-11-14 00:40 UTC for coordinator task `829a00229b29`.
 
+- Private source build **0.41.46**, commit `a920826`, is staged on Alienware
+  at `~/.local/share/eql-automation/owner-tools/0.41.46/source`. Archive
+  SHA-256 matched locally/remotely:
+  `bffe9db1da810fa6b6d2e65b673fb3fc038075341a74eda614dbdca1ac90c1dc`.
+  Remote observer API import/closed-state refusal, both new CLI startup
+  checks and the navigation demo passed. The demo is simulated; no live
+  device was opened or client input sent. No new owner test is requested.
 - Project **0.41.46** adds a read-only owner-input observer, a production
   dependency for future G2. Thirteen focused tests passed, covering startup
   held keys/buttons, brief activity, unreadable devices, hotplug/path reuse,

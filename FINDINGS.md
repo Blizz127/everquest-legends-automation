@@ -1,5 +1,21 @@
 # FINDINGS
 
+## Source 0.41.46 privately staged — 2026-11-14 00:43 UTC
+
+**VERIFIED:** Commit `a920826` is staged on Alienware under
+`~/.local/share/eql-automation/owner-tools/0.41.46/source`. Local/remote archive
+SHA-256 matched
+`bffe9db1da810fa6b6d2e65b673fb3fc038075341a74eda614dbdca1ac90c1dc`.
+Remote API imports and closed-observer refusal passed without enumerating or
+opening event devices. Both new diagnostic CLIs start, and the offline
+navigation demo reports ARRIVED with `simulation_only=true` and
+`no_game_input=true`. `smoke.json` and CLI stdout/stderr remain beside the
+private archive. The initial extraction guard rejected git archive's root
+`source` directory before extracting anything; the corrected guard explicitly
+allows that root directory while still rejecting links and other paths.
+No game/prefix files or characters were changed. Recommended assist remains
+0.39.6; this is a source release, not playable route acceptance.
+
 ## Source span attribution and actual route comparison — 2026-11-14 00:40 UTC
 
 **VERIFIED offline:** `tools/probe_crushbone_spans.cpp` compiled with
