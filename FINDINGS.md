@@ -1,5 +1,52 @@
 # FINDINGS
 
+## 2026-11-14 21:53 UTC — source 0.42.67: grounded stair contacts and complete pulse enclosures
+
+VERIFIED **77 focused checks** pass in 40.55 seconds. JUnit SHA
+`4db4a9d2e774f6fdae50b82a7523a01d1f58b1bb3b872311a74dfa75bf5dd63e`. Validation SHA
+`e765e81fe37a6f1d9d5b88c72ee8d568c4cd533e0f271ee1cbb442634b25d3f3`.
+The prior lift/transfer model remains separate: its interior body band starts
+above a tread and cannot establish grounded intermediate movement. New explicit
+`bounded_source_contacts` geometry covers local grounded/adjacent-transition
+height intervals with full body occupancy and native/BSP checks. Cells split
+at exact riser/expanded-footprint boundaries; a four-unit local span limit does
+not become a limit on the whole fifteen-rise flight.
+
+Only exact local dry tread faces and bounded pieces of their linked risers
+receive the conditional foot-contact exception. Vertical walls and point/edge
+contacts are retained. A linked riser extending above its adjacent tread is
+refused rather than exempted by ID. Every static object/unlisted surface keeps
+ordinary occupancy checks. These are explicit contact hypotheses, **not proof
+of client auto-step behavior or collision-free movement**.
+
+`SourceStairContactIndex` retains all compatible grounded and transition states.
+Adjacent transition strips may connect through a shared height without the
+center first reaching a uniquely grounded middle tread. For every retained
+starting state it checks graph-reachable states across the complete maximum-
+hold center footprint; each state's XY/body/height enclosure must be covered
+by matching cached cells. XY coverage plus unrelated global height bounds is
+insufficient. Degenerate point/segment intersections receive exact closed
+coverage checks. Preflight builds and pins this index before collecting fresh
+start replies. It still supplies no sender permission or new current floor.
+
+Tests include up/down geometry, taller wall extensions, flagged risers, static
+walls/ceilings, local span refusal, all intermediate ground heights, overlapping
+transition ambiguity, pivot displacement, lateral/endpoint escape, wrong Z,
+mutated caches, disconnected height coverage, tiny uncovered segment gaps,
+preflight cancellation/freshness and existing lift-plan compatibility. The new
+CLI contact-pulse probe is an offline diagnostic with explicitly synthetic
+motion/error bounds; it is not measured client motion.
+
+Next: copied Crushbone ground-contact replay, then a receipt-bound provisional
+stair controller. It must derive height intervals from issued raw fixes and the
+original calibration and retain the exact preflight bounds; the pure geometry
+query accepts explicit caller bounds and is not itself authority. Final landing
+requires an actual complete stopped cap, not the hypothetical plan branch.
+The cache also needs enough checked endpoint lookahead for maximum-hold motion;
+shortening that bound to make a target fit is not acceptable. Driver/itinerary
+wiring and contact behavior on the real client remain unfinished. Owner preview
+stays 0.39.32/runtime0.42.61; G0 passed; real run metrics unknown; 1–20/1–50 unmet.
+
 ## 2026-11-14 21:41 UTC — source 0.42.66 privately published
 
 VERIFIED Alienware `owner-tools/0.42.66/source` contains commit

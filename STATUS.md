@@ -1,11 +1,23 @@
 # STATUS
 
-Updated 2026-11-14 21:41 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 21:53 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.67 checked; private publication pending.** VERIFIED 77 focused
+  checks. Separate contact geometry covers grounded intermediate treads and
+  bounded adjacent risers; unrelated/static surfaces and tall wall extensions
+  remain obstructions. A cached index retains every compatible ground/transition
+  state, including overlapping transitions without an intermediate grounded
+  center. Whole maximum-hold motion must fit each reachable state's coupled XY,
+  body and height enclosure. The exact index is bound into stair preflight.
+  No stair sender/controller or owner control is enabled. Copied-data contact
+  replay is next, then receipt-issued stair observations, final observed landing
+  and driver integration. Real client contact behavior is unverified. G0 passed;
+  owner preview/runtime stay 0.39.32/0.42.61; current real level, XP, XP/hour,
+  deaths and camp unknown. Full 1–20/1–50 unmet.
 - **Source 0.42.66 privately published; owner preview remains 0.39.32.** VERIFIED 49 stair
   checks plus 14 retained sender/transfer checks. All 532 installed pins,
   imports and three auditor startups pass on Alienware. Bundle SHA

@@ -27,6 +27,7 @@ class SourceStairHint:
     radius: float
     max_rise: float = 2.
     max_lift: float = 4.
+    vertical_model: str = 'lift_transfer'
 
     def validate(self):
         if (any(type(p) is not tuple or len(p)!=2 or not all(finite(v) for v in p)
@@ -34,7 +35,8 @@ class SourceStairHint:
                 or not all(finite(v) for v in (self.radius,self.max_rise,self.max_lift))
                 or not .05<=self.radius<=10 or not 0<self.max_rise<=4
                 or not 0<self.max_lift<=4 or type(self.tread_ids) is not tuple
-                or not 2<=len(self.tread_ids)<=32):
+                or not 2<=len(self.tread_ids)<=32
+                or self.vertical_model not in ('lift_transfer','bounded_source_contacts')):
             raise ValueError('Explicit finite stair departure, destination and treads required')
         keys=[]
         for group in self.tread_ids:
@@ -85,6 +87,7 @@ class SourceStairPreflight:
         self.lock=ledger.lock
         self.phase,self.reason='new',''
         self.cache=self.start=None
+        self.contact_index=self._index_state=None
         self._cache_state=self._start_state=None
         self._prepared_state=None
         self._replies=[]
@@ -139,6 +142,9 @@ class SourceStairPreflight:
         if self._cache_state is not None:
             if ((id(self.cache),self.cache.payload,self.cache.sha256)!=self._cache_state):
                 raise RouteHalt('Stair preflight cache changed')
+        if self.contact_index is not self._index_state:
+            raise RouteHalt('Stair preflight contact index changed')
+        if self.contact_index is not None:self.contact_index.check()
 
     def check(self):
         """No old-fix age check: geometry may outlive it, original scope may not."""
@@ -168,7 +174,12 @@ class SourceStairPreflight:
             # future branch is intentionally discarded, never stored as a floor.
             plan,_=plan_stair_flight(self._chain,h.start,h.end,h.tread_ids,
                 l.terrain,l.static,l.bsp,l.observer.policy,radius=self._radius,
-                max_rise=h.max_rise,max_lift=h.max_lift,check_context=self.check)
+                max_rise=h.max_rise,max_lift=h.max_lift,check_context=self.check,
+                vertical_model=h.vertical_model,body_radius=l.bounds.body_radius)
+            index=None
+            if h.vertical_model=='bounded_source_contacts':
+                from .source_stair_coverage import SourceStairContactIndex
+                index=SourceStairContactIndex(plan)
             payload=encoded(dict(format='eql-source-stair-preflight-v1',hint=asdict(h),
                 checked_radius=self._radius,
                 motion_bounds=asdict(l.bounds),motion=dict(vars(l.motion)),heading=l.pose.heading,
@@ -191,6 +202,7 @@ class SourceStairPreflight:
                 self.minimum_seq=l.observer.reader.log_line_seq
                 self._prepared_state=(self.prepared_at,self.minimum_seq)
                 self.cache=cache
+                self.contact_index=self._index_state=index
                 self._cache_state=(id(cache),cache.payload,cache.sha256)
                 self.phase='prepared'
                 return cache

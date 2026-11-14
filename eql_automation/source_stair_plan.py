@@ -40,7 +40,10 @@ def outward_box(boundary):
 
 
 def plan_stair_flight(prefix,start,end,tread_ids,terrain,static,bsp,region_policy,*,
-                      radius,max_rise=2.,max_lift=4.,check_context,progress=lambda _:None):
+                      radius,max_rise=2.,max_lift=4.,check_context,progress=lambda _:None,
+                      vertical_model='lift_transfer',body_radius=None):
+    if vertical_model not in ('lift_transfer','bounded_source_contacts'):
+        raise ValueError('Explicit known stair vertical model required')
     if type(prefix) is not SourceFloorChain or prefix.halted or prefix.previous is None:
         raise ValueError('Accepted original floor lineage required')
     before = _chain_snapshot(prefix)
@@ -78,10 +81,14 @@ def plan_stair_flight(prefix,start,end,tread_ids,terrain,static,bsp,region_polic
             local.append(source)
     local = tuple(local)
     objects = static.faces_for_footprint(box)
-    flight = audit_stair_flight(local,objects,tread_ids,start=start,end=end,radius=radius,
+    audit=audit_stair_flight;options={}
+    if vertical_model=='bounded_source_contacts':
+        from .source_stair_contacts import audit_stair_contacts
+        audit=audit_stair_contacts;options['body_radius']=body_radius
+    flight = audit(local,objects,tread_ids,start=start,end=end,radius=radius,
         body_height=prefix.body_height,source_wld_sha256=terrain.wld_sha256,
         static_inventory_sha256=static.inventory_sha256,bsp=bsp,region_policy=region_policy,
-        max_rise=max_rise,max_lift=max_lift,check_context=check,progress=progress)
+        max_rise=max_rise,max_lift=max_lift,check_context=check,progress=progress,**options)
     if not flight['candidate']:
         raise ValueError('Stair flight: '+flight['reason'])
     if F(departure.floor_at(start)[0]) != F(flight['topology']['treads'][0]['height_exact']):
@@ -134,6 +141,7 @@ def plan_stair_flight(prefix,start,end,tread_ids,terrain,static,bsp,region_polic
             or F(landing.floor_at(end)[0]) != F(flight['topology']['treads'][-1]['height_exact'])):
         raise ValueError('Stair final full landing cap refused')
     record = dict(format='eql-offline-source-stair-plan-v1',start=start,end=end,
+        vertical_model=vertical_model,
         parent_proof_sha256=prefix.previous.proof_sha256,
         initial_seed_sha256=prefix.seed_evidence_sha256,
         source_wld_sha256=terrain.wld_sha256,static_inventory_sha256=static.inventory_sha256,
@@ -143,7 +151,9 @@ def plan_stair_flight(prefix,start,end,tread_ids,terrain,static,bsp,region_polic
         input_authorized=False,real_client_accepted=False,executable_itinerary=False,
         planned_landing_only=True,current_floor_unchanged=True)
     payload=encoded(record);plan=SourceStairPlan(payload,sha256(payload).hexdigest())
-    last_floor=replace(last_floor,reason='conditional_stair_flight_landing_only',index=prefix.index,
+    reason=('conditional_stair_contact_landing_only' if vertical_model=='bounded_source_contacts'
+            else 'conditional_stair_flight_landing_only')
+    last_floor=replace(last_floor,reason=reason,index=prefix.index,
         carried_ids=(),joins=(),previous_sha256=prefix.previous.proof_sha256,proof_sha256='')
     last_floor=replace(last_floor,proof_sha256=digest(dict(stair_plan_sha256=plan.sha256,landing=asdict(last_floor))))
     branch=prefix.fork();branch.previous=last_floor;branch.index=prefix.index+1

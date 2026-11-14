@@ -5,6 +5,7 @@ from hashlib import sha256
 from pathlib import Path
 import argparse
 import json
+import math
 import os
 import resource
 import signal
@@ -37,6 +38,11 @@ def main():
     parser.add_argument('--first-step',type=int,required=True)
     parser.add_argument('--last-step',type=int,required=True)
     parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--stair-model',choices=('lift_transfer','bounded_source_contacts'),default='lift_transfer')
+    parser.add_argument('--stair-radius',type=float,
+        help='Explicit checked stair radius; the retained guide radius remains the body-radius hypothesis')
+    parser.add_argument('--probe-contact-pulses',type=int,default=0,
+        help='Offline evenly spaced pulse checks with explicitly synthetic speed/error bounds (0..32)')
     exit_policy=parser.add_mutually_exclusive_group()
     exit_policy.add_argument('--exit-detour-range',nargs=2,type=int,metavar=('FIRST','LAST'))
     exit_policy.add_argument('--exit-contact-face',nargs=2,type=int,action='append',metavar=('FRAGMENT','FACE'))
@@ -44,7 +50,10 @@ def main():
     if (args.output.exists() or args.output.is_symlink()
             or args.output.with_suffix('.json.tmp').exists()
             or args.output.parent.resolve()!=(STORE/'nav-candidates').resolve()
-            or not 0<=args.first_step<args.last_step<32):
+            or not 0<=args.first_step<args.last_step<32
+            or not 0<=args.probe_contact_pulses<=32
+            or args.probe_contact_pulses and args.stair_model!='bounded_source_contacts'
+            or args.stair_radius is not None and (not math.isfinite(args.stair_radius) or not .05<=args.stair_radius<=10)):
         parser.error('New private output and explicit bounded stair sequence required')
     os.umask(0o077);os.nice(19);resource.setrlimit(resource.RLIMIT_CPU,(40,45))
     began=time.monotonic();cpu=time.process_time()
@@ -72,6 +81,10 @@ def main():
         prior=json.loads(checked_bytes(args.prior,args.prior_sha256))
         if prior['data_sha256']!=DATA_PINS:raise ValueError('Prior client data differs')
         guide=SourceItineraryGuide.from_record(prior['guide'])
+        stair_radius=guide.radius if args.stair_radius is None else args.stair_radius
+        if stair_radius<guide.radius:raise ValueError('Checked stair radius cannot shrink the body hypothesis')
+        record.update(stair_vertical_model=args.stair_model,stair_checked_radius=stair_radius,
+                      stair_body_radius=guide.radius)
         steps=[edge for edge in prior['proposal']['edges'] if edge['step']]
         flight_edges=steps[args.first_step:args.last_step+1]
         if len(flight_edges)!=args.last_step-args.first_step+1:raise ValueError('Unknown stair range')
@@ -109,17 +122,47 @@ def main():
         for edge in flight_edges:
             if components.components[tuple(edge['origin'])]!=selected[-1]:raise ValueError('Stairs skip a component')
             selected.append(components.components[tuple(edge['destination'])])
-        boundary=stair_body_footprint(flight_start,flight_end,guide.radius)
+        boundary=stair_body_footprint(flight_start,flight_end,stair_radius)
         groups=tuple(tuple(key for key,(poly,_,_) in components.faces.items()
             if components.components[key]==component and area(clip(boundary,rational(poly)))>0)
             for component in selected)
         stage('rebuilding_complete_flight')
         def progress(value):record['flight_progress']=value
         flight,after=plan_stair_flight(before,flight_start,flight_end,groups,p.source,p.static,p.bsp,p.region_policy,
-            radius=guide.radius,check_context=check,progress=progress)
+            radius=stair_radius,body_radius=guide.radius,vertical_model=args.stair_model,
+            check_context=check,progress=progress)
         record.pop('flight_progress',None)
         record.update(stair_plan=flight.record(),stair_sha256=flight.sha256,
             planned_landing_proof_sha256=after.previous.proof_sha256)
+        if args.probe_contact_pulses:
+            from eql_automation.route_geometry import RouteMotionBounds
+            from eql_automation.source_stair_coverage import SourceStairContactIndex
+            from eql_automation.source_floor_chain import inside
+            stage('checking_synthetic_contact_pulses')
+            index=SourceStairContactIndex(flight)
+            bounds=RouteMotionBounds('offline-contact-probe','offline-assumptions',
+                .01,.02,.05,2.,.01,.01,1.,.01,guide.radius,guide.body_height)
+            dx,dy=(flight_end[k]-flight_start[k] for k in (0,1))
+            heading=math.degrees(math.atan2(dx,dy))%360
+            probe=dict(bounds=asdict(bounds),bounds_live_verified=False,samples=[],
+                       game_input_sent=False,real_client_accepted=False)
+            record['contact_pulse_probe']=probe
+            for sample in range(1,args.probe_contact_pulses+1):
+                check();t=sample/(args.probe_contact_pulses+1)
+                point=(flight_start[0]+t*dx,flight_start[1]+t*dy)
+                grounds=[s for s in index.states if s.kind=='ground'
+                         and any(inside(rational((point,))[0],poly) for poly in s.polygons)]
+                if not grounds:raise ValueError('No retained ground state for offline pulse sample')
+                for ground in grounds:
+                    height=float(ground.height[0])
+                    coverage=index.cover_pulse(point,heading,'forward',bounds,
+                        height_interval=(height-.05,height+.05))
+                    data=coverage.record()
+                    probe['samples'].append(dict(point=point,ground_state=ground.index,
+                        coverage_sha256=coverage.sha256,compatible=data['compatible'],
+                        reachable_by_start=data['reachable_by_start'],
+                        coupled_enclosures=len(data['coupled_enclosures'])))
+            probe['complete']=True
         suffix=replace(guide,operations=suffix_ops)
         if args.exit_contact_face:
             stage('checking_conditional_contact_exit')
@@ -145,7 +188,8 @@ def main():
                 check_context=check,max_seconds=90.)
             record.update(exit_plan=last_plan.record(),exit_sha256=last_plan.sha256,
                 goal=guide.goal,goal_floor_height=last_plan.record()['goal_floor_height'],
-                goal_source_ids=last_plan.record()['goal_source_ids'],source_candidate=True,stage='finished')
+                goal_source_ids=last_plan.record()['goal_source_ids'],
+                source_candidate=args.stair_model=='lift_transfer',stage='finished')
     except (ValueError,TimeoutError) as error:
         record['refusal']=str(error)
     signal.alarm(0)

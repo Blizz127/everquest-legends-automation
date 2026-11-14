@@ -17,9 +17,9 @@ from test_route_floor_commit import legacy
 pytestmark=pytest.mark.parametrize('f',['stair_preflight'],indirect=True)
 
 
-def preflight(f):
+def preflight(f,vertical_model='lift_transfer'):
     f.real=False;f.now=time.monotonic()
-    hint=SourceStairHint((4.,2.),(4.,10.),f.stair_groups,1.2)
+    hint=SourceStairHint((4.,2.),(4.,10.),f.stair_groups,1.2,vertical_model=vertical_model)
     return SourceStairPreflight(f.ledger,policy=f.policy,hint=hint,
         released_at=f.first.raw_fix.received_monotonic-.2)
 
@@ -202,4 +202,22 @@ def test_freshness_is_measured_from_reply_receipt_not_later_observation(f,monkey
         return check()
     monkeypatch.setattr(pre,'check',late)
     with pytest.raises(RuntimeError,match='expired during final'):pre.consume_start(start)
+    assert f.ledger.phase=='stopped' and not f.drain_events()
+
+
+def test_ground_contact_index_is_built_before_fresh_pair_and_bound_to_preflight(f):
+    pre=preflight(f,vertical_model='bounded_source_contacts');cache=pre.prepare()
+    index=pre.contact_index
+    assert index is not None and index.plan.sha256==cache.record()['stair_plan_sha256']
+    start=pre.bind_start(*replies(f,pre))
+    assert pre.consume_start(start) is cache
+    assert pre.contact_index is index and f.ledger.phase=='ready'
+    assert not f.drain_events()
+
+
+def test_changed_contact_index_cannot_refresh_departure(f):
+    pre=preflight(f,vertical_model='bounded_source_contacts');pre.prepare()
+    start=pre.bind_start(*replies(f,pre))
+    object.__setattr__(pre.contact_index.cells[0],'height',(-100,100))
+    with pytest.raises(ValueError,match='index changed'):pre.consume_start(start)
     assert f.ledger.phase=='stopped' and not f.drain_events()
