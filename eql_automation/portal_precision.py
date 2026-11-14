@@ -1,4 +1,4 @@
-"""Source-supported one-float32-ULP portal corrections for offline diagnosis.
+"""Source-supported bounded float32 portal corrections for offline diagnosis.
 
 Only a failed ground-coverage check can be retried. Corrections are ephemeral
 XY midpoints; copied data, heights, areas and components are never rewritten.
@@ -37,7 +37,7 @@ class QuantizedSeam:
                 or not all(finite(v) for v in self.span) or self.span[0] >= self.span[1]
                 or type(self.maximum_ulp_steps) is not int or self.maximum_ulp_steps not in (1,2)
                 or float32_steps(self.source_coordinate,self.target_coordinate) not in range(1,self.maximum_ulp_steps+1)):
-            raise ValueError('Invalid one-ULP reciprocal seam')
+            raise ValueError('Invalid explicitly bounded reciprocal seam')
 
     @property
     def midpoint(self):
@@ -239,7 +239,7 @@ def source_support(footprint, sources, baked_faces, *, maximum_z_difference, edg
 
 
 def attribute_seam_overlaps(footprint, faces, polygon_ids, seams, *, reference, component, vertical_window):
-    """Attribute EVERY meaningful original overlap to a named one-ULP strip.
+    """Attribute EVERY meaningful original overlap to a named rounding strip.
 
     Both triangle interiors must lie on opposite sides of their own portal
     boundary. The overlap must remain inside that exact strip and portal span,

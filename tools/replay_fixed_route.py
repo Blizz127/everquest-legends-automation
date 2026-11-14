@@ -377,9 +377,9 @@ def main():
     parser.add_argument('--local-seam-experiment', action='store_true',
                         help='Offline only: try one pinned source-supported XY seam correction')
     parser.add_argument('--precision-portals', action='store_true',
-                        help='Offline only: retry one-ULP reciprocal gaps with full source-ground support')
+                        help='Offline only: retry bounded reciprocal rounding gaps with full source-ground support')
     parser.add_argument('--precision-overlaps', action='store_true',
-                        help='Offline only: also attribute and retry reciprocal one-ULP detail overlaps')
+                        help='Offline only: also attribute and retry bounded reciprocal detail overlaps')
     parser.add_argument('--maximum-portal-ulp-steps', type=int, choices=(1,2), default=1,
                         help='Explicit copied-data diagnostic portal rounding bound (default one float32 step)')
     parser.add_argument('--source-z-limit',type=float,default=.6,

@@ -50,6 +50,8 @@ with max source/baked delta0.7006225861. The one-ULP control refuses. Artifact
 with no supported seam classification. Artifact `gfay-two-ulp-replay-0.41.56.json`,
 SHA `65b7560c62b41ae6af69dc9d95138ff275fc8e7ce9acd35e4300a6ed800f29f7`.
 Defaults are unchanged and no stored source/mesh is modified.
+The two-ULP proof/replay and full profile implementations are retained in
+local commit `167bcfe`; subsequent wording-only edits clarify their scope.
 
 **VERIFIED complete corridor scan:** `audit_route_source_profile.py` partitions
 the repaired route's 4654.7114 XY units into 2,399 convex cells, each covering
