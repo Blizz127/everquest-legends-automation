@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 04:21 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 04:23 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -19,6 +19,9 @@ Updated 2026-11-14 04:21 UTC for coordinator task `829a00229b29`.
   `1a1131ce8454daabe4f44a548e9aa3411e3b1d1b2fb6718609c295dd91b8d3ad`.
   Production exact-support checks and simulated physical motion are unchanged.
   This resolves the previous sampled-point failures, not live route acceptance.
+  Commit `b48d4b3` is privately staged at `owner-tools/0.41.66/source`;
+  six remote startup/synthetic checks pass, archive SHA
+  `5e6a93b72dae25b3a60ef1b78f7237a67d5c740481fb0fcef6c560dec27f4e4b` matched.
 - Offline 0.41.62 still records 155 segments/2,191 terrain, static-object and
   BSP-checked steps under hypothetical motion/body bounds. The new probe checks
   sampled observations; full steering with printed positions remains untested.

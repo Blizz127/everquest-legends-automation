@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Private source 0.41.66 staging — 2026-11-14 04:23 UTC
+
+**VERIFIED:** Commit `b48d4b37a18fa7b538ba23d74a76b42b504f8ff0`, source archive SHA
+`5e6a93b72dae25b3a60ef1b78f7237a67d5c740481fb0fcef6c560dec27f4e4b`,
+is staged on Alienware at `~/.local/share/eql-automation/owner-tools/0.41.66/source`.
+Six startup/synthetic checks pass: version, printed-axis/source-height serialization,
+format validation, incomplete floor-ledger refusal, probe CLI and location-collector
+CLI. Remote `../smoke.json` and local private
+`releases/eql-automation-0.41.66-staging.json` record the result. No client assets,
+devices, capture, login or game input were used. Assist 0.39.6 and candidate 0.39.9
+are unchanged; no live acceptance or level gain is claimed.
+
 ## Client-format observations and committed floor context — 2026-11-14 04:21 UTC
 
 **VERIFIED source 0.41.66:** The copied ground probe now optionally reconstructs
