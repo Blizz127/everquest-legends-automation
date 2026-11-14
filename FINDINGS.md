@@ -1,5 +1,67 @@
 # FINDINGS
 
+## Native region evidence through supervised movement — 2026-11-14 14:03 UTC
+
+**VERIFIED implementation:** source 0.42.27 carries the explicit Crushbone
+native-zero policy through each maximum-hold forward and pivot footprint.
+Terrain/static checks and the original BSP result remain intact. Native
+classification runs during stopped precomputation. Cache seals retain original
+evidence identity; exact issued records and their sealed terrain/static/BSP
+contents are checked at staging, authorization and after callbacks. Replacement
+policy/classifier/evidence/record, nonzero flags and stale observations refuse.
+The default external-guard path and zone crossings cannot consume this policy;
+assist/full-auto cannot use the measurement path. Timing limits are unchanged.
+
+The owner local-trial loader now supports current zone 58, verifies installed
+`eqgame.exe`, `EQGraphics.dll`, Crushbone archives and the catalog read-only,
+and retains their device/inode/size/mtime/ctime identities. File or owner-session
+changes stop the job. This separate installed-file record does not relabel
+copied geometry as live verified and does not claim loaded-memory verification.
+The owner continuation carries the exact binding through calibration, fresh
+planning/height and supervised movement. No client/prefix writes are made.
+
+**VERIFIED focused checks:** the combined run passed 146 cases; one descriptor
+reuse fixture stopped before DOWN and therefore did not reach its intended
+assertion. Its isolated retry passes. No deadline was relaxed. Coverage includes
+native forward/pivot records, missing/nonzero/incomplete regions, changed seals,
+policy and classifier replacement, slow classification, mode refusal, installed
+binary replacement, actual pipe movement and cancellation during DOWN.
+Four actual owner-wrapper checks pass: the new full native local-trial flow,
+binary change before calibration, the old local trial and complete GFay crossing.
+All client feedback is synthetic and input goes only to OS pipes.
+
+**VERIFIED copied-client movement preparation:** both forward and pivot pass
+native metadata checks at the retained historical entrance with radius 1.2 /
+height 6 hypotheses; original BSP results remain false. The complete fresh
+planning/height/precompute/ticket flow stages a forward move without sending
+input or committing its floor. Report
+`nav-candidates/crushbone-native-moves-0.42.27.json` SHA
+`968b8a8c3aacce449899dff143b824dcebe720672b904f9fed7e59c5f60cebd7`.
+This uses a synthetic reader/clock and is not a current character observation.
+
+**Owner preview 0.39.20:** built from retained 0.39.12 through the existing
+patch chain, current package and a UI text update for the existing short-trial
+button. All 183 packaged manifest files verify and Python sources parse.
+Manifest SHA `bc0d92e5dc1548548360d2b7ea6c2f5b120899b2d21e0d15c60aa856424e39b1`.
+HOWTO documents GFay/Crushbone short movement, the existing travel actions,
+manual combat and stop controls. No new G0 check is needed.
+
+**VERIFIED owner publication:** preview 0.39.20 is staged on Alienware. The
+manifest, offscreen GUI and both GFay/Crushbone copied loaders pass. Installed
+client `fe41a8db...`, engine `4f5f18ee...`, Crushbone archives and catalog match
+the model read-only. The exact file records are in the private startup JSON.
+Archive SHA `107a961f9b2d62a849b5be1a7d8def2ce350b047a700be26cf30a396c2eda5a2`;
+startup SHA `11d9780b843319980fd7a61c775862935836b86864d125faaf28ad8f18c4c361`.
+No worker/device, game input, character action or prefix modification occurred.
+The coordinator received the concrete owner launch/test step; no acknowledgement
+is needed to continue development. Live traversal remains unverified.
+
+**Next:** source-step execution and fresh Crushbone camp routing, using owner
+movement feedback when available. Seven source transfers still need execution
+support; destination planning intentionally still refuses the native policy.
+No actual crossing/camp traversal, automated XP, accepted 1–20 or fresh hands-off
+1–50 run. Current level, XP/hour, deaths and camp unknown. Assist 0.39.13 remains.
+
 ## Explicit native-zero planning and fresh height — 2026-11-14 13:54 UTC
 
 **VERIFIED implementation:** source 0.42.26 adds a separate typed Crushbone

@@ -75,7 +75,7 @@ class SupervisedRoutePolicy:
     """
     def __init__(self, geometry, *, declaration, gate, owner_input, log_veto,
                  expected_log_path, expected_window, topology_generation,
-                 check_current):
+                 check_current, installed_region_model=None):
         if (not isinstance(geometry, RouteGeometryPreparer)
                 or not isinstance(declaration, SupervisedRouteDeclaration)
                 or not isinstance(expected_window, GameWindowIdentity)
@@ -84,6 +84,7 @@ class SupervisedRoutePolicy:
                 or not callable(check_current) or not callable(getattr(owner_input, 'sample', None))):
             raise ValueError('Explicit supervised scope, real observation providers and geometry required')
         d, r, b = declaration, geometry.ledger.runner, geometry.bounds
+        self.installed_region_model = self._installed_region_model = installed_region_model
         self._validate_geometry(geometry,d)
         seconds, steps, distance, hold = scope_limits(d.scope)
         if (not all(isinstance(v, str) and v for v in
@@ -118,6 +119,12 @@ class SupervisedRoutePolicy:
         if (geometry.expected_zone_line is not None
                 or declaration.scope not in ('local_trial','destination_travel')):
             raise ValueError('Ordinary route trials cannot authorize a zone crossing')
+        if geometry.region_policy is not None:
+            from .installed_region_model import InstalledRegionModel
+            model = self.installed_region_model
+            if type(model) is not InstalledRegionModel or model is not self._installed_region_model:
+                raise ValueError('Native region trial requires its installed executable binding')
+            model.check_policy(geometry.region_policy)
 
     def cancel(self, reason):
         with self.ledger.lock:
@@ -196,7 +203,10 @@ class SupervisedRoutePolicy:
         self.validate_scene(observed, self.ledger)
         record = self.geometry.record_for(ticket)
         self.validate_scene(observed, self.ledger)
-        if (not all(x.candidate is True for x in (record.terrain, record.static, record.bsp))
+        if self.geometry.record_for(ticket) is not record:
+            raise RouteHalt('Geometry record changed during scene validation')
+        if (not all(x.candidate is True for x in (record.terrain, record.static))
+                or not self.geometry.regions_allowed(record)
                 or ticket.preparation.motion_bounds_record_id != self.bounds.record_id
                 or ticket.preparation.requested_seconds > .1
                 or ticket.preparation.maximum_actual_hold != self.bounds.maximum_actual_hold
@@ -207,6 +217,7 @@ class SupervisedRoutePolicy:
         self._authorization = SupervisedRouteAuthorization(ticket, observed.reference_fix,
             self.ledger.clock(), ticket.preparation.proposal.at+.05, self.declaration.record_id,
             declaration=self.declaration)
+        self._authorized_record = record
         return self._authorization
 
     def validate_authorization(self, authorization, observed):
@@ -223,6 +234,8 @@ class SupervisedRoutePolicy:
         self.validate_authorization(authorization, observed)
         self.geometry.record_for(authorization.ticket)
         self.validate_authorization(authorization, observed)
+        if self.geometry.record_for(authorization.ticket) is not self._authorized_record:
+            raise RouteHalt('Authorized geometry record changed')
         return True
 
     def snapshot(self):
@@ -231,4 +244,5 @@ class SupervisedRoutePolicy:
             planning_bounds=asdict(self.bounds), started_monotonic=self.started,
             reserved_maximum_hold=self.reserved_hold, independent_scene_verified=False,
             motion_bounds_verified=False, dynamic_clearance_verified=False,
-            real_client_accepted=False)
+            real_client_accepted=False, installed_region_model=(None if self.installed_region_model is None
+                else self.installed_region_model.record()))

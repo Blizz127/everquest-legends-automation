@@ -1,0 +1,51 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -383,7 +383,7 @@
+             column.addWidget(self.ap_state)
+             self.ap_default_status = (
+                 "Open the game map and test your /location hotbutton to recognize the current zone. "
+-                "Choose a short GFay test or supervised travel to the Crushbone approach. Combat and leveling stay manual."
++                "Choose a short GFay or Crushbone test, or supervised travel from GFay into Crushbone. Combat and leveling stay manual."
+                 if measurement_only else
+                 "Travel is unavailable in this assist preview. Movement and targeting stay manual.")
+             self.ap_status = QLabel(self.ap_default_status)
+@@ -451,7 +451,7 @@
+             if measurement_only:
+                 self.supervised_route_trial = QPushButton("Supervised short route trial…")
+                 self.supervised_route_trial.setObjectName("supervisedLocalRouteTrialButton")
+-                self.supervised_route_trial.setToolTip("Measure motion, plan two units from here in GFay, follow the checked path, then stop.")
++                self.supervised_route_trial.setToolTip("Measure motion, plan two units from here in GFay or Crushbone, follow the checked path, then stop.")
+                 self.supervised_route_trial.clicked.connect(self.configure_supervised_route_trial)
+                 travel_row = QHBoxLayout()
+                 travel_row.addWidget(self.supervised_route_trial)
+@@ -470,7 +470,7 @@
+                     "The supervised measurement saves relative speed/turn observations and finishes stopped. "
+                     "Open ground is your confirmation; this does not independently check obstacles or certify a route. "
+                     "G0 is a separate single-pulse stop check. "
+-                    "Short route tests and supervised destination travel follow checked GFay paths and stop on failure. "
++                    "Short route tests support GFay and Crushbone; destination travel starts in GFay. Failed checks stop movement. "
+                     "Combat, targeting, route recording and leveling remain disabled. The measurement "
+                     "does not determine character radius, height, climb, or slope limits.")
+                 limits.setWordWrap(True)
+@@ -805,10 +805,10 @@
+             if not measurement_only:
+                 return
+             dialog = QDialog(self)
+-            dialog.setWindowTitle("Supervised short route trial — GFay")
++            dialog.setWindowTitle("Supervised short route trial — GFay or Crushbone")
+             layout = QVBoxLayout(dialog)
+             text = QLabel("This is a short movement test, not the level 1–20 autopilot. "
+-                          "The helper must have observed a new Greater Faydark zone entry since it started. "
++                          "The helper needs Greater Faydark or Clan Crushbone recognized from the open map or a new zone entry. "
+                           "First complete Test /location hotbutton in this same helper session.\n\n"
+                           "Stand on wide open, flat ground, away from edges, water, objects and enemies. "
+                           "Close chat, clear your target, turn melee off and release all keys. "
+@@ -1174,7 +1174,7 @@
+ 
+ TRAVEL STATUS
+ F11 travel and F12 recording are disabled in this preview. Routes for levels 1–20 are being built from copied client geometry; real movement validation is incomplete. You do not need to record routes by hand.
+-The separate --measure-navigation mode offers supervised motion, a short GFay test and travel toward the Crushbone approach. It does not run combat or leveling. G0 is already passed; do not repeat it.
++The separate --measure-navigation mode offers supervised motion, a short GFay or Crushbone test and travel from GFay into Crushbone. It does not run combat or leveling. G0 is already passed; do not repeat it.
+ 
+ SOURCE OF SPELL LEVELS
+ The installed client's spells_us.txt is authoritative for this installation. The progression tab is a preview; your live bar is filtered against a fresh /outputfile spellbook export. No third-class skills are assumed.

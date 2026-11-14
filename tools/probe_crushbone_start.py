@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import sys
 import tempfile
+import threading
 
 STORE = Path.home()/'.local/share/eql-automation'
 sys.path[:0] = [str(Path(__file__).resolve().parents[1]), str(STORE/'owner-assist/0.39.4')]
@@ -58,6 +59,36 @@ def run(args):
                     clock=lambda:now,local_wall_clock=wall,record_id='synthetic-height',
                     released_at=release,floor_plan=plan)
                 row.update(stopped_height=True, height=height_record(height))
+                if args.prepare_moves and enabled:
+                    from eqnav import steer
+                    from eql_automation.fixed_route_follower import FixedRouteFollower
+                    from eql_automation.route_floor_commit import RouteFloorCommit
+                    from eql_automation.route_geometry import RouteGeometryPreparer
+                    from types import SimpleNamespace
+                    runner=FixedRouteFollower(plan.route,legacy=steer,
+                        motion=steer.Motion(run_speed=30.,turn_rate=170.,right_sign=-1,turn_latency=.03,back_speed=0.),
+                        heading=args.heading,calibration_record_id='synthetic-motion',height_calibration=height,
+                        geometry_evidence=plan.observer.geometry,generation=1,generation_reader=lambda:1,
+                        mode_reader=lambda:'measurement')
+                    release=now;now+=.2;first=position();now+=.5;second=position()
+                    fixes=[plan.observer.observe(fix,route=plan.route,segment_index=0,
+                        height_calibration=height,motion_calibration_record_id=runner.calibration,
+                        now=now,floor_chain=plan.floor_chain,mode='measurement') for fix in (first,second)]
+                    runner.observe_stopped(*fixes,released_at=release,now=now)
+                    ledger=RouteFloorCommit(runner,plan.floor_chain,stop_lock=threading.RLock(),clock=lambda:now)
+                    preparer=RouteGeometryPreparer(ledger,ground=planner.ground,source=planner.source,
+                        static=planner.static,bsp=planner.bsp,bounds=bounds,static_inventory_sha256=planner.pins[3],
+                        vertical_window=3.,maximum_source_z_difference=2.,region_policy=plan.region_policy)
+                    scene=SimpleNamespace(reference_fix=fixes[-1]);preparer.precompute(scene)
+                    row['move_candidates']={kind:({'refusal':value} if isinstance(value,str) else
+                        dict(native=value[-1].record(),legacy_bsp_candidate=value[5].candidate,
+                             floor_proof_sha256=value[3].floor_step.proof_sha256))
+                        for kind,value in preparer._cache[4].items()}
+                    ticket=preparer(runner.propose(now),scene);record=preparer.record_for(ticket)
+                    row['prepared_move']=dict(key=ticket.preparation.movement_key,
+                        native_evidence_sha256=record.native_region_evidence.sha256,
+                        floor_committed=False,game_input_sent=False)
+                    ledger.cancel('Offline preparation complete; no input or floor commit')
             except ValueError as error:
                 row['refusal'] = str(error)
             rows.append(row)
@@ -73,4 +104,5 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('x', 'y', 'printed-z', 'heading', 'body-radius', 'body-height'):
         parser.add_argument('--'+name, required=True, type=float)
+    parser.add_argument('--prepare-moves',action='store_true',help='Exercise per-move cache/ticket without input')
     print(json.dumps(run(parser.parse_args()), indent=2, allow_nan=False))

@@ -146,6 +146,10 @@ def _run_checked_step(sender, ledger, *, scene_provider, prepare_step,
             (scene_provider, prepare_step, authorize_step, still_authorized,
              command_state_clear, pump))):
         raise ValueError('A route ledger and all independent live providers are required')
+    if getattr(prepare_step, 'region_policy', None) is not None and supervised_policy is None:
+        raise ValueError('Native region geometry requires its explicit supervised measurement policy')
+    if getattr(prepare_step, 'region_policy', None) is not None and crossing is not None:
+        raise ValueError('Native region geometry cannot authorize a zone crossing')
     if supervised_policy is not None:
         from .supervised_route import SupervisedRoutePolicy
         policy_type=SupervisedRoutePolicy

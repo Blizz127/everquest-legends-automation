@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.26** · rotation preview **0.39.13** · crossing preview **0.39.19** · approach preview **0.39.18**.
+Source **0.42.27** · rotation preview **0.39.13** · movement preview **0.39.20** · crossing preview **0.39.19** · approach preview **0.39.18**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -63,6 +63,37 @@ the evidence. This is a development-only step: destination movement and the
 owner driver refuse these new plans until per-move integration is complete.
 The 0.39.19 crossing and 0.39.13 assist launch commands are unchanged. G0 is
 passed; no repeat or additional owner test is requested by this source update.
+
+## Short movement in Crushbone on Alienware: 0.39.20
+
+The existing **Supervised short route trial…** action now supports both
+Greater Faydark and Clan Crushbone. It measures movement, checks a new two-unit
+path from your current position, follows it if checks pass, then stops.
+This is not a camp route or the 1–20 autopilot. Actual client traversal remains
+unverified; combat, looting and leveling stay manual. Assist stays on 0.39.13.
+G0 is passed and does not need repeating.
+
+```bash
+cd ~/.local/share/eql-automation/owner-assist/0.39.20
+EQL_ROTATION_TRACE="$HOME/eql-crushbone-trial-trace.jsonl" ./launch.sh --measure-navigation
+```
+
+Close the other helper first. Select the correct character. Open the in-game
+map and run **Test /location hotbutton…** in this helper to recognize the current
+zone and verify the configured location key. A new zone entry observed by this
+helper also supplies zone identity. Close the map and chat, clear your target
+and turn melee off. On clear, flat, open ground, choose **Supervised short route
+trial…** and focus the game during its countdown. Stay present through the
+seven calibration presses and short route. **F9, F11 or Stop measurement stops
+it.** Failed checks stop the action; it does not retry automatically.
+
+The Crushbone loader reads the installed executables, zone archives and catalog
+to ensure they match the copied model. A changed file stops the job. It never
+writes the game installation. Results are saved under
+`~/.local/share/eql-automation/route-trials/`; keep the trace above if it stops.
+The two GFay travel actions remain available and still stop after their stated
+approach/crossing destination. Crushbone camp selection and onward leveling are
+not included in this preview.
 
 ## Travel into Crushbone on Alienware: 0.39.19
 

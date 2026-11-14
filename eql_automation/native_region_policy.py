@@ -1,4 +1,4 @@
-"""Explicit native-zero policy for copied Crushbone planning and height only.
+"""Explicit native-zero policy for copied Crushbone geometry and height.
 
 This does not authorize movement. The original BSP result is retained, and
 terrain/static collision remain separate. Installed binary matching, the
@@ -57,8 +57,8 @@ class NativeZeroRegionTrialPolicy:
         self.check_classifier()
 
     def record(self):
-        return dict(format='eql-native-zero-planning-policy-v1', zone='crushbone',
-            scope='copied_current_start_and_stopped_height_only',
+        return dict(format='eql-native-zero-planning-policy-v2', zone='crushbone',
+            scope='copied_initial_and_per_move_geometry; supervised_measurement_only',
             mesh_sha256=self.mesh_sha256, archive_sha256=self.archive_sha256,
             wld_sha256=self.wld_sha256, static_inventory_sha256=self.static_inventory_sha256,
             bsp_inventory_sha256=self.bsp_inventory_sha256,

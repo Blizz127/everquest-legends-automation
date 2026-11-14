@@ -66,6 +66,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             super()._supervised_current(p,active=active)
             if p['job'] in (TRIAL_JOB,DESTINATION_JOB,CROSSING_JOB):
                 recipe=p['continuation']
+                self._check_region_model(recipe)
                 if not recipe['started']<=clock()<=recipe['started']+recipe['maximum_seconds']:
                     raise ValueError('Owner route startup time budget exhausted')
 
@@ -121,6 +122,14 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             if name==CROSSING_JOB and type(destination) is not CrossingDestinationAssets:
                 raise ValueError('Crossing requires pinned native line and expected destination')
             planner=destination.planner if destination is not None else planner_loader(self)
+            if not isinstance(planner,CurrentStartPlanner):
+                raise ValueError('Pinned current-zone planner required')
+            region_model = getattr(planner, 'installed_region_model', None)
+            if planner.region_policy is not None:
+                from .installed_region_model import InstalledRegionModel
+                if type(region_model) is not InstalledRegionModel:
+                    raise ValueError('Native trial needs installed executable verification')
+                region_model.check_policy(planner.region_policy)
             tracker.poll()  # Loading may take seconds; consume any intervening transition.
             if (not isinstance(planner,CurrentStartPlanner)
                     or zone[:2]!=(planner.zone_id,planner.zone_name)
@@ -128,12 +137,23 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                     or epoch!=(self.cancel_generation,self.supervised_epoch,self.route_session_epoch,
                               settings_identity(self.settings)) or not self.jobs.empty()):
                 raise ValueError('Current-zone geometry or owner job changed during preparation')
-            return dict(planner=planner,destination=destination,
+            return dict(planner=planner,destination=destination, region_model=region_model,
+                        region_policy=planner.region_policy,
                         scope=('zone_crossing_corridor' if name==CROSSING_JOB else
                                'destination_travel' if destination is not None else 'local_trial'),
                         label=destination.target_name if destination is not None else 'Supervised route trial',
                         zone=zone,tracker=tracker,route_epoch=self.route_session_epoch,
                         started=clock(),maximum_seconds=180.)
+
+        def _check_region_model(self, recipe):
+            planner = recipe['planner']; policy = recipe['region_policy']; model = recipe['region_model']
+            if planner.region_policy is not policy:
+                raise ValueError('Owner native region policy changed')
+            if policy is not None:
+                if (getattr(planner, 'installed_region_model', None) is not model
+                        or model.game_dir != str(Path(self.settings.game_dir).resolve())):
+                    raise ValueError('Owner installed region-model binding changed')
+                model.check_policy(policy)
 
         def _cancel_trial(self,reason):
             p=self.route_trial
@@ -167,6 +187,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
 
         def _trial_common_current(self,p):
             def bound():
+                self._check_region_model(p['continuation'])
                 if (self.route_trial is not p or p['cancelled'] or self.cancelled
                         or self.supervised_motion is not None or self.motion_collection_driver is not None
                         or self.supervised_epoch!=p['epoch'] or self.cancel_generation!=p['generation']
@@ -319,8 +340,8 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
         def _attach_trial_driver(self,p,pair):
             from eqnav import steer
             plan=p['plan'];self._trial_current(p)
-            if plan.region_policy is not None:
-                raise ValueError('Native region planning is not connected to owner movement yet')
+            if plan.region_policy is not p['continuation']['region_policy']:
+                raise ValueError('Owner plan and native region policy differ')
             scope=p['continuation']['scope']
             seconds,steps,distance,hold=scope_limits(scope)
             if scope=='local_trial':distance=3.
@@ -359,6 +380,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 static=planner.static,bsp=planner.bsp,bounds=p['bounds'],
                 static_inventory_sha256=planner.pins[3],vertical_window=3.,maximum_source_z_difference=2.,
                 precision_policy=plan.precision_policy,
+                region_policy=plan.region_policy,
                 expected_zone_line=(p['continuation']['destination'].expected_zone_line
                     if scope=='zone_crossing_corridor' else None))
             if scope=='zone_crossing_corridor':
@@ -376,7 +398,8 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             policy=SupervisedRoutePolicy(geometry,declaration=declaration,gate=self.gate,
                 owner_input=p['observer'],log_veto=p['veto'],expected_log_path=self.log_path(),
                 expected_window=GameWindowIdentity(*p['window']),topology_generation=p['topology'],
-                check_current=lambda:self._trial_current(p))
+                check_current=lambda:self._trial_current(p),
+                installed_region_model=p['continuation']['region_model'])
             executor=RouteLocationHotkeyExecutor(self,session,hotkey=p['binding'],owner_input=p['observer'])
             driver=RouteSessionDriver(session,self.sender,request_location=executor.request_location,
                 sample_scene=policy.observe,prepare_step=geometry,authorize_step=policy.authorize,
@@ -443,6 +466,8 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 crossing=None if runtime is None else runtime.snapshot(),
                 plan=None if plan is None else json.loads(plan.plan_bytes),
                 geometry=None if plan is None else json.loads(plan.evidence_bytes),
+                installed_region_model=(None if p['continuation']['region_model'] is None
+                    else p['continuation']['region_model'].record()),
                 owner_supervised=True,real_client_accepted=False)
             self.last_route_trial_result=record;self.last_route_trial_path=None
             try:

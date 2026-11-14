@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 13:56 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 14:03 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,21 @@ Updated 2026-11-14 13:56 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.27 / owner preview 0.39.20:** native-zero evidence now follows
+  every forward/pivot footprint through cache, exact ticket and supervised
+  authorization. The owner local trial supports Crushbone with read-only
+  executable/archive/catalog verification retained throughout the job.
+  Combined focused run: 146 pass plus one early descriptor-fixture refusal;
+  that fixture passes isolated. Four owner-wrapper flows pass, including
+  native local movement and a changed-binary stop, using OS pipes/synthetic
+  feedback only. Copied entrance forward/pivot and ticket preparation pass;
+  report SHA `968b8a8c3aacce449899dff143b824dcebe720672b904f9fed7e59c5f60cebd7`.
+  Preview 0.39.20 is staged on Alienware: manifest, GUI, GFay/Crushbone loaders
+  and installed executables/assets/catalog match. No worker/device/game input.
+  Startup SHA `11d9780b843319980fd7a61c775862935836b86864d125faaf28ad8f18c4c361`.
+  The coordinator has the owner launch/test command. **Next:** source steps
+  and camp routing, with real traversal still unverified. G0 passed; current
+  level/XP/hour/deaths/camp unknown. No automated leveling acceptance.
 - **Source 0.42.26:** explicit native-zero policy now supports copied Crushbone
   initial planning and fresh height while retaining terrain/static checks and
   the old BSP result. Evidence is sealed; only full flags zero qualifies.
