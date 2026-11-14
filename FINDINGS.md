@@ -1,5 +1,30 @@
 # FINDINGS
 
+## 2026-11-14 20:09 UTC — source0.42.60 / owner preview0.39.31 privately published
+
+VERIFIED install on Alienware outside the protected game prefix:
+`~/.local/share/eql-automation/owner-assist/0.39.31/launch.sh` and
+`~/.local/share/eql-automation/owner-tools/0.42.60/source`, source revision
+`8014bd29dc7c48d930db52fe3c348807b9742fb1`. Runtime/test bytes equal the successful
+19-check candidate, and all 198 preview runtime modules equal source. Manifest,
+installed spell/posture source hashes, both guide pins and retained NPC history
+load successfully. Offscreen GUI startup passed; continuation is unchecked.
+The measurement flag is refused. Worker/device/input/install-modification flags
+are false. No running helper was restarted and no character was controlled.
+
+Bundle SHA `d9973e229b7ed1cf14759e9f53d0331d0ede37d3991ad4cfc0695ec3858dca20`;
+owner startup receipt SHA
+`4ab91ab775b6386dddf6f229789afd1411f174eab5ecf3b2d0e4400fc3676d9a`.
+Local receipt `releases/eql-owner-journey-0.39.31-staging.json` retains the exact
+remote metadata. Owner command:
+`EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.31/launch.sh`.
+F8 assist / F9 stop / F11 stationary camp remain. The optional continuation
+requires the initial checkbox, a new observed level, fresh probes, a supported
+next guide and fresh stopped arrival before new-camp preparation.
+
+This is an owner test build, not accepted real-client travel or leveling. G0
+already passed; do not repeat it. Full1–20 and fresh hands-off1–50 remain open.
+
 ## 2026-11-14 20:08 UTC — full next-camp continuation passes on Alienware
 
 VERIFIED `owner-tools/0.42.60-validation-2`: **19 passed, 69 deselected in

@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 20:08 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 20:09 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.60 / preview 0.39.31 ready for private staging.** Alienware
+- **Source 0.42.60 / preview 0.39.31 privately published.** Alienware
   is reachable again. VERIFIED complete production-provider path: seven probes,
   sealed fresh fit, source travel, stopped arrival and fresh new-camp startup.
   The focused remote run passed **19 checks, 69 deselected, in 75.07s** with real
@@ -18,8 +18,14 @@ Updated 2026-11-14 20:08 UTC for coordinator task `829a00229b29`.
   duplicate sender pass was removed before the mandatory final fresh scene /
   sender check. Every deadline, final physical/log observation and UP cleanup
   remains. New tests reject authorization-time owner/input/held-key changes.
-  Local candidate5 manifest/GUI startup passes without worker or input. Next:
-  stage this source/preview on Alienware and continue Trainer/Throne coverage.
+  Alienware manifest, installed spell/posture/guide pins and GUI startup pass
+  without worker, device creation, input or settings write. Startup receipt SHA
+  `4ab91ab775b6386dddf6f229789afd1411f174eab5ecf3b2d0e4400fc3676d9a`;
+  bundle SHA `d9973e229b7ed1cf14759e9f53d0331d0ede37d3991ad4cfc0695ec3858dca20`.
+  Installed paths: `owner-assist/0.39.31/launch.sh` and `owner-tools/0.42.60/source`.
+  Next: owner-run acceptance and Throne route coverage. Trainer is a closed
+  seven-component island under the current exact-edge/2-unit model; actual
+  movement/alternative supporting geometry remains unverified.
   G0 passed; real level/XP/XP-hour/deaths/camp unknown; full 1–20/1–50 not met.
 - **Source 0.42.59 / preview 0.39.31 candidate4 built locally.** A completed
   next-camp route now transfers its exact stopped arrival to a new stationary
