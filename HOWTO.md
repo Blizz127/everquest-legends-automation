@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.49** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.50** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -640,14 +640,27 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Source 0.42.49 is privately published on Alienware at:
+Source 0.42.50 publication target on Alienware:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.49/source
+~/.local/share/eql-automation/owner-tools/0.42.50/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.42.49 adds a finite `CampProbeRuntime` and camp-specific
+above. Source 0.42.50 adds an optional camp-position→probe handoff in the
+retained engine. It preserves the same reader lease, sender, configured hotbutton
+and input monitor. A separate branch admits only the active probe driver's key;
+combat and unrelated input stay blocked. F8/F9 stop the runtime and return the
+reader only after key/operation cleanup. Completed measurement records its
+preparations and endpoint evidence, then stops before the next route; it does
+not resume the old camp at a changed position.
+
+No probe plan provider is installed by default, so the owner launcher and
+preview **0.39.30** retain their existing behavior. Current movement admission,
+independent scene/motion producers, calibration reduction and next-route
+adoption remain unfinished. No new owner test or G0 repeat is needed.
+
+Source 0.42.49 adds a finite `CampProbeRuntime` and camp-specific
 watchdog sender. It sequences source preparation, fresh starts, movement,
 post-release positions, endpoint checks and continued probes on one reader.
 It uses the existing configured location hotbutton and retained input descriptor.
@@ -656,9 +669,9 @@ Stop revokes collection immediately, and lease release waits until actual key
 cleanup finishes. Completed collectors are detached before geometry work.
 
 This adapter passed actual OS-pipe tests using synthetic policy/game feedback.
-It is not connected to the owner launcher or native F8/F9 controls yet. The
-camp-position handoff, retained-engine control integration and current movement
-policy remain next. Preview stays **0.39.30**; no new owner test or G0 repeat.
+Source 0.42.50 connects the optional retained-engine handoff and control
+handlers. The owner launcher still has no probe plan provider; an explicit
+current movement policy is required before that path can run. Preview stays **0.39.30**; no new owner test or G0 repeat.
 
 Source 0.42.48 connects confirmed probe endpoints to subsequent probe
 preparations through an in-memory `CampProbeFloorReference`. Each continuation

@@ -238,7 +238,8 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 try:self.read_log()  # Same reader, before each next key/Enter.
                 finally:self._camp_reading_during_input=False
             if self._camp_command is None:
-                return allowed and (self.camp_session is None or self._camp_location_input_permitted())
+                return allowed and (self.camp_session is None or self._camp_location_input_permitted()
+                                    or self._camp_probe_input_permitted())
             camp = self.camp_session
             if not allowed or camp is None or not self._camp_current():
                 return False
@@ -248,6 +249,9 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
 
         def _camp_location_input_permitted(self):
             return False  # Only the journey's exact pending location request may opt in.
+
+        def _camp_probe_input_permitted(self):
+            return False  # Only an explicitly configured, exact probe driver may opt in.
 
         def send(self, command):
             camp = self.camp_session

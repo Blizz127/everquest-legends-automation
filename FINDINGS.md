@@ -1,5 +1,42 @@
 # FINDINGS
 
+## 2026-11-14 18:20 UTC — source 0.42.50, retained-engine probe handoff
+
+VERIFIED optional `CampProbePlan` handoff preserves the exact post-recovery
+reader lease, sender, hotbutton, monitor, fresh height and original floor.
+The completed position collector detaches before the finite runtime starts.
+A separate noncombat input branch permits only its exact active location or
+movement driver; unrelated commands/input remain refused. Generation, focused
+window, settings, recovery, monitor and original floor checks remain active.
+There is no default plan provider or permissive movement policy.
+
+VERIFIED retained-engine F8 job handling and F9 `stop_action` during actual
+watchdog movement DOWN: movement UP and descriptor-operation cleanup precede
+reader release; F8 assist activates only on the following safe tick, with no
+new movement or target command. F9 leaves camp and assist off. Cancellation
+remains latched through cleanup. A successful two-probe handoff captures full
+result/preparation evidence and stops before a next route; it does not resume
+the old stationary camp from the changed position. Malformed plans and policy
+construction exceptions stop without movement or combat resumption.
+
+VERIFIED five focused local handoff-failure checks passed in 13.87 seconds.
+The first Alienware candidate passed 29 checks. After the final malformed-probe
+and policy-exception fixes, **31 checks passed in 52.84 seconds** at
+`owner-tools/0.42.50-validation-2`, output SHA
+`944ba4e77e6245cb7b78ca548d3096288b8365a7544b8c1be6690dda64eecde5`.
+Selected checks cover the new retained-engine handoff, ordinary position-only
+behavior and actual watchdog/OS-pipe runtime. The unchanged long travel case
+was deselected. Scene, bounds, game replies and movement admission are synthetic;
+control tests invoke the real engine handlers, not physical F8/F9 events in a
+running client. No real client input, character action or live acceptance.
+
+Private source publication pending. Owner preview remains 0.39.30; its launcher
+has no probe plan provider. Next: explicit current movement admission, conditional
+calibration reduction and next-route adoption from the reached reference.
+Independent scene/supported motion bounds remain missing for unattended input.
+Current level, XP, XP/hour, deaths and camp remain unknown. G0 passed, no repeat
+or new owner test. Full 1–20 and fresh hands-off 1–50 remain unfinished.
+
 ## 2026-11-14 18:12 UTC — source 0.42.49 privately published
 
 VERIFIED Alienware `owner-tools/0.42.49/source`, revision

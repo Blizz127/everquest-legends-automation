@@ -54,7 +54,7 @@ class Arrival:
 
 
 def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
-                              camp_options=None, **route_options):
+                              camp_options=None, camp_probe_plan_provider=None, **route_options):
     movement = make_owner_route_trial_engine(base_engine, clock=clock, **route_options)
     options = dict(repeat=True, auto_prepare=True)
     options.update(camp_options or {})
@@ -399,4 +399,5 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                     super().handle_job('arm', pending[0])
             return result
 
-    return make_camp_position_engine(OwnerJourneyEngine,clock=clock)
+    return make_camp_position_engine(OwnerJourneyEngine,clock=clock,
+                                    probe_plan_provider=camp_probe_plan_provider)

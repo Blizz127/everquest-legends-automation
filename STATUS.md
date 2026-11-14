@@ -1,11 +1,24 @@
 # STATUS
 
-Updated 2026-11-14 18:12 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 18:20 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.50 validated; private publication pending.** Optional
+  camp-position→probe handoff now preserves the exact reader/sender/monitor.
+  A separate noncombat branch admits only the active driver. Retained-engine
+  F8/F9 handlers cancel movement; key UP and operation cleanup precede reader
+  release and F8 assist. Successful measurement records evidence and stops
+  before onward routing. No default plan/policy enables this in the launcher.
+  Five local checks pass; final 31 Alienware handoff/position/runtime checks
+  pass in 52.84 seconds, output SHA
+  `944ba4e77e6245cb7b78ca548d3096288b8365a7544b8c1be6690dda64eecde5`.
+  Actual watchdog/OS-pipe input, synthetic scene/admission/game feedback; no
+  game input. Preview stays 0.39.30. Next: current movement policy, calibration
+  reduction and reached-reference adoption for the next route. G0 passed;
+  actual level/XP/hour/deaths/camp unknown; no real 1–20/1–50 acceptance.
 - **Source 0.42.49 privately published; preview stays 0.39.30.** Finite camp
   runtime now joins preparation, selected movement, configured location-key
   collection, endpoint checks and continued probes. Missing/refusing movement

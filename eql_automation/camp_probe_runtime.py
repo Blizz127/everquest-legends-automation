@@ -13,6 +13,7 @@ from .camp_probe_transaction import CampProbeTransaction
 from .camp_stopped_height import measure_camp_stopped_height
 from .ground_binding import finite
 from .location_hotkey import OwnerLocationHotkey,send_location_hotkey
+from .location_hotkey import HOTKEY_CODES
 from .motion_calibration import PROBES,Probe
 from .motion_collection import CommandReceipt,LocationRequest
 from .native_region_policy import encoded
@@ -51,6 +52,7 @@ class CampProbeRuntime:
         self.collector=None;self.collection_kind=None;self.baseline=None;self.released_at=None
         self.index=0;self.transaction=None;self.start=None;self.policy=None;self.sent=None
         self.reference=None;self.results=[];self.transactions=[];self.collections=[];self.events=[]
+        self.input_kind=self.input_request=None
         self._check();preparation.check(fresh=preparation.height)
 
     def _check(self):
@@ -100,10 +102,26 @@ class CampProbeRuntime:
             self._check();collector.check()
             if self.collector is not collector or collector.phase!='requesting' or collector.pending is not request:
                 raise ValueError('Camp probe position request changed')
-        receipt=send_location_hotkey(self.sender,binding=self.hotkey,owner_input=self.owner_input,
-            lock=self.lock,clock=self.clock,expires_at=request.expires_at,ensure_current=current,
-            cancel=self.cancel,pump=self.pump,record_event=self.events.append)
+        self.input_kind='location';self.input_request=request
+        try:
+            receipt=send_location_hotkey(self.sender,binding=self.hotkey,owner_input=self.owner_input,
+                lock=self.lock,clock=self.clock,expires_at=request.expires_at,ensure_current=current,
+                cancel=self.cancel,pump=self.pump,record_event=self.events.append)
+        finally:self.input_kind=self.input_request=None
         collector.command_sent(request,CommandReceipt(receipt.pulse.down_started_at,receipt.released_at))
+
+    def current_input_key(self):
+        """Exact pending driver key for engine admission; no movement permission."""
+        if not self.busy or self.closed:return None
+        if (self.input_kind=='location' and self.phase.startswith('collect_')
+                and self.collector is not None and self.collector.phase=='requesting'
+                and self.input_request is self.collector.pending):
+            return HOTKEY_CODES[self.hotkey.key_name]
+        if (self.input_kind=='movement' and self.phase=='pulse'
+                and self.input_request is self.transaction and self.transaction is not None
+                and self.transaction.phase in ('new','proposed','await_pair')):
+            return self.probes[self.index].key_code
+        return None
 
     def _collected(self):
         collector=self.collector
@@ -167,9 +185,12 @@ class CampProbeRuntime:
                     self._check();self.phase='prepare'
                 else:raise ValueError('Unknown camp probe collection stage')
             elif self.phase=='pulse':
-                self.sent=send_camp_probe(self.sender,self.transaction,self.start,policy=self.policy,
-                    requested_seconds=self.probes[self.index].seconds,
-                    command_state_clear=self.command_clear,pump=self.pump,record_event=self.events.append)
+                self.input_kind='movement';self.input_request=self.transaction
+                try:
+                    self.sent=send_camp_probe(self.sender,self.transaction,self.start,policy=self.policy,
+                        requested_seconds=self.probes[self.index].seconds,
+                        command_state_clear=self.command_clear,pump=self.pump,record_event=self.events.append)
+                finally:self.input_kind=self.input_request=None
                 self._check()
                 self._begin_pair('endpoint',released_at=self.sent.final_release_at)
             else:raise ValueError('Unknown camp probe runtime phase')
