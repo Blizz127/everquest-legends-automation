@@ -1,18 +1,21 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 02:44 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 02:58 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
-Source 0.41.58 tracks the supporting terrain through all 2,399 ordered GFay
-cells, using 266 source faces and exact 3D edge joins. The conditional body-8
-terrain check passes the complete corridor, including the platform overlap
-that stopped replay at segment87. This does not repair the separate baked
-slope failures, include placed objects, prove actual body dimensions or accept
-movement. The new selection still needs binding into follower replay. Your
-G0 stop remains passed; no repeat or new owner command is requested. Detailed
-scope and hashes are in [FINDINGS.md](FINDINGS.md).
+Source 0.41.59 now carries the selected terrain floor through actual offline
+follower footprints. Fixing a comparison against a platform74 units overhead
+moves replay from segment87 to segment125/step1,820, where baked detail
+face166882 has grade2.08764 against limit1.0. Shortening to the minimum
+hypothetical pulse does not pass. The maximum source/baked difference on
+passing trials is1.174968 units, within the explicit2.0 diagnostic limit;
+this is not a certified regional or live bound. Terrain-only source tracking
+still passes the full2,399-cell corridor, but static objects, dynamics,
+current scene/position/speed and sender checks remain open. No live movement
+or automated XP is claimed. Your G0 stop remains passed; no repeat or new
+owner command is requested. Detailed hashes are in [FINDINGS.md](FINDINGS.md).
 
 | Levels | Planned camp | Route needed | Current evidence |
 | --- | --- | --- | --- |

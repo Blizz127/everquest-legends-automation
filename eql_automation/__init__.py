@@ -4,4 +4,4 @@ The optional uinput watchdog requires a supplied device descriptor; the
 isolated G0 measurement preview uses the helper's existing descriptor.
 """
 
-__version__ = "0.41.58"
+__version__ = "0.41.59"

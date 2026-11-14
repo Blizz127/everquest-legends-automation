@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.58 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.59 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,18 +19,20 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.58 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.58/source`; the runnable
+Source tools 0.41.59 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.59/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
-Source 0.41.58 follows an explicitly selected ground layer across the complete
-copied GFay corridor. All 2,399 cells pass this conditional terrain check,
-including the high-platform section; 27 focused tests pass. It uses exact
-source-face identity, shared 3D edges and complete occupancy checks. The body
-height is hypothetical, placed objects are not yet included, and separate
-baked-slope and real-client checks remain. The chain is not yet connected to
-live movement. F11 stays unavailable. Your G0 stop remains passed, the assist
-build is unchanged, and no repeat or new owner command is needed.
+Source 0.41.59 binds the copied terrain-floor tracker into the offline
+follower. The replay now reaches segment125 of155 before a steep baked face
+refuses movement. It checks all terrain heights for body clearance, then
+compares only the supporting baked height band with the selected source floor.
+The complete source-only chain still passes all2,399 cells; placed objects,
+dynamics, current scene/position/speed and real movement remain unverified.
+The source status reader also reports exact gross logged XP percentage gains,
+separately from raw or net XP. That field is not yet wired into this assist GUI.
+64 focused checks pass. F11 stays unavailable. Your G0 stop remains passed;
+no repeat or new owner command is needed, and assist0.39.6 is unchanged.
 
 Detailed source-release history and hashes are in [FINDINGS.md](FINDINGS.md).
 The current playable-route status is in [LEVEL_1_20.md](LEVEL_1_20.md).

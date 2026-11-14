@@ -23,6 +23,7 @@ class FloorTrial:
     floor_step: FloorChainStep | None = None
     source_support: SourceSupport | None = None
     precision_retry: PrecisionCheck | None = None
+    excluded_baked_detail_ids: tuple[int, ...] = ()
     input_authorized: bool = False
     real_client_accepted: bool = False
 
@@ -49,6 +50,19 @@ def check_floor_trial(view, chain, original, footprint, detail_ids, *, reference
     faces=tuple(GroundFace(tuple(tuple(float(v) for v in p) for p in ground.triangles[i]),
                           int(ground.areas[poly]),int(ground.components[poly]))
                 for i,poly in zip(detail_ids,polygons))
+    # Ground coverage already ignores surfaces wholly outside this explicit
+    # height window. Do not compare those overhead/below-floor surfaces to the
+    # selected supporting floor. Use the WHOLE triangle's Z range, not nearest
+    # height or just its center: crossing triangles remain in every check.
+    # Precision correction changes only XY, so this exclusion also remains
+    # valid for the corrected triangles. Source occupancy above checked all
+    # heights and is independent of this baked support comparison.
+    low,high=reference[2]-vertical_window,reference[2]+vertical_window
+    excluded=tuple(i for i,face in zip(detail_ids,faces)
+                   if max(p[2] for p in face.vertices)<low or min(p[2] for p in face.vertices)>high)
+    kept=tuple((face,poly) for i,face,poly in zip(detail_ids,faces,polygons) if i not in excluded)
+    faces=tuple(face for face,_ in kept)
+    polygons=tuple(poly for _,poly in kept)
     coverage=original;precision=None
     if original.candidate:
         support=source_support(footprint,selected,faces,maximum_z_difference=maximum_source_z_difference)
@@ -64,9 +78,9 @@ def check_floor_trial(view, chain, original, footprint, detail_ids, *, reference
                 reference=reference,component=component,vertical_window=vertical_window,
                 maximum_source_z_difference=maximum_source_z_difference,allow_overlap=allow_overlap)
         if not precision.candidate:
-            return None,FloorTrial(False,precision.reason,original,step,precision.source_support,precision)
+            return None,FloorTrial(False,precision.reason,original,step,precision.source_support,precision,excluded)
         coverage=precision.coverage;support=precision.source_support
     if support is None or not support.candidate:
         return None,FloorTrial(False,'source_support_missing' if support is None else support.reason,
-                               coverage,step,support,precision)
-    return proposed,FloorTrial(True,'conditional_source_and_baked_footprint_only',coverage,step,support,precision)
+                               coverage,step,support,precision,excluded)
+    return proposed,FloorTrial(True,'conditional_source_and_baked_footprint_only',coverage,step,support,precision,excluded)

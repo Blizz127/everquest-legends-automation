@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 from eql_automation.floor_replay import check_floor_trial
+from eql_automation.ground_sweep import GroundFace,check_ground_coverage
 from eql_automation.portal_precision import SourceFace,collect_seams
 from eql_automation.source_floor_chain import SourceFloorChain
 from test_portal_precision import fixture
@@ -20,7 +21,7 @@ def setup(extra=()):
 
 def trial(data,limit=.6):
     chain,view,footprint,reference,original=data
-    return check_floor_trial(view,chain,original,footprint,(0,1,2,3),reference=reference,
+    return check_floor_trial(view,chain,original,footprint,tuple(range(len(view.ground.polys))),reference=reference,
         component=2,vertical_window=3.,maximum_source_z_difference=limit)
 
 
@@ -61,3 +62,48 @@ def test_whole_footprint_source_baked_height_limit_is_still_required():
     assert proposed is None and not result.candidate
     assert result.reason=='source_baked_height_mismatch'
     assert not data[0].halted
+
+
+def add_baked_face(data,vertices):
+    ground=data[1].ground
+    ground.triangles=(*ground.triangles,vertices)
+    ground.polys=(*ground.polys,3)
+    ground.areas[3]=63;ground.components[3]=2
+    faces=tuple(GroundFace(v,63,2) for v in ground.triangles)
+    original=check_ground_coverage(data[2],faces,reference=data[3],component=2,vertical_window=3.)
+    return (*data[:4],original)
+
+
+def test_distant_baked_platform_is_excluded_from_support_but_kept_in_source_occupancy():
+    roof=SourceFace(((-10.,20.,70.),(-10.,50.,70.),(10.,35.,70.)),0,'TransparentMasked',10,1)
+    data=setup((roof,))
+    data=add_baked_face(data,tuple((y,x,z) for x,y,z in roof.vertices_wld))
+    proposed,result=trial(data)
+    assert result.candidate and result.precision_retry.candidate
+    assert result.excluded_baked_detail_ids==(4,)
+    assert result.floor_step.occupancy.faces[0].classification=='overhead'
+    assert result.source_support.maximum_source_baked_z_difference==0.
+
+
+def test_continuous_ground_support_ignores_only_wholly_distant_baked_triangles():
+    roof=SourceFace(((-10.,20.,70.),(-10.,50.,70.),(10.,35.,70.)),0,'TransparentMasked',10,1)
+    data=setup((roof,));ground=data[1].ground
+    gap=ground.triangles[2][0][0]-32.
+    ground.triangles=ground.triangles[:2]+tuple(
+        tuple((x-gap,y,z) for x,y,z in tri) for tri in ground.triangles[2:])
+    data=add_baked_face(data,tuple((y,x,z) for x,y,z in roof.vertices_wld))
+    assert data[4].candidate
+    proposed,result=trial(data)
+    assert result.candidate and result.precision_retry is None
+    assert result.excluded_baked_detail_ids==(4,)
+    assert result.floor_step.occupancy.faces[0].classification=='overhead'
+
+
+def test_baked_triangle_crossing_height_window_cannot_be_excluded():
+    data=setup()
+    # This crosses the complete footprint and the explicit ground-height band.
+    data=add_baked_face(data,((20.,-10.,-20.),(50.,-10.,20.),(35.,10.,20.)))
+    proposed,result=trial(data)
+    assert proposed is None and not result.candidate
+    assert result.excluded_baked_detail_ids==()
+    assert data[0].index==1

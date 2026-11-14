@@ -21,6 +21,12 @@ from .prior_rotation_core import level_from_message, message_body
 
 DEATH = re.compile(r"^(?:You have been slain |You died|You die[.!])")
 ZONE = re.compile(r"^(?:LOADING, PLEASE WAIT|You have entered )")
+# Observed owner log suffix; bonus/penalty and level-loss templates are in
+# the installed eqstr_us.txt (138, 14541/14542, 442/443). These are awards,
+# not total XP, current-level fraction, net progress or allocation evidence.
+LOG_GAIN = re.compile(r"You gain experience(?: \(with a (?:bonus|penalty)\))?! \(([0-9]{1,6}(?:\.[0-9]{1,6})?)%\)")
+LEVEL_LOSS = re.compile(r"You LOST (?:a level|[0-9]+ levels)! You are now level ([0-9]+)!")
+GAIN_SCALE = 1_000_000
 # Exact client messages also recognized by the pinned November inventory tool.
 # One failed loot item does not prove that every bag slot is full.
 LOOT_NO_ROOM = frozenset({
@@ -59,20 +65,78 @@ class RunState:
     loot_space_warning: bool | None = None
     food_status: str | None = None
     drink_status: str | None = None
+    log_gain_started_at: float | None = None
+    log_gain_as_of: float | None = None
+    log_gain_level: int | None = None
+    log_gain_camp: str | None = None
+    log_gain_zone: str | None = None
+    log_gain_micropoints: int = 0
+    log_gain_events: int = 0
 
-    def observe_log(self, line: str) -> None:
+    def clear_log_gain_window(self) -> None:
+        self.log_gain_started_at = self.log_gain_as_of = None
+        self.log_gain_level = None
+        self.log_gain_camp = None
+        self.log_gain_zone = None
+        self.log_gain_micropoints = self.log_gain_events = 0
+
+    def advance_log_clock(self, now: float | None = None) -> None:
+        """Advance the continuous receipt window even when no new lines arrive."""
+        now = time.monotonic() if now is None else now
+        if (not isinstance(now,(int,float)) or isinstance(now,bool) or not isfinite(now)):
+            self.clear_log_gain_window()
+            raise ValueError('Log gain window time must be finite')
+        if type(self.level) is not int or not 1 <= self.level <= 50:
+            self.clear_log_gain_window()
+            return
+        if (self.log_gain_started_at is None or self.log_gain_level != self.level
+                or self.log_gain_camp != self.camp or self.log_gain_zone != self.zone
+                or (self.log_gain_as_of is not None and now < self.log_gain_as_of)):
+            self.clear_log_gain_window()
+            self.log_gain_started_at = now
+            self.log_gain_level = self.level
+            self.log_gain_camp = self.camp
+            self.log_gain_zone = self.zone
+        self.log_gain_as_of = now
+
+    @property
+    def client_reported_gain_percent_per_hour(self) -> float | None:
+        """Gross awards per receipt-window hour; no inferred event timestamps."""
+        if (self.log_gain_level != self.level or self.log_gain_camp != self.camp or self.log_gain_zone != self.zone
+                or self.log_gain_started_at is None or self.log_gain_as_of is None):
+            return None
+        elapsed = self.log_gain_as_of - self.log_gain_started_at
+        return self.log_gain_micropoints / GAIN_SCALE * 3600 / elapsed if elapsed > 0 else None
+
+    def observe_log(self, line: str, *, now: float | None = None) -> None:
+        now = time.monotonic() if now is None else now
+        self.advance_log_clock(now)
+        body = message_body(line)
         level = level_from_message(line)
+        loss = LEVEL_LOSS.fullmatch(body)
+        if loss:
+            level = int(loss[1]) if 1 <= int(loss[1]) <= 50 else None
+            self.level = None  # An unsupported loss cannot retain the old level.
+            self.level_progress_level = self.level_progress_fraction = None
+            self.level_progress_samples.clear()
         if level is not None:
             if level != self.level:
                 self.level_progress_level = None
                 self.level_progress_fraction = None
                 self.level_progress_samples.clear()
             self.level = level
-        body = message_body(line)
-        if DEATH.match(body) and self.deaths is not None:
-            self.deaths += 1
         if ZONE.match(body):
             self.zone = body
+        if level is not None or loss or DEATH.match(body) or ZONE.match(body):
+            self.clear_log_gain_window()
+            self.advance_log_clock(now)
+        if DEATH.match(body) and self.deaths is not None:
+            self.deaths += 1
+        gain = LOG_GAIN.fullmatch(body)
+        if gain and self.log_gain_started_at is not None:
+            whole,_,fraction = gain[1].partition('.')
+            self.log_gain_micropoints += int(whole)*GAIN_SCALE + int(fraction.ljust(6,'0'))
+            self.log_gain_events += 1
         if body in LOOT_NO_ROOM:
             self.loot_space_warning = True
         food, drink = FOOD_DRINK_WARNINGS.get(body, (None, None))
@@ -114,6 +178,7 @@ class RunState:
         self.zone = None
         self.camp = None
         self.deaths = None
+        self.clear_log_gain_window()
         self.loot_space_warning = None
         self.food_status = None
         self.drink_status = None
@@ -134,6 +199,7 @@ class RunState:
             self.xp_samples.clear()
         if self.xp is not None and total_xp < self.xp:
             self.xp_samples.clear()  # A reset or changed character needs a new rate window.
+            self.clear_log_gain_window()
         self.xp = total_xp
         self.xp_samples.append((now, total_xp))
         while len(self.xp_samples) > 1 and now - self.xp_samples[0][0] > 3600:
@@ -217,6 +283,7 @@ def render_status(state: RunState) -> str:
     updated = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
     rate = state.xp_per_hour
     level_rate = state.level_progress_percent_per_hour
+    reported_rate = state.client_reported_gain_percent_per_hour
     level_progress = (state.level_progress_fraction
                       if state.level_progress_level == state.level else None)
     return (
@@ -226,6 +293,7 @@ def render_status(state: RunState) -> str:
         f"- XP/hour: {f'{rate:.1f}' if rate is not None else 'n/a'}\n"
         f"- Current-level XP progress: {f'{level_progress * 100:.1f}%' if level_progress is not None else 'n/a'}\n"
         f"- Current-level progress/hour: {f'{level_rate:.1f} percentage points/hour' if level_rate is not None else 'n/a'}\n"
+        f"- Client-reported gross XP gain: {f'{reported_rate:.3f} percentage points/hour' if reported_rate is not None else 'n/a'} (since this observed level/log window began; not net XP)\n"
         f"- Deaths: {state.deaths if state.deaths is not None else 'n/a'}\n"
         f"- Camp: {state.camp or 'none'}\n"
         f"- Zone: {state.zone or 'unknown'}\n"
@@ -241,18 +309,29 @@ class ClientLogReader:
     """Tail complete new lines; never replay replacement or truncated history."""
 
     def __init__(self, path: Path, state: RunState, *,
-                 fresh_test_character: bool = False) -> None:
+                 fresh_test_character: bool = False, now: float | None = None) -> None:
         if not isinstance(fresh_test_character, bool):
             raise ValueError("Fresh test character flag must be boolean")
         self.tail = NonReplayingLogTail(
             path, include_first_created_file=fresh_test_character)
         self.state = state
         self.tail.poll()  # Existing bytes are history.
+        self.state.clear_log_gain_window()
+        if self.tail.identity is not None:
+            self.state.advance_log_clock(now)
 
-    def poll(self) -> list[str]:
+    def poll(self, *, now: float | None = None) -> list[str]:
+        now = time.monotonic() if now is None else now
+        if (not isinstance(now,(int,float)) or isinstance(now,bool) or not isfinite(now)):
+            self.state.clear_log_gain_window()
+            raise ValueError('Log gain window time must be finite')
         lines, reset = self.tail.poll()
         if reset:
             self.state.invalidate_log_session()
+        if self.tail.identity is None:
+            self.state.clear_log_gain_window()
+        else:
+            self.state.advance_log_clock(now)
         for line in lines:
-            self.state.observe_log(line)
+            self.state.observe_log(line,now=now)
         return lines
