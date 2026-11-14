@@ -31,6 +31,11 @@ Updated 2026-11-14 08:04 UTC for coordinator task `829a00229b29`.
   per-key chat/scene evidence and zone/height/motion bindings before owner
   route control wiring. The pending stationary observation, G0 result and
   owner helper versions are unchanged; no game input/capture occurred.
+  Source `ca0842a` is privately staged at `owner-tools/0.41.91/source`;
+  remote import/shared-command, missing-dependency refusal and retained-engine
+  composition checks pass without constructing the engine or opening devices.
+  Startup artifact SHA
+  `ddc25020a2a4a56f37a982eb4cee7bd8333a3eee969c79b243841a42e5b765f7`.
 - **Source 0.41.90:** a route session now joins the actual log/ground reader,
   fixed follower and checked sender across consecutive steps. The retained
   helper adapter services it on ticks, cancels on stop/jobs/close, rejects

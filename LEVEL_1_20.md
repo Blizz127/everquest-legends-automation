@@ -13,6 +13,9 @@ calibration regression had two timing refusals before a bounded diagnostic
 completed all seven pulses with unchanged limits; the earlier exact causes
 remain unproven. Live per-key chat/scene evidence and zone/height/motion
 bindings are still missing. No route hotkey is enabled and no leg is accepted.
+Source `ca0842a` is privately staged at `owner-tools/0.41.91/source` on
+Alienware; shared-command imports and retained-engine composition pass.
+No engine was instantiated and no game input or capture occurred there.
 
 Source 0.41.90 closes the runtime gap between one checked step and the next
 stopped-position pair. `RouteSession` owns the fresh log reader, aligns both

@@ -1,5 +1,18 @@
 # FINDINGS
 
+## Private source 0.41.91 staged — 2026-11-14 08:04 UTC
+
+**VERIFIED:** source `ca0842a7ef18bd8cfb41a6beb45e60efe9a407a5`, archive SHA
+`d5167bf5982e890502b293b5abbb720617d7db44b3744cdcd6928a4220bea663`,
+is staged at Alienware `owner-tools/0.41.91/source`. Startup verifies module
+imports, shared command-method identity, absence of a route pulse method,
+refusal of missing dependencies and class composition with the hash-matching
+retained engine. No engine was instantiated or game/display/device input used.
+Remote startup artifact SHA
+`ddc25020a2a4a56f37a982eb4cee7bd8333a3eee969c79b243841a42e5b765f7`;
+local staging record `releases/eql-automation-0.41.91-staging.json`.
+Owner helper versions are unchanged. Live route acceptance remains absent.
+
 ## Route location-command execution 0.41.91 — 2026-11-14 08:04 UTC
 
 **VERIFIED implementation:** the route loop now has a concrete
