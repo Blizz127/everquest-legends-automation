@@ -1,13 +1,15 @@
 # EverQuest Legends automation — current owner guide
 
-Development source **0.42.67** · travel/camp test **0.39.32** (runtime source 0.42.61) · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Development source **0.42.68** · travel/camp test **0.39.32** (runtime source 0.42.61) · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-Source 0.42.67 adds conditional checks for grounded stair positions and
-adjacent tread/riser contacts. It keeps every compatible height possibility and
-checks the complete pulse footprint against local body/height volumes. These
-checks do not establish the client's stepping behavior or enable stair travel.
-The owner launcher and controls remain those of 0.39.32; Throne is not yet an
-available destination. G0 is complete and must not repeat.
+Source 0.42.68 adds a stair controller that uses the existing movement sender,
+stopped replies and cancellation controls. It checks the full pulse envelope,
+keeps intermediate stair positions provisional and commits only an observed
+complete landing. Geometry beyond the target is checked for the last pulse.
+These checks pass with synthetic game positions and real watchdog test pipes;
+the controller is not yet connected to the owner route runner. The launcher
+and controls remain those of 0.39.32; Throne is not yet an available destination.
+G0 is complete and must not repeat.
 
 Preview 0.39.32 lets a released focus click settle before the location-hotbutton
 test, within its original deadline, and explains input-monitoring failures. It

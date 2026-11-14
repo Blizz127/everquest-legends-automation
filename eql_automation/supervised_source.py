@@ -90,7 +90,8 @@ class SupervisedSourcePolicy:
 
     def bind_transfer(self,controller):
         """Keep the same physical observers, start time and aggregate budgets."""
-        if type(controller) is not SourceTransferController:
+        from .source_stair_controller import SourceStairController
+        if type(controller) not in (SourceTransferController,SourceStairController):
             raise ValueError('Exact source transfer controller required')
         with controller.lock:
             self._check();controller._check()
@@ -155,6 +156,21 @@ class SupervisedSourcePolicy:
         check_lease();began=self._check()
         before,log,after,finished=self._physical_observation(began)
         check_lease()
+        return SupervisedSourceIdleObservation(self.declaration,began,finished,
+            self.window,before,after,log)
+
+    def observe_transfer(self,controller,seal):
+        """Recheck stopped feedback without renewing an old movement scene."""
+        from .source_stair_controller import SourceStairController
+        if type(controller) is not SourceStairController or self.ledger is not controller:
+            raise RouteHalt('Current stair receipt controller required')
+        self._scene=self._authorization=None
+        controller._check_seal(seal)
+        began=self._check()
+        before,log,after,finished=self._physical_observation(began)
+        if (self.ledger is not controller or controller.phase not in ('await_stopped','settling')
+                or controller._sealed is not seal or controller.ordinary._busy is not controller._lease):
+            raise RouteHalt('Stair feedback observation cancelled')
         return SupervisedSourceIdleObservation(self.declaration,began,finished,
             self.window,before,after,log)
 

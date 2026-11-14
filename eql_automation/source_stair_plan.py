@@ -13,8 +13,10 @@ from eql_automation.native_region_policy import encoded
 from eql_automation.route_floor_commit import _chain_snapshot
 from eql_automation.source_detour import swept_square
 from eql_automation.source_floor_chain import SourceFloorChain
+from eql_automation.source_floor_chain import positive_overlap
+from eql_automation.ground_sweep import hull
 from eql_automation.source_occupancy import clip_xyz
-from eql_automation.source_step import digest, vertices
+from eql_automation.source_step import digest, vertices, expanded
 from eql_automation.static_floor_guard import check_source_static_floor
 from eql_automation.source_stair_flight import audit_stair_flight, stair_body_footprint
 
@@ -37,6 +39,33 @@ def outward_box(boundary):
     low = tuple(outward_float(min(p[k] for p in boundary),lower=True) for k in (0,1))
     high = tuple(outward_float(max(p[k] for p in boundary),lower=False) for k in (0,1))
     return ((low[0],low[1]),(high[0],low[1]),(high[0],high[1]),(low[0],high[1]))
+
+
+def extend_stair_landing(prefix,target,end,tread_ids,terrain,static,bsp,region_policy,*,radius,check_context):
+    """Propose final tread faces through a checked exact-edge landing runout."""
+    from .source_probe_geometry import check_source_footprint
+    check_context();before=_chain_snapshot(prefix)
+    cap=swept_square(target,target,radius);boundary=expanded(cap)
+    sources=terrain.source_faces_for_footprint(cap);permitted=set(tread_ids[-1])
+    seeds=tuple((s.fragment,s.face) for s in sources if (s.fragment,s.face) in permitted
+        and positive_overlap(boundary,hull(p[:2] for p in vertices(s))))
+    temporary=SourceFloorChain(inventory_sha256=prefix.inventory_sha256,
+        seed_evidence_sha256=prefix.previous.proof_sha256,seed_ids=seeds,body_height=prefix.body_height)
+    floor=temporary.advance(cap,sources)
+    if not floor.candidate:raise ValueError('Stair target landing: '+floor.reason)
+    if not set(floor.selected_ids)<=permitted:
+        raise ValueError('Stair target landing escaped original final tread')
+    runout=swept_square(target,end,radius)
+    checked=check_source_footprint(temporary,runout,terrain=terrain,static=static,bsp=bsp,region_policy=region_policy)
+    selected=checked.branch._selected
+    heights={p[2] for source,*_ in selected.values() for p in source.vertices_wld}
+    if len(heights)!=1:raise ValueError('Stair landing runout must retain one exact flat height')
+    group=tuple(sorted(permitted|set(checked.terrain.selected_ids)))
+    if len(group)>64:raise ValueError('Stair landing runout exceeds bounded source group')
+    check_context()
+    if _chain_snapshot(prefix)!=before:raise ValueError('Stair landing runout changed original floor')
+    return (*tread_ids[:-1],group),dict(target=target,checked_end=end,footprint=runout,
+        terrain=asdict(checked.terrain),static=asdict(checked.static),bsp=asdict(checked.bsp),native=asdict(checked.native))
 
 
 def plan_stair_flight(prefix,start,end,tread_ids,terrain,static,bsp,region_policy,*,
@@ -116,18 +145,19 @@ def plan_stair_flight(prefix,start,end,tread_ids,terrain,static,bsp,region_polic
         queries.append(dict(phase=phase['index'],query_box=query,
             geometry_sha256=digest([asdict(s) for s in observed])))
     cap = swept_square(end,end,radius)
+    landing_sources = terrain.source_faces_for_footprint(cap)
+    final_boundary = expanded(cap)
+    seeds=tuple((s.fragment,s.face) for s in landing_sources if (s.fragment,s.face) in tread_ids[-1]
+        and positive_overlap(final_boundary,hull(p[:2] for p in vertices(s))))
     landing = SourceFloorChain(inventory_sha256=prefix.inventory_sha256,
         seed_evidence_sha256=digest(dict(parent=prefix.previous.proof_sha256,flight=digest(flight))),
-        seed_ids=tread_ids[-1],body_height=prefix.body_height)
-    landing_sources = terrain.source_faces_for_footprint(cap)
+        seed_ids=seeds,body_height=prefix.body_height)
     landing_objects = static.faces_for_footprint(cap)
     landing_inventory = {(s.fragment,s.face):s for s in landing_sources+landing_objects}
     if len(landing_inventory) != len(landing_sources)+len(landing_objects):
         raise ValueError('Duplicate source in final landing query')
     # The last fresh query must retain exactly the geometry that supported the
     # flight, even if changed same-ID faces still have the expected height.
-    from eql_automation.source_step import expanded
-    final_boundary = expanded(cap)
     for source in landing_sources+landing_objects:
         if clip_xyz(vertices(source),final_boundary) and inventory.get((source.fragment,source.face)) != source:
             raise ValueError('Final landing query differs from flight inventory')

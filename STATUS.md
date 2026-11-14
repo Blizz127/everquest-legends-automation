@@ -1,11 +1,25 @@
 # STATUS
 
-Updated 2026-11-14 21:56 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 22:09 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.68 built; publication pending.** VERIFIED 55 focused stair,
+  preflight and landing checks plus 16 transport checks on Alienware. Synthetic
+  feedback crosses three risers, including half-rise observations; only the
+  actual final pair can update the original floor. Same watchdog pipe releases
+  on completion and cancellation. A complete exact-edge landing extension
+  supplies the final maximum-hold envelope. Focus/input changes during landing
+  and altered pulse/receipt fields refuse publication. All 538 tested file pins
+  match the remote test snapshot before the version-only bump. One later devbox
+  transport attempt refused watchdog arming under load 137; the unchanged
+  deadlines passed on Alienware, load 1.98/24 CPUs. No game input or helper
+  restart. Next: distinct stair itinerary boundary, fresh post-preflight pair,
+  and actual-landing connector in the owner route loop. Owner preview/runtime
+  remain 0.39.32/0.42.61; real level, XP, XP/hour, deaths and camp unknown.
+  No accepted 1–20 or 1–50 run; G0 passed.
 - **Source 0.42.67 privately published; owner preview remains 0.39.32.** VERIFIED 77 focused
   checks; all 536 installed file pins, imports and three auditor startups pass.
   Bundle SHA `fbccdedf773de70b41aaf3ed476e0afa1c7c12332003bb37a483d912a4ba3833`;

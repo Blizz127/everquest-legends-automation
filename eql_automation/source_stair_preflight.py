@@ -15,7 +15,7 @@ from .ground_binding import finite
 from .native_region_policy import encoded
 from .observed_height import height_record,height_snapshot
 from .source_motion import SourceReceiptLedger
-from .source_stair_plan import plan_stair_flight
+from .source_stair_plan import plan_stair_flight,extend_stair_landing
 from .supervised_source import SupervisedSourcePolicy
 
 
@@ -88,6 +88,7 @@ class SourceStairPreflight:
         self.phase,self.reason='new',''
         self.cache=self.start=None
         self.contact_index=self._index_state=None
+        self.checked_tread_ids=self._tread_state=None
         self._cache_state=self._start_state=None
         self._prepared_state=None
         self._replies=[]
@@ -115,7 +116,13 @@ class SourceStairPreflight:
             self._radius=max(hint.radius,
                 (padding+2*reach*math.sin(math.radians(b.heading_error_degrees)/2))/math.cos(math.pi/16),
                 (padding+b.pivot_displacement_upper_bound)/math.cos(math.pi/16))
-            self._parameters=(released_at,self._radius)
+            # A last pulse still needs its whole maximum-hold envelope beyond
+            # the arrival target. Check real geometry there, never chase the
+            # end of a cache by moving the target after each observation.
+            length=math.dist(hint.start,hint.end)
+            self._checked_end=(tuple(hint.end[k]+reach*(hint.end[k]-hint.start[k])/length
+                for k in (0,1)) if hint.vertical_model=='bounded_source_contacts' else hint.end)
+            self._parameters=(released_at,self._radius,self._checked_end)
             ledger.phase,ledger._busy='stair_preflight',self._lease
             try:self.check()
             except BaseException as error:self.cancel(error);raise
@@ -135,7 +142,7 @@ class SourceStairPreflight:
                 or l.observer._observation_snapshot(self._reference)!=self._old_fix
                 or height_snapshot(l.observer.calibration)!=self._height
                 or self._scope_state()!=self._scope or encoded(asdict(self.hint))!=self._hint
-                or (self._released_at,self._radius)!=self._parameters):
+                or (self._released_at,self._radius,self._checked_end)!=self._parameters):
             raise RouteHalt('Stair preflight lease, departure or scope changed')
         if self._prepared_state is not None and (self.prepared_at,self.minimum_seq)!=self._prepared_state:
             raise RouteHalt('Stair preflight collection boundary changed')
@@ -145,6 +152,8 @@ class SourceStairPreflight:
         if self.contact_index is not self._index_state:
             raise RouteHalt('Stair preflight contact index changed')
         if self.contact_index is not None:self.contact_index.check()
+        if self.checked_tread_ids!=self._tread_state:
+            raise RouteHalt('Stair preflight landing lineage changed')
 
     def check(self):
         """No old-fix age check: geometry may outlive it, original scope may not."""
@@ -170,9 +179,13 @@ class SourceStairPreflight:
                 if self.phase!='new':raise RouteHalt('Stair preflight can only build once')
                 self.phase='building'
             l,h=self.ledger,self.hint
+            treads=h.tread_ids;runout=None
+            if h.vertical_model=='bounded_source_contacts':
+                treads,runout=extend_stair_landing(self._chain,h.end,self._checked_end,treads,
+                    l.terrain,l.static,l.bsp,l.observer.policy,radius=self._radius,check_context=self.check)
             # Expensive geometry runs without the stop lock. The planning-only
             # future branch is intentionally discarded, never stored as a floor.
-            plan,_=plan_stair_flight(self._chain,h.start,h.end,h.tread_ids,
+            plan,_=plan_stair_flight(self._chain,h.start,self._checked_end,treads,
                 l.terrain,l.static,l.bsp,l.observer.policy,radius=self._radius,
                 max_rise=h.max_rise,max_lift=h.max_lift,check_context=self.check,
                 vertical_model=h.vertical_model,body_radius=l.bounds.body_radius)
@@ -181,7 +194,8 @@ class SourceStairPreflight:
                 from .source_stair_coverage import SourceStairContactIndex
                 index=SourceStairContactIndex(plan)
             payload=encoded(dict(format='eql-source-stair-preflight-v1',hint=asdict(h),
-                checked_radius=self._radius,
+                checked_radius=self._radius,target_end=h.end,checked_end=self._checked_end,
+                checked_tread_ids=treads,landing_runout=runout,
                 motion_bounds=asdict(l.bounds),motion=dict(vars(l.motion)),heading=l.pose.heading,
                 departure=self._reference.package_xyz,
                 raw_departure=self._reference.raw_fix.raw_coordinates,
@@ -203,6 +217,7 @@ class SourceStairPreflight:
                 self._prepared_state=(self.prepared_at,self.minimum_seq)
                 self.cache=cache
                 self.contact_index=self._index_state=index
+                self.checked_tread_ids=self._tread_state=treads
                 self._cache_state=(id(cache),cache.payload,cache.sha256)
                 self.phase='prepared'
                 return cache

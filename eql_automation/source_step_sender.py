@@ -5,13 +5,14 @@ from .fixed_route_follower import RouteHalt
 from .route_step_sender import _fd_identity
 from .source_motion import SourceReceiptLedger
 from .source_transfer import SourceTransferController
+from .source_stair_controller import SourceStairController
 from .supervised_source import SupervisedSourcePolicy
 from .uinput_watchdog import PulseSelection, selected_key_pulse_receipt
 
 
 def run_checked_source_step(sender,ledger,*,policy,kind,requested_seconds,
                             command_state_clear,pump):
-    if (type(ledger) not in (SourceReceiptLedger,SourceTransferController) or type(policy) is not SupervisedSourcePolicy
+    if (type(ledger) not in (SourceReceiptLedger,SourceTransferController,SourceStairController) or type(policy) is not SupervisedSourcePolicy
             or policy.ledger is not ledger or not callable(command_state_clear) or not callable(pump)):
         raise ValueError('Exact source ledger, supervised policy and current sender providers required')
     operation=object();owned=False;pinned_fd=None;key=None;released=False

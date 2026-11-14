@@ -1,5 +1,45 @@
 # FINDINGS
 
+## 2026-11-14 22:09 UTC — source 0.42.68: receipt-bound stair controller
+
+VERIFIED **55 focused checks** pass in 61.25s on devbox, JUnit SHA
+`f6b71af1641d929011f8c6528baf35255084336da7722fe2ab088dcbc93a9376`.
+VERIFIED **16 actual watchdog/OS-pipe checks** pass in 2.31s on Alienware,
+JUnit SHA `232bb3b955a21ff69068ae1d868c7cb0ffba4d2b5d7fb44d8cae209ecd6cb052`.
+All 538 source/test/tool pins match that remote snapshot before the version-only
+bump. The remote run used test pipes, synthetic game observations, one BLAS
+thread, 3GiB address-space / 20–25s CPU limits; load was 1.98 on 24 CPUs.
+No game input, character mutation, install change or helper restart.
+
+The explicit contact preflight hands its existing ledger/policy to a new stair
+controller under the same stop lock. Each pulse checks the complete maximum-hold
+coverage; ticket, geometry and release fields remain pinned. Every compatible
+height state remains provisional. Synthetic feedback crossed three risers in
+16 receipts, including half-rise positions, with the ordinary floor/pose/counters
+unchanged until the final actual pair. That pair's complete uncertainty cap
+uses only overlapping final-tread seeds, checks terrain/static/BSP/native
+geometry, and links directly to the original floor while preserving its seed
+and raw observation timestamps. Focus loss, owner input or cancellation during
+landing work cannot publish a floor. These are implementation checks, not
+real-client stepping or leveling acceptance.
+
+Preflight retains the original target while checking additional maximum-hold
+runout. New final-tread faces require an ordinary exact-edge support/clearance
+check. Tests accept connected flat extension and reject gaps, walls and changed
+height; final-cap seeds need not include distant valid tread triangles.
+
+An earlier two-case devbox pipe run passed. After the final physical/geometry
+checks were added, a subsequent devbox attempt refused watchdog arming under
+heavy load (137 one-minute load, 48 CPUs); the final exact code passed the 16
+Alienware checks without changing a deadline. No retry of game input occurred.
+
+Still missing: issued stair itinerary operations and boundary, fresh no-seal
+post-preflight collection, actual-landing connector and owner route integration.
+The current owner launcher/runtime remain 0.39.32/0.42.61. No new owner control or
+Throne guide is enabled. Original 1–20 and fresh hands-off 1–50 goals remain unmet;
+G0 is already passed; current real level, XP, XP/hour, deaths and camp unknown.
+
+
 ## 2026-11-14 21:56 UTC — source 0.42.67 published; copied grounded-contact replay verified
 
 VERIFIED Alienware `owner-tools/0.42.67/source` contains commit

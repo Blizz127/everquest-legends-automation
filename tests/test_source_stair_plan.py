@@ -7,6 +7,7 @@ from eql_automation.route_floor_commit import _chain_snapshot
 from eql_automation.source_floor_chain import SourceFloorChain
 from eql_automation.source_detour import swept_square
 from tools.source_stair_plan import plan_stair_flight
+from eql_automation.source_stair_plan import extend_stair_landing
 from test_source_stair_topology import fixture
 from test_source_step import face,rectangle
 from test_bsp_volume import view as bsp_view,leaf
@@ -82,3 +83,27 @@ def test_same_id_landing_geometry_cannot_change_after_phase_checks():
     with pytest.raises(ValueError,match='Final landing query differs from flight inventory'):
         plan_stair_flight(*args,radius=1.2,check_context=lambda:None)
     assert changed and _chain_snapshot(prefix)==before
+
+
+@pytest.mark.parametrize('hazard',[None,'gap','wall','height'])
+def test_lookahead_checks_connected_landing_faces_and_full_far_cap(hazard):
+    prefix,start,target,groups,terrain,static,bsp,policy=setup()
+    old=_chain_snapshot(prefix)
+    sources=tuple(s for s in terrain.sources if s.face not in (6,7))
+    sources+=rectangle(4.,7.5,3.,6)
+    sources+=rectangle(7.51 if hazard=='gap' else 7.5,12.,3.1 if hazard=='height' else 3.,100)
+    if hazard=='wall':sources+=(face(((8.,-5.,3.),(8.,5.,3.),(8.,0.,12.)),200),)
+    terrain.sources=sources;terrain.source_faces_for_footprint=lambda _:sources
+    def extend():return extend_stair_landing(prefix,target,(9.,0.),groups,terrain,static,bsp,policy,
+        radius=1.2,check_context=lambda:None)
+    if hazard:
+        with pytest.raises(ValueError):extend()
+    else:
+        extended,evidence=extend()
+        assert extended[-1]==((1,6),(1,7),(1,100),(1,101))
+        assert target==(6.,0.) and evidence['checked_end']==(9.,0.)
+        plan,branch=plan_stair_flight(prefix,start,(9.,0.),extended,terrain,static,bsp,policy,
+            radius=1.2,body_radius=.1,vertical_model='bounded_source_contacts',check_context=lambda:None)
+        assert branch.floor_at((9.,0.))[0]==3.
+        assert set(plan.record()['landing']['selected_ids'][0])=={1,100}
+    assert _chain_snapshot(prefix)==old
