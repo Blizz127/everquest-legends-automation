@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 19:00 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 19:01 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.54 validated; private publication pending.** Optional camp
+- **Source 0.42.54 privately published; preview stays 0.39.30.** Optional camp
   execution now adopts the prepared source route, collects a new startup pair,
   reuses the existing walk/step loop, confirms movement, captures arrival and
   stops before camp selection. The same probe ancestry, sender, reader, monitor,
@@ -24,6 +24,10 @@ Updated 2026-11-14 19:00 UTC for coordinator task `829a00229b29`.
   Next: exact standard seven-probe sequence through routing, then the concrete
   owner plan/policy provider and new-camp entry. That full sequence and real
   1–20/1–50 acceptance remain unverified. Level/XP/hour/deaths/camp unknown.
+  Published at Alienware `owner-tools/0.42.54/source`, revision `6d817f6`.
+  Runtime/tests/tools match the final 173-pass snapshot; imports, CLI startup
+  and copied-data pins pass. Startup SHA
+  `e0acf6ae87cc42fd6b454a4b15d19164f972fafd42ee03c279d4b4359d50a690`.
 - **Source 0.42.53 privately published; preview stays 0.39.30.**
   The source ledger/walk driver now explicitly accept a camp-start observer.
   It consumes the fresh route start once, retains a separate measured height

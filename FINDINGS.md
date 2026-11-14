@@ -1,5 +1,26 @@
 # FINDINGS
 
+## 2026-11-14 19:01 UTC — source 0.42.54 privately published
+
+VERIFIED Alienware `owner-tools/0.42.54/source`, revision
+`6d817f664690a5b157dee94b45a8163100ee604f`. Runtime/tests/tools byte-match the
+final 173-pass candidate. Imports, diagnostic CLI startup and copied-data pins
+pass. Archive SHA
+`6f093cf29d70eb7dfa974a91abadb4638fb74c672ad3ce56c737a47d9bc79189`;
+startup SHA `e0acf6ae87cc42fd6b454a4b15d19164f972fafd42ee03c279d4b4359d50a690`.
+Publication record: `releases/eql-automation-0.42.54-staging.json`.
+
+The optional retained-engine camp route now completes startup, movement,
+observed acknowledgment and captured arrival in the synthetic harness. F8/F9
+cleanup is covered. No default launcher plan/policy is enabled; preview remains
+0.39.30. Next is exact standard seven-probe→route integration, then concrete
+owner launch wiring and new-camp entry. The launcher hook is
+`tools/owner_nov12_entry_03926.py` calling `make_owner_journey_engine`, which
+already accepts `camp_probe_plan_provider`; no such provider is supplied today.
+No game input, input-device creation, login, character action or prefix edit.
+G0 passed; no new owner test. Real level/XP/hour/deaths/camp unknown; no accepted
+1–20 or fresh hands-off 1–50 run.
+
 ## 2026-11-14 19:00 UTC — source 0.42.54, retained camp route execution
 
 Implemented an optional `CampProbePlan.route_plan_factory` returning explicit

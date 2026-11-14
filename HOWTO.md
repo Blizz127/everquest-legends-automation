@@ -640,7 +640,7 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Source 0.42.54 passed its focused checks; private publication is pending at:
+Source 0.42.54 is privately published on Alienware at:
 
 ```text
 ~/.local/share/eql-automation/owner-tools/0.42.54/source
