@@ -2,7 +2,7 @@
 
 ## Repeated stationary camp and resource recovery — 2026-11-14 15:33 UTC
 
-**VERIFIED source 0.42.34 / candidate preview 0.39.23:** the existing owner
+**VERIFIED source 0.42.34 / preview 0.39.23:** the existing owner
 rotation Engine and KeySender now support repeated stationary encounters with
 resource recovery in one cancellation generation. Each round clears previous
 target permission, waits for a new exact-name/level consideration, and preserves
@@ -53,8 +53,24 @@ acknowledgment; there is no retained live `/sit on` acceptance.
 **NOT VERIFIED / unfinished:** real combat/rest/targeting acceptance, current
 metrics, accepted 1–20 route, travel→combat handoff, automatic spell acquisition
 and refresh, inventory/supply service, death/relogin recovery and fresh hands-off
-1–50. G0 is passed and must not be repeated. Private publication follows the
-startup check; there is no new automated character-level evidence.
+1–50. G0 is passed and must not be repeated. **VERIFIED private publication — 15:34 UTC:** preview **0.39.23** is at
+`Alienware: ~/.local/share/eql-automation/owner-assist/0.39.23`; source **0.42.34**,
+revision `2ff4ec71eaab0e040e154993ffba4c8f04669a45`, is at `owner-tools/0.42.34/source`.
+All **53 focused checks pass on Alienware**; packaged modules match that source,
+the installed executable matches the posture-analysis pin, and the offscreen
+GUI has an enabled **Repeat stationary camp · F11** button. Unused inherited
+camp/route configuration is hidden. Movement-entry refusal also passes.
+The GUI image was copied back, hash-checked and visually inspected. No worker,
+device, game input, settings write or install/prefix modification was performed.
+
+- Archive SHA: `420022f64d758f397ec3b268e83c8ed98c798a58074d563f0066e1ab8421153f`.
+- Test output SHA: `41caf0e2f3ddf93f25110eb6240ab1a8716eb3cacbafbbbe8b6218122448527f`.
+- GUI PNG SHA: `f902fc257be8326f052c6d0a86c07a61e200b0087ea20514c063aa79c8316640`.
+- Startup report SHA: `7641c46b41150426c0e594a8374b90d5ff2b2a02f03d65d45c5f568bf485e220`.
+
+Private metadata: `releases/eql-owner-camp-0.39.23-staging.json`. The initial
+local unpublished GUI candidate is retained under `owner-build-drafts`.
+There is no new real-client acceptance or automated character-level evidence.
 
 ## Stationary camp integration — 2026-11-14 15:17 UTC
 
