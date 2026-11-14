@@ -1,5 +1,54 @@
 # FINDINGS
 
+## Source-only walking and stopped acknowledgment — 2026-11-14 14:33 UTC
+
+**VERIFIED implementation:** source 0.42.29 uses a distinct source-floor observer,
+ledger, supervised policy and sender. It never invents a baked mesh projection.
+The original owner/log/zone/height calibration remains bound to each issued
+reading. The ledger checks complete terrain/static/region evidence on the full
+maximum-hold footprint outside the stop lock, then stages one measured control
+through the retained watchdog and sender. Original file/source/device identities,
+focus, physical input, finite budgets and measurement-only scope remain required.
+Assist, full-auto and off cannot use this measurement path.
+
+Release receipts do not advance floor or pose. Two new consecutive stopped
+replies must match the exact provisional source branch; the actual endpoint cap
+is rechecked and the same raw reply is rebound without renewing its timestamp.
+Only then is the cap/pose committed. Invalid height, replay, stale position,
+changed file/source, owner activity, focus loss or cancellation leaves the old
+floor and stops. The ordinary driver aims through walking cells using retained
+measured motion, with no backward movement or speculative jumps. Explicit
+height steps produce an early planning handoff containing the actual reference,
+cap proof and unconsumed approach cells; the driver does not skip that approach
+or adopt a conditional landing. Full movement bounds remain unchanged.
+
+**VERIFIED focused checks:** 55 pass across source motion, walk driver, itinerary
+and current-log wrapper. Two existing baked-sender compatibility checks pass;
+the new source pipe test also passes with explicit forward DOWN/SYN/UP/SYN event
+assertions. Watchdog tests use actual OS pipes and synthetic scenes/positions;
+the repeated route uses synthetic receipts and stopped replies. No game input.
+Review found a receipt-sealing cancellation resurrection and a final-clock scope
+change escaping observation validation. Ten regression cases failed before the
+fix; all eleven publication/scope cases pass afterward. Fixture errors in the
+initial regression hooks and synthetic riser layout were corrected; timing and
+hold limits were not relaxed. The new view/pose identity cases also pass.
+
+**OBSERVED development constraint:** an ordinary maximum-hold footprint can
+reach a riser before the center reaches its planned departure cap. The driver
+therefore hands off early without authorizing motion. A helper's no-write copied
+geometry probe reported that retained step 989 accepts a departure 0.25 unit
+back but refuses 1 unit back (`step_support_partition_failed`); step 994 accepts
+0.25/1/2 units back but refuses 4 (`step_lift_bound_exceeded`). These helper
+observations are not retained acceptance artifacts or client traversal proof.
+A future executor must handle a checked compound approach where direct rebasing
+fails, and cover the entire unchanged motion envelope across the transition.
+
+**Remaining:** conditional step movement and landing acknowledgment, plus the
+owner-runtime connection. Source core development does not enable the owner
+1–20 autopilot. Movement preview 0.39.20 and assist 0.39.13 remain current;
+G0 passed, no repeat. Current level, XP/hour, deaths and camp unknown. No
+accepted camp route, automated XP or fresh-character 1–50 run.
+
 ## Mixed source-floor camp itinerary — 2026-11-14 14:14 UTC
 
 **VERIFIED implementation:** source 0.42.28 represents walking and height steps

@@ -217,6 +217,7 @@ def plan_source_itinerary(prefix, start, guide, terrain, static, bsp, region_pol
         _zero_native(native)
         check()
         cells.append(dict(kind='walk', origin=origin, start=a, end=b, footprint=footprint,
+            start_floor_height=branch.floor_at(a)[0],end_floor_height=branch.floor_at(b)[0],
             terrain=asdict(floor), static=asdict(placed), bsp=asdict(old_bsp), native=asdict(native)))
         return branch
 
@@ -268,6 +269,7 @@ def plan_source_itinerary(prefix, start, guide, terrain, static, bsp, region_pol
         else:
             # A departure cap is actual geometry, not an asserted start point.
             chain = walk(chain, op.start, op.start, 'step_departure_cap')
+            departure_height=chain.floor_at(op.start)[0]
             check()
             transfer, landing = check_source_step(chain, op.start, op.end, terrain, static,
                 landing_seed_ids=op.landing_seed_ids, radius=guide.radius,
@@ -283,6 +285,7 @@ def plan_source_itinerary(prefix, start, guide, terrain, static, bsp, region_pol
             _zero_native(native)
             check()
             cells.append(dict(kind='step', origin=index, start=op.start, end=op.end,
+                start_floor_height=departure_height,end_floor_height=landing.floor_at(op.end)[0],
                 transfer=asdict(transfer), bsp=asdict(old_bsp), native=asdict(native)))
             chain = landing  # Planning branch only; never published as current floor.
         position = op.end

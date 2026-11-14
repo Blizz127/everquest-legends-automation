@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 14:15 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 14:33 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,20 @@ Updated 2026-11-14 14:15 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.29:** source-only observation, receipt/landing acknowledgment,
+  supervised sender and ordinary walk driver are implemented. Actual OS-pipe
+  DOWN/UP checks preserve floor/pose until fresh stopped replies pass; geometry
+  runs outside the stop lock. Two reproduced late-callback publication bugs are
+  fixed. A repeated synthetic route reaches its goal only after each observed
+  acknowledgment. Early step handoff retains the actual cap and unconsumed walk
+  approach; it does not send input or commit a landing. **55 focused checks pass**,
+  plus two old-sender compatibility checks; the new source pipe case also passes
+  with explicit DOWN/UP event assertions. No game input or client acceptance.
+  **Next:** conditional step approach/transfer execution with the unchanged full
+  motion envelope, then owner-runtime connection. Some retained steps cannot
+  transfer directly from an earlier cap and need a compound approach. Source
+  publication pending; owner movement 0.39.20 and assist 0.39.13 unchanged.
+  Current level/XP/hour/deaths/camp unknown; G0 passed, no repeat.
 - **Source 0.42.28:** mixed source-floor itinerary builder now joins a supplied
   starting floor to retained XY/step hints, rebuilds every walking cell/transfer,
   and checks the exact Slave Mines annotation connector. The current-log wrapper

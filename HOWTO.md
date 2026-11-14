@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.28** · rotation preview **0.39.13** · movement preview **0.39.20** · crossing preview **0.39.19** · approach preview **0.39.18**.
+Source **0.42.29** · rotation preview **0.39.13** · movement preview **0.39.20** · crossing preview **0.39.19** · approach preview **0.39.18**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -24,14 +24,19 @@ pulse.** Assist still uses the existing rotation bot. Preview 0.39.20 is a
 separate finite movement test; it cannot switch into assist or full auto.
 The requested seamless assist/full-auto switch is still unfinished.
 
-Source 0.42.28 builds a separate source-floor itinerary for Slave Mines: walking
-sections, explicit height-step hypotheses and a checked connector to the exact
-copied camp annotation. It reconnects from the supplied current floor and
-retains every terrain/static/region check. The fresh-log planning wrapper stops
-on owner, zone or log changes. This is a source-development increment; the
-mixed itinerary is not connected to movement yet. It adds no owner launch step
-and does not require another G0 check. Continue using 0.39.20 for the short
-movement test or 0.39.13 for assist, as documented below.
+Source 0.42.29 adds a source-floor movement core for the Slave Mines itinerary.
+Every ordinary move retains the old floor and position until two fresh stopped
+readings confirm the result; stop/mode changes cancel pending work. The walk
+driver approaches explicit height steps and returns a separate planning handoff
+before a normal forward press can reach the riser. Remaining approach cells and
+the actual stopped position stay attached to that handoff. No step or landing
+is accepted merely because its copied geometry passes.
+
+This source core passes synthetic route and OS-pipe checks. It is not connected
+to the owner launcher, and step execution remains unfinished. It adds no owner
+launch step or repeated G0 check. Continue using 0.39.20 for the short movement
+test or 0.39.13 for assist, as documented below. Both use the existing helper;
+assist continues to leave movement and target selection to Blizz.
 
 Source 0.42.19 can plan from dry ground into the exact copied Crushbone zone-line
 region and retain its actual area in position observations. The copied-data
