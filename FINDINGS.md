@@ -1,5 +1,18 @@
 # FINDINGS
 
+## Private source 0.41.69 staging — 2026-11-14 04:56 UTC
+
+**VERIFIED:** Commit `e9e687477844906892ffdba12f5438c7ac04cb00`, archive SHA
+`68838c535e6b3680b572977a750849deb38d7f3940afd8d3dcb805d1e0dd202b`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.69/source`.
+Six no-input startup checks pass: version, route-bridge import/startup, missing
+live-provider refusal, missing route-state refusal, replay CLI and location
+collector CLI. Remote `../smoke.json` and local private
+`releases/eql-automation-0.41.69-staging.json` retain the result. No client data,
+input device, capture, login or game input was opened. Source search confirms
+no owner runtime imports the new bridge. Assist 0.39.6 and observation candidate
+0.39.9 remain unchanged; this is source staging, not playable-route acceptance.
+
 ## Checked route sender bridge — 2026-11-14 04:54 UTC
 
 **VERIFIED source 0.41.69:** The new isolated `run_checked_route_step` adapter
