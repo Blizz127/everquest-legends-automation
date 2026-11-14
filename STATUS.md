@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 23:31 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 23:34 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Owner 0.39.34 / source 0.42.74 cleared focused laptop checks; publishing privately.**
+- **Owner 0.39.34 / runtime/source 0.42.74 privately published on Alienware.**
   Alienware is reachable. VERIFIED five current-revision watchdog/OS-pipe cases
   pass in 66.09s: contact route, both DOWN cancellation cases, full owner contact
   travel→camp and ordinary travel→camp. All 560 tested Python hashes match;
@@ -18,7 +18,12 @@ Updated 2026-11-14 23:31 UTC for coordinator task `829a00229b29`.
   that batch was not rerun. Release validation SHA
   `0c20b158b4d493ff992ca0d2ecc8f85b708e3c195e08513dd8209b294c05fb26`.
   Final preview differs from the tested candidate only in HOWTO/generated pins;
-  startup succeeds. Installing additively next; no helper restart or game input.
+  installed startup succeeds. All 560 source and 242 owner files match; all four
+  destination guides load. Earlier builds remain available. No helper restart
+  or game input. Release archive SHA
+  `a4938c97be8308fc8212f2f22458761c25a6b89774f439bacfc5b227e4f411f9`;
+  installed receipt SHA `3b9d8015e1ff94bf232ba5d57c61b11c366992deac278f23ff550e3a60376352`.
+  Next: owner-run travel/camp acceptance and remaining low-level route coverage.
   Owner test command and current controls are in HOWTO. Full 1–20/1–50 remain
   unfinished; real metrics unknown. G0 remains passed, with no repeat needed.
 - **Source 0.42.74 / owner 0.39.34 local candidate; not installed or accepted.**

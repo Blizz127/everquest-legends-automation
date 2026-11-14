@@ -1,5 +1,40 @@
 # FINDINGS
 
+## 2026-11-14 23:34 UTC — 0.39.34 privately installed, owner launch ready
+
+VERIFIED additive publication on Alienware: owner preview **0.39.34**, runtime
+and source tools **0.42.74**. Release source revision
+`fafaf11a0fd3b3878fae9f5c26a09929803948bd`; archive
+`releases/eql-owner-journey-0.39.34.tar.gz`, SHA
+`a4938c97be8308fc8212f2f22458761c25a6b89774f439bacfc5b227e4f411f9`.
+Installed receipt SHA `3b9d8015e1ff94bf232ba5d57c61b11c366992deac278f23ff550e3a60376352`.
+All **560 source Python files**, **242 owner snapshot files**, manifests and
+validation evidence match. All four installed guide loaders pass. The installed
+`launch.sh --help` startup returns 0. Earlier 0.39.32/0.42.68 versions remain
+available. The publish wrapper initially referenced the old staging location
+while writing its receipt after the directory move; the installed files,
+guides and startup were then reverified before recording success.
+
+Owner command, also in HOWTO:
+
+```bash
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.34/launch.sh
+```
+
+The owner closes an older helper himself and launches only one. F8 assist keeps
+movement/target selection manual; F9 stops. Travel/camp and the optional
+stop-only stair destination remain owner-started supervised tests. No lead
+login, game input, helper restart, character-progress or game-prefix change.
+The five current-code Alienware pipe checks and copied-source geometry are
+verification of the implementation, not real-client route/leveling acceptance.
+
+Read-only saved-settings inspection still shows Legira/freeport/level7 from
+**2026-11-06**, so it is not current level evidence. The journey trace last
+changed at 2026-11-14 19:31 UTC, before this publication; no new run metrics are
+claimed. Current level/XP/XP-hour/deaths/camp remain unknown. The owner has been
+asked for current level/zone to prioritize the remaining 1–20 route. G0 remains
+passed; full 1–20 and fresh-character hands-off 1–50 are incomplete.
+
 ## 2026-11-14 23:31 UTC — Alienware timing checks recovered and passed
 
 VERIFIED the laptop is reachable again. The retained 0.42.69 arrival receipt
