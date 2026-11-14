@@ -28,6 +28,12 @@ Updated 2026-11-14 23:26 UTC for coordinator task `829a00229b29`.
   host, then deliver the candidate for owner-driven travel acceptance. No login,
   helper restart, game input or character/prefix changes. G0 remains passed.
   Current level, XP, XP/hour, deaths and camp are unknown; no accepted 1–20/1–50 run.
+  Local source commit `ce6329f3ad1bb6ff50b86f0c093fad816600bbf9`; packaged at
+  `releases/eql-owner-journey-0.39.34-candidate.tar.gz`, SHA
+  `b9a4b71e7ca204f44998606d161ec4fffa475366c59481a4c2f35ec4dd756f74`.
+  All 560 source Python pins, 242 owner snapshot files and evidence hashes match;
+  both Throne guides are included outside the git source tree. This archive is
+  a candidate with the two recorded timing failures, not an accepted release.
 - **Source 0.42.73 locally verified; not installed.** VERIFIED 71 focused
   checks: 65 contact-history, stopped-observation and retained terrain cases;
   six real watchdog-pipe recovery/cancellation cases (contact and terrain).

@@ -2,6 +2,15 @@
 
 ## 2026-11-14 23:26 UTC — 0.42.74 terminal contact itinerary and Throne candidate
 
+VERIFIED local candidate packaging: source commit
+`ce6329f3ad1bb6ff50b86f0c093fad816600bbf9`; archive
+`releases/eql-owner-journey-0.39.34-candidate.tar.gz`, SHA
+`b9a4b71e7ca204f44998606d161ec4fffa475366c59481a4c2f35ec4dd756f74`.
+All 560 Python source pins, 242 owner snapshot files, runtime copies and
+validation evidence hashes match. The archive includes both private Throne
+proposal guides outside its git source tree. This remains a local candidate
+with the two timing failures below, not an accepted/installed release.
+
 VERIFIED copied-client build to the exact Throne Room marker `(106,154)`:
 12 guide operations and 18 itinerary cells (13 walking, three steps, one stair,
 one terminal contact operation containing the eight retained corridor legs).
