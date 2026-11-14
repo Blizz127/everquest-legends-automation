@@ -1,7 +1,13 @@
 # STATUS
 
-Updated 2026-11-14 02:15 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 02:16 UTC for coordinator task `829a00229b29`.
 
+- Private source **0.41.56**, commit `4dcdd1d`, is staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.56/source`. Archive SHA
+  `59678e99e6a3467b9be7c6d83f7c21d7a7af7b8a177f7e1b53dbe2fc28e93a0c`
+  matched remotely. Five pure precision smokes, three CLI startup checks and
+  invalid-option refusal passed. No input device or game input; owner assist
+  and G0 packages unchanged. Remote evidence: `../smoke.json`.
 - Source **0.41.56** adds explicit overlap attribution and two-ULP portal
   diagnostics. **VERIFIED:** 43 precision tests and seven source-query tests
   pass. The segment-38 overlap and segment-52 two-ULP gap both reproduce from

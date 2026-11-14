@@ -1,5 +1,61 @@
 # FINDINGS
 
+## Private 0.41.56 staging and classified next issues — 2026-11-14 02:16 UTC
+
+**VERIFIED staging:** Commit `4dcdd1d`, archive SHA
+`59678e99e6a3467b9be7c6d83f7c21d7a7af7b8a177f7e1b53dbe2fc28e93a0c`,
+matched at Alienware `~/.local/share/eql-automation/owner-tools/0.41.56/source`.
+Five pure precision smokes passed (overlap, default refusal, same-polygon
+refusal, explicit two-step gap, three-step refusal), along with three CLI
+startup checks and an invalid-option refusal. Remote `../smoke.json` records
+these results. No input device or game input was used.
+
+**OBSERVED read-only helper investigation, not yet a retained standalone proof:**
+The segment65 overlap is five float32 steps, width0.000152587890625, between
+detail217422/poly27783 and detail217667/poly27806. Reciprocal links58132/58183
+share X/Z endpoints but have package Y -499.8123474121094 versus -499.8125.
+Source fragment681/face12 is the sole Diffuse ground over the expanded
+footprint. A virtual six-vertex midpoint correction reportedly passes full
+coverage and source support (max delta0.868279); root must pin a reproduction.
+
+The pinned manifest and retained helper pipeline suggest a tighter classifier
+than increasing the ULP cap. Float32 cell_size0.600000024, tile_size256 and a
+five-cell border, applied to source package-Y minimum -2803.8125, reproduce
+both sides at tile14/15 through independent local arithmetic. With f32 at
+every operation: tile_world=f32(256*cs), cfg_bmin=f32(f32(global_min+
+f32(tile_index*tile_world))-f32(5*cs)), inner_min=f32(cfg_bmin+f32(5*cs)),
+inner_max=f32(cfg_bmin+f32(261*cs)). The same expression reportedly reproduces
+the earlier X25/26 and Y13/14 seams. Across 35 internal boundaries per axis,
+predicted errors can be 20–40 ULP near small coordinates but no more than
+0.00048828125 absolute distance. This is an empirically supported inference;
+the actual baker C++ source was not located in approved stores.
+
+Retained approved provenance: `owner-assist/0.39.4/eqnav/build.py` lines133–155
+records filtered source triangle bounds; `eqnav/bake.py` lines99–105 writes
+float32 EQTR, lines165–175 passes bake parameters, lines183–185 stores float32
+arrays. Mesh meta baker SHA
+`072f9b06935ef76d870219e4e2812146006d0c86fdca4bb6c78b70eed4383d44`
+matches retained private `nav-candidates/trainer-sensitivity-20261113T1557Z/eqlnav_bake`.
+WLD→package swaps XY (`eqnav/zonegeom.py` line452); package→Recast is (Y,Z,X)
+(`eqnav/bake.py` line49). The seam matches package-Y/Recast-X arithmetic,
+so this investigation does not attribute it to a frame swap. No removed old
+working copy was accessed, recreated or used.
+
+**OBSERVED source-layer classification from helpers:** Segment87 cells49–50
+have continuous supporting grass fragment1208/face9, flag0/Diffuse, grade
+0.21765. At cell49 the ground is Z4.26128 vs baked4.92395; it covers the entire
+footprint. The additional XY layers are Fay floors at Z71.96875/73.96875 and
+planks at76.8125/77.53125 (paired upward/downward surfaces), more than67.4
+above the grass within the footprint. Segment89/cell0 has grass1174/face1,
+grade0.21132, Z-1.17372 vs baked-0.58124, covering the full footprint. Its
+material refusals come from elevated TransparentMasked BRAILING1 faces of
+fragment1175 (IDs82/111/115/118), grade5.64–5.66, Z74.20–76.28, more than75
+above the ground. These are real distinct source layers, not evidence of
+bad grass material. They need an explicit vertical occupancy/headroom proof
+or a route change; nearest-height filtering is not accepted. The complete
+region bound remains unset. These helper findings are leads for pinned root
+diagnostics, not live acceptance or permission to move.
+
 ## Source-supported overlaps, explicit two-ULP cases and full corridor profile — 2026-11-14 02:15 UTC
 
 **VERIFIED implementation:** Source 0.41.56 keeps the existing precision defaults
