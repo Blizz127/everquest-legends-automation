@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:32 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:34 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -16,6 +16,9 @@ Updated 2026-11-14 06:32 UTC for coordinator task `829a00229b29`.
   supplies source-derived input outer/client proposals without guessing tab
   height or chat focus. Seventeen focused checks pass; copied-client geometry
   artifact SHA `a10a6b628aa00490b511bfb7f60417861fe062a87e341074415b2bbf6c56a44c`.
+  Source `55b89f8` is staged at `owner-tools/0.41.81/source`; three focused
+  no-input remote checks pass against still-matching installed source files.
+  Archive SHA `e4500669c87df9310900e98d3e827fd1ff67dd1e8eccf6a4c00b7036a349d4a0`.
   Scaling, clipping, current placement and focus remain unverified; no owner
   controls or helper versions changed.
 - **Source 0.41.80:** explicit frame-reader preparation compiles copied-source

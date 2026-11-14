@@ -1,5 +1,26 @@
 # FINDINGS
 
+## Private source 0.41.81 staged — 2026-11-14 06:34 UTC
+
+**VERIFIED:** source commit `55b89f86132faaac7d6282e6bc03a1f3b77f3f71`, archive
+SHA `e4500669c87df9310900e98d3e827fd1ff67dd1e8eccf6a4c00b7036a349d4a0`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.81/source`.
+Three focused no-input startup checks pass: source import/version, current
+client-file geometry matching the local proposals, and missing-animation
+refusal. The actual installed executable and six layout input files still
+match the copied audit's pins. Files were read and copied only into the new
+private benchmark directory; the retained loader was imported with bytecode
+writes disabled. No client/prefix, settings or character data was modified.
+
+Remote `../chat-geometry.json` SHA
+`e5cc949cbe6cd093e002d17c43e1e4c7c7e9a21432a4d76bf59f6a46d58781a8`;
+local staging record `releases/eql-automation-0.41.81-staging.json`.
+This accepts static source geometry only, not real-client alignment, input
+focus or movement. No game capture, device access, input or login ran.
+Assist 0.39.6 and observation candidate 0.39.10 remain current. G0 is passed
+and must not be repeated. Current level, XP/hour, deaths and camp are unknown;
+no automated XP or 1–20/1–50 route acceptance is claimed.
+
 ## Dynamic chat input geometry 0.41.81 — 2026-11-14 06:32 UTC
 
 **VERIFIED static reconciliation:** copied `eqgame.exe` SHA

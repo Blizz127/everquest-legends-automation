@@ -114,7 +114,7 @@ The latest private source is staged on Alienware at:
 Source builds are development tools, not replacements for the owner launchers
 above. Source 0.41.81 adds a source-derived chat input geometry diagnostic;
 its proposed crop does not establish live alignment or chat focus. The prepared
-frame reader initializes the frame reader before its timed observation;
+frame reader initializes its templates before the timed observation;
 each call still captures a new frame and records the complete observation time.
 Preparation grants no scene or movement permission. The copied-source route
 work and remaining live checks are tracked in [LEVEL_1_20.md](LEVEL_1_20.md).

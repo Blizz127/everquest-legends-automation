@@ -7,7 +7,9 @@ use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
 Source 0.41.81 resolves dynamic chat pages and input outer/client geometry
 from copied binary/XML semantics. Seventeen focused checks and a retained-loader
-copied-data check pass. Runtime chat focus, clipping, scale/alignment and active
+copied-data check pass. Source `55b89f8` is privately staged on Alienware;
+three focused no-input remote checks pass with current source files matching
+the copied pins. Runtime chat focus, clipping, scale/alignment and active
 tab remain unverified; this source-only diagnostic enables no route input.
 
 Source 0.41.80 prepares the source templates and numerical backend before a
