@@ -60,7 +60,10 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
     """Arm, observe, propose, check, send, release, then commit exactly once.
 
     ``prepare_step(proposal, scene)`` stages the complete geometry request on
-    this ledger. ``authorize_step(ticket, scene)`` supplies an independently
+    this ledger. Its optional ``precompute(scene)`` method runs while stopped,
+    before arming the child or creating the fresh proposal. It must not mutate
+    route/scene/input state or extend the reference lifetime.
+    ``authorize_step(ticket, scene)`` supplies an independently
     verified RouteStepAuthorization for that exact request. Its guard must
     remain revocable through ``still_authorized(authorization, scene)``.
     ``command_state_clear()`` must read engine recovery/draft/job state, not
@@ -184,6 +187,21 @@ def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
                     or (sender.codes.KEY_UP, sender.codes.KEY_LEFT, sender.codes.KEY_RIGHT) != (103,105,106)):
                 raise RouteHalt('Route sender is not idle or movement key bindings differ')
             check_sender()
+            precompute = getattr(prepare_step, 'precompute', None)
+            if precompute is not None:
+                if not callable(precompute):
+                    raise RouteHalt('Invalid route geometry precomputation')
+                observed = checked_scene()
+        if precompute is not None:
+            # No keys or watchdog are armed. Let OFF acquire the stop lock
+            # while the expensive read-only geometry checks run.
+            precompute(observed)
+        with ledger.lock:
+            check_sender()
+            if precompute is not None:
+                fresh = checked_scene()
+                if fresh.reference_fix is not observed.reference_fix or r.phase != 'ready':
+                    raise RouteHalt('Stopped reference changed during geometry precomputation')
             pinned_fd = os.dup(original_fd)
         try:
             receipt = selected_key_pulse_receipt(pinned_fd, select, pump=pump,

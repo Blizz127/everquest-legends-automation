@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 08:04 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 08:14 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,22 @@ Updated 2026-11-14 08:04 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.92:** the route sender now has concrete terrain/static/BSP
+  geometry preparation with explicit external motion/body bounds. It computes
+  forward and pivot candidates before arming, then consumes one exact reference/
+  chain-bound result after the fresh proposal. OFF remains available during
+  computation. Twenty-eight final focused checks pass, including the actual
+  watchdog/sender on a pipe, wall/water refusal, stale-context refusal and
+  cross-thread cancellation. The copied GFay first-cell diagnostic recomputed
+  the source floor and complete static/BSP checks: preparation 52.8 ms,
+  staging 2.39 ms, unchanged 50 ms proposal and 0.5 s reference limits.
+  Evidence SHA `03f4b8c9babd4ea3d9dd0f20a368339e918613f32115ce62877bdc6863813c2d`.
+  These use synthetic motion/body/position bindings; no game input or live
+  acceptance. Earlier combined sender testing had one pre-DOWN timing refusal;
+  its focused repeat passed, without relaxing any limit. Current real scene,
+  command-chat, zone/height and measured motion/body evidence remain missing.
+  The pending stationary observation store still had zero pairs at 08:09 UTC.
+  Assist 0.39.6 and observation 0.39.10 remain unchanged; G0 needs no repeat.
 - **Source 0.41.91:** the route loop now uses the retained bot's actual
   `/location` sender through the shared checked command implementation.
   Driver-specific bindings preserve the original descriptor, command journal,

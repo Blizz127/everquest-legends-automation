@@ -80,6 +80,25 @@ def read_available(f):
     return [(kind,key,value) for _,_,kind,key,value in _EVENT.iter_unpack(data)]
 
 
+def test_precompute_runs_before_watchdog_without_holding_stop_lock(harness):
+    import threading
+    f = harness
+    done = threading.Event()
+    def precompute(scene):
+        assert f.runner.phase == 'ready'
+        assert read_available(f) == []
+        def off():
+            f.ledger.cancel('owner OFF while preparing')
+            done.set()
+        thread = threading.Thread(target=off, daemon=True)
+        thread.start()
+        assert done.wait(.5), 'sender must release stop lock before geometry'
+        thread.join()
+    f.options['prepare_step'].precompute = precompute
+    with pytest.raises(RouteHalt): f.run()
+    assert_refused(f)
+
+
 def assert_refused(f, *, down=False, retained=False):
     assert f.runner.phase=='halted' and f.runner.steps==0
     assert f.ledger.chain is f.chain and f.chain.index==1

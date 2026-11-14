@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+from hashlib import sha256
+from io import BytesIO
 from pathlib import Path
 import numpy as np
 
@@ -16,7 +18,8 @@ class GroundSweepView:
 
     @classmethod
     def load(cls, path: Path, *, zone):
-        with np.load(path, allow_pickle=False) as data:
+        raw = path.read_bytes()
+        with np.load(BytesIO(raw), allow_pickle=False) as data:
             meta = json.loads(str(data['meta']))
             triangles = np.asarray(data['detail_tris'], dtype=np.float64).reshape(-1, 3, 3)
             polys = np.asarray(data['detail_poly'], dtype=np.int64).reshape(-1)
@@ -27,7 +30,9 @@ class GroundSweepView:
                 or not 1 <= len(triangles) <= 2000000 or len(polys) != len(triangles)
                 or polys.min() < 0 or polys.max() >= len(areas) or not np.isfinite(triangles).all()):
             raise ValueError('Invalid copied ground-sweep arrays')
-        return cls(triangles, polys, areas, components)
+        view = cls(triangles, polys, areas, components)
+        view.mesh_sha256 = sha256(raw).hexdigest()
+        return view
 
     def check(self, footprint, *, reference, component, vertical_window, max_faces=96):
         left, right = np.min(footprint, axis=0), np.max(footprint, axis=0)

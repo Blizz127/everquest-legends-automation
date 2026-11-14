@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from hashlib import sha256
+from io import BytesIO
 import json
 import numpy as np
 
@@ -20,7 +21,9 @@ class PortalPrecisionView:
     def __init__(self, ground_view, mesh_path: Path, archive_path: Path, *, zone, maximum_ulp_steps=1,
                  tile_rounding=False):
         self.ground = ground_view
-        with np.load(mesh_path,allow_pickle=False) as data:
+        mesh_bytes = mesh_path.read_bytes()
+        self.mesh_sha256 = sha256(mesh_bytes).hexdigest()
+        with np.load(BytesIO(mesh_bytes),allow_pickle=False) as data:
             a = np.asarray(data['link_a'],dtype=np.int64).reshape(-1)
             b = np.asarray(data['link_b'],dtype=np.int64).reshape(-1)
             edges = np.asarray(data['link_pts'],dtype=np.float64).reshape(-1,2,3)
@@ -45,7 +48,7 @@ class PortalPrecisionView:
             manifest_bytes=manifest_path.read_bytes()
             self.tile_grid=grid_from_metadata(json.loads(manifest_bytes),meta,
                 manifest_sha256=sha256(manifest_bytes).hexdigest(),
-                mesh_sha256=sha256(mesh_path.read_bytes()).hexdigest(),zone=zone)
+                mesh_sha256=self.mesh_sha256,zone=zone)
         self.seams = collect_seams(links,ground_view.areas,ground_view.components,
                                   maximum_ulp_steps=maximum_ulp_steps,tile_grid=self.tile_grid)
         self.tile_orientation_refusals=0

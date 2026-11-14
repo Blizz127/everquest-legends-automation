@@ -1,9 +1,21 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 08:04 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 08:14 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.92 joins the route sender to concrete terrain, static-object and
+BSP volume preparation. The exact stopped position, committed floor and
+external body/motion bounds bind both possible controls; only the fresh
+proposal's result can be staged. Preparation permits OFF, preserves both
+timing deadlines and never grants input authority. Twenty-eight focused
+checks pass, including a real watchdog on a pipe with synthetic geometry.
+The copied GFay first cell recomputed successfully (52.8 ms preparation,
+2.39 ms staging); artifact SHA
+`03f4b8c9babd4ea3d9dd0f20a368339e918613f32115ce62877bdc6863813c2d`.
+Current real scene/zone/height/motion/body and chat evidence are still needed;
+no owner route control is enabled and no leg has live acceptance.
 
 Source 0.41.91 supplies the actual checked `/location` executor for that loop,
 sharing the measurement command implementation and retained bot's key code.

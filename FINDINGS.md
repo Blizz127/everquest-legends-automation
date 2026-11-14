@@ -1,5 +1,63 @@
 # FINDINGS
 
+## Route geometry preparation 0.41.92 — 2026-11-14 08:14 UTC
+
+**VERIFIED implementation:** `RouteGeometryPreparer` now supplies the concrete
+route callback previously represented by test closures. It uses the copied
+mesh/source floor, complete transformed static inventory and BSP volume checks.
+Externally supplied speed, maximum actual hold, heading/position error, drift,
+pivot displacement and body dimensions bound the swept footprint. Request
+sizing never replaces the maximum-hold bound. No live measurements or default
+body assumptions are inferred from G0 or the replay.
+
+The first uncached synthetic measurement took 70.4 ms, exceeding the existing
+50 ms proposal lifetime. Preparation now computes forward/pivot candidates
+while stopped, before watchdog arming. It releases the shared stop lock while
+performing exact arithmetic; OFF can revoke immediately. A one-use result is
+bound to the exact reference object, floor chain, controller, source identities
+and bounds. Only the newly proposed control selects its own successful trial.
+The final stage still checks the original 50 ms deadline and the stopped
+reference still expires at 0.5 s. No timestamp is renewed. Ticket-bound terrain,
+static and BSP records remain available only while that ticket is pending and
+its context matches. Neither those records nor the cache authorizes input.
+
+**VERIFIED checks:** 28 final focused checks pass, covering the complete
+actual checked sender/watchdog on a pipe, wall and water refusal, pivot drift,
+context/source mutation, stale preparation, cross-thread OFF and one candidate's
+query refusal without substituting it for another. Scene/motion/body/position
+values in those tests are synthetic. An earlier combined run had 54 passes and
+one timed sender test refused before DOWN rather than reaching its intended
+post-DOWN revocation point; that exact test's focused repeat passed. No timing
+limit was relaxed, and the original failed run is not claimed green. Earlier
+geometry/underlying coverage checks passed 99 tests before the final cache
+binding/cancellation refinements.
+
+**VERIFIED copied-data diagnostic:** the final implementation recomputed the
+first GFay route cell using the owner's copied archive, mesh and complete static
+inventory. Both preparation and fresh staging succeeded: 52.8 ms for preparation,
+2.39 ms for staging. The synthetic body/motion/height assumptions are explicit
+in the private artifact. No input descriptor, game capture or live character was
+used. This proves one conditional source cell, not route acceptance.
+
+- Evidence: `evidence/route-geometry-source-final-0.41.92.json`, SHA
+  `03f4b8c9babd4ea3d9dd0f20a368339e918613f32115ce62877bdc6863813c2d`.
+- Reproduction recipe: `evidence/route-geometry-source-final-0.41.92-recipe.py`
+  under `~/.local/share/eql-automation/`; generated client geometry stays out of git.
+- The old replay recipe refused changed code pins. The new diagnostic verifies
+  the retained client/helper files and metadata, records three changed recipe
+  module hashes, uses the old evidence only for its hashed seed coordinates/IDs,
+  and recomputes the initial floor and new candidate using current code. It does
+  not silently adopt the historical whole-route result. Complete static
+  inventory identity/face count and BSP coordinate frame were rechecked.
+
+**OBSERVED:** the owner stationary-observation store contained zero pairs at
+08:09:32 UTC. G0's trace and owner visible-stop confirmation remain accepted;
+no repeat is needed. Assist 0.39.6 and observation 0.39.10 are unchanged.
+Current level/XP/XP-per-hour/deaths/camp remain unknown. Live command-chat/scene,
+zone/height and measured motion/body bindings are the remaining route input gate;
+F11 remains disabled. The playable 1–20 and fresh 1–50 objectives are not met.
+
+
 ## Private source 0.41.91 staged — 2026-11-14 08:04 UTC
 
 **VERIFIED:** source `ca0842a7ef18bd8cfb41a6beb45e60efe9a407a5`, archive SHA

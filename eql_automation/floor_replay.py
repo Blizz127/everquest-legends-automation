@@ -1,9 +1,11 @@
-"""Conditional floor-aware geometry trials for offline replay only.
+"""Conditional floor-aware source geometry trials, without input authority.
 
 Each trial forks its source chain. The caller commits that fork only after
-accepted geometry and completed simulated actuation; rejected/shortened
+accepted geometry and its matching actuation receipt; rejected/shortened
 trials cannot change the previous supporting floor. All terrain heights are
 checked for occupancy before selected faces feed the source/baked comparison.
+Replay uses synthetic receipts. The route ledger additionally requires a
+checked sender receipt; these trials never authorize live movement themselves.
 """
 from __future__ import annotations
 
