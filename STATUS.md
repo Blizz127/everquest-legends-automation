@@ -22,6 +22,10 @@ Updated 2026-11-14 12:54 UTC for coordinator task `829a00229b29`.
   and is not installed into the owner runtime. Owner travel 0.39.18, assist
   0.39.13 and passed G0 unchanged. Current level, XP/hour, deaths and camp
   unknown; no live route/crossing/automated XP or completed 1–20/1–50 run.
+  Commit `c6b8e72` is staged at Alienware `owner-tools/0.42.20/source`;
+  no-input synthetic seal/source-pair/one-use startup passes, SHA
+  `80f339db761fbb1dd687c3c099da3c4245079139aad2af46931ca3904f3f100d`.
+  The final 35 provisional cases also pass after the last context rechecks.
 - **Source 0.42.19:** exact expected-zone-line context now binds destination
   planning, ground observations and movement geometry. Actual area 4 is retained;
   ordinary routes still reject it. The complete copied GFay planner produces

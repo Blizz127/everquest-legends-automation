@@ -46,6 +46,16 @@ action and fresh destination geometry/camps. Owner preview 0.39.18 and assist
 character mutation or client/prefix write occurred. Current level, XP/hour,
 deaths and camp unknown; no accepted route, crossing, automated XP or 1–20/1–50.
 
+**VERIFIED private publication:** commit
+`c6b8e721524d83e785c14d9cbbce215962d0581e` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.42.20/source`. Startup uses the
+pinned retained steering implementation, synthetic geometry/receipt/positions
+and the actual new ledger: sealing preserves floor/pose, a delayed source pair
+resolves, and seal reuse halts. No worker, device, input or install change occurs.
+The final 35 provisional tests also pass after the last context rechecks.
+Archive SHA `03689a47494db3f4862e5fc7103efedf0a23d2cb3a7e2b51441c66ec3112d183`;
+startup SHA `80f339db761fbb1dd687c3c099da3c4245079139aad2af46931ca3904f3f100d`.
+
 ## Exact zone-line route and observation context — 2026-11-14 12:51 UTC
 
 **VERIFIED implementation:** source 0.42.19 propagates the immutable expected
