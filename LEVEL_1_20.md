@@ -1,9 +1,17 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 05:24 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 05:34 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.74 ships observation candidate 0.39.10: the same owner position
+capture now automatically saves a pinned icon diagnostic while preserving the
+raw pair if analysis is unavailable. Eighty-seven focused checks and actual
+helper synthetic-engine/offscreen-GUI smokes pass. This closes an observation
+workflow gap, not route acceptance. The current UI/zone/motion calibration and
+G2 speed/turn bootstrap remain unresolved; legacy long calibration bursts
+were not re-enabled.
 
 Source 0.41.71 adds positive-hazard log cancellation to measurement scene
 checks; 0.41.72 connects pinned client icons to saved observation crops;

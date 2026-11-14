@@ -13,7 +13,7 @@ class PositionBase(Base):
         self.stop_action('Stopped because chat input opened. Press F8 after closing chat.')
 
 
-def setup(tmp_path):
+def setup(tmp_path, **options):
     game = tmp_path/'game'; (game/'Logs').mkdir(parents=True)
     log = game/'Logs/eqlog_Test_freeport.txt'
     log.write_text('[Sat Nov 14 03:00:00 2026] Your Location is 99, 99, 99\n')
@@ -30,7 +30,7 @@ def setup(tmp_path):
         (dest/'metadata.json').write_text(json.dumps(metadata))
         return dest
     e = make_owner_nov12_engine(PositionBase,capture_fn=capture,clock=lambda:now[0],
-                               output=output,private_root=output)()
+                               output=output,private_root=output,**options)()
     e.settings.game_dir = str(game)
     def queue():
         e.post(POSITION_JOB); e.handle_job(*e.jobs.get_nowait())
@@ -132,6 +132,31 @@ def test_exit_cancels_without_closing_shared_gate(tmp_path):
     e,now,captures,hook,output,log,queue,append,tick=setup(tmp_path);queue()
     e.gate.close=forbidden
     e.run();assert e.position_observation is None and not captures
+
+
+@pytest.mark.parametrize('action',['success','failure','f9','settings','process'])
+def test_post_capture_analysis_is_one_input_free_step_and_keeps_raw_pair(tmp_path,action):
+    calls=[]
+    def analyze(dest,**kwargs):
+        assert e.sender is None and e.pointer is None
+        assert (dest/'unbound-location.json').is_file()
+        before=(dest/'unbound-location.json').read_bytes()
+        kwargs['still_current']();calls.append(dest)
+        if action=='failure':raise ValueError('unsupported source fixture')
+        if action=='f9':e.stop_action('F9')
+        if action=='settings':e.post('settings',e.settings)
+        if action=='process':e.gate.session['start_ticks']='changed'
+        kwargs['still_current']()
+        assert (dest/'unbound-location.json').read_bytes()==before
+        report=dest/'combat-analysis.json';report.write_text('{}');return report
+    e,now,captures,hook,output,log,queue,append,tick=setup(tmp_path,analysis_fn=analyze)
+    queue();append();tick();tick(2)
+    assert len(calls)==1 and len(captures)==1 and e.sender is None
+    assert (output/'1/unbound-location.json').is_file()
+    analyses=[values for name,values in e.traces if name=='position_analysis_result']
+    assert len(analyses)==1 and not analyses[0]['game_input_sent'] and not analyses[0]['movement_authorized']
+    assert analyses[0]['outcome']==('saved' if action=='success' else 'unavailable' if action=='failure' else 'cancelled')
+    assert last_result(e)['outcome']==('saved' if action in ('success','failure') else 'cancelled' if action=='f9' else 'refused')
 
 
 def test_immediate_crop_writer_borrows_gate_and_discards_cancelled_capture(tmp_path):

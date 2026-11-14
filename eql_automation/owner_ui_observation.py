@@ -131,6 +131,10 @@ def capture_focused_ui(*, label, gate, layout_loader, game, character, server,
         "ui_skin_from_saved_ini": layout.skin,
         "ui_scale_from_saved_ini": layout.ui_scale,
         "source_sha256_postcapture": sources,
+        "combat_widget_source": (
+            {"file": str(layout.sources["PW_CombatStateAnim"]),
+             "sha256": sources.get(str(layout.sources["PW_CombatStateAnim"]))}
+            if "PW_CombatStateAnim" in layout.sources else None),
         "saved_layout_is_live_verified": False,
         # The map can browse other zones. A captured label alone is not a
         # current-zone observation, even if it matches a historical log line.

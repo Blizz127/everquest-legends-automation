@@ -10,6 +10,7 @@ from .owner_navigation_preflight import make_owner_nov12_engine as preflight_eng
 from .owner_navigation_preflight import settings_identity, window_identity
 from .owner_ui_observation import DEFAULT_OUTPUT, capture_focused_ui
 from .position_observation import StationaryPositionSession
+from .owner_combat_diagnostic import analyze_owner_observation
 
 POSITION_JOB = 'observe_position'
 
@@ -20,6 +21,7 @@ def capture_with_helper(**kwargs):
 
 
 def make_owner_nov12_engine(base_engine, *, capture_fn=capture_with_helper,
+                           analysis_fn=analyze_owner_observation,
                            clock=time.monotonic, output=DEFAULT_OUTPUT,
                            private_root=DEFAULT_OUTPUT):
     class PositionObservationEngine(preflight_engine(base_engine, clock=clock)):
@@ -153,7 +155,26 @@ def make_owner_nov12_engine(base_engine, *, capture_fn=capture_with_helper,
                     path = pending['session'].tick()
                     if path is not None:
                         self._position_current(pending)
-                        self._end_position('saved', 'saved '+str(path), path=path)
+                        analysis_note=''
+                        try:
+                            report=analysis_fn(path,game=Path(self.settings.game_dir),
+                                private_root=private_root,still_current=lambda:self._position_current(pending))
+                            self._position_current(pending)
+                        except Exception as error:
+                            try:self._position_current(pending)
+                            except Exception:
+                                self.trace('position_analysis_result',outcome='cancelled',
+                                    reason='request changed during analysis',output_path=None,
+                                    game_input_sent=False,movement_authorized=False)
+                                raise
+                            self.trace('position_analysis_result',outcome='unavailable',reason=str(error),
+                                output_path=None,game_input_sent=False,movement_authorized=False)
+                            analysis_note='; icon analysis unavailable (saved capture retained)'
+                        else:
+                            self.trace('position_analysis_result',outcome='saved',reason='diagnostic only',
+                                output_path=str(report),game_input_sent=False,movement_authorized=False)
+                            analysis_note='; icon analysis saved'
+                        self._end_position('saved','saved '+str(path)+analysis_note,path=path)
                     elif phase == 'waiting' and pending['session'].phase == 'settling':
                         self.emit('Location received. Stay still with chat closed and the '
                                   'Current Zone map visible; collecting in two seconds. F9/F11 cancel.')

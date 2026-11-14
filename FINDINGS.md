@@ -1,5 +1,70 @@
 # FINDINGS
 
+## Automatic owner capture analysis: source 0.41.74 / candidate 0.39.10 — 2026-11-14 05:34 UTC
+
+**VERIFIED implementation:** the existing position-observation flow now calls
+`owner_combat_diagnostic.analyze_owner_observation()` after the raw metadata and
+`unbound-location.json` pair are saved. The capture records the XML selected by
+`UiLayout.sources['PW_CombatStateAnim']`, including its post-capture hash. The
+analyzer uses that recorded source, checks the pair/metadata and source pins,
+and copies XML plus adjacent animation textures into the private observation
+folder. It refuses unresolved texture fallback rather than guessing a source.
+Neither the game directory nor any other part of the protected prefix can be
+an output root. Original install files and raw observations remain unchanged.
+
+A successful analysis writes `combat-analysis.json` and a separate engine
+trace outcome. Missing/changed/unsupported source data leaves the raw pair
+saved and reports analysis unavailable. F9, settings or process changes suppress
+a current analysis result; a late revoked result is retained under a cancelled
+filename. No sender or pointer is created. The analysis still chooses no live
+state, grants no movement, and does not verify textures at the earlier capture
+time. This is the existing owner-invoked observation, not an additional owner
+test. Old 0.39.9 pairs remain usable by the manual pinned-atlas analyzer.
+
+**VERIFIED focused validation:** 87 tests passed in 2.11 seconds across the
+post-capture analyzer, owner adapter, matcher and existing location collector.
+They cover source selection, original-file/raw-pair preservation, unavailable
+textures (without invented fallback), changed metadata/XML, protected-prefix
+outputs, cancellation and settings/process changes. Compile and whitespace
+checks pass. No full suite ran.
+
+**VERIFIED private helper publication:** `owner-assist/0.39.10` was built from
+the retained, hash-checked 0.39.9 snapshot. Twenty runtime files are pinned by
+the new entry; rotation core/engine/GUI and assist behavior are unchanged.
+New builder `tools/build_nov12_preview_03910.py` refuses existing destinations
+and protected-prefix outputs. Archive SHA
+`e3430fd77c1a55601af338222d0a6ec1f808204964be0fd84b1fc6c52eb8a89d`.
+The candidate is staged at Alienware
+`~/.local/share/eql-automation/owner-assist/0.39.10`.
+
+The actual retained Engine's synthetic event/log/capture flow saved one pair
+and its icon analysis, then preserved a second pair with analysis unavailable
+when a synthetic texture was removed. F9/F11 cancellation passed. It created
+no real display capture, input device or game input. The offscreen GUI smoke
+showed MEASUREMENT ONLY with Observe current position visible/enabled, no
+worker, and unchanged existing settings. The first GUI attempt correctly
+refused an empty game directory at the spell-data sanity check. The successful
+smoke used only the copied ID 14/200 spell rows, SHA
+`445bb32f1980715b080e5ed59e21275a726c54049d61d20dd85a5af01daf84ca`,
+in a temporary private directory; it did not open the protected install.
+GUI PNG SHA `721fb63e825ea22141442c138abc2694be74120a251a344f8d7b060b65679125`.
+The saved GUI image was visually inspected; the observation and stop controls
+are visible. Local publication evidence is
+`releases/owner-assist-0.39.10-staging.json`; remote `staging.json`,
+`engine-smoke.txt` and `measurement-smoke.json/png` are beside the candidate.
+
+**Live gate / remaining integration:** one read-only listing this turn still
+found zero saved owner position pairs. No live capture/input/login was initiated.
+The stationary capture and current UI/zone/motion calibration remain pending;
+there is no accepted 1–20 route or fresh-character 1–50 run. Current level,
+XP/hour, deaths and camp remain unknown. G0 does not need repeating. Assist
+stays 0.39.6. Read-only integration audit also identified the next motion
+bootstrap gap: G2 currently requires a measured speed bound before its own
+forward measurement and cannot supply the turn-rate/sign/latency/heading inputs
+needed by the fixed-route follower. Re-enabling legacy long calibration bursts
+would bypass the bounded implementation and was not done. Resolve that assembly
+while preserving owner-driven live tests and strict assist isolation.
+
 ## Private source 0.41.73 staging and Alienware timing — 2026-11-14 05:25 UTC
 
 **VERIFIED:** Commit `01bc41e4a7a0609f37729c7452025d4b6d3fc510`, archive SHA

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.73 / assist 0.39.6 / observation candidate 0.39.9
+# EverQuest Legends automation — project 0.41.74 / assist 0.39.6 / observation candidate 0.39.10
 
 ## Current availability
 
@@ -22,6 +22,17 @@ allows. These are planned camps; no leg is accepted for F11 yet.
 Source tools 0.41.73 use the private Alienware path
 `~/.local/share/eql-automation/owner-tools/0.41.73/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.74 ships observation candidate **0.39.10**. The existing **Observe
+current position** flow now automatically copies the layout-selected combat
+XML and adjacent textures to the private observation folder and writes
+`combat-analysis.json`. It never writes to the game install. Missing or changed
+sources leave the raw capture available and report analysis unavailable;
+cancellation suppresses a current analysis result. This adds no movement or
+combat input. Eighty-seven focused checks, the actual helper's synthetic engine
+flow and an offscreen GUI startup pass. Assist remains 0.39.6. Existing 0.39.9
+captures remain usable by the separate analyzer; do not repeat a capture already
+saved just to upgrade.
 
 Source 0.41.73 speeds up that saved-crop diagnostic using exact batched integer
 image operations and cached immutable template bounds. Thirty-one focused
@@ -265,14 +276,14 @@ Assist's movement path refuses immediately; this adds no turn, targeting,
 combat, camp or route action. The candidate keeps the same assist controls
 and HP calibration, but its movement implementation is not client-accepted.
 
-## Observe current position from the helper: candidate 0.39.9
+## Observe current position from the helper: candidate 0.39.10
 
 This is an alternative to the pending 0.41.61 terminal collector below, not
 another G0 test. No repeat of the completed movement pulse is needed.
 Close other helpers, then launch on Alienware:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.9
+cd ~/.local/share/eql-automation/owner-assist/0.39.10
 EQL_ROTATION_TRACE="$HOME/eql-position-observation.jsonl" ./launch.sh --measure-navigation
 ```
 
@@ -282,7 +293,11 @@ current position first**, then focus EverQuest and type `/location` **once**
 within 60 seconds. Press Enter, close chat and leave the game focused and map
 visible. The helper waits two seconds after the new log line, then saves
 player/target/map crops and `unbound-location.json` to its private observation
-store. The measurement tab displays the saved directory or refusal reason.
+store. Candidate 0.39.10 then runs the icon diagnostic automatically, saving
+`combat-diagnostic-assets/` and `combat-analysis.json` beside the pair. The
+measurement tab reports whether analysis was saved or unavailable; an analysis
+failure preserves the raw capture. The tab displays the saved directory or
+refusal reason.
 Report that path when available. It saves no chat crop and sends no commands,
 keys or clicks. Ordinary chat entry keeps rotation stopped while this explicitly
 requested diagnostic waits; F9, F11, **Stop measurement**, settings changes or
