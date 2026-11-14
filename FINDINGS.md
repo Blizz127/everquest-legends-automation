@@ -1,5 +1,33 @@
 # FINDINGS
 
+## 2026-11-14 17:19 UTC — source 0.42.42 published, five source probe areas pass
+
+VERIFIED private publication on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.42.42/source`, revision
+`4fab02fb07de228ac4ba851c751759399a65d011`. Source, tools and tests match the final 57-pass
+Alienware snapshot byte for byte. Imports, diagnostic CLI startup and copied
+client-data pins pass. Publication record:
+`releases/eql-automation-0.42.42-staging.json`.
+
+- Archive SHA: `fb8b7edef8c40bd182a7af599ee45c017e82d97837c538aff1879b5282d2e1fe`.
+- Startup SHA: `956bd973724d7baa7ebd7f5bd98207bc9bf4e7dd58148f77f4b358f8866cfb08`.
+- Focused output SHA: `0f6932d70bbf559ede2bdab7f3dab7353c9ea7a6366c79fef4066b04914991dd`.
+- Final copied geometry audit SHA:
+  `f3c6ad73badd02d42b6933177adda08973fe85b0e43af23663a77526b1902358`.
+
+Five of six explicit hypothetical source probe sizes pass; the largest North
+Wall disk still refuses. The audit completed in 40.33 seconds on Devbox. This
+removes the copied-detail start obstruction for the smaller conditional areas,
+not the remaining live floor/position/height/heading requirements.
+
+Owner preview remains 0.39.28 using the existing rotation tool. No input
+worker/device, game input, settings save, prefix edit, login, character action
+or session interruption. G0 passed; no repeat. No accepted automatic camp
+relocation, real 1–20 route, automated level gain or fresh hands-off 1–50.
+Actual level, XP, XP/hour, deaths and camp remain unknown. Next: capture the
+exact reached floor through camp and acquire fresh stopped height/position
+evidence before any checked heading pulse.
+
 ## 2026-11-14 17:19 UTC — source 0.42.42, source-floor probe geometry
 
 VERIFIED final copied-data audit: `crushbone-source-probes-0.42.42-final.json`, SHA

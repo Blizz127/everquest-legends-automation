@@ -625,7 +625,7 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Source 0.42.42 is being staged on Alienware at:
+The latest private source is staged on Alienware at:
 
 ```text
 ~/.local/share/eql-automation/owner-tools/0.42.42/source
@@ -646,9 +646,11 @@ when heading is unknown. It requires fresh stopped observations and checks all
 possible directions against copied terrain, objects and region data. It does
 not send input or enable automatic camp relocation. The diagnostic
 `tools/audit_camp_probe_envelopes.py --help` describes its explicit hypothetical
-motion/body parameters; results stay in the private data store. Both copied
-camp points currently refuse this probe: Slave Mines needs retained floor
-provenance and North Wall needs further mesh-seam analysis. G0 stays passed.
+motion/body parameters; results stay in the private data store. That baked-mesh
+probe refuses both copied points: Slave Mines needs retained floor provenance
+and North Wall has incomplete baked coverage. The source-floor checker in
+0.42.42 above supports five tested hypothetical areas; it does not waive
+those mesh refusals or enable movement. G0 stays passed.
 Use preview **0.39.28** above for owner-run assist/travel/camp tests.
 
 Source 0.42.38 adds bounded near-straight proposal compaction and the
