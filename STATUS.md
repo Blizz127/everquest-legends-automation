@@ -1,11 +1,28 @@
 # STATUS
 
-Updated 2026-11-14 22:58 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 23:08 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.73 locally verified; not installed.** VERIFIED 71 focused
+  checks: 65 contact-history, stopped-observation and retained terrain cases;
+  six real watchdog-pipe recovery/cancellation cases (contact and terrain).
+  Runtime imports work without development tools. Distinct contact checkpoint
+  retains actual arrival, final pulse center domain, original offset/residual
+  and expiry; historical checks survive deliberate controller retirement.
+  First recovery resumes stationary camp after fresh compatible log samples,
+  bypassing ordinary probe/route preparation. Contact departure remains absent.
+  Reproduced and fixed a raw-sample mutation during the initial source callback.
+  No game input, device creation, login or character/prefix change. Next: wire
+  the contact operation into the source itinerary/execution loop and distinct
+  owner/camp arrival capture, then package the complete owner candidate.
+  One read-only Alienware receipt request again timed out at SSH; no remote
+  install or batch restart. Installed owner/runtime/source remain
+  0.39.32/0.42.61/0.42.68. G0 is VERIFIED passed and must not repeat.
+  Level, XP, XP/hour, deaths and camp remain unknown; no accepted real 1–20
+  route or fresh-character hands-off 1–50 run. Package hashes follow below.
 - **Source 0.42.72 locally verified; not installed.** Source commit
   `53d729a6409b96919110de4c42b691ac83ebdab8`; private candidate
   `releases/eql-source-tools-0.42.72-candidate.tar.gz`, SHA

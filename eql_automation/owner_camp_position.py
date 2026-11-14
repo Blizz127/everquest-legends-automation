@@ -10,6 +10,8 @@ import time
 from types import SimpleNamespace
 
 from .camp_stopped_height import measure_camp_stopped_height
+from .camp_contact_checkpoint import CampContactCheckpoint
+from .camp_contact_observation import observe_camp_contact
 from .camp_probe_preparation import CampProbePreparation
 from .camp_probe_runtime import CampProbeRuntime
 from .camp_probe_calibration import reduce_camp_probes
@@ -252,6 +254,14 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 self.trace('camp_position_stopped',**self.camp_position_last_result)
 
         def _start_camp_probe(self,p,record):
+            if type(p.floor) is CampContactCheckpoint:
+                # Thin contact is not an ordinary floor or a new calibration.
+                # Preserve stationary camping; no ordinary provider/probe may
+                # consume this historical correspondence as a movement start.
+                self._camp_position_current(p)
+                record['relocation_available']=False
+                record['relocation_reason']='Contact departure needs a distinct movement preparation'
+                return False
             plan=self._camp_probe_plan(p)
             self._camp_position_current(p)
             if plan is None:return False
@@ -395,7 +405,9 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 if isinstance(request,LocationRequest):
                     p.collector.command_sent(request,self._camp_position_hotkey(p,request))
                 if p.collector.phase=='complete':
-                    p.result=measure_camp_stopped_height(p.floor,p.reader,p.collector.first,p.collector.second,
+                    measure=(observe_camp_contact if type(p.floor) is CampContactCheckpoint
+                             else measure_camp_stopped_height)
+                    p.result=measure(p.floor,p.reader,p.collector.first,p.collector.second,
                         minimum_log_seq=p.baseline,released_at=p.released_at,owner_binding=p.owner_binding,
                         binding_reader=lambda:self._camp_position_current(p),clock=clock,
                         local_wall_clock=self.camp_wall)
@@ -407,9 +419,10 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 p.busy=False
                 if p.cancelled:self._release_camp_position(p)
             if not complete or p.cancelled:return
+            kind='contact' if type(p.floor) is CampContactCheckpoint else 'height'
             record=dict(outcome='complete',collection=p.collector.snapshot(),
-                height=json.loads(p.result.payload),height_sha256=p.result.sha256,
                 location_events=p.events,movement_sent=False,real_client_accepted=False)
+            record[kind]=json.loads(p.result.payload);record[kind+'_sha256']=p.result.sha256
             try:
                 if self._start_camp_probe(p,record):return
             except Exception as error:
@@ -425,7 +438,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
             p.journey.height_check_done=True
             p.journey.last_considered_level_advance=p.level_advance
             self.camp_position_last_result=record
-            p.camp.record('stopped_height_checked',height_sha256=p.result.sha256)
+            p.camp.record('stopped_'+kind+'_checked',**{kind+'_sha256':p.result.sha256})
             self.trace('camp_position_complete',**record)
             # Base hook rechecks the camp after trace callbacks before resuming.
             super()._camp_recovery_complete(p.camp,clock())

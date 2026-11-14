@@ -1,6 +1,17 @@
 # EverQuest Legends automation — current owner guide
 
-Development source **0.42.72** · local stair candidate **0.39.33** (runtime source 0.42.69) · installed travel/camp test **0.39.32** (runtime source 0.42.61) · retained assist **0.39.13**.
+Development source **0.42.73** · local stair candidate **0.39.33** (runtime source 0.42.69) · installed travel/camp test **0.39.32** (runtime source 0.42.61) · retained assist **0.39.13**.
+
+Source 0.42.73 adds the internal camp handoff for rug contact. A distinct
+checkpoint keeps the actual arrival and original height correspondence. After
+the first recovered kill, the camp checks two new positions without snapping
+rug height to terrain or recalibrating it. This can resume stationary camping;
+contact departure into another route is not implemented. The contact record is
+never passed into ordinary movement preparation. F8/F9 and the existing
+location sender passed local pipe tests, alongside unchanged terrain recovery.
+This remains a local source candidate: owner travel cannot reach this handoff
+until the contact itinerary and arrival adapter are connected. No new launch
+command or additional G0 test is needed.
 
 Source 0.42.72 adds the internal rug-crossing controller. It follows checked
 waypoints through the existing movement sender, waits for actual stopped-position

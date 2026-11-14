@@ -10,6 +10,7 @@ import json
 import math
 
 from .camp_floor_checkpoint import CampFloorCheckpoint
+from .camp_contact_checkpoint import CampContactCheckpoint
 
 
 def arrival_motion_basis(runtime, pending):
@@ -50,7 +51,7 @@ class CampInputContinuity:
     """Own the original observer until camp ends; invalidation is permanent."""
     def __init__(self,observer,*,topology,basis,binding,clock,floor=None):
         if (type(basis) is not bytes or not basis or type(topology) is not int
-                or floor is not None and type(floor) is not CampFloorCheckpoint):
+                or floor is not None and type(floor) not in (CampFloorCheckpoint,CampContactCheckpoint)):
             raise ValueError('Camp requires copied arrival metadata and input topology')
         self.observer=observer;self.topology=topology;self.basis=basis
         self.binding=binding;self.clock=clock;self.valid=True;self.closed=False

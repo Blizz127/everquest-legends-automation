@@ -1,5 +1,55 @@
 # FINDINGS
 
+## 2026-11-14 23:08 UTC — 0.42.73 distinct contact camp history and recovery
+
+VERIFIED locally: **71 focused checks** using synthetic client observations.
+The 65 history/observation cases cover actual rug height preservation, retired
+controller and expired historical calibration, original reader/source/model
+identity, changed nested evidence, distant corridor positions, unsupported or
+disjoint height candidates, release ordering, freshness and callback mutation.
+The six retained watchdog/OS-pipe cases cover successful first recovery and
+F8/F9 after the second location-hotkey DOWN for both contact and terrain camps.
+UP precedes reader release; assist arms only after cleanup, without movement.
+These are not real-client acceptance or automated level gains.
+
+`CampContactCheckpoint` accepts only the exact live contact controller/arrival,
+then retains a private contact index and the final pulse's center domain. It
+records the actual contact pose/reference while the ordinary ledger remains at
+its unchanged departure. It has no ordinary floor-fork API and is excluded from
+`CAMP_FLOOR_TYPES`. Its historical motion basis uses a distinct contact format.
+Checks survive deliberate controller retirement without rearming its observer;
+input continuity invalidates the checkpoint on stop or physical-input loss.
+
+`observe_camp_contact` compares two newly collected stopped samples using the
+original offset and residual, preserving every compatible local height and the
+intersection of their unions. It never fits a new offset, snaps to terrain, or
+extends calibration expiry. An expired correspondence is explicitly historical;
+the fresh diagnostic is not movement calibration. The camp's first-recovery
+branch records contact separately and resumes stationary camping without
+invoking the ordinary relocation provider. Later contact departure still needs
+its own preparation. The owner itinerary/arrival adapter is not wired yet.
+
+A regression test first reproduced acceptance of raw fields mutated inside the
+initial source callback. Raw identity/value snapshots now precede that callback.
+The original failing JUnit remains as `eql-0.42.73-contact-before.xml`, SHA
+`c411ce22679b5b86e2bd5ec05cce65683472182336bfac3ba14b14175c5838d0`.
+Final artifacts in `~/.local/share/eql-automation/releases/`:
+
+- `eql-0.42.73-contact-final-local.xml`: 65 passed; SHA `fd7e3993c6e771d917b9c28e64fade8143d873b1b2a154808f089e9b21a49664`.
+- `eql-0.42.73-camp-transport-final.xml`: 6 passed; SHA `cac49f0fb459837265b354da5aee77a08b733dbbd95430840fac7be6890482f7`.
+- `eql-0.42.73-runtime-startup.json`: imports without development-tool dependencies; SHA `7fbbc400645ae02755eae155dc359debdf8308d5045ac3a45cde360bd2162e7d`.
+
+The retained copied-client 0.42.71 geometry artifact remains SHA
+`d2a2b343006d5ba0fee77b49c3a976f70623c4dfc09cabbaa88105166d844393`;
+212 of its 217 code pins still match. Differences are the version, camp
+continuity/recovery and the prior contact sender/policy integration; geometry
+was not rerun for this camp-only increment. No new owner control is enabled.
+One read-only Alienware arrival-receipt request timed out at SSH port 22.
+Installed versions remain owner 0.39.32/runtime 0.42.61/source tools 0.42.68;
+no remote batch restart, installation, login, device or character/prefix change.
+G0 remains passed. Real level/XP/XP-hour/deaths/camp are unknown. Neither 1–20
+nor the original fresh-character hands-off 1–50 goal is complete.
+
 ## 2026-11-14 22:58 UTC — 0.42.72 receipt-driven contact traversal and arrival
 
 VERIFIED local source commit `53d729a6409b96919110de4c42b691ac83ebdab8`
