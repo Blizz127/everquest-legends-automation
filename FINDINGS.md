@@ -1,5 +1,15 @@
 # FINDINGS
 
+## Private 0.41.57 staging — 2026-11-14 02:31 UTC
+
+**VERIFIED private staging:** Source 0.41.57, commit `c6ac9ee`, is available
+at Alienware `~/.local/share/eql-automation/owner-tools/0.41.57/source`.
+Archive SHA `d16bce7389f4694b557e7a0b273ff33c017e2e34e0175e6312a36a35b342e444`
+matched remotely. Three pure geometry smokes, three CLI startups and an
+invalid-option refusal passed; `../smoke.json` records all seven checks.
+No input device or game was opened. Existing owner-assist packages and game
+install remain unchanged. This source release does not enable F11.
+
 ## Exact tile model and conditional source-floor occupancy — 2026-11-14 02:30 UTC
 
 **VERIFIED implementation:** Source 0.41.57 adds an explicit `--tile-rounding`

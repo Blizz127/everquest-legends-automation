@@ -19,7 +19,7 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.57 are prepared for the private Alienware path
+Source tools 0.41.57 are staged at the private Alienware path
 `~/.local/share/eql-automation/owner-tools/0.41.57/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 

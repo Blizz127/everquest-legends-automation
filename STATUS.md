@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 02:30 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 02:31 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route or automated
   XP gain. Fresh-character hands-off 1–50 and strict assist are still required.
@@ -12,7 +12,11 @@ Updated 2026-11-14 02:30 UTC for coordinator task `829a00229b29`.
   rotation bot. F8 rotation, F9 stop, F10 heal; movement/target/loot/vendor/camp
   remain manual. F11/F12 are disabled. Separate G0 candidate 0.39.7 is unchanged.
   Live HP, target/chat identity and native melee stop remain unverified.
-- Source **0.41.57** is prepared for private staging. **VERIFIED:** 67 focused
+- Source **0.41.57**, commit `c6ac9ee`, is privately staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.57/source`. Archive SHA
+  `d16bce7389f4694b557e7a0b273ff33c017e2e34e0175e6312a36a35b342e444`
+  matched; seven remote geometry/startup/refusal checks passed without devices
+  or game input. **VERIFIED:** 67 focused
   tile/precision/occupancy tests pass. An exact manifest-bound float32 model
   matches all 2,771 examined reciprocal tile discrepancies. It does not widen
   an arbitrary ULP tolerance. No client assets or existing mesh are changed.
