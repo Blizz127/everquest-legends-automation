@@ -1,5 +1,51 @@
 # FINDINGS
 
+## Provisional source-floor receipt transaction — 2026-11-14 12:54 UTC
+
+**VERIFIED implementation:** source 0.42.20 adds `ProvisionalRouteFloorCommit`
+as a distinct ledger subclass. Ordinary `RouteFloorCommit` behavior is unchanged.
+The new ledger seals one exact elapsed watchdog receipt within the existing
+UP+0.3-second limit, including key, duration, stage/DOWN order, maximum hold and
+unchanged controller/floor bindings. Sealing changes neither committed source
+floor nor predicted pose. Interrupted receipts cannot resolve as source moves.
+Ordinary immediate commit and reuse as another movement ticket refuse.
+
+The immutable seal has a fixed expiry, at most ten seconds from UP. Its exact
+pending fork can supply observations as each reply arrives, retaining the ground
+observer's 0.5-second age limit. Resolution requires a fresh stopped source pair,
+the same owner/reader/zone/line context supplied by the exclusive controller,
+unchanged base/fork snapshots, exact source-floor support and the original
+checked footprint. It integrates the release, accepts the pair, then publishes
+the fork under the shared stop lock. Any failure halts the source runner and
+discards pending state. No log consumer, movement, input authority or automatic
+source-vs-loading decision is introduced by this class.
+
+**VERIFIED focused checks:** 74 transaction cases pass, including actual watchdog
+DOWN/UP writes to an OS pipe followed by explicitly synthetic elapsed time and
+positions. They cover stale/interrupted/wrong/excessive receipts, source changes,
+loading cancellation, assist/mode/generation changes, expiry, unsupported or
+moving positions, one-use semantics and stops inside callbacks. An initial test
+fixture incorrectly moved its clock backwards while constructing an outside-
+footprint observation; correcting the fixture exercises the intended refusal.
+
+Read-only review identified a final-clock race: mode, generation or source context
+could change after the last snapshot without clearing the ledger. All three
+cases were reproduced as failing tests. Rechecking context after that clock
+read prevents publication; callback-free seal/pending/state checks precede the
+final swap. The same check covers receipt sealing. Footprint containment now
+uses the same convex hull normalization as staging, including clockwise input.
+No existing timing limit was increased.
+
+**Remaining runtime work:** the checked sender currently cancels the source fork
+for a final crossing pulse; a corridor path must seal it before that cancellation.
+Source-position collection and expected arrival must own one reader, processing
+loading before any old-zone check. A corridor also needs one aggregate step/time/
+hold budget rather than renewed one-pulse declarations. Then bind the owner
+action and fresh destination geometry/camps. Owner preview 0.39.18 and assist
+0.39.13 are unchanged; G0 remains passed. No new owner test, game login/input,
+character mutation or client/prefix write occurred. Current level, XP/hour,
+deaths and camp unknown; no accepted route, crossing, automated XP or 1–20/1–50.
+
 ## Exact zone-line route and observation context — 2026-11-14 12:51 UTC
 
 **VERIFIED implementation:** source 0.42.19 propagates the immutable expected

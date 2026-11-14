@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 12:51 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 12:54 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,17 @@ Updated 2026-11-14 12:51 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.20:** provisional floor transactions seal actual elapsed
+  receipts within the existing 0.3-second limit without advancing floor/pose.
+  A fresh stopped source pair on the exact checked footprint/fork is required
+  to resolve; loading/stop discards. 74 focused checks pass, including a real
+  pipe receipt with synthetic delayed positions and callback cancellation.
+  Review reproduced and fixed a final-clock scope-change race. **Next:** one
+  reader for source-position/loading decisions, aggregate crossing-corridor
+  policy, then sender and owner travel wiring. This primitive sends no input
+  and is not installed into the owner runtime. Owner travel 0.39.18, assist
+  0.39.13 and passed G0 unchanged. Current level, XP/hour, deaths and camp
+  unknown; no live route/crossing/automated XP or completed 1–20/1–50 run.
 - **Source 0.42.19:** exact expected-zone-line context now binds destination
   planning, ground observations and movement geometry. Actual area 4 is retained;
   ordinary routes still reject it. The complete copied GFay planner produces

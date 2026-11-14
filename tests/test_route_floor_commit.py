@@ -31,7 +31,7 @@ def legacy():
     return steer
 
 
-def setup(legacy,*,clock=None,lock=None):
+def setup(legacy,*,clock=None,lock=None,ledger_factory=RouteFloorCommit):
     state={'now':100.,'mode':'measurement','generation':1}
     clock=(lambda:state['now']) if clock is None else clock
     observer,mesh,_,_=observer_fixture()
@@ -52,7 +52,7 @@ def setup(legacy,*,clock=None,lock=None):
         for i,offset in ((1,-.4),(2,0.))]
     runner.observe_stopped(*fixes,released_at=at-.53,now=at)
     lock=threading.RLock() if lock is None else lock
-    ledger=RouteFloorCommit(runner,chain,stop_lock=lock,clock=clock)
+    ledger=ledger_factory(runner,chain,stop_lock=lock,clock=clock)
     ground=SimpleNamespace(polys=(0,0,1,1),triangles=mesh._detail,areas=(63,63),components=(7,7))
     view=SimpleNamespace(ground=ground,seams=(),by_polygon={},source_faces_for_footprint=lambda _:sources)
     footprint=((.5,1.5),(2.2,1.5),(2.2,2.5),(.5,2.5))
