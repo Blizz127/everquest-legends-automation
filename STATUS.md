@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 14:33 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 14:34 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -22,8 +22,12 @@ Updated 2026-11-14 14:33 UTC for coordinator task `829a00229b29`.
   with explicit DOWN/UP event assertions. No game input or client acceptance.
   **Next:** conditional step approach/transfer execution with the unchanged full
   motion envelope, then owner-runtime connection. Some retained steps cannot
-  transfer directly from an earlier cap and need a compound approach. Source
-  publication pending; owner movement 0.39.20 and assist 0.39.13 unchanged.
+  transfer directly from an earlier cap and need a compound approach.
+  Source `06b1cbd` staged at Alienware `owner-tools/0.42.29/source`; all 57
+  selected startup checks pass without skips, imports/CLI and copied-data pins
+  pass. No worker/device/game input. Startup SHA
+  `d7293b0ba4d55a9a2c3976c22f8c38b7c2da63a492cc263aa9c8a1ab05cfca7d`.
+  Owner movement 0.39.20 and assist 0.39.13 unchanged.
   Current level/XP/hour/deaths/camp unknown; G0 passed, no repeat.
 - **Source 0.42.28:** mixed source-floor itinerary builder now joins a supplied
   starting floor to retained XY/step hints, rebuilds every walking cell/transfer,

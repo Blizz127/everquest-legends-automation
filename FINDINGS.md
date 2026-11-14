@@ -43,6 +43,14 @@ observations are not retained acceptance artifacts or client traversal proof.
 A future executor must handle a checked compound approach where direct rebasing
 fails, and cover the entire unchanged motion envelope across the transition.
 
+**VERIFIED private source publication:** commit `06b1cbd` is staged on Alienware
+at `~/.local/share/eql-automation/owner-tools/0.42.29/source`. All 57 selected
+startup checks pass without skips; imports, CLI startup and copied data pins
+match. No worker, device, game input, character action or prefix write.
+Archive SHA `7431b4d8b57a981aa5add5515f4b42a0f69d66bbdbafab4bba7aa1a952688a8d`;
+startup SHA `d7293b0ba4d55a9a2c3976c22f8c38b7c2da63a492cc263aa9c8a1ab05cfca7d`;
+test output SHA `f4a63f7803be81ee561372b16c1b680e1e8595798617acfdf53d969dd502460e`.
+
 **Remaining:** conditional step movement and landing acknowledgment, plus the
 owner-runtime connection. Source core development does not enable the owner
 1–20 autopilot. Movement preview 0.39.20 and assist 0.39.13 remain current;
