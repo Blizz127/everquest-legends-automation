@@ -1,5 +1,38 @@
 # FINDINGS
 
+## 2026-11-14 17:01 UTC — 0.39.28 published; camp observer remains continuous
+
+VERIFIED: source 0.42.40 revision `ea6d335e9142dffec958619bf8e5acf2f92b1258` and preview 0.39.28
+are published on Alienware at `owner-tools/0.42.40/source` and
+`owner-assist/0.39.28` under the private store. Runtime/tests match the final
+27-pass validation snapshot byte for byte. Manifest, installed executable and
+spell pins, both route guides, owner NPC history and GUI/startup checks pass.
+GUI bytes match the previously inspected image. No broad repeated suite ran.
+
+- Release SHA: `4a2b6153c9a1dd7d90e7135a3ac9ae8963d6dc4fcb595275ad9c232a92348f0f`.
+- Startup SHA: `78a33c1aa5eb47c0ca6d834025e8f8a4757dba260b98605cae05be93784a0223`.
+- Final focused checks SHA: `72096bcca85bdcf1872ad76261c23843c716cc71daf190d9a1285a6cd9af0537` (27 passed, 45.08 seconds).
+- Local record: `releases/eql-owner-journey-0.39.28-staging.json`.
+
+The original input monitor stays open after travel→camp and closes on stop or
+assist. Manual input, focus/coverage loss or binding replacement stops camp.
+The final pose/motion basis is historical evidence, never permission to move.
+Standalone F11 behavior is unchanged, so an owner F11 test on 0.39.27 remains
+useful. HOWTO has the 0.39.28 launch path and current mode behavior.
+
+No worker/device/game input, settings save, prefix edit, login, character action
+or owner session interruption during publication. No accepted real-client route,
+camp loop, automated level gain or full 1–20/1–50 run. Current level, XP/hour,
+deaths and camp remain unknown. G0 is passed; no repeat.
+
+Next relocation work can reuse fresh stopped-pair/current-floor validation and
+the full terrain/static/BSP/native sequence in `SourceReceiptLedger._geometry`.
+For an unknown heading, `motion_footprint` with zero nominal reach and an explicit
+all-heading travel radius can enclose the possible movement disk; sampled rays
+are insufficient. Speed bounds would remain assumptions until measured. A
+read-only client compass/heading observer is also being investigated. Neither
+approach has been implemented or accepted for automatic relocation yet.
+
 ## 2026-11-14 16:56 UTC — camp input continuity for later relocation
 
 VERIFIED locally: 26 focused checks pass for source 0.42.40 / preview 0.39.28

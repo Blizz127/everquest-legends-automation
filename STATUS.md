@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 16:56 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 17:01 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.40 / preview 0.39.28 candidate:** preserve the same read-only
+- **Source 0.42.40 / published preview 0.39.28:** preserve the same read-only
   input monitor across travel→camp, reject brief released turns and coverage/
   binding loss, and close it before assist. Final arrival heading/motion/bounds
   are retained as immutable historical evidence, with no movement authority.
@@ -14,7 +14,10 @@ Updated 2026-11-14 16:56 UTC for coordinator task `829a00229b29`.
   26 checks including five full handoff cases; the final snapshot passes
   27 focused checks in 45.08 seconds, including a complete handoff. Output SHA
   `72096bcca85bdcf1872ad76261c23843c716cc71daf190d9a1285a6cd9af0537`.
-  Publication/startup checks are in progress. Next: fresh stopped observations and a geometry-checked heading
+  Published on Alienware at `owner-assist/0.39.28` and `owner-tools/0.42.40/source`,
+  revision `ea6d335`; files match the final validated candidate. Startup/client/
+  guide/history pins pass. Startup SHA
+  `78a33c1aa5eb47c0ca6d834025e8f8a4757dba260b98605cae05be93784a0223`. Next: fresh stopped observations and a geometry-checked heading
   measurement for camp relocation, then a supported camp sequence. Actual
   level/XP/hour/deaths/camp unknown; no new owner journey trace exists. G0 passed.
 - **Source 0.42.39 / published preview 0.39.27:** empty character history can
