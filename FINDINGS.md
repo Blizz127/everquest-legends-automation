@@ -1,5 +1,26 @@
 # FINDINGS
 
+## 2026-11-14 17:32 UTC — source 0.42.43 and preview 0.39.29 published
+
+VERIFIED private publication on Alienware: `owner-assist/0.39.29` and
+`owner-tools/0.42.43/source`, revision `22c1e47ec48aa66001acedc6aa62cd585b2e829d`.
+Runtime, tests and tools match the 71-pass snapshot byte for byte. Preview
+manifest, installed executable/spell pins, both source guides, reduced NPC
+history and offscreen GUI startup pass. F8/F9/F10 assist controls and the
+travel/camp UI remain available; the obsolete G0 launch flag still refuses.
+
+- Archive SHA: `03abd5a38f302eba938bbeb9a64b2d91fa96686d394c3b9f46652890579bbfec`.
+- Startup SHA: `aa75d92768dfd2faba16a41586af57cf8269651c91408f4fdd3ed6fe08fcc679`.
+- Check output SHA: `deecae856afff85c2afd4e9e2c626ea5828ec48eb001dbcb52a83db5bac96cac`.
+- Record: `releases/eql-owner-journey-0.39.29-staging.json`.
+
+No game input, input device, settings save, prefix edit, login, character action
+or session interruption. No actual camp/route acceptance or level gain claimed.
+G0 remains passed; no repeat. Current level, XP, XP/hour, deaths and camp remain
+unknown. The next increment is automatic fresh stopped-position acquisition
+after a reached camp's first kill and recovery, followed by same-camp resumption;
+automatic relocation and full 1–20/1–50 remain unfinished.
+
 ## 2026-11-14 17:32 UTC — source 0.42.43, reached floor retained through camp
 
 VERIFIED local implementation and 67 focused checks: `CampFloorCheckpoint`
