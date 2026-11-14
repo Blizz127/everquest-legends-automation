@@ -1,5 +1,32 @@
 # FINDINGS
 
+## Private source 0.41.84 staged — 2026-11-14 06:57 UTC
+
+**VERIFIED:** source `355e938cfa6203fdffdeef78c97e00b58a33a5bb`, archive SHA
+`490e2a91917c0347e6b2e9f14de976830448e8f7a330ef1eafe8021dc21aec6f`,
+is staged at Alienware `owner-tools/0.41.84/source`. Four focused remote
+startup checks pass: version/import, retained source pins, the actual sender's
+40-event command against a pipe with exact prefix records, and refusal of an
+equal-but-reconstructed snapshot before any write. Chat feedback is synthetic.
+Artifact `../synthetic-command-submission.json`, SHA
+`5bffd428cb6a6b74310d2f626cdb9985679662337add0d29727f299bf83f7586`.
+Local `releases/eql-automation-0.41.84-staging.json` records the result.
+
+The initial remote smoke fixture omitted three constants evaluated by the
+retained character method (Space/Minus/Dot); it failed before any DOWN. The
+fixture was corrected, the already staged source was verified byte-for-byte
+against its archive, and the focused smoke passed without source changes.
+The original fixture remains for evidence. No game capture/input, devices,
+protected writes, login or character mutation occurred. The read-only listing
+still finds zero saved `g2-ui-observations/*/unbound-location.json` records.
+
+**Next:** use current scene evidence to interpret the existing chat/player/
+target features, with exact command-prefix records available to the observer.
+Candidate text matching alone cannot prove focus or closure. Bind real current
+position, motion, height and travel-envelope observations before route input.
+G0 remains passed; owner helpers are unchanged. No actual client command, route
+or level gain is accepted by these source/pipe checks.
+
 ## Immutable command submission records 0.41.84 — 2026-11-14 06:55 UTC
 
 **VERIFIED implementation:** the measurement executor journals every attempted

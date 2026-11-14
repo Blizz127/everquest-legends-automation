@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 06:55 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 06:57 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -12,6 +12,9 @@ pass; the complete retained-sender/watchdog pipe run has 16 commands, seven
 pulses, eight synthetic stopped pairs and 696 events. No actual client command,
 position, scene or route was accepted. These receipts supply the pending live
 observer with command provenance; they do not prove client delivery or focus.
+Source `355e938` is privately staged on Alienware; four focused startup checks
+pass, including the actual retained command sender against a pipe and refusal
+of a reconstructed snapshot before any write. Owner helpers are unchanged.
 
 Source 0.41.83 compiles the unchanged layout selection plan while retaining
 complete source-content/identity and candidate checks around each frame.

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:55 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:57 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -19,6 +19,11 @@ Updated 2026-11-14 06:55 UTC for coordinator task `829a00229b29`.
   sender plus watchdog completed 16 commands, seven pipe pulses, eight synthetic
   stopped pairs and 696 pipe events. Evidence SHA
   `898e904fc5dcda6803e020e1817eb716d55de6d1f5510396637138c29d58cccc`.
+  Source `355e938` is privately staged on Alienware; four focused startup checks
+  pass with no game capture/input or device creation. Remote synthetic command
+  artifact SHA `5bffd428cb6a6b74310d2f626cdb9985679662337add0d29727f299bf83f7586`.
+  Initial smoke fixture constants were corrected; source was unchanged. No
+  saved stationary position/UI pair is present at the 06:57 UTC listing.
   This proves pipe submissions, not client delivery or scene interpretation.
   Independent live chat/player/target/position observation and motion/height/
   travel-envelope calibration remain the next gates before route execution.
