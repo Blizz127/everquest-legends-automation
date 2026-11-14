@@ -1,5 +1,61 @@
 # FINDINGS
 
+## Repeated stationary camp and resource recovery — 2026-11-14 15:33 UTC
+
+**VERIFIED source 0.42.34 / candidate preview 0.39.23:** the existing owner
+rotation Engine and KeySender now support repeated stationary encounters with
+resource recovery in one cancellation generation. Each round clears previous
+target permission, waits for a new exact-name/level consideration, and preserves
+cumulative kill/loot/XP evidence. Duplicate kill identities cannot become another
+same-name encounter. No-target sweeps wait 30 seconds and stop after 15 minutes;
+fight, recovery and overall session budgets remain separate.
+
+Recovery requests standing, submits one sit toggle if resources are low, waits
+for HP ≥95% and mana ≥90%, requests standing and requires two fresh samples
+captured after settling before another target attempt. Missing/stale gauges,
+attack during recovery (including the old mob name), inventory/supply warnings,
+client identity changes or OFF stop the session. There is no posture cleanup
+command after OFF. The current bar survives a fresh level-up; outstanding old
+consideration replies are discarded and rechecked. No automatic spell upgrade
+is claimed. Observed level 20 stops further pulls. Assist remains manual for
+movement, targeting, posture, camps and native melee.
+
+**VERIFIED 53 focused checks pass** on Devbox against the retained Engine and
+KeySender, synthetic feedback and actual OS pipes. These cover two same-name
+encounters, duplicate kills, recovery longer than 30 seconds, stale/missing
+readings, every recovery command interrupted by F9 (including final Enter),
+late permission callbacks, pending level monotonicity, ding/kill in either order,
+level-20 termination and bounded empty searches. Six initial assertions expected
+InterruptedError to propagate; recovery intentionally handles it as stopped.
+Those assertions now check stopped state, released keys, no posture publication
+and no further commands. No real game input or client acceptance was performed.
+
+**VERIFIED copied-client static control flow:** command registry `/sit` is at
+`0x140deb160` and its handler at `0x140250380`; `/stand` is at `0x140deb180` with
+handler `0x1402503f0`. `/sit` compares its argument with resource 12946 (`off`).
+Non-off arguments, including `on`, reach posture toggle `0x1402b28d0`.
+`/stand` requests state `0x64`. **INFERRED:** `/sit on` is not an idempotent
+seated-state request. Preconditions, actual posture and server response remain
+unverified. The repeated runtime hashes the installed executable at startup and
+checks its file identity during use before permitting these commands.
+
+Private audit: `client-data/posture-commands-20261114T1529Z.json`, SHA
+`3d715d71bd85c409ccb7b189cf2f5f652b0de7e335679b186814f12b7eaae265`.
+Executable SHA `fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36`;
+strings SHA `0dd0117a23092cb195d0e62d6b03a49bf1aaf8dbfb843dd629e38ca950732fde`.
+Reproduce with `tools/audit_client_posture.py`; client bytes and bounded
+disassembly stay in the private store. The REA native provider was unavailable
+because its configured Java lacks JDK21, so the existing bounded objdump/PE
+approach was used without changing tools or access. No native client execution.
+Historical owner traces contain `/stand` submissions but no positive posture
+acknowledgment; there is no retained live `/sit on` acceptance.
+
+**NOT VERIFIED / unfinished:** real combat/rest/targeting acceptance, current
+metrics, accepted 1–20 route, travel→combat handoff, automatic spell acquisition
+and refresh, inventory/supply service, death/relogin recovery and fresh hands-off
+1–50. G0 is passed and must not be repeated. Private publication follows the
+startup check; there is no new automated character-level evidence.
+
 ## Stationary camp integration — 2026-11-14 15:17 UTC
 
 **VERIFIED implementation and focused checks:** source 0.42.33 connects a bounded

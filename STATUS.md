@@ -1,11 +1,23 @@
 # STATUS
 
-Updated 2026-11-14 15:21 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 15:33 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.34 / preview 0.39.23 candidate:** repeated stationary encounters
+  now use the same retained rotation, sender, log reader and cancellation scope.
+  After a matching kill, the helper waits for fresh resource recovery, requests
+  standing and starts a new target check. Fresh level-up logs update the camp;
+  its current spell bar remains unchanged, and level 20 stops new pulls.
+  **53 focused checks pass** using the retained Engine/KeySender, synthetic
+  feedback and actual OS pipes; no game input. Static inspection of the pinned
+  copied client found `/sit on` toggles posture, so recovery issues `/stand`
+  then one sit toggle and never retries it blindly. Posture is not confirmed.
+  **Publication pending startup check.** Next: owner combat/rest acceptance,
+  automatic spell refresh and same-process travel→camp handoff. Current actual
+  level/XP/XP-hour/deaths/camp remain unknown; full-auto is unfinished.
 - **Source 0.42.33 / published preview 0.39.22:** a bounded stationary camp now
   reuses the actual retained engine, sender and spell rotation. History supplies
   observed NPC names only; new exact-name/level consideration is required before
