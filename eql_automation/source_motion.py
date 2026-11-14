@@ -10,19 +10,16 @@ from hashlib import sha256
 import math
 import threading
 
-from .bsp_floor_guard import check_source_body_bsp
 from .fixed_route_follower import RouteHalt
 from .ground_binding import finite
 from .ground_sweep import motion_footprint
 from .installed_region_model import InstalledRegionModel
-from .native_body_regions import classify_source_body_regions
 from .native_region_policy import encoded
 from .route_floor_commit import _chain_snapshot
 from .route_geometry import RouteMotionBounds
 from .source_detour import swept_square
-from .source_itinerary import _zero_native
+from .source_probe_geometry import check_source_footprint
 from .source_observer import SourceItineraryObserver
-from .static_floor_guard import check_source_static_floor
 from .uinput_watchdog import PulseReceipt
 
 
@@ -183,21 +180,12 @@ class SourceReceiptLedger:
             except BaseException as error:self.cancel(str(error));raise
 
     def _geometry(self,chain,kind,footprint):
-        sources=self.terrain.source_faces_for_footprint(footprint)
-        fork=chain.fork();floor=fork.advance(footprint,sources)
-        if not floor.candidate:raise ValueError('Source motion terrain: '+floor.reason)
-        placed=check_source_static_floor(floor,footprint,sources,self.static)
-        if not placed.candidate:raise ValueError('Source motion static: '+placed.reason)
-        bsp=check_source_body_bsp(floor,footprint,sources,self.bsp,clip_branches=True)
-        if not bsp.candidate and bsp.reason!='missing_bsp_child':
-            raise ValueError('Source motion BSP: '+bsp.reason)
-        native=classify_source_body_regions(floor,footprint,sources,self.static,
-            self.observer.policy.classifier,source_wld_sha256=self.terrain.wld_sha256)
-        _zero_native(native)
-        payload=encoded(dict(kind=kind,footprint=footprint,terrain=asdict(floor),static=asdict(placed),
-            bsp=asdict(bsp),native=asdict(native),itinerary_sha256=self.observer.itinerary.sha256,
+        checked=check_source_footprint(chain,footprint,terrain=self.terrain,static=self.static,
+            bsp=self.bsp,region_policy=self.observer.policy)
+        payload=encoded(dict(kind=kind,footprint=footprint,terrain=asdict(checked.terrain),static=asdict(checked.static),
+            bsp=asdict(checked.bsp),native=asdict(checked.native),itinerary_sha256=self.observer.itinerary.sha256,
             policy=self.observer.policy.record(),input_authorized=False,real_client_accepted=False))
-        return fork,SourceMotionGeometry(kind,footprint,payload,sha256(payload).hexdigest())
+        return checked.branch,SourceMotionGeometry(kind,footprint,payload,sha256(payload).hexdigest())
 
     def prepare(self,kind):
         """Read-only maximum-hold geometry outside the OFF lock."""

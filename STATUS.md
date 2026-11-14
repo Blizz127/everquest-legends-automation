@@ -1,11 +1,22 @@
 # STATUS
 
-Updated 2026-11-14 17:12 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 17:19 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.42 candidate / owner preview stays 0.39.28:** original
+  source geometry resolves the short-probe blockers: Slave Mines .02/.05/.1
+  and North Wall .02/.05 maximum-hold hypotheses pass; North Wall .1 still
+  refuses uncovered floor. Speed/body numbers are hypotheses, not measured
+  motion. Historical source/static prefix replay matches 1,065 cells/seven
+  steps; all six new probes check terrain/static/body-BSP/native evidence.
+  Report SHA `f3c6ad73badd02d42b6933177adda08973fe85b0e43af23663a77526b1902358`.
+  22 new checks pass locally; all 57 focused probe/movement checks pass on
+  Alienware in 2.62 seconds. Source publication pending. Next: retained arrival
+  floor capture and fresh stopped position/height acquisition for relocation.
+  No game input, new live acceptance or current level/XP/hour/death/camp data.
 - **Source 0.42.41 published / owner preview stays 0.39.28:** continuous
   all-heading probe area checks fresh stopped positions and full copied
   geometry without sending input. **122 focused checks pass locally**. Three

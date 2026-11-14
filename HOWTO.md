@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.41** · travel/camp test **0.39.28** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.42** · travel/camp test **0.39.28** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.28 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -625,14 +625,23 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-The latest private source is staged on Alienware at:
+Source 0.42.42 is being staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.41/source
+~/.local/share/eql-automation/owner-tools/0.42.42/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.42.41 adds a continuous area check for a possible short pulse
+above. Source 0.42.42 shares the existing route driver's original-terrain,
+object and body-region checks with an unknown-heading probe checker. It can
+use a retained source floor where a baked-mesh start cannot establish support.
+The copied-data diagnostic `tools/audit_camp_source_probes.py --help` replays
+the historical Slave Mines floor and checks explicit hypothetical probe sizes.
+It sends no input; successful geometry is not fresh character state, measured
+speed, or permission to move. Live floor capture, fresh height/heading collection
+and automatic relocation are still unfinished. Preview **0.39.28** is unchanged.
+
+Source 0.42.41 adds a continuous area check for a possible short pulse
 when heading is unknown. It requires fresh stopped observations and checks all
 possible directions against copied terrain, objects and region data. It does
 not send input or enable automatic camp relocation. The diagnostic

@@ -1,5 +1,92 @@
 # FINDINGS
 
+## 2026-11-14 17:19 UTC — source 0.42.42, source-floor probe geometry
+
+VERIFIED final copied-data audit: `crushbone-source-probes-0.42.42-final.json`, SHA
+`f3c6ad73badd02d42b6933177adda08973fe85b0e43af23663a77526b1902358`, completed in 40.33 seconds. The historical Slave Mines
+source/static prefix replays exactly: 1,065 cells, seven steps, final proof
+`176bbef50fb75c7e1cc635c851cbd7dcac57b7dab27b06d8ed090636ab7ac3fa`.
+Parent region checks were not repeated; each new probe independently ran the
+full terrain, static-object, body-BSP and native-region checks. The North Wall
+start is an explicit synthetic unique source-floor hypothesis, not an arrival.
+
+With hypothetical speed ceiling 40, body radius 1.2, body height 6, position
+error .05 and post-release drift .1:
+
+| Copied source point | Maximum actual hold hypothesis | Whole-area geometry |
+| --- | --- | --- |
+| Slave Mines `(426,74,-17)` | .02, .05, .1 seconds | All three pass |
+| North Wall `(-95,-78,0)` | .02, .05 seconds | Both pass |
+| North Wall `(-95,-78,0)` | .1 seconds | Refused: selected floor uncovered ground area |
+
+Every possible heading/intermediate position is covered under those supplied
+bounds. These are not measured current speeds or live-authorized durations.
+The source checker shares the exact existing movement-driver terrain/static/
+body-BSP/native sequence. It retains the selected source floor instead of
+reselecting by map-label Z or asserting clearance from the baked perimeter.
+Baked-detail failures remain recorded; no mesh coverage claim is made. The
+original floor stays unchanged and the returned branch carries no input ticket.
+
+VERIFIED focused checks: 22 new cases pass locally in 3.12 seconds. Final
+Alienware snapshot `owner-tools/0.42.42-validation-2` passes all 57 selected
+probe and existing source movement checks in 2.62 seconds, output SHA
+`0f6932d70bbf559ede2bdab7f3dab7353c9ea7a6366c79fef4066b04914991dd`.
+The first local attempt exposed an incorrect test seed (fixed), plus an
+existing 0.05-second DOWN authorization timeout under Devbox load ~194; no
+deadline was relaxed. The complete 55-case initial Alienware run passed in
+2.76 seconds, SHA `27e1618523899f18f4c947c2d9b2f06aa5be616946623a1398b50d0dfd55a944`.
+Two later tests reproduced acceptance after a final callback replaced source
+storage or classifier metadata. Final context rechecks now reject both, and
+source storage/query identities are checked around shared geometry too.
+
+The initial copied probe report SHA
+`2fa9a879bcdeb2e88d9ae115b825bf18411a2de1a06dfbf3c2753c2803380bbf`
+had the same five accepted sizes, before those final callback checks. Final
+report code/data hashes match the final source geometry implementation. An
+earlier audit invocation refused the 19 MB parent report at the ordinary
+16 MB route-data loader; this audit now uses its own explicit 32 MB limit and
+the exact historical SHA, checked before/after. Runtime limits are unchanged.
+
+Source publication pending. Owner preview remains 0.39.28 using the existing
+rotation. No game input, prefix edit, login or character action. G0 remains
+passed. Next: preserve exact arrival-floor lineage through camp and produce
+fresh stopped position/height evidence before a checked heading measurement.
+No automatic relocation, accepted 1–20/1–50 or current level/XP/hour/deaths/camp.
+
+## 2026-11-14 17:16 UTC — North Wall copied-detail refusal reconciled
+
+VERIFIED by the read-only geometry helper against the pinned current store:
+North Wall package XY `(-95,-78)` is on baked polygon 505, component 3,
+Z `0.162506103515625`; source WLD 2141 face 0 is at Z 0. Boundary 518 face 5
+is overhead at Z 623.75. Mesh SHA
+`ba544e96700b51777d81c522c3dd6eba27c4d4a1af387852bf70729086158e56`;
+manifest SHA `3c5701958bead8a9919be4d86db36cef80e57ed32825a4a75543cdac0d121b37`.
+
+The .1 hypothetical hold disk overlaps copied details 4510/5236, polygons
+368/505, at Y `-80.65621948242188` / `-80.65625`. Area
+`0.00014963621876599282`, zero height delta, four binary32 ULP: the existing
+one-ULP classifier correctly refuses. The separately constructed pinned tile
+model recognizes that exact pair (axis 1, lower tile 4), with zero orientation
+refusals. This does not resolve the whole probe.
+
+The .02 disk misses `1.4197280411564766` units of baked area: details 5235/5236
+cover `13.291830650243012` of `14.711558691399489`. The requested radius 2.15
+(circumscribed 2.192120990147884) exceeds the 1.5030526029314686 distance to the
+nearest western polygon edge. No reciprocal seam covers that exterior edge.
+Thus tile correction alone cannot make this probe pass. Neither baked refusal
+proves a physical wall; complete original terrain/object/body-region checking
+is the next route, using the existing source-motion driver's checks.
+
+A separate read-only capture review confirmed that the old source observer
+cannot simply be resumed after camp: camp intentionally changes cancellation
+generation and measurement mode, and the original height calibration expires.
+Lease release and reacquisition also clear `reader.latest`. Capture a private
+snapshot-checked fork of the exact arrival floor before release; keep the old
+observer/height evidence historical. A later camp-bound scope must obtain two
+new stopped replies and fresh height evidence on that retained checked cap.
+Do not extend the old calibration, fabricate heading/open-ground declarations
+or choose a floor by nearest Z. None of this capture/relocation is enabled yet.
+
 ## 2026-11-14 17:12 UTC — source 0.42.41 privately published
 
 VERIFIED on Alienware: source revision `17d3a344b22226f8ed87ed1618ce7392052df0a7` is published at
