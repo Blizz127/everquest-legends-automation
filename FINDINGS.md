@@ -65,6 +65,26 @@ G0 remains passed. Owner assist 0.39.13 and pending motion 0.39.12 are unchanged
 Current level, XP/hour, deaths and camp remain unknown. No login, game input,
 protected-install change or public/git push occurred.
 
+Source `1d36c0d` is privately staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.8/source`. Remote startup imports,
+immutable declaration, false verification-field preservation and refusal of
+absent dependencies pass without an engine worker, device or game input.
+Archive SHA `5cd565ce3dc1d915072648ef64fa47fa9c118719284d50468eaf9d23a371be94`;
+startup SHA `ea1bf83f094adf13afdc7c31b92927040d42629b9ae417adfbef87afa9f0e79e`.
+This source publication does not replace the installed owner assist/motion
+previews or enable a route control.
+
+**INFERRED next implementation from existing source APIs:** a first local
+trial can remain within one uniquely supported dry polygon, starting at the
+new stopped pair's exact package XY. `exact_detail_support` and
+`PortalPrecisionView.source_floor_at` provide independent baked/source support;
+`SourceFloorChain` plus terrain/static/BSP guards can certify an explicit short
+capsule. Generate fresh geometry evidence and a one-segment `FixedRoute`
+rather than borrowing the historical plan's coverage hash. Keep heading only
+through continuous same-session physical-input observation. If planning
+outlasts the fix lifetime, acquire a fresh stopped pair at the planned start;
+never refresh old timestamps. No current-position plan has been produced yet.
+
 ## Live zone tracking and route reader handoff — 2026-11-14 10:41 UTC
 
 **VERIFIED implementation:** source 0.42.7 adds `owner_zone_tracker.py` to the

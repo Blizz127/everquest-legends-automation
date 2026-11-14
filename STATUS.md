@@ -23,6 +23,9 @@ Updated 2026-11-14 10:56 UTC for coordinator task `829a00229b29`.
   fresh height pair and owner route entry. No owner route button is enabled.
   G0 passed; assist 0.39.13 and motion 0.39.12 remain unchanged. Current level,
   XP/hour, deaths and camp unknown; no real route or automated XP accepted.
+  Source `1d36c0d` is staged at Alienware `owner-tools/0.42.8/source`;
+  no-input import/type/refusal startup checks pass. Startup SHA
+  `ea1bf83f094adf13afdc7c31b92927040d42629b9ae417adfbef87afa9f0e79e`.
 - **Source 0.42.7:** the route adapter now observes new zone entries during
   helper log ticks and lends the same reader exclusively to height/route
   startup. Old positions are discarded; reentrant helper ticks cannot consume
