@@ -1,11 +1,14 @@
 from hashlib import sha256
+from dataclasses import replace
 import json
+import random
 
 from PIL import Image
 import pytest
 
 from eql_automation.combat_ui_atlas import AnimationFrame, CombatUiAtlas
 from eql_automation.combat_ui_match import CONTROL, analyze_saved_combat_crop, decal_sizes, rank_combat_sprites
+import eql_automation.combat_ui_match as matcher
 
 
 def atlas(*, duplicate=False, transparent=False):
@@ -128,3 +131,51 @@ def test_parent_pixels_disagree_even_with_valid_individual_hashes(tmp_path):
     metadata['crops']['PlayerWindow']['sha256']=sha256((tmp_path/'PlayerWindow.png').read_bytes()).hexdigest()
     with pytest.raises(ValueError,match='same captured'):
         analyze_saved_combat_crop(**save())
+
+
+@pytest.mark.parametrize('size,filter_name', [((4,4),'nearest'),((3,5),'bilinear'),((5,3),'nearest')])
+def test_integer_batches_match_direct_pixel_formula_at_all_offsets(size,filter_name):
+    rng=random.Random(72581)
+    source=Image.frombytes('RGBA',(4,4),bytes(rng.randrange(256) for _ in range(64)))
+    for i,alpha in enumerate((0,1,127,128,254,255)):
+        x,y=i%4,i//4
+        source.putpixel((x,y),(*source.getpixel((x,y))[:3],alpha))
+    data=source.tobytes()
+    frame=replace(atlas().frames[0],rgba=data,rgba_sha256=sha256(data).hexdigest())
+    width,height=size
+    lo,hi,*_=matcher._compile_template(frame,width,height,filter_name)
+    image=Image.frombytes('RGB',(19,17),bytes(rng.randrange(256) for _ in range(19*17*3)))
+    packed=Image.frombytes('L',(19*3,17),image.tobytes()).point(matcher._CHANNEL_SCALE,'I')
+    template=source.resize(size,Image.Resampling.BILINEAR if filter_name=='bilinear' else Image.Resampling.NEAREST)
+    count=0
+    for x,y,total,residuals in matcher._score_positions(packed,width,height,lo,hi):
+        expected=[]
+        for dy in range(height):
+            for dx in range(width):
+                *rgb,alpha=template.getpixel((dx,dy))
+                observed=image.getpixel((x+dx,y+dy))
+                for foreground,value in zip(rgb,observed):
+                    low=foreground*alpha
+                    high=low+255*(255-alpha)
+                    expected.append(max(2*max(low-value*255,value*255-high,0)-255,0))
+        assert list(residuals)==expected and total==sum(expected)
+        count+=1
+    assert count==(19-width+1)*(17-height+1)>matcher._BATCH_PLACEMENTS
+
+
+def test_cached_template_uses_source_bytes_and_returns_immutable_bounds():
+    first=atlas().frames[0]
+    second=replace(first,rgba=bytes([10,20,30,255])*16)  # Same claimed digest, different actual bytes.
+    one=matcher._compile_template(first,4,4,'nearest')
+    two=matcher._compile_template(second,4,4,'nearest')
+    assert one!=two and isinstance(one[0],bytes) and isinstance(one[1],bytes)
+    assert matcher._compile_template(first,4,4,'nearest') is one
+
+
+@pytest.mark.parametrize('batch_size',[1,8,16,64])
+def test_complete_output_and_tie_order_do_not_depend_on_batch_or_cache(monkeypatch,batch_size):
+    a=atlas(duplicate=True);image=render(a,scale=1.25)
+    matcher._compile_template.cache_clear()
+    cold=rank_combat_sprites(image,a,saved_scale=1.25)
+    monkeypatch.setattr(matcher,'_BATCH_PLACEMENTS',batch_size)
+    assert rank_combat_sprites(image,a,saved_scale=1.25)==cold

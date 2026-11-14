@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.72 / assist 0.39.6 / observation candidate 0.39.9
+# EverQuest Legends automation — project 0.41.73 / assist 0.39.6 / observation candidate 0.39.9
 
 ## Current availability
 
@@ -19,9 +19,16 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.72 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.72/source`; the runnable
+Source tools 0.41.73 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.73/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.73 speeds up that saved-crop diagnostic using exact batched integer
+image operations and cached immutable template bounds. Thirty-one focused
+checks pass. Complete results match 0.41.72 in ten actual-source synthetic
+cases; devbox median search falls from 1.22 seconds to 86 milliseconds, with
+some observations still over 100 ms. This does not establish the complete live
+scene budget. It adds no movement control or new owner test.
 
 Source 0.41.72 can analyze the existing stationary capture's combat-icon crop.
 It uses the pinned client decal size and saved UI scale, checks XML provenance

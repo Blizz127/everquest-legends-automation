@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 05:20 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:24 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,11 @@ Updated 2026-11-14 05:20 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.73:** exact batched template scoring preserves complete
+  0.41.72 output in ten source-icon synthetic cases. Thirty-one focused tests
+  pass. Devbox median search is 86 ms versus 1.22 seconds; maximum is 283 ms,
+  so the full live scene budget remains unverified. No new owner test or input.
+  Private staging and a synthetic Alienware timing check follow the commit.
 - **Source 0.41.72:** saved combat-icon analysis now connects the client atlas
   to the existing observation format. Twenty-three focused tests pass; 10/10
   synthetic renderings of actual source icons rank correctly. Crops and source

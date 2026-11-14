@@ -7,6 +7,8 @@ rendering behavior. A low residual, even zero, never establishes scene safety.
 """
 from hashlib import sha256
 from io import BytesIO
+from array import array
+from functools import lru_cache
 import json
 import math
 from pathlib import Path
@@ -16,6 +18,55 @@ from .combat_ui_atlas import CombatUiAtlas, _pinned
 
 CONTROL = 'PlayerWindow__PW_CombatStateAnim'
 MAX_COMPARISONS = 6_000_000
+_BATCH_PLACEMENTS = 16
+_CHANNEL_SCALE = [value*510 for value in range(256)]
+
+
+@lru_cache(maxsize=128)
+def _compile_template(frame, width, height, filter_name):
+    """Cache immutable integer bounds; key includes the actual source bytes."""
+    from PIL import Image
+    filter_value={'nearest':Image.Resampling.NEAREST,'bilinear':Image.Resampling.BILINEAR}[filter_name]
+    pixels=frame.image().resize((width,height),filter_value).tobytes()
+    lower,upper=array('i'),array('i')
+    if lower.itemsize!=4:raise RuntimeError('Pillow integer matching requires 32-bit native integers')
+    mass=opaque=constrained=0
+    for offset in range(0,len(pixels),4):
+        r,g,b,a=pixels[offset:offset+4]
+        mass+=a;opaque+=a==255;constrained+=3*(a>0)
+        for value in (r,g,b):
+            # The doubled original residual includes half an 8-bit unit of
+            # rounding slack. Values fit signed 32 bits, including alpha=0.
+            lower.append(2*value*a-255)
+            upper.append(2*(value*a+255*(255-a))+255)
+    return lower.tobytes(),upper.tobytes(),mass,opaque,constrained
+
+
+def _score_positions(observed, width, height, lower, upper):
+    """Yield exact integer residuals in original y/x order, in bounded batches.
+
+    RGB channels occupy adjacent columns of one I-mode image. ImageStat's
+    quantized I-mode histograms cannot sum these values exactly, so totals
+    use the native 32-bit output buffer instead.
+    """
+    from PIL import Image,ImageMath
+    positions=[(x,y) for y in range(observed.height-height+1)
+               for x in range(observed.width//3-width+1)]
+    channel_count=width*height*3
+    for begin in range(0,len(positions),_BATCH_PLACEMENTS):
+        batch=positions[begin:begin+_BATCH_PLACEMENTS]
+        packed=Image.new('I',(3*width,height*len(batch)))
+        for index,(x,y) in enumerate(batch):
+            packed.paste(observed.crop((3*x,y,3*(x+width),y+height)),(0,index*height))
+        lo=Image.frombytes('I',packed.size,lower*len(batch))
+        hi=Image.frombytes('I',packed.size,upper*len(batch))
+        residual=ImageMath.lambda_eval(
+            lambda v:v['max'](v['max'](v['lo']-v['pixels'],v['pixels']-v['hi']),0),
+            lo=lo,hi=hi,pixels=packed)
+        values=memoryview(residual.tobytes()).cast('i')
+        for index,(x,y) in enumerate(batch):
+            pixels=values[index*channel_count:(index+1)*channel_count]
+            yield x,y,sum(pixels),pixels
 
 
 def decal_sizes(atlas: CombatUiAtlas, scale: float):
@@ -50,40 +101,26 @@ def rank_combat_sprites(image, atlas: CombatUiAtlas, *, saved_scale: float):
     operations=sum((image.width-w+1)*(image.height-h+1)*w*h
         for w,h in sizes if w<=image.width and h<=image.height)*len(frames)*2
     if operations>MAX_COMPARISONS:raise ValueError('Diagnostic search exceeds comparison budget')
-    observed=[image.getpixel((x,y)) for y in range(image.height) for x in range(image.width)]
+    observed=Image.frombytes('L',(image.width*3,image.height),image.tobytes()).point(_CHANNEL_SCALE,'I')
     best={};ties={}
     for frame in frames:
         for width,height in sizes:
             if width>image.width or height>image.height:continue
-            for filter_name,filter_value in (('nearest',Image.Resampling.NEAREST),
-                                              ('bilinear',Image.Resampling.BILINEAR)):
-                template=frame.image().resize((width,height),filter_value)
-                pixels=[template.getpixel((x,y)) for y in range(height) for x in range(width)]
-                mass=sum(p[3] for p in pixels)
+            for filter_name in ('nearest','bilinear'):
+                lower,upper,mass,opaque,constrained=_compile_template(frame,width,height,filter_name)
                 if not mass:continue
-                bounds=[(i%width,i//width,tuple((v*a,v*a+255*(255-a)) for v in (r,g,b)))
-                        for i,(r,g,b,a) in enumerate(pixels) if a]
-                opaque=sum(p[3]==255 for p in pixels)
-                for y in range(image.height-height+1):
-                    for x in range(image.width-width+1):
-                        residual=violations=0
-                        for dx,dy,channels in bounds:
-                            sample=observed[(y+dy)*image.width+x+dx]
-                            for value,(lo,hi) in zip(sample,channels):
-                                outside=max(lo-value*255,value*255-hi,0)
-                                residual+=max(2*outside-255,0)
-                                violations+=outside*2>255
-                        score=residual/(6*mass)
-                        candidate=dict(animation=frame.animation,frame_index=frame.index,
+                for x,y,residual,pixels in _score_positions(observed,width,height,lower,upper):
+                    score=residual/(6*mass)
+                    prior=best.get(frame.animation)
+                    if prior is None or score<prior['mean_interval_residual']:
+                        best[frame.animation]=dict(animation=frame.animation,frame_index=frame.index,
                             source_rgba_sha256=frame.rgba_sha256,filter_hypothesis=filter_name,
                             crop_box=[x,y,x+width,y+height],alpha_mass_pixels=mass/255,
-                            opaque_pixels=opaque,constrained_channels=len(bounds)*3,
-                            incompatible_channels=violations,mean_interval_residual=score)
-                        prior=best.get(frame.animation)
-                        if prior is None or score<prior['mean_interval_residual']:
-                            best[frame.animation]=candidate;ties[frame.animation]=1
-                        elif score==prior['mean_interval_residual']:
-                            ties[frame.animation]+=1
+                            opaque_pixels=opaque,constrained_channels=constrained,
+                            incompatible_channels=sum(value>0 for value in pixels),mean_interval_residual=score)
+                        ties[frame.animation]=1
+                    elif score==prior['mean_interval_residual']:
+                        ties[frame.animation]+=1
     ranking=sorted(best.values(),key=lambda c:(c['mean_interval_residual'],c['animation']))
     for candidate in ranking:candidate['equal_best_hypotheses']=ties[candidate['animation']]
     return dict(ranked_candidates=ranking,declared_decal_size_hypotheses=[list(s) for s in sizes],

@@ -1,5 +1,42 @@
 # FINDINGS
 
+## Exact combat-template search optimization — 2026-11-14 05:24 UTC
+
+**VERIFIED source 0.41.73:** combat ranking now packs RGB channels into a signed
+32-bit Pillow image and batches up to 16 candidate placements vertically. It
+computes the same doubled integer alpha-interval residual in compiled image
+operations, then sums native integer buffers without histogram quantization.
+The source-byte/size/filter key caches up to 128 immutable template-bound pairs.
+Traversal order, representative tied hypothesis and scores are preserved;
+zero alpha still contributes no information. No new confidence threshold,
+classification, current scene claim or movement permission was introduced.
+
+**VERIFIED focused checks:** 31 matcher tests passed in 0.73 seconds. New tests
+compare every residual channel and sum with the direct scalar formula across
+shifted random crops, fractional sizes, both filters and alpha boundary values;
+other cases prove cache source-byte identity and full output/tie stability across
+batch sizes 1/8/16/64. Existing pinning, parent-crop and refusal checks pass.
+Compile and whitespace checks pass. No full suite ran.
+
+**VERIFIED copied-source equivalence and timing:** the complete output dictionaries
+match source commit `e597f2d819af336c0c366171412cc9f5f9f6eba0` in ten synthetic
+renderings of the five actual client sprites. Devbox wall-clock median fell
+from 1.219634 to 0.085787 seconds; maximum new time was 0.283251 seconds.
+Some warm cases also exceeded 100 ms, so this has not established the live
+scene budget. Current capture/input-provider time is not included. Evidence:
+`evidence/combat-ui-exact-speed-0.41.73.json`, SHA
+`7b366bf8955b28bacb73440dea6bec36f085a2bf388da4a693ce403c1b0b9313`.
+An independent read-only probe also matched all 1,050 candidate numerators on
+the copied sprites; it identified 16-placement batches as faster under that
+probe's load. Its timing is supplementary, not real-client acceptance.
+
+**Live gate unchanged:** the same stationary 0.39.9 capture remains pending;
+no additional capture polling or game input was initiated this turn. G0 needs
+no repeat. Real icon placement/rendering, current character/zone/motion
+calibration and complete scene timing still need evidence before route input.
+Assist 0.39.6 stays unchanged; no accepted real-client 1–20 or fresh 1–50 run.
+Current level, XP/hour, deaths and camp remain unknown.
+
 ## Private source 0.41.72 staging — 2026-11-14 05:20 UTC
 
 **VERIFIED:** Commit `e597f2d819af336c0c366171412cc9f5f9f6eba0`, archive SHA

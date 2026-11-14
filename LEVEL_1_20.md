@@ -1,9 +1,16 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 05:05 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 05:24 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.71 adds positive-hazard log cancellation to measurement scene
+checks; 0.41.72 connects pinned client icons to saved observation crops;
+0.41.73 accelerates those comparisons without changing scores. These are
+components for the pending current-scene reader. They do not accept any route
+or remove the need for the stationary owner capture and current motion/scene
+calibration. G0 remains passed and needs no repeat.
 
 Source 0.41.70 supplies 11 exact client combat/attack templates for the pending
 scene reader. Thirteen focused checks pass. Seven current navigation archives
