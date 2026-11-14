@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 16:24 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 16:25 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -20,6 +20,11 @@ Updated 2026-11-14 16:24 UTC for coordinator task `829a00229b29`.
   Trainer access remains
   unresolved under unchanged movement bounds. Owner preview stays 0.39.25;
   actual level/XP/hour/deaths/camp remain unknown. No game input or install edits.
+  **Published:** source `4cd5c62` at Alienware `owner-tools/0.42.37/source`.
+  All 23 focused checks pass there too, plus imports, CLI startup and copied
+  source-data pins. Startup SHA
+  `334d67dfdf1d2a595e5015498e714d6c3e2c6dfe02999bb74fd476eb18a99628`.
+  No worker/device/game input, prefix modification or session interruption.
 - **Source 0.42.36 / published preview 0.39.25:** supervised Crushbone travel
   hands a fresh stopped arrival to the repeated automatic-preparation camp in
   the same retained helper/sender. Navigation only opens for explicit setup or

@@ -1,5 +1,21 @@
 # FINDINGS
 
+## 2026-11-14 16:25 UTC — source 0.42.37 published
+
+VERIFIED: revision `4cd5c622ad31654aac8e5d49579c22c659b01e97` is staged at
+Alienware `~/.local/share/eql-automation/owner-tools/0.42.37/source`.
+All 23 selected checks pass there with zero failures, errors or skips; imports,
+the diagnostic CLI startup and copied client-data pins also pass. No engine
+worker, device, game input, install modification or owner-session interruption.
+Owner travel/camp preview remains 0.39.25; standalone assist remains 0.39.13.
+No new route, camp or level milestone has been accepted. G0 remains passed.
+
+- Source archive SHA: `59dac50095eff4d5e081941c3bd96a04e53fefd616d550bfc7351b1394d43590`.
+- Focused output SHA: `6d586a6e73caf74c007c331a1ee1b9b9c9481bc9a1de6d205c5c7d82c0434a59`.
+- Startup SHA: `334d67dfdf1d2a595e5015498e714d6c3e2c6dfe02999bb74fd476eb18a99628`.
+- Local publication record: `releases/eql-automation-0.42.37-staging.json`
+  under the private data store. No client data/assets were committed or pushed.
+
 ## 2026-11-14 16:24 UTC — source 0.42.37, longer camp transit proposals
 
 VERIFIED: 23 focused checks pass for the new source-face transit graph,
