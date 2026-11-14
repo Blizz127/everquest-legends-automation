@@ -1,5 +1,19 @@
 # FINDINGS
 
+## Private source 0.41.77 staged — 2026-11-14 06:09 UTC
+
+**VERIFIED:** commit `97ca10885747b769536a7dd134585b7f9795cb37`, archive SHA
+`f272597a6324186d33775844bd4b198a748d36035f33acd8df6e6cfed5aee084`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.77/source`.
+Nine remote startup checks pass: the prior synthetic estimator/collector
+checks plus concrete-executor import without device creation and refusal of
+missing session/provider bindings. Remote checks sent no input, started no
+capture and opened no client assets/devices. Evidence is retained locally in
+`releases/eql-automation-0.41.77-staging.json` and remotely in `../smoke.json`.
+Read-only listing found zero saved owner position pairs. The existing stationary
+capture remains pending; no new test or G0 repeat is requested. Assist 0.39.6
+and observation candidate 0.39.10 are unchanged.
+
 ## Concrete measurement executors 0.41.77 — 2026-11-14 06:07 UTC
 
 **VERIFIED implementation:** the finite collector can now use the retained

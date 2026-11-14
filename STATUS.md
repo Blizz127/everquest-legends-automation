@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:07 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:09 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -18,8 +18,10 @@ Updated 2026-11-14 06:07 UTC for coordinator task `829a00229b29`.
   16 commands, seven pulses, eight stopped pairs and 696 events. All scene and
   position feedback was synthetic; artifact SHA
   `803f19f60bd4c1433ba35ebd7f45f0c768ee1c2b7d8f23500e1c85f6bb127747`.
-  No live provider/control is enabled. Private source staging follows these
-  checks; owner assist and observation versions remain unchanged.
+  No live provider/control is enabled. Source `97ca108` is privately staged at
+  `owner-tools/0.41.77/source`; nine remote no-input startup checks pass.
+  Archive SHA `f272597a6324186d33775844bd4b198a748d36035f33acd8df6e6cfed5aee084`.
+  Owner assist and observation versions remain unchanged.
 - **Source 0.41.76:** finite collection is integrated with the retained helper
   tick chain, with explicit external command/pulse executors and no owner
   control enabled. Sixty-four focused checks pass. A real watchdog pipe run
@@ -100,7 +102,7 @@ Updated 2026-11-14 06:07 UTC for coordinator task `829a00229b29`.
   button and manual `/location` flow. It additionally saves private copied
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
-  turn (2026-11-14 05:56 UTC) found zero paired records. No lead capture was initiated.
+  turn (2026-11-14 06:09 UTC) found zero paired records. No lead capture was initiated.
 - **Next / real-client gate:** validate the source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported
   initial travel envelope and current scene, then supply the checked sender
