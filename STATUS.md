@@ -1,11 +1,31 @@
 # STATUS
 
-Updated 2026-11-14 22:26 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 22:36 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.70: thin-contact corridor geometry implemented locally.**
+  VERIFIED 40 focused checks and runtime imports without development recipes.
+  The old diagnostic and runtime share one implementation. Each pulse checks
+  its full maximum hold, body, position/heading uncertainty, drift and pivot
+  enclosure; an externally supplied height interval retains all nearby
+  terrain/sheet/edge states, without creating or refitting calibration.
+  The clearance bound is not treated as an
+  observed surface, and future movement cannot justify present elevation.
+  Three unsupported-height cases reproduced a bug before the local fix.
+  No new sender or owner control is enabled. VERIFIED copied-client replay:
+  16 approach cells, 53 stair cells, eight exit cells and 24 synthetic-bound
+  whole-pulse probes pass; exact goal and unsupported-height rejection checked.
+  Artifact SHA `42c723b819ea979ddd6740388acc8ecc92e15f5b426578805571db326b606d62`.
+  This is conditional geometry, not real-client acceptance.
+  The copied map marks the exact Throne camp at (106,154,16), levels 17–22;
+  the marker lies on a placed rug. Next implementation: receipt-bound contact
+  controller and a distinct contact arrival/camp checkpoint, preserving the
+  original height calibration instead of projecting a rug observation to terrain.
+  Alienware SSH still times out; the 0.42.69 arrival receipt and owner 0.39.33
+  installation remain pending. Owner preview remains 0.39.32, G0 passed.
 - **Source 0.42.69 / owner 0.39.33 candidate built; not installed.** Local commit
   `968d051b4d409a0f44418f63fcb80da34e285a61`; candidate archive
   `releases/eql-owner-journey-0.39.33-candidate.tar.gz`, SHA

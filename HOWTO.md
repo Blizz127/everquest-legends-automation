@@ -1,6 +1,12 @@
 # EverQuest Legends automation — current owner guide
 
-Development source **0.42.69 candidate** · travel/camp test **0.39.32** (runtime source 0.42.61) · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Development source **0.42.70** · local stair candidate **0.39.33** (runtime source 0.42.69) · installed travel/camp test **0.39.32** (runtime source 0.42.61) · retained assist **0.39.13**.
+
+Source 0.42.70 adds conditional geometry for the two rug surfaces between the
+stair landing and the map's level 17–22 Throne Room camp. It checks the entire
+possible movement and distinguishes terrain, rug tops and rug-edge heights.
+It does not yet drive this exit or start a camp there. The staged 0.39.33 test
+still ends on the stair landing; it does not include the Throne camp.
 
 Source 0.42.69 connects stair travel to the existing owner route runner.
 A fresh stopped pair follows stair planning; each movement uses the retained

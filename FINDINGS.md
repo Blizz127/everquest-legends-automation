@@ -1,5 +1,72 @@
 # FINDINGS
 
+## 2026-11-14 22:35 UTC — 0.42.70 conditional contact plan and local height states
+
+VERIFIED final copied-client replay completes **16 approach cells, 53 stair
+cells, eight exit cells and 24 full-pulse probes**, all with explicitly synthetic
+speed/error/body bounds. Exact goal (106,154) retains both terrain height 16
+and rug-top height 8438201/524288 as possible supports, without snapping or
+choosing one. Raised observations outside contact or above the actual sheet
+height are rejected. The contact plan links to the replayed stair landing proof.
+Artifact `nav-candidates/crushbone-throne-contact-plan-0.42.70-checked-heights.json`,
+SHA `42c723b819ea979ddd6740388acc8ecc92e15f5b426578805571db326b606d62`;
+plan SHA `1a4cd5a3e947f36868d014493fdd683b03daff9f7ed18504c12d80b3bedb5c68`.
+All 215 recorded code pins still match. Runtime was **63.16s wall / 22.24s CPU**,
+with one BLAS thread and nice 19; no game input. The earlier
+`crushbone-throne-contact-plan-0.42.70.json` is the pre-fix intermediate artifact
+and does not establish the corrected observation checks. Neither artifact
+establishes current character calibration, executable traversal or acceptance.
+
+VERIFIED 40 focused tests pass in 4.34s. JUnit
+`releases/eql-0.42.70-contact-local.xml`, SHA
+`592fd84e5c6b2dc5e0fa08b80a4c2c4c29ea5ae701cd78a2cfaa1970d9bdb0ab`.
+Runtime-only import smoke passes with every `tools` import forbidden; no engine,
+device or game input. The original thin-sheet audit now lives in the runtime
+package, with identical compatibility exports for existing development tools.
+
+The new contact plan rebuilds a complete flat terrain reference on a private
+fork, retaining the exact sheet/placement declaration, body envelope, complete
+terrain/static inventories and BSP/native checks. Its pulse index requires
+coverage of the entire maximum-hold body footprint, including drift, heading
+uncertainty and pivot displacement. It returns geometry only: no floor is
+adopted, no observation issued and no movement authorized.
+
+The first implementation incorrectly used the broad vertical collision band as
+an observation support interval. Three regressions reproduced acceptance of
+elevation without a nearby rug, above the actual rug but below the .125-unit
+bound, and between terrain and rug top away from an edge. The corrected index
+uses the current stopped body/position uncertainty footprint and exact sheet
+geometry. Terrain, exact rug tops and edge-transition intervals remain separate;
+overlapping candidates are retained. Closed edge/point contact is preserved;
+future forward/pivot reach cannot justify present elevation. Exact Fraction
+intervals are supported for the later receipt controller. All of these remain
+conditional physical contact hypotheses, not verified client collision behavior.
+
+VERIFIED copied map `owner-route-data/crushbone-camps-20261114/crushbone_3.txt`
+line 5 labels `L17-22_Throne_Room`, package position (106,154,16), SHA
+`4b1c009838988b13507797afd1ccbce8ba23e1ca99adbafd1065956cfd71bda0`.
+Retained artifact `87caed49fe7b8e6f991b7e2a57a2f6746b40e22fd34d731426c69f8d1bbadb6e`
+has eight conditional exit cells; the first five are ordinary-clear, and the
+last three need the explicit four-face rug hypothesis. Both rugs are at
+Z16.09459114074707 over terrain Z16. The exact goal lies inside face (5782,1).
+An ordinary terrain observation/checkpoint is therefore insufficient there.
+
+Next runtime work must retain the original raw-Z correspondence, issued contact
+fixes, exact movement receipts, consecutive stopped pairs, cancellation lock and
+aggregate budgets. A final contact arrival/checkpoint must retain terrain
+ancestry, exact contact plan, actual pair and compatible height states. Extend
+journey arrival, camp input continuity, camp floor probes and stopped-height
+checks explicitly; do not absorb rug thickness into a new terrain calibration.
+No contact sender, camp route or new owner control is enabled by this change.
+
+The prior goal turn made progress: source 0.42.69/preview 0.39.33 were committed,
+tested and staged locally. This turn's read-only recovery of the retained
+Alienware arrival receipt again failed to connect to port 22. Its completion
+remains UNKNOWN; no batch was restarted. Installed owner/runtime are still
+0.39.32/0.42.61 and source tools 0.42.68. G0 passed; no repeat, game input, login,
+helper restart or prefix change. Current real level/XP/XP-hour/deaths/camp are
+unknown, and full 1–20 plus fresh hands-off 1–50 remain unfinished.
+
 ## 2026-11-14 22:26 UTC — 0.42.69 route integration and 0.39.33 local candidate
 
 Local source commit `968d051b4d409a0f44418f63fcb80da34e285a61`. Immutable

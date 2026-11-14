@@ -43,6 +43,8 @@ def main():
         help='Explicit checked stair radius; the retained guide radius remains the body-radius hypothesis')
     parser.add_argument('--probe-contact-pulses',type=int,default=0,
         help='Offline evenly spaced pulse checks with explicitly synthetic speed/error bounds (0..32)')
+    parser.add_argument('--contact-plan-radius',type=float,
+        help='Rebuild the exit as a conditional contact plan and test full synthetic pulses, without input')
     exit_policy=parser.add_mutually_exclusive_group()
     exit_policy.add_argument('--exit-detour-range',nargs=2,type=int,metavar=('FIRST','LAST'))
     exit_policy.add_argument('--exit-contact-face',nargs=2,type=int,action='append',metavar=('FRAGMENT','FACE'))
@@ -53,6 +55,8 @@ def main():
             or not 0<=args.first_step<args.last_step<32
             or not 0<=args.probe_contact_pulses<=32
             or args.probe_contact_pulses and args.stair_model!='bounded_source_contacts'
+            or args.contact_plan_radius is not None and (not args.exit_contact_face
+                or not math.isfinite(args.contact_plan_radius) or not .05<=args.contact_plan_radius<=10)
             or args.stair_radius is not None and (not math.isfinite(args.stair_radius) or not .05<=args.stair_radius<=10)):
         parser.error('New private output and explicit bounded stair sequence required')
     os.umask(0o077);os.nice(19);resource.setrlimit(resource.RLIMIT_CPU,(40,45))
@@ -168,8 +172,43 @@ def main():
             stage('checking_conditional_contact_exit')
             hypothesis=declare_contact_hypothesis(p.static,tuple(tuple(k) for k in args.exit_contact_face))
             def progress(value):record['contact_exit']=value;save()
-            contact=audit_contact_walks(after,suffix.operations,guide.goal,p.source,p.static,p.bsp,
-                p.region_policy,hypothesis,radius=guide.radius,check_context=check,progress=progress)
+            if args.contact_plan_radius is None:
+                contact=audit_contact_walks(after,suffix.operations,guide.goal,p.source,p.static,p.bsp,
+                    p.region_policy,hypothesis,radius=guide.radius,check_context=check,progress=progress)
+            else:
+                from eql_automation.route_geometry import RouteMotionBounds
+                from eql_automation.source_contact_plan import plan_source_contact,SourceContactIndex
+                plan=plan_source_contact(after,suffix.operations,guide.goal,p.source,p.static,p.bsp,
+                    p.region_policy,hypothesis,body_radius=guide.radius,checked_radius=args.contact_plan_radius,
+                    check_context=check,maximum_seconds=90.)
+                record.update(contact_plan=plan.record(),contact_plan_sha256=plan.sha256)
+                contact=plan.record()['contact_walks'];index=SourceContactIndex(plan)
+                bounds=RouteMotionBounds('offline-thin-contact-probe','offline-assumptions',
+                    .01,.02,.05,2.,.01,.01,1.,.01,guide.radius,guide.body_height)
+                probe=dict(bounds=asdict(bounds),bounds_live_verified=False,samples=[],
+                    game_input_sent=False,real_client_accepted=False)
+                record['exit_contact_pulse_probe']=probe
+                base=float(index.height[0])
+                probe['unsupported_initial_elevation_rejected']=not index.compatible(
+                    tuple(contact['start']),bounds,height_interval=(base+.05,base+.06))
+                if not probe['unsupported_initial_elevation_rejected']:
+                    raise ValueError('Initial noncontact terrain admitted unsupported elevation')
+                above=max(float(s.height) for s in index.sheets)
+                for row in contact['accepted_envelopes']:
+                    a,z=tuple(row['start']),tuple(row['end'])
+                    heading=math.degrees(math.atan2(z[0]-a[0],z[1]-a[1]))%360
+                    base=float(index.height[0])
+                    for point,kind in ((a,'left'),(tuple((a[k]+z[k])/2 for k in (0,1)),'forward'),(z,'right')):
+                        check()
+                        covered=index.cover_pulse(point,heading,kind,bounds,height_interval=(base-.05,base+.175))
+                        if index.compatible(point,bounds,height_interval=(above+.005,above+.01)):
+                            raise ValueError('Observation above every actual sheet was admitted')
+                        probe['samples'].append(dict(point=point,kind=kind,coverage=covered.record(),
+                            coverage_sha256=covered.sha256,unsupported_elevation_rejected=True))
+                probe['goal_compatible']=[dict(kind=s.kind,source_ids=s.source_ids,
+                    height_interval_exact=[str(v) for v in s.height_interval]) for s in index.compatible(
+                        tuple(contact['goal']),bounds,height_interval=(base-.05,base+.175))]
+                probe['complete']=True
             record.update(contact_exit=contact,contact_hypothesis=hypothesis.record(),
                 combined_conditional_envelopes_clear=contact['exit_envelopes_clear'],
                 goal=guide.goal,stage='finished_conditional_contact_envelopes',
