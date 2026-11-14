@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:04 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:05 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -17,6 +17,11 @@ Updated 2026-11-14 07:04 UTC for coordinator task `829a00229b29`.
   suffix pixels. Seventy-six focused checks pass with the private interpreter.
   Fourteen synthetic glyph cases distinguish all prefixes and invalid drafts;
   evidence SHA `b3624150b4644234c2446089f916457889012eca1c65814601bb0b95e42d0e40`.
+  Source `cc3c2ca` is staged; four remote startup checks pass against the installed
+  172-source layout with synthetic pixels. Six complete frame passes take
+  66.9 ms first, 74.5 ms warm median and 78.8 ms maximum. All meet 100 ms;
+  real capture/input/log scans remain excluded. Remote artifact SHA
+  `5db90cbd3853959eee45a9a3abe660c04685cb246ac70ade9a27a7fcd37dadec`.
   Saved font style 3 is known, but actual input font/rendering is not. There is
   no default rendering bank or live chat approval. Current scene/position and
   motion/height/envelope evidence remain required; owner controls are unchanged.

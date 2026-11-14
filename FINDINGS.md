@@ -1,5 +1,29 @@
 # FINDINGS
 
+## Private source 0.41.85 staged — 2026-11-14 07:05 UTC
+
+**VERIFIED:** `cc3c2ca22979ddd86c97b1cfad3010d53bbf4d23`, archive SHA
+`cf3c51cc169b236245bcd2b284bb1158e45d7a3f5067a077e84e90fa89617618`,
+is staged at Alienware `owner-tools/0.41.85/source`. Four focused remote
+startup checks pass, including the complete frame reader against the installed
+172-source layout with six synthetic text cases and a seventh call proving that
+the previous command snapshot is not retained. Exact, missing, extra, wrong and
+caret-suffix cases produce the expected pixel-model results; chat authority
+remains unknown/false. Actual client glyphs and screenshots were not used.
+
+**OBSERVED synthetic full-frame timing:** first 66.9 ms, warm median 74.5 ms,
+maximum 78.8 ms; all six meet 100 ms. Layout/numerical setup took 134.2/29.7 ms.
+This includes the new comparison and existing layout/gauge/combat/chat checks,
+but excludes real capture/input/log scans. No full live-budget acceptance is
+claimed. Remote `../synthetic-command-frames.json` SHA
+`5db90cbd3853959eee45a9a3abe660c04685cb246ac70ade9a27a7fcd37dadec`;
+local staging record `releases/eql-automation-0.41.85-staging.json`.
+
+No game capture/input, devices, protected writes, login or character mutation
+occurred. Owner assist 0.39.6 and stationary observation 0.39.10 are unchanged.
+Actual input font/rendering, current scene/position and motion/height/envelope
+binding remain unresolved before route execution. G0 must not be repeated.
+
 ## Same-frame submitted-prefix comparison 0.41.85 — 2026-11-14 07:04 UTC
 
 **VERIFIED implementation:** `CommandTextMatcher` consumes an exact submitted
