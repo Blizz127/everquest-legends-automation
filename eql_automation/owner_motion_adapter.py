@@ -1,8 +1,8 @@
 """Engine-tick attachment for an explicitly constructed measurement driver.
 
-No owner job/hotkey constructs a driver and no default executors exist. This
-attachment is for the current integration work; it does not enable calibration
-in the staged assist/observation helpers or relax their input restrictions.
+This attachment has no default executors. The optional owner_supervised_motion
+wrapper constructs a finite relative experiment only after an explicit owner
+job. Assist mode and unrelated observation helpers retain their restrictions.
 """
 from .motion_collection import MotionExperimentDriver, CollectionStopped
 import json
@@ -40,7 +40,8 @@ def make_motion_collection_engine(base_engine, *, output_root=None):
                     and not self.stopping and not self.command_recovery_pending
                     and not any(getattr(self, field, None) is not None for field in
                                 ('autopilot', 'deferred', 'loc_request', 'loc_wanted', 'recorder',
-                                 'position_observation', 'navigation_preflight')))
+                                 'position_observation', 'navigation_preflight', 'hotkey_test',
+                                 'route_session_driver', 'pointer')))
 
         def _cancel_motion(self, reason):
             if self.motion_collection_driver is not None:

@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.96** · rotation preview **0.39.6** · observation **0.39.10** · hotbutton test **0.39.11**.
+Source **0.41.97** · rotation preview **0.39.6** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -14,15 +14,17 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Full auto | In development; no accepted 1–20 or 1–50 run. | F11 is disabled. There is no live switch to full auto yet. |
 | Read-only position observation | One owner-triggered capture; no commands, keys or clicks sent. | **Observe current position**, F9/Stop to cancel. |
 | Stationary location-hotbutton test | Sends one explicitly configured key, then checks the log for one fresh position reply. No route movement or combat. | **Test /location hotbutton…**, F9/F11/Stop to cancel. |
+| Supervised motion measurement | Four short forward presses and three turns on owner-confirmed open ground; saves relative observations and stops. | **Supervised motion measurement…**, F9/F11/Stop to cancel. |
 
 Run only one helper at a time. **G0 passed; do not repeat the movement-stop
-pulse.** The new owner check is the stationary hotbutton test below; the manual
-position observation remains available separately.
+pulse.** The next owner check is the combined hotbutton + motion measurement
+below. The manual position observation remains available separately.
 
-## New stationary hotbutton test on Alienware: 0.39.11
+## Next owner test on Alienware: 0.39.12
 
-This tests a faster way for the route controller to request your position.
-It does **not** start leveling or movement.
+This supersedes the stationary-only 0.39.11 test. Run the hotbutton check and
+then the short motion measurement in the **same helper session**. It does not
+start leveling or follow a route.
 
 1. In EverQuest, make a hotbutton containing **only `/location`**. Bind it to
    an unused function key among F1–F5 or F13–F24; remove any other action on that
@@ -32,8 +34,8 @@ It does **not** start leveling or movement.
 2. Close other helpers. Start the new candidate on Alienware:
 
    ```bash
-   cd ~/.local/share/eql-automation/owner-assist/0.39.11
-   EQL_ROTATION_TRACE="$HOME/eql-location-hotkey-trace.jsonl" ./launch.sh --measure-navigation
+   cd ~/.local/share/eql-automation/owner-assist/0.39.12
+   EQL_ROTATION_TRACE="$HOME/eql-motion-trace.jsonl" ./launch.sh --measure-navigation
    ```
 
 3. Choose the correct character and level. In **Movement measurement**, click
@@ -44,16 +46,33 @@ It does **not** start leveling or movement.
    **Stop measurement** cancels. Do not click **Check movement stop**; G0 is done.
 5. The result should say **One fresh location reply observed** and give a
    report path under `~/.local/share/eql-automation/location-hotkey-tests/`.
-   Report that result or its refusal reason. A missing or duplicate reply,
+   A missing or duplicate reply,
    focus loss or activity during the query stops the test. It does not retry
    or type a fallback command.
 
-The test finishes stopped. Its setup declaration is owner-confirmed; it does
-not mechanically prove the hotbutton's contents, current zone, navigation
-alignment or route safety. Keep the same hotbar/page during the test. No live
-hotbutton result or route has been accepted yet. The shipped helper passed
-focused pipe tests and an offscreen Alienware GUI check; those sent no game
-input. Assist remains the separate 0.39.6 preview below.
+6. After a successful reply, stay in this helper. Move yourself onto **wide,
+   open, flat ground**, away from edges, water, obstacles and enemies. Close
+   chat, clear your target and turn native melee off. Keep the tested hotbar/page.
+7. Click **Supervised motion measurement…**, read the short sequence, confirm
+   the ground/setup and start. You have four seconds to focus EverQuest and
+   release your keyboard/mouse. Stay present. It makes four 0.10-second forward
+   presses and three turns (0.05, 0.15 and 0.15 seconds), with stopped position
+   checks between them. **F9/F11 or Stop measurement cancels.**
+8. It finishes stopped and saves a complete or partial result under
+   `~/.local/share/eql-automation/motion-measurements/`. Send the displayed
+   result/refusal reason or `~/eql-motion-trace.jsonl`. No repeat is automatic.
+
+The open-ground/setup declarations are yours; the helper does not independently
+verify obstacle clearance, chat closure or the hotbutton's current contents.
+Physical input, focus/session/settings changes, recognized combat/transition
+log messages and invalid/missing position replies stop the measurement. The
+relative result needs no new zone-entry event and does **not** establish a zone,
+a route or a guaranteed maximum speed. It is not installed as autopilot data.
+
+The actual staged helper passed Alienware pipe-only completion and cancellation
+smokes plus offscreen GUI/dialog checks; no game input was sent. No live motion
+result or route has been accepted yet. Assist stays the separate 0.39.6 preview.
+If the helper was restarted, run its hotbutton check again before measurement.
 
 ## Owner-run rotation test on Alienware today: preview 0.39.6
 
@@ -146,11 +165,15 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.96/source
+~/.local/share/eql-automation/owner-tools/0.41.97/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.96 shares the same bounded hotbutton sender between route
+above. Source 0.41.97 additionally wires a finite, owner-supervised relative
+motion experiment into candidate 0.39.12; it preserves the stationary setup
+and strict assist behavior. No full-auto route is enabled.
+
+Previously, source 0.41.96 shares the same bounded hotbutton sender between route
 acquisition and the new 0.39.11 stationary setup test. The explicit owner job
 handles sender initialization, a four-second focus countdown, one key cycle,
 fresh-log response checks and a saved result. F9/F11, settings/jobs, focus loss,

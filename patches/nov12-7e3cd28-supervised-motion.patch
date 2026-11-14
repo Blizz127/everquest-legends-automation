@@ -1,0 +1,86 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -382,7 +382,8 @@
+             self.ap_state.setObjectName("state")
+             column.addWidget(self.ap_state)
+             self.ap_default_status = (
+-                "Click Observe current position, THEN type /location once. No input is sent. G0 is a separate pulse."
++                "Test your /location hotbutton, then use Supervised motion measurement on open flat ground. "
++                "This measures movement only; no leveling route starts."
+                 if measurement_only else
+                 "Travel is unavailable in this assist preview. Movement and targeting stay manual.")
+             self.ap_status = QLabel(self.ap_default_status)
+@@ -427,11 +428,18 @@
+                                                 "Saves player, target and map crops; no chat crop or input.")
+                 self.observe_position.clicked.connect(lambda: self.post("observe_position"))
+                 row.addWidget(self.observe_position)
++                column.addLayout(row)
++                row = QHBoxLayout()
+                 self.test_location_hotkey = QPushButton("Test /location hotbutton…")
+                 self.test_location_hotkey.setObjectName("testLocationHotkeyButton")
+                 self.test_location_hotkey.setToolTip("Test one configured key while stationary; no movement or fallback typing.")
+                 self.test_location_hotkey.clicked.connect(self.configure_location_hotkey_test)
+                 row.addWidget(self.test_location_hotkey)
++                self.supervised_motion = QPushButton("Supervised motion measurement…")
++                self.supervised_motion.setObjectName("supervisedMotionButton")
++                self.supervised_motion.setToolTip("After the hotbutton test: four short forward presses and three turns, then stop.")
++                self.supervised_motion.clicked.connect(self.configure_supervised_motion)
++                row.addWidget(self.supervised_motion)
+                 check_stop = QPushButton("Check movement stop")
+                 check_stop.setToolTip("Stand on clear, flat ground. Requests one 0.15-second forward pulse, "
+                                       "releases it, then checks for continued movement. "
+@@ -442,7 +450,9 @@
+ 
+             if measurement_only:
+                 limits = QLabel(
+-                    "G0 checks release of one forward pulse; it does not calibrate turning or certify a route. "
++                    "The supervised measurement saves relative speed/turn observations and finishes stopped. "
++                    "Open ground is your confirmation; this does not independently check obstacles or certify a route. "
++                    "G0 is a separate single-pulse stop check. "
+                     "It does not start mesh travel, combat, targeting, route recording, or leveling, and "
+                     "it does not determine character radius, height, climb, or slope limits.")
+                 limits.setWordWrap(True)
+@@ -771,6 +781,34 @@
+             if dialog.exec() == QDialog.DialogCode.Accepted:
+                 self.post("test_location_hotkey", {"key_name": key.currentData(), "confirmed": True})
+ 
++        def configure_supervised_motion(self):
++            if not measurement_only:
++                return
++            dialog = QDialog(self)
++            dialog.setWindowTitle("Supervised motion measurement")
++            layout = QVBoxLayout(dialog)
++            text = QLabel("First complete Test /location hotbutton in this same helper session. "
++                          "Then stand on wide open, flat ground, away from edges, water, obstacles and enemies. "
++                          "Close chat, clear your target, turn melee off and release all keys.\n\n"
++                          "After a four-second focus countdown, the helper makes four 0.10-second forward "
++                          "presses and three turns (0.05, 0.15 and 0.15 seconds). It queries the tested "
++                          "hotbutton between presses, saves the measurements and stops. "
++                          "F9/F11 or Stop measurement cancel. Stay present; no route starts.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            confirmation = QCheckBox("I am supervising on clear, flat, open ground with chat closed, target cleared and melee off.")
++            layout.addWidget(confirmation)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Start short measurement")
++            ok.setEnabled(False)
++            confirmation.toggled.connect(ok.setEnabled)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if dialog.exec() == QDialog.DialogCode.Accepted and confirmation.isChecked():
++                self.post("supervised_motion_measurement", {"open_flat_clear": True})
++
+         def confirm_chat_closed(self):
+             if self.worker is None or measurement_only:
+                 return
+@@ -965,6 +1003,8 @@
+                     "position_observation_enabled": measurement_only and window.observe_position.isEnabled(),
+                     "location_hotkey_test_visible": measurement_only and window.test_location_hotkey.isVisible(),
+                     "location_hotkey_test_enabled": measurement_only and window.test_location_hotkey.isEnabled(),
++                    "supervised_motion_visible": measurement_only and window.supervised_motion.isVisible(),
++                    "supervised_motion_enabled": measurement_only and window.supervised_motion.isEnabled(),
+                 }, indent=2) + "\n")
+             app.quit()
+         QTimer.singleShot(400, render)

@@ -36,7 +36,7 @@ def retained():
     return rotation_engine.Engine, rotation_core.Settings, navigation
 
 
-def setup(tmp_path, retained, *, real=False):
+def setup(tmp_path, retained, *, real=False, relative=False):
     Engine, Settings, legacy = retained
     h = SimpleNamespace(now=100., point=(0.,0.,0.), heading=350., speed=30., latency=.03,
         real=real, pulses=[], commands=[], traces=[], notices=[], mode='measurement', window=42)
@@ -50,8 +50,12 @@ def setup(tmp_path, retained, *, real=False):
     def append(body):
         with h.log.open('a') as f: f.write(h.wall().strftime('[%a %b %d %H:%M:%S %Y] ')+body+'\n')
     h.append=append
-    reader=LocationLogReader(h.log,zones,expected_character='Probe',expected_server='private')
-    append('You have entered Fixture Zone.');reader.poll(now=h.clock())
+    if relative:
+        from eql_automation.unbound_location_log import UnboundLocationReader
+        reader=UnboundLocationReader(h.log,expected_character='Probe',expected_server='private')
+    else:
+        reader=LocationLogReader(h.log,zones,expected_character='Probe',expected_server='private')
+        append('You have entered Fixture Zone.');reader.poll(now=h.clock())
     base = make_owner_nov12_engine(Engine,clock=h.clock)
     e = make_motion_collection_engine(base,output_root=tmp_path/'saved')(Settings(game_dir=str(game),character='Probe',server='private'),
         lambda *_:None,lambda *_:None,measurement_only=True)
@@ -61,7 +65,8 @@ def setup(tmp_path, retained, *, real=False):
     def forbidden(*a,**kw): raise AssertionError('Unexpected real sender/capture/legacy movement')
     e.send=e.hold=e.ensure_sender=e.ensure_pointer=forbidden
     h.engine=e
-    session=MotionExperimentSession(reader,zone_id=1,zone_display_name='Fixture Zone',zone_short_name='fixture',
+    session=MotionExperimentSession(reader,relative=relative,zone_id=None if relative else 1,
+        zone_display_name=None if relative else 'Fixture Zone',zone_short_name=None if relative else 'fixture',
         generation=e.cancel_generation,generation_reader=lambda:e.cancel_generation,mode_reader=lambda:h.mode,
         binding_reader=lambda:(h.window,e.settings.character,e.settings.server,e.settings.level),
         record_id='synthetic-engine-ticks',horizontal_error=.01,legacy=legacy,clock=h.clock,local_wall_clock=h.wall,
@@ -262,3 +267,20 @@ def test_real_watchdog_pipe_through_actual_engine_ticks(tmp_path,retained):
                 or record['last_checked_monotonic']-last['up_completed_at']>.3)
         assert count==len(record['receipts'])+1
     assert not record['real_client_accepted'] and h.engine.sender is None
+
+
+def test_relative_experiment_needs_no_zone_event_and_never_claims_one(tmp_path, retained):
+    h=setup(tmp_path, retained, relative=True)
+    record=h.run()
+    assert record['outcome']=='complete' and len(record['receipts'])==7
+    assert record['relative_measurement'] and record['absolute_zone_binding']=='unbound'
+    assert record['estimate']['zone_binding']==dict(zone=None,generation=None,source='unbound')
+    assert all(p['second']['zone'] is None for p in record['pairs'])
+    assert not record['real_client_accepted']
+
+
+@pytest.mark.parametrize('body',['LOADING, PLEASE WAIT...', 'You have entered Elsewhere.'])
+def test_relative_zone_transition_still_stops(tmp_path, retained, body):
+    h=setup(tmp_path, retained, relative=True)
+    h.command_hook=lambda:h.append(body)
+    assert h.run()['outcome']=='stopped' and not h.pulses

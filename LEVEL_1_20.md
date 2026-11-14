@@ -1,9 +1,18 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 08:45 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 08:59 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.97 ships the combined stationary hotbutton + supervised finite
+motion test as owner candidate 0.39.12. In the same helper session the owner
+can obtain relative speed/turn observations without inventing a zone binding.
+Alienware pipe-only smokes completed all seven pulses/16 fixes and verified
+cancellation during DOWN and before the final pair. Offscreen GUI/dialog checks
+pass. Devbox timing refusals are recorded in FINDINGS; no limits were relaxed.
+HOWTO contains the exact next owner test. No real route or automated level gain
+is accepted; bind actual motion, current scene/zone/height to the first leg next.
 
 Source 0.41.96 ships the stationary hotbutton setup test as owner candidate
 0.39.11. It shares route acquisition's sender and cleanup implementation and

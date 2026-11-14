@@ -37,9 +37,9 @@ class Position:
     at: float                         # received monotonic; not game timestamp
     sequence: int
     raw_yxz: tuple[float, float, float]
-    zone: str
+    zone: str | None                   # None for explicitly relative measurement
     log_epoch: int
-    zone_generation: int
+    zone_generation: int | None
 
 
 @dataclass(frozen=True)
@@ -117,9 +117,10 @@ def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
             raise CalibrationUnavailable("Expected a stopped position pair")
         for fix in (pair.first, pair.second):
             if (not isinstance(fix, Position) or not finite(fix.at) or fix.at < 0
-                    or not integer(fix.sequence) or not fix.zone
-                    or not isinstance(fix.zone, str) or not integer(fix.log_epoch)
-                    or not integer(fix.zone_generation)
+                    or not integer(fix.sequence) or not integer(fix.log_epoch)
+                    or not ((fix.zone is None and fix.zone_generation is None)
+                        or (isinstance(fix.zone, str) and bool(fix.zone)
+                            and integer(fix.zone_generation)))
                     or not isinstance(fix.raw_yxz, (tuple, list)) or len(fix.raw_yxz) != 3
                     or not all(finite(v) for v in fix.raw_yxz)):
                 raise CalibrationUnavailable("Invalid raw position/provenance")
@@ -202,6 +203,8 @@ def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
     except legacy.CalibrationError as exc:
         raise CalibrationUnavailable("Retained fit domain not resolved: " + str(exc)) from exc
     return dict(format="eql-conditional-motion-estimate-v1", record_id=record_id,
+        zone_binding=dict(zone=binding[0], generation=binding[2],
+                          source='unbound' if binding[0] is None else 'supplied_log_binding'),
         input_authorized=False, real_client_accepted=False, live_calibration_verified=False,
         verified_speed_upper_bound=None, full_turn_ambiguity_resolved=False,
         client_consumption_timing_verified=False,

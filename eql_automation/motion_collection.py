@@ -12,6 +12,7 @@ import threading
 import time
 
 from .location_log import LocationLogReader
+from .unbound_location_log import UnboundLocationReader
 from .motion_calibration import (PROBES, Position, StoppedPair, finite, integer,
                                  reduce_experiment, pair_geometry, measure_forward,
                                  measure_turn, common_speed)
@@ -64,7 +65,9 @@ class ReleasedPulse:
 class MotionExperimentSession:
     """One finite measurement session; unknown bindings never use log history.
 
-    Construct with a reader that already observed a new, matching zone event.
+    Normally requires a new matching zone event. Explicit relative measurement
+    instead uses UnboundLocationReader and None for all zone fields: it measures
+    motion in printed coordinate units without claiming an absolute zone.
     ``binding_reader`` must return the same owner settings/window/process tuple
     throughout. It must not silently restore it after a process/settings change.
     Consumers must poll at each engine tick, including while a checked executor
@@ -73,9 +76,13 @@ class MotionExperimentSession:
     def __init__(self, reader, *, zone_id, zone_display_name, zone_short_name,
                  generation, generation_reader, mode_reader, binding_reader,
                  record_id, horizontal_error, legacy,
-                 clock=time.monotonic, local_wall_clock=datetime.now, stop_lock=None):
-        if (not isinstance(reader, LocationLogReader) or not integer(zone_id)
-                or not zone_display_name or not zone_short_name
+                 clock=time.monotonic, local_wall_clock=datetime.now, stop_lock=None,
+                 relative=False):
+        source_valid = ((relative is False and isinstance(reader, LocationLogReader)
+                         and integer(zone_id) and bool(zone_display_name) and bool(zone_short_name))
+                        or (relative is True and isinstance(reader, UnboundLocationReader)
+                            and zone_id is None and zone_display_name is None and zone_short_name is None))
+        if (not source_valid
                 or not integer(generation) or not isinstance(record_id, str) or not record_id
                 or not finite(horizontal_error) or horizontal_error <= 0
                 or not all(callable(f) for f in (generation_reader, mode_reader, binding_reader,
@@ -84,7 +91,7 @@ class MotionExperimentSession:
         self.lock = threading.RLock() if stop_lock is None else stop_lock
         if not all(callable(getattr(self.lock, name, None)) for name in ('acquire','release','__enter__','__exit__')):
             raise ValueError('A shared stop lock must be a context-manageable lock')
-        self.reader, self.zone = reader, zone_short_name
+        self.reader, self.zone, self.relative = reader, zone_short_name, relative
         self.generation, self.generation_reader = generation, generation_reader
         self.mode_reader, self.binding_reader = mode_reader, binding_reader
         self.binding = binding_reader()
@@ -94,7 +101,7 @@ class MotionExperimentSession:
         self.record_id, self.error = record_id, horizontal_error
         self.started = self.last_at = clock()
         self.log_binding = (zone_id, zone_display_name, reader.tail.identity,
-                            reader.tail.epoch, reader.zone_generation)
+                            reader.tail.epoch, None if relative else reader.zone_generation)
         self.phase, self.reason = "need_location", ""
         self.pairs, self.receipts, self.requests, self.releases, self.raw_fixes = [], [], [], [], []
         self.legs, self.turns = [], []
@@ -102,9 +109,18 @@ class MotionExperimentSession:
         self.executor_events = []
         self.first = self.pending = self.result = None
         self.due, self.deadline = self.started, self.started + 2.5
-        self.last_seq = reader.log_line_seq
+        self.last_seq = self._reader_sequence()
         self.latest = reader.latest
         self._check()
+
+    def _reader_sequence(self):
+        return self.reader.line_seq if self.relative else self.reader.log_line_seq
+
+    def _reader_binding(self):
+        r = self.reader
+        if self.relative:
+            return None, None, r.tail.identity, r.tail.epoch, None
+        return r.zone_id, r.zone_display_name, r.tail.identity, r.tail.epoch, r.zone_generation
 
     def cancel(self, reason):
         with self.lock:
@@ -127,17 +143,16 @@ class MotionExperimentSession:
                 or self.binding_reader() != self.binding or self.phase == "stopped"):
             self._stop("Measurement cancelled, binding changed or clock expired")
         self.last_at = now
-        current = (self.reader.zone_id, self.reader.zone_display_name, self.reader.tail.identity,
-                   self.reader.tail.epoch, self.reader.zone_generation)
+        current = self._reader_binding()
         if current != self.log_binding or self.reader.tail.identity is None:
             self._stop("Fresh zone/log binding missing or changed")
         return now
 
     def _poll(self):
         now = self._check()
-        if self.reader.log_line_seq != self.last_seq or self.reader.latest is not self.latest:
+        if self._reader_sequence() != self.last_seq or self.reader.latest is not self.latest:
             self._stop("Location reader was consumed outside this session")
-        old_seq = self.reader.log_line_seq
+        old_seq = self._reader_sequence()
         try:
             fixes = self.reader.poll(now=now)
         except Exception as exc:
@@ -147,7 +162,7 @@ class MotionExperimentSession:
         # through another command or pulse as though the stream were drained.
         if self.reader.tail.partial:
             self._stop("Incomplete log line during measurement")
-        if self.reader.log_line_seq != old_seq + len(fixes):
+        if self._reader_sequence() != old_seq + len(fixes):
             self._stop("Location replies were invalidated or consumed elsewhere")
         if len(fixes) > 1 or (fixes and self.phase != "await_location"):
             self._stop("Batched or unsolicited location replies")
@@ -169,7 +184,7 @@ class MotionExperimentSession:
         raw["log_local_time"] = fix.log_local_time.isoformat()
         self.raw_fixes.append(raw)
         position = Position(fix.received_monotonic, fix.log_line_seq, fix.raw_coordinates,
-                            self.zone, fix.log_epoch, fix.zone_generation)
+                            self.zone, fix.log_epoch, None if self.relative else fix.zone_generation)
         self.pending = None
         if self.first is None:
             self.first = position
@@ -291,6 +306,8 @@ class MotionExperimentSession:
         """Serializable partial evidence; completion never grants movement."""
         with self.lock:
             return dict(format="eql-motion-experiment-v1", record_id=self.record_id,
+                relative_measurement=self.relative,
+                absolute_zone_binding='unbound' if self.relative else 'log_event',
                 horizontal_error=self.error, outcome=self.phase, reason=self.reason,
                 pairs=[asdict(p) for p in self.pairs], receipts=[asdict(r) for r in self.receipts],
                 raw_fixes=list(self.raw_fixes), command_requests=list(self.requests),

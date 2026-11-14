@@ -13,7 +13,7 @@ from uuid import uuid4
 from .motion_calibration import finite
 from .motion_collection import (CommandReceipt, ReleasedPulse, LocationRequest,
                                MotionRequest, MotionExperimentSession, CollectionStopped)
-from .route_step_sender import _fd_identity
+from .location_hotkey import _fd_identity
 from .uinput_watchdog import _EVENT, PulseSelection, selected_key_pulse_receipt
 from .command_submission import (CommandSubmissionJournal, CommandSubmissionSnapshot,
                                  LOCATION_KEYS)

@@ -1,5 +1,63 @@
 # FINDINGS
 
+## Supervised relative measurement shipped as 0.39.12 — 2026-11-14 08:59 UTC
+
+**VERIFIED implementation:** source 0.41.97 composes the existing helper's
+stationary hotbutton test, finite motion collector and actual watchdog sender.
+An explicit owner job requires a successful hotbutton result in the same helper
+and process/window plus owner confirmation of open flat ground, closed chat,
+cleared target and melee off. Four-second focus countdown, seven exact bounded
+probes, eight stopped pairs and persistent input/log checks finish with a saved
+complete or partial record. F9/F11, queued jobs, focus/settings/session changes,
+recognized log hazards and owner activity cancel. There are no retries or typed
+fallbacks. Assist still rejects movement. Relative observations use None zone
+fields and retain log identity/epoch/sequence/timestamp/transition checks; no
+absolute zone is invented. Conditional estimates never authorize a route.
+
+The owner's declaration is **not independently observed collision/chat/macro
+clearance**. Read-only review confirmed no owner restriction requires an absolute
+zone or per-character pixel recognizer before this explicitly supervised test.
+It still does not grant unattended navigation or character control to the lead.
+
+**VERIFIED checks:** collector/reducer checks passed (67 cases). Initial new
+wrapper test failures exposed fixture omissions (EV_KEY and require_focus),
+which were corrected. The subsequent source wrapper/hotbutton/executor run had
+75 passing tests and one complete-run timing refusal. Built candidate imports
+passed; its wrapper/manual-observation run had 47 passing tests and two early
+timing refusals. At 08:56 UTC the devbox load average was 191.48; load is a
+plausible cause, not a proven attribution. All timing limits stayed unchanged.
+A standalone pipe smoke initially lacked the preview working directory, so its
+watchdog child could not import the package; the smoke now uses the same working
+directory as launch.sh. This was a diagnostic invocation issue, not game input.
+
+**VERIFIED on Alienware, no game input:** the actual staged helper/watchdog
+completed seven pipe movement pulses and sixteen synthetic position replies;
+all keys were released and the engine finished stopped. Two further smokes
+cancelled during movement DOWN and before the final stopped pair, preserving
+partial evidence and no estimate. Synthetic input/position observations are
+explicitly labeled. Artifacts under the approved local data store:
+
+- `evidence/owner-motion-0.41.97-complete.json`: SHA
+  `71abacec984b164cd79ea20d14a18f6b578838929fdd6d7de4cf593e64a8c0aa`.
+- `evidence/owner-motion-0.41.97-motion-down.json`: SHA
+  `ac297ce1697547cdb0830c65cd522c5e36bd17687549968c56d020ecf2099307`.
+- `evidence/owner-motion-0.41.97-final-pair.json`: SHA
+  `ae5a5373c40368b84509ecf7134a0c77f5a5cc0d1be7ab3ab89ffbe3163f01b2`.
+
+**VERIFIED private staging:** `owner-assist/0.39.12`, archive SHA
+`3ca6f6e3ae1891e5a8a72d61c8f1895e595836b37b581afe33c38e0e29cdc27d`.
+Pinned imports/reserved-key refusal and actual Qt offscreen GUI/dialog checks
+pass. Dialog starts disabled, confirmation enables it, unchecking disables it;
+smoke rejects it with no worker. GUI screenshot inspected, both test buttons
+visible. PNG SHA `a660b95a39fd774af60b9e1f0c4b51818f8b86781cbf2bdf29d127b6ce1ea301`;
+metadata SHA `2dc2fb0c753f3ef123b5214c1cad57570b1b74640243d2e25dcc1c3e68a8cf16`.
+
+**Remaining real-client gate:** owner runs hotbutton then motion measurement
+in the same 0.39.12 helper session, per HOWTO. Current scene/zone/height and real
+motion feedback still need binding to the first supervised route leg. No real
+1–20 leg, automated XP or fresh1–50 run has been accepted. G0 passed from the
+trace plus owner's visible-stop confirmation; no repeat. Metrics remain unknown.
+
 ## Stationary hotbutton test shipped as 0.39.11 — 2026-11-14 08:45 UTC
 
 **VERIFIED implementation:** source 0.41.96 extracts the existing hotbutton

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 08:45 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 08:59 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,24 @@ Updated 2026-11-14 08:45 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.97 / owner candidate 0.39.12:** the same existing helper now
+  runs a finite relative motion measurement after its successful stationary
+  hotbutton check. The owner explicitly starts it on declared open/flat/clear
+  ground: four 0.10 s forward presses, three turns, fresh stopped pairs, then
+  stopped output. Unknown zone stays unknown; no route or assist movement is
+  enabled. Alienware actual-helper/watchdog **pipe-only** smoke completed all
+  seven pulses and sixteen fixes. F9 during DOWN and physical-input refusal
+  before the final pair both released all keys and finished stopped. GUI and
+  confirmation-dialog smokes pass without an engine; screenshot inspected.
+  Candidate staged at `owner-assist/0.39.12`, archive SHA
+  `3ca6f6e3ae1891e5a8a72d61c8f1895e595836b37b581afe33c38e0e29cdc27d`.
+  Devbox source run: 75 passed, one complete-run timing refusal; built-preview
+  run: 47 passed, two timing refusals. Alienware three focused pipe smokes pass
+  with unchanged timing limits. No live acceptance is claimed. HOWTO gives
+  the combined owner launch/test steps; this supersedes stationary-only 0.39.11.
+  **Next:** consume real owner motion + current position/zone observations and
+  bind the first supervised route leg. Actual level, XP/hour, deaths and camp
+  remain unknown; G0 is passed and needs no repeat.
 - **Source 0.41.96 / owner candidate 0.39.11:** the stationary location-hotbutton
   setup test is now runnable from the existing measurement GUI. An explicit
   owner-selected key and setup confirmation start a four-second focus countdown,
