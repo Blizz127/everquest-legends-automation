@@ -1,15 +1,14 @@
 # EverQuest Legends automation — current owner guide
 
-Development source **0.42.71** · local stair candidate **0.39.33** (runtime source 0.42.69) · installed travel/camp test **0.39.32** (runtime source 0.42.61) · retained assist **0.39.13**.
+Development source **0.42.72** · local stair candidate **0.39.33** (runtime source 0.42.69) · installed travel/camp test **0.39.32** (runtime source 0.42.61) · retained assist **0.39.13**.
 
-Source 0.42.71 prepares the rug corridor using the current session's original
-height calibration and motion bounds. After planning it requires a new stopped
-position pair at the same departure. It checks extra space beyond every waypoint
-for a full movement pulse and keeps the character's center bound separate from
-body width. This source increment does not yet drive the rug exit or start the
-Throne camp; its contact controller and arrival checkpoint remain unfinished.
-The staged 0.39.33 test still ends on the stair landing. There is no new owner
-action or G0 repeat for this increment.
+Source 0.42.72 adds the internal rug-crossing controller. It follows checked
+waypoints through the existing movement sender, waits for actual stopped-position
+replies after every pulse, and records rug arrival separately from terrain.
+The controller passed simulated feedback and watchdog-pipe tests. It is not yet
+connected to owner travel or camp continuation, and this build is only staged
+locally. The staged 0.39.33 owner test still stops at the stair landing. There
+is no new launch command or G0 repeat for this source increment.
 
 Source 0.42.69 connects stair travel to the existing owner route runner.
 A fresh stopped pair follows stair planning; each movement uses the retained

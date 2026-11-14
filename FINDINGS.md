@@ -1,5 +1,72 @@
 # FINDINGS
 
+## 2026-11-14 22:58 UTC — 0.42.72 receipt-driven contact traversal and arrival
+
+VERIFIED **95 focused checks**, with synthetic game positions and scene identity:
+
+- `eql-0.42.72-contact-final-local.xml`: 89 passed; SHA `152e5c7f12c9580a8c844dc331e88f270ed7abb6d2b5878cf4ec7fb009568525`.
+- `eql-0.42.72-retained-transport-final.xml`: 5 passed; SHA `78a69a88694d5534827a0fe332c325ac4e3248c987b22934657d58a3dd8f2de6`.
+- `eql-0.42.72-close-waypoints-local.xml`: 1 passed; SHA `ba37b59b7f5d1511dfba25dd0a508d0eeec00078a7693b3ce623ba1077d94446`.
+
+The five transport cases use actual OS pipes and the existing watchdog sender:
+normal contact/stair/ordinary pulses, plus contact and stair cancellation after
+DOWN, all produce acknowledged UP and preserve the uncommitted original floor.
+They are not real game input or client acceptance. Runtime import/startup smoke
+succeeds with development-tool imports forbidden, SHA
+`4d669149eb619e7be39df2daa25ed14e76378daa7afcd967fe434a4c77aabda4`.
+
+The controller consumes the exact contact preflight start under the same lock,
+then leases the ordinary ledger without changing its floor, pose or reference.
+It retains original calibration, original displacement origin and aggregate
+scope. Every pulse checks the complete cached body/center/height enclosure and
+uses the retained ticket, 50ms DOWN permit, acknowledged UP and fixed feedback
+deadline. Reply validation uses the original raw-Z correspondence and recomputes
+all local terrain/sheet/edge possibilities; entering a rug can legitimately add
+a sheet state absent at departure. Compatible states are primitive immutable
+snapshots. Both actual samples must have some common possible height; the
+intersection is of unions, never an interval that fills a terrain/rug gap.
+Empty intersection requests another pair on the same released receipt.
+
+Targets are accepted nominal leg endpoints, never runout endpoints. Tests
+exercise a bend, a new rug-top state, stopped pair arrival tolerance, and nearby
+waypoints that need another pair without recounting or repeating a pulse.
+Final `SourceContactArrival` pins the actual pair, original calibration/scope,
+contact plan, receipt history, coverage, nominal goal and completed waypoints.
+It remains a distinct contact receipt: ordinary state stays frozen. Fresh
+arrival validation repeats physical/context checks; no further movement or
+ordinary `finish_transfer` is permitted. The existing owner/camp runner does
+not yet consume this receipt.
+
+Three defects were reproduced before correction in
+`releases/eql-0.42.72-controller-before.xml` (three expected failures), SHA
+`e8e51754726835eea64ebd2088bc28b7b8d7e699658465d875567635ea22790e`:
+
+1. Raw coordinates could change during callbacks after local contact
+   classification. Raw fields and pure context/receipt bindings are now
+   rechecked after the final callback, before a fix is issued.
+2. A pair with only its second sample very near the target could clear its UP
+   receipt, then refuse the next tiny movement. It now retains that receipt
+   and deadline for another actual pair. Already reached close waypoints
+   retain their proven progress without counting the pulse twice.
+3. Arrival on the final allowed step could be issued and then rejected by
+   validation. Equality is allowed only for the exact completed-contact
+   observation path; movement observation and further pulses still refuse.
+
+VERIFIED retained copied-client geometry from 0.42.71 is unchanged: 214 of its
+217 recorded code pins match current files; only package version, shared sender
+and supervised policy differ. Its artifact remains
+`nav-candidates/crushbone-throne-contact-runout-0.42.71-final.json`, SHA
+`d2a2b343006d5ba0fee77b49c3a976f70623c4dfc09cabbaa88105166d844393`.
+No new copied-client geometry run or live motion acceptance is claimed here.
+
+One read-only Alienware request for the retained 0.42.69 arrival receipt again
+timed out connecting to port 22. No remote test was restarted and no helper,
+character, install or prefix was changed. Installed owner/runtime/source remain
+0.39.32/0.42.61/0.42.68. G0 is passed. Current level, XP, XP/hour, deaths and
+camp remain unknown. Next: contact-aware camp checkpoint, explicit itinerary
+boundary and owner handoff, preserving manual-only movement in assist. No
+accepted real-client 1–20 or hands-off fresh-character 1–50 run exists.
+
 ## 2026-11-14 22:48 UTC — 0.42.71 contact preflight and bounded runout
 
 VERIFIED local source commit `35e91d7559d85c0141e8433e771d17340fe66c81`

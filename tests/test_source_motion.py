@@ -48,7 +48,7 @@ def f(tmp_path,monkeypatch,legacy,request):
     p=f.planner
     guide=SourceItineraryGuide('crushbone',p.pins[2],p.pins[3],'f'*64,.1,6.,(4.,3.25),
         (SourceWalkHint((4.,2.),(4.,3.)),))
-    if getattr(request,'param',None)=='contact_preflight':
+    if getattr(request,'param',None) in ('contact_preflight','contact_bend','contact_close'):
         p.source.sources=tuple(replace(s,vertices_wld=tuple((y*1.5,x,z) for y,x,z in s.vertices_wld))
                                for s in p.source.sources)
         coords=np.asarray([s.vertices_wld for s in p.source.sources])[:,:,[1,0,2]]
@@ -59,7 +59,17 @@ def f(tmp_path,monkeypatch,legacy,request):
         p.static.sources=tuple(SourceFace(tuple((y,x,z) for x,y,z in tri),0,'TransparentMasked',20,i)
             for i,tri in enumerate(((points[0],points[1],points[2]),(points[0],points[2],points[3]))))
         p.static.identities={20:dict(placement_fragment=110,model_wld_sha256='e'*64,transform_sha256='f'*64)}
+        if request.param=='contact_bend':
+            p.static.sources+= (SourceFace(((2.5,5.,0.),(3.3,5.,0.),(3.3,5.,10.)),0,'Diffuse',21,0),
+                                SourceFace(((2.5,5.,0.),(3.3,5.,10.),(2.5,5.,10.)),0,'Diffuse',21,1))
         p.static.faces_for_footprint=lambda _:p.static.sources
+        if request.param=='contact_close':
+            query=p.source.source_faces_for_footprint
+            def bounded_query(footprint):
+                if max(v[1] for v in footprint)-min(v[1] for v in footprint)>3.1:
+                    raise ValueError('Source projection candidate budget exceeded')
+                return query(footprint)
+            p.source.source_faces_for_footprint=bounded_query
     if getattr(request,'param',None)=='compact_long':
         from eql_automation.source_guide_compaction import compact_source_guide
         vertices=((0.,0.,.2),(10.,0.,.2),(10.,15.,.2),(0.,15.,.2))

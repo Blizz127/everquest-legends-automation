@@ -91,7 +91,8 @@ class SupervisedSourcePolicy:
     def bind_transfer(self,controller):
         """Keep the same physical observers, start time and aggregate budgets."""
         from .source_stair_controller import SourceStairController
-        if type(controller) not in (SourceTransferController,SourceStairController):
+        from .source_contact_controller import SourceContactController
+        if type(controller) not in (SourceTransferController,SourceStairController,SourceContactController):
             raise ValueError('Exact source transfer controller required')
         with controller.lock:
             self._check();controller._check()
@@ -113,15 +114,20 @@ class SupervisedSourcePolicy:
             self._scene=self._authorization=None
             self._check()
 
-    def _check(self):
+    def _check(self,*,completed_contact=False):
         self.check_current();began=self.ledger._check()
         window=focused_game_identity(self.gate)
         self.check_current();finished=self.ledger._check();d=self.declaration
         self.ledger.model.check_policy(self.ledger.observer.policy)
+        terminal=False
+        if completed_contact:
+            from .source_contact_controller import SourceContactController
+            terminal=type(self.ledger) is SourceContactController and self.ledger.phase=='arrived'
+            if not terminal:raise RouteHalt('Completed contact scope required')
         if (any(a is not b for a,b in zip(self._context,(self.ledger,d,self.gate,
                 self.owner_input,self.log_veto,self.check_current)))
                 or window!=self.window or not self.last_at<=began<=finished<=self.started+d.maximum_seconds
-                or self.ledger.steps>=d.maximum_steps
+                or self.ledger.steps>d.maximum_steps or self.ledger.steps==d.maximum_steps and not terminal
                 or d.route_sha256!=self.ledger.observer.itinerary.sha256
                 or self.log_veto.tail.path!=self.ledger.observer.reader.tail.path
                 or self.log_veto.cancel_generation!=self.ledger.observer.generation):
@@ -129,9 +135,9 @@ class SupervisedSourcePolicy:
         self.last_at=finished
         return began
 
-    def _physical_observation(self,began):
+    def _physical_observation(self,began,*,completed_contact=False):
         before=self.owner_input.sample();log=self.log_veto.poll();after=self.owner_input.sample()
-        self._check();finished=self.last_at
+        self._check(completed_contact=completed_contact);finished=self.last_at
         if (not 0<=finished-began<=.1
                 or not all(type(v) is OwnerInputObservation and v.clear_at(finished)
                     and v.topology_generation==self.topology for v in (before,after))
@@ -163,15 +169,28 @@ class SupervisedSourcePolicy:
     def observe_transfer(self,controller,seal):
         """Recheck stopped feedback without renewing an old movement scene."""
         from .source_stair_controller import SourceStairController
-        if type(controller) is not SourceStairController or self.ledger is not controller:
-            raise RouteHalt('Current stair receipt controller required')
+        from .source_contact_controller import SourceContactController
+        if type(controller) not in (SourceStairController,SourceContactController) or self.ledger is not controller:
+            raise RouteHalt('Current stair or contact receipt controller required')
         self._scene=self._authorization=None
         controller._check_seal(seal)
         began=self._check()
         before,log,after,finished=self._physical_observation(began)
         if (self.ledger is not controller or controller.phase not in ('await_stopped','settling')
                 or controller._sealed is not seal or controller.ordinary._busy is not controller._lease):
-            raise RouteHalt('Stair feedback observation cancelled')
+            raise RouteHalt('Contact or stair feedback observation cancelled')
+        return SupervisedSourceIdleObservation(self.declaration,began,finished,
+            self.window,before,after,log)
+
+    def observe_contact_arrival(self,controller,arrival):
+        """Observe a stopped contact handoff without an ordinary floor claim."""
+        from .source_contact_controller import SourceContactController
+        if type(controller) is not SourceContactController or self.ledger is not controller:
+            raise RouteHalt('Current contact arrival controller required')
+        self._scene=self._authorization=None
+        began=self._check(completed_contact=True);controller._check_arrival(arrival,began)
+        before,log,after,finished=self._physical_observation(began,completed_contact=True)
+        controller._check_arrival(arrival,finished)
         return SupervisedSourceIdleObservation(self.declaration,began,finished,
             self.window,before,after,log)
 

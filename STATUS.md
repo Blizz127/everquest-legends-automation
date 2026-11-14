@@ -1,11 +1,32 @@
 # STATUS
 
-Updated 2026-11-14 22:48 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 22:58 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.72 locally verified; not installed.** VERIFIED 95 focused
+  checks: 89 contact/preflight/stair-feedback cases, five watchdog-pipe cases
+  covering contact/stair/ordinary senders and cancellation, and one close-waypoint
+  receipt test. No game input. New contact controller uses the existing sender,
+  full cached pulse coverage, original calibration and aggregate scope. Each
+  new stopped pair retains every compatible local height; disjoint height
+  possibilities require settling on the same UP deadline. Actual rug arrival
+  is a distinct terminal receipt; original ordinary floor/pose/reference stay
+  unchanged. F9/cancellation and mode/focus/input loss are covered. Nominal
+  waypoints, not runout endpoints, drive travel. Fixed three reproduced defects:
+  raw reply mutation after classification, near-goal pair dead-end and exact
+  final-step-budget arrival refusal. Final validation permits that terminal
+  step equality without permitting further movement.
+  Next: contact-aware camp checkpoint and source itinerary/owner runner handoff;
+  no new owner control is enabled yet. Retained 0.42.71 copied-client geometry
+  is unchanged (214 geometry pins match; version/sender/policy differ); it was
+  not re-run for this controller increment. Alienware SSH again timed out on
+  one read-only arrival-receipt request; no batch rerun, installation, login,
+  helper restart or character/prefix change. Installed owner/runtime/source
+  remain 0.39.32/0.42.61/0.42.68. G0 passed; current real metrics unknown.
+  No accepted 1–20 or 1–50 run.
 - **Source 0.42.71 locally verified; not installed.** Source commit
   `35e91d7559d85c0141e8433e771d17340fe66c81`; private candidate
   `releases/eql-source-tools-0.42.71-candidate.tar.gz`, SHA
