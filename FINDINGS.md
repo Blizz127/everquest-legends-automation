@@ -1,5 +1,16 @@
 # FINDINGS
 
+## Private source 0.41.68 staging — 2026-11-14 04:48 UTC
+
+**VERIFIED:** Commit `a3fccf43b330f283a805f7a34352b73ede606107`, archive SHA
+`31b344b027f20faa2465219c4b872eba9a32a2ecd122a5bc5c961f10a0550c06`,
+is staged on Alienware at `~/.local/share/eql-automation/owner-tools/0.41.68/source`.
+Five no-input startup checks pass: version, non-authorizing record construction,
+missing route-state refusal, replay CLI and location collector CLI. Remote
+`../smoke.json` and local private `releases/eql-automation-0.41.68-staging.json`
+retain the result. No client assets, input device, capture, login or game input
+were used. Assist 0.39.6 and observation candidate 0.39.9 remain unchanged.
+
 ## Receipt-bound floor commits and completed printed-feedback replay — 2026-11-14 04:47 UTC
 
 **VERIFIED source 0.41.68:** `RouteFloorCommit` owns one committed source chain and

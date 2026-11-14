@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 04:47 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 04:48 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -17,6 +17,9 @@ Updated 2026-11-14 04:47 UTC for coordinator task `829a00229b29`.
   and reentrant operations. **39 focused checks pass**, including the actual
   pipe watchdog, ground producer and retained follower. It sends no input,
   creates no permit and is not imported by an owner helper yet.
+  Source `a3fccf4` is privately staged at `owner-tools/0.41.68/source`; five
+  remote startup checks pass. Archive SHA
+  `31b344b027f20faa2465219c4b872eba9a32a2ecd122a5bc5c961f10a0550c06` matched.
 - **Completed printed-feedback replay:** **VERIFIED** all 155 segments and
   2,323 simulated steps arrive with all terrain/static/BSP trials passing.
   All 2,324 stopped observation pairs pass; 48 pins rechecked. Artifact SHA
