@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 15:42 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 15:44 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.35 / preview 0.39.24 candidate:** repeated camp automatically
+- **Source 0.42.35 / published preview 0.39.24:** repeated camp automatically
   prepares learned spells at startup and between fights after level-ups. It
   uses the retained catalog/rotation/sender, fresh export evidence, helper-slot
   clear requests and serialized exact-spell begin/finish receipts. Silence does
@@ -16,7 +16,12 @@ Updated 2026-11-14 15:42 UTC for coordinator task `829a00229b29`.
   pipes; no game input. The owner's existing spellbook export was copied
   read-only: all 18 rows resolve against the copied client catalog. No live gem
   contents, current level or character progress were inferred from that file.
-  **Publication pending startup check.** Next: owner preparation/combat/rest
+  **Published on Alienware:** all 75 focused checks pass there, along with
+  package/source matching, installed executable and spell-source pins, enabled
+  camp GUI and movement-entry refusal. GUI visually inspected. No worker,
+  device, game input, settings write or prefix modification during staging.
+  Startup SHA `3494c55be6d8f735a0c8101ebc3dc09979926834625c5eda1099fc119952e2e8`.
+  Source revision `8ab65ff`. Next: owner preparation/combat/rest
   acceptance and same-process travel→camp handoff. Spell buying/scribing,
   initial fresh-character candidate discovery and complete leveling remain
   unfinished; actual level/XP/XP-hour/deaths/camp remain unknown.

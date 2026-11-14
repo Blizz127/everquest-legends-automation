@@ -2,7 +2,7 @@
 
 ## Automatic learned-spell preparation — 2026-11-14 15:42 UTC
 
-**VERIFIED implementation, source 0.42.35 / preview 0.39.24 candidate:** an
+**VERIFIED implementation, source 0.42.35 / preview 0.39.24:** an
 explicit camp preparation phase now runs at startup and between fights after a
 fresh level-up. It reuses the retained Catalog, profile selection, slot map,
 KeySender, rotation builder and prepared-marker storage. The same log reader
@@ -67,7 +67,29 @@ gems or automated character progress. No game input or prefix modification.
 **Still unfinished:** real preparation/targeting/combat/recovery acceptance,
 travel→camp handoff, spell acquisition, vendors/supplies, death/relogin recovery,
 a fresh-character 1–20 route and hands-off 1–50 proof. G0 remains passed; no repeat.
-Private publication follows startup checks. Current actual metrics remain unknown.
+Current actual metrics remain unknown.
+
+**VERIFIED private publication — 15:44 UTC:** preview **0.39.24** is on Alienware
+at `~/.local/share/eql-automation/owner-assist/0.39.24`; source **0.42.35**,
+revision `8ab65ffb750bd55ca89469ae65e934d2c94428de`, is at `owner-tools/0.42.35/source`.
+All **75 focused checks pass on Alienware**. Packaged runtime modules match that
+source; installed executable, `spells_us.txt` and `spells_us_str.txt` are verified.
+The actual installed spell-data hash matches the copied catalog above; the
+installed fade-string SHA is
+`cdbe3d6e02eb0d636ed15a6f9d52fa1af5f82bacbd237a8102b7c23f281e4a32`.
+The enabled camp GUI shows automatic preparation and its gem-1–8 change, with
+unused inherited controls hidden. Its image was copied back, hash-checked and
+visually inspected. Movement-entry refusal passes. No worker, device, game
+input, settings write, install/prefix modification or character action occurred.
+
+- Archive SHA: `0b1de2d0438a812610b27ffbba5dd4ce029d8844f3e61d6e9b7558550215101a`.
+- Test output SHA: `8f0df46d40dc65102d465d4e7efc63088403bf9da78c54310224aa8d36abadeb`.
+- GUI PNG SHA: `28def42eb197eee4b24cee74958af5052ade7058e47417eb34b778aff06cddd1`.
+- Startup report SHA: `3494c55be6d8f735a0c8101ebc3dc09979926834625c5eda1099fc119952e2e8`.
+
+Metadata: `releases/eql-owner-camp-0.39.24-staging.json` in the private store.
+The initial local unpublished documentation candidate is retained under
+`owner-build-drafts`. These checks are not real preparation or leveling acceptance.
 
 ## Repeated stationary camp and resource recovery — 2026-11-14 15:33 UTC
 
