@@ -1,7 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 01:32 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:33 UTC for coordinator task `829a00229b29`.
 
+- Private source **0.41.52**, commit `96f9576`, is staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.52/source`. Archive SHA
+  `f356e21c212df80339cfc400ebf114c7ed362abb4f0917f17082ba239eed270f`
+  matched. Four focused diagnostic tests and CLI/invalid-option startup
+  smokes passed remotely. No input device or game input was used.
 - Source **0.41.52** reconciles the GFay one-ULP detail seam against all
   copied terrain faces. Exactly one flag-zero Diffuse source face contains
   the entire failed footprint; source Z is 0.3713 below the baked reference.

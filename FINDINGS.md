@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Private 0.41.52 staging — 2026-11-14 01:33 UTC
+
+**VERIFIED:** Commit `96f9576` archive SHA
+`f356e21c212df80339cfc400ebf114c7ed362abb4f0917f17082ba239eed270f`
+matched on Alienware at `~/.local/share/eql-automation/owner-tools/0.41.52/source`.
+Four focused diagnostic tests, two CLI startup checks and missing-ground-option
+refusal passed remotely; `../smoke.json` records them. No game input/device
+access occurred. The ordinary unpatched ground replay still stops at segment
+3, step 18, as expected (control SHA
+`158919e75adda325e472f008509d3a14f283240fd47606010921054286506ebf`).
+The diagnostic correction is explicitly opt-in and does not enable F11.
+
 ## Source-supported GFay seam diagnostic — 2026-11-14 01:32 UTC
 
 **VERIFIED:** `tools/audit_gfay_source_seam.py` reads pinned copied
