@@ -1,11 +1,25 @@
 # STATUS
 
-Updated 2026-11-14 16:07 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 16:24 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.37 / later-camp transit:** 23 focused checks pass for long source-face
+  proposals, reversed retained guides and full itinerary validation. The copied
+  Slave Mines prefix replays exactly: 1,065 cells, seven steps, final proof
+  `176bbef50fb75c7e1cc635c851cbd7dcac57b7dab27b06d8ed090636ab7ac3fa`.
+  The first North Wall graph proposal failed ground coverage and is not enabled.
+  The reversed-corridor alternative replayed the same prefix, then exhausted
+  its 300-second work budget during full checking; no partial acceptance.
+  Report SHA `354a3bb73b6cf418dc8bf7835fcec973c6b50e055c8a984dd246bf1eb8c02a62`.
+  Devbox load reached 283 on 48 CPUs; one nice-19 geometry job was used.
+  Next: compact redundant straight walk hints and rerun the full check, then
+  package any successful destination behind the existing runtime checks.
+  Trainer access remains
+  unresolved under unchanged movement bounds. Owner preview stays 0.39.25;
+  actual level/XP/hour/deaths/camp remain unknown. No game input or install edits.
 - **Source 0.42.36 / published preview 0.39.25:** supervised Crushbone travel
   hands a fresh stopped arrival to the repeated automatic-preparation camp in
   the same retained helper/sender. Navigation only opens for explicit setup or

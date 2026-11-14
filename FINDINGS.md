@@ -1,5 +1,67 @@
 # FINDINGS
 
+## 2026-11-14 16:24 UTC — source 0.42.37, longer camp transit proposals
+
+VERIFIED: 23 focused checks pass for the new source-face transit graph,
+reverse-guide builder and existing itinerary validator. Long ordinary paths
+are divided into short checked cells; exact 3D edge identities preserve floor
+layers and explicit steps keep landing identities. Floating-point subdivision
+retains exact final endpoints. Search clocks and adjacency construction are
+bounded. Reverse guides retain the previous departure floor as a proposed new
+landing; old proofs never become current character observations.
+
+VERIFIED copied-data replay: the retained synthetic itinerary's **1,065 cells
+and seven steps** reproduce final floor proof
+`176bbef50fb75c7e1cc635c851cbd7dcac57b7dab27b06d8ed090636ab7ac3fa`.
+Every walk proof, static check, step transition and landing proof was checked.
+The parent's region evidence remains pinned, not replayed in this diagnostic.
+Any proposed new suffix is checked against terrain, static objects, BSP and
+native region classifications by the complete itinerary planner.
+
+The first North Wall/Castle graph proposal had 129 edges, seven steps and
+1,116 guide operations. It **failed** with
+`Source itinerary terrain: selected_floor_uncovered_ground_area`; it is not a
+usable route. Retained report:
+`nav-candidates/crushbone-north-wall-transit-0.42.37-initial.json`, SHA
+`c1cbfb0830d47ab618d95076ad054c07ec6e49a6e7ecabfa3cf1c9dbe6e10255`.
+The earlier graph inventory has SHA
+`c68ad077a864eca7f8d97644a761a227709eb1bc04a95f29dfee779fb74108ef` at
+`nav-candidates/crushbone-camp-transit-graph-0.42.37.json`. That inventory used
+an endpoint seed hypothesis; the later full replay above supplies the checked
+offline lineage. Neither establishes a current avatar floor or input authority.
+
+OBSERVED read-only geometry review: Trainer Hill's 22-face component `(454,2)`
+and its 14-face approach component `(937,6)` remain isolated under the current
+step proposal model. Two approach boundaries have opposing floor heights
+11/0 and 12/0. Individual wall triangles spanning four or one unit are only
+parts of those walls, not traversable step heights. Other access, partial-edge
+joins and possible static-object support remain unverified; no physical
+disconnection or larger client step capability is claimed. Movement bounds
+were not increased.
+
+The reversed suffix toward the nearest North Wall point (36.52 units from the
+annotation) replayed the same 1,065-cell/seven-step prefix and produced 633
+reverse operations. The full check then **exhausted its 300-second work budget**;
+this is not a geometry acceptance or proof of a blocked physical route. Report
+`nav-candidates/crushbone-north-wall-transit-0.42.37-reverse.json`, SHA
+`354a3bb73b6cf418dc8bf7835fcec973c6b50e055c8a984dd246bf1eb8c02a62`,
+records 303.40 seconds including cleanup/save. Devbox load reached 283 on 48
+CPUs. Only one nice-19 geometry job ran at a time. Proximity alone is not a
+connector. Next: compact redundant straight walk hints, retaining explicit
+steps and full footprint/region checks, and retry the complete copied route.
+
+Read-only integration review found that the existing source runtime already
+consumes a guide's selected goal. A future accepted destination needs a pinned
+registry entry, a destination ID captured in the queued Journey request and
+matching arrival/report evidence. The original strict motion declaration and
+F8/F9/F11 cancellation must remain intact. The copied map has one combined
+North Wall/Castle annotation; no separate Castle endpoint is invented. No new
+destination is enabled in this release.
+
+No game input, Alienware geometry load or protected-install changes. Preview
+0.39.25 remains the owner build; real traversal/camp acceptance and complete
+1–20/1–50 remain outstanding. G0 is passed and must not be repeated.
+
 ## 2026-11-14 16:07 UTC — 0.39.25 published and next camp evidence
 
 VERIFIED: source 0.42.36 (`f7bed78`, runtime `9d4dd29`) and preview 0.39.25 are

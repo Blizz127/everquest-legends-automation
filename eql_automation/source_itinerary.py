@@ -205,13 +205,13 @@ def plan_source_itinerary(prefix, start, guide, terrain, static, bsp, region_pol
         branch = chain.fork()
         floor = branch.advance(footprint, sources)
         if not floor.candidate:
-            raise SourceItineraryGeometryError('Source itinerary terrain: ' + floor.reason)
+            raise SourceItineraryGeometryError(f'Source itinerary terrain at {origin}: ' + floor.reason)
         placed = check_source_static_floor(floor, footprint, sources, static)
         if not placed.candidate:
-            raise SourceItineraryGeometryError('Source itinerary static: ' + placed.reason)
+            raise SourceItineraryGeometryError(f'Source itinerary static at {origin}: ' + placed.reason)
         old_bsp = check_source_body_bsp(floor, footprint, sources, bsp, clip_branches=True)
         if not old_bsp.candidate and old_bsp.reason != 'missing_bsp_child':
-            raise SourceItineraryGeometryError('Source itinerary BSP: ' + old_bsp.reason)
+            raise SourceItineraryGeometryError(f'Source itinerary BSP at {origin}: ' + old_bsp.reason)
         native = classify_source_body_regions(floor, footprint, sources, static,
             policy_classifier, source_wld_sha256=guide.wld_sha256)
         _zero_native(native)

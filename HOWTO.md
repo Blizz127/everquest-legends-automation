@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.36** · travel/camp test **0.39.25** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.37** · travel/camp test **0.39.25** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.25 joins supervised Crushbone travel and repeated camp combat in one helper. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -565,11 +565,18 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.14/source
+~/.local/share/eql-automation/owner-tools/0.42.37/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.97 additionally wires a finite, owner-supervised relative
+above. Source 0.42.37 adds long source-face route proposals, reversed itinerary
+guides and the copied-data diagnostic `tools/audit_crushbone_camp_transit.py`.
+Its `--strategy graph|reverse` options never send input. The initial North Wall
+graph failed ground coverage; the reverse-corridor check exhausted its work
+budget. Neither enables later-camp travel. Owner preview remains 0.39.25 and
+G0 remains passed. Use the owner launch commands above for game testing.
+
+Source 0.41.97 additionally wires a finite, owner-supervised relative
 motion experiment into candidate 0.39.12; it preserves the stationary setup
 and strict assist behavior. No full-auto route is enabled.
 
