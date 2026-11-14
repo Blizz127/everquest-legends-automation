@@ -1,5 +1,63 @@
 # FINDINGS
 
+## Observed ground-height startup — 2026-11-14 10:29 UTC
+
+**VERIFIED implementation:** source 0.42.6 adds `observed_height.py`, which
+creates a current stopped-height correspondence before the route follower
+exists. This removes the circular requirement to obtain an aligned route fix
+before producing its initial height calibration. The producer uses the same
+`LocationLogReader` that will enter `RouteSession`, two consecutive post-release
+stopped fixes, the owner/window binding, and the pinned source/mesh observer.
+It samples all source terrain layers independently at each printed XY; raw Z
+never selects a convenient floor. Missing/layered support, changed geometry,
+owner/log identity, stale first or second timestamps and inconsistent offsets
+refuse the record. It preserves both raw samples, face IDs, each height offset,
+residuals, log identity, route hash and observation times.
+
+The new `ObservedHeightCalibration` keeps `live_verified=False` and is accepted
+only in measurement mode. Ground observation, follower, floor staging and
+route-session startup consume it without changing that scope. Full-auto,
+assist and off refuse this evidence; a mode change revokes the follower.
+`RouteSession` pins the calibration object for its lifetime and retains its
+JSON-compatible evidence in the run snapshot. Body dimensions, motion bounds,
+scene checks and sender authorization are still separate; none is fabricated
+from the height fit. Printed coordinate centers and copied source geometry do
+not establish live collision equivalence or a universal height correction.
+
+**VERIFIED checks:** 146 focused tests plus 20 subtests pass, including 24 new
+observed-height cases. Tests exercise the actual log reader, existing observer,
+follower, session and receipt-bound floor staging; no device or game input is
+used by the new cases. The existing complete pipe route smoke initially hit a
+watchdog-arm refusal, then passed in isolation; a later repeat also refused.
+No timing limit was widened. A final bounded pipe diagnostic completed both
+segments in ten steps, outcome `arrived`, with final UP/SYN events. This is
+synthetic physical feedback through a pipe, not game movement.
+
+**VERIFIED copied-data probe, synthetic observations:**
+`tools/probe_observed_height_bootstrap.py` loads the pinned GFay route/mesh and
+source archive, writes synthetic client-format replies into an isolated log,
+produces the new correspondence, and feeds a later sequence through the actual
+ground observer. It takes the zone display name from the copied catalog:
+`The Greater Faydark` (also present in the retained owner log), not the shortened
+name used by older synthetic fixtures. At the retained route start, source Z
+is 63.92649730426629 and baked Z is 64.40511617644279. The explicitly synthetic
+actor offset 2.564 prints actor Z=66.49; the producer derives
+2.5635026957337033 against source terrain. This is not a current owner reading.
+Artifact `nav-candidates/gfay-observed-height-bootstrap-0.42.6.json`, SHA
+`cf788c43782c5e7382c5dc22352148849a832c4659565a1af1dbf162c4dcee13`.
+
+**Remaining production work:** current zone/session attribution and the owner
+route-entry/scene/motion-provider assembly are not connected yet. Motion 0.39.12
+produces an unbound relative estimate, not a zone or guaranteed speed/body bound;
+its saved JSON alone cannot activate the route. The retained rotation helper
+already reverse-scans zone history, but discards entry time/log/session identity
+and can overlook a later loading marker. Do not treat its bare `self.zone` as
+current verification. Next: connect current-zone observation and the supervised
+route startup to existing helper/session evidence. No new owner test is added;
+G0 remains passed, measurement 0.39.12 and assist 0.39.13 remain unchanged.
+Current level, XP/hour, deaths and camp are unknown; real 1–20 and fresh 1–50
+acceptance remain absent.
+
 ## Actor Z, location text and downward collision query — 2026-11-14 10:17 UTC
 
 **VERIFIED static evidence:** the installed `eqstr_us.txt` was read over SSH

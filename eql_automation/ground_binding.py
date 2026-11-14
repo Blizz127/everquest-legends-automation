@@ -1,10 +1,11 @@
 """Separate physical source ground from its baked navigation approximation.
 
-These immutable records are evidence containers, not movement authority. A
-future trusted live verifier must supply them from the current log reader,
-pinned geometry and owner-run calibration. Historical/offline data cannot
-self-issue live verification. The checks here reject inconsistent records;
-they do not perform that live verification or open an input device.
+These immutable records are evidence containers, not movement authority.
+The full-auto path requires external live verification. Measurement mode can
+instead consume the explicitly typed current stopped-height correspondence
+produced by observed_height, without changing its live_verified=False scope.
+Historical/offline data cannot self-issue live verification. These checks
+reject inconsistent records and never open an input device.
 """
 from __future__ import annotations
 
@@ -121,6 +122,7 @@ class AlignedWldFix:
     # This existing frame/motion record is distinct from height calibration.
     calibration_record_id: str
     live_alignment_verified: bool = False
+    alignment_kind: str = 'external_live_verification'
 
     @property
     def mesh_sha256(self):
@@ -138,7 +140,7 @@ class GroundBindingCheck:
 
 
 def validate_ground_binding(aligned, *, height_calibration, geometry_evidence, mesh_sha256, zone_short_name,
-                            now, motion_calibration_record_id=None):
+                            now, motion_calibration_record_id=None, mode='full_auto'):
     """Validate bindings to the verifier's exact current calibration object.
 
     Only the identity raw XY→WLD transform is supported by this contract.
@@ -146,10 +148,17 @@ def validate_ground_binding(aligned, *, height_calibration, geometry_evidence, m
     The per-projection source/bake bound must come from pinned same-floor
     evidence, not from widening the route endpoint or G2 snap tolerance.
     """
-    if (not isinstance(aligned,AlignedWldFix) or aligned.live_alignment_verified is not True
+    from .observed_height import ObservedHeightCalibration, current_height_allowed
+    measured = isinstance(height_calibration,ObservedHeightCalibration)
+    alignment_ok = (isinstance(aligned,AlignedWldFix) and (
+        (not measured and aligned.live_alignment_verified is True)
+        or (measured and aligned.live_alignment_verified is False
+            and aligned.alignment_kind=='current_stopped_height_correspondence')))
+    if (not alignment_ok
             or not isinstance(height_calibration,HeightCalibration)
             or aligned.height_calibration is not height_calibration
-            or height_calibration.live_verified is not True
+            or not current_height_allowed(height_calibration,mode=mode)
+            or (measured and height_calibration.evidence.mesh_sha256!=mesh_sha256)
             or not isinstance(geometry_evidence,GroundGeometryEvidence)
             or geometry_evidence.geometry_verified is not True
             or not isinstance(aligned.raw_fix,RawLocationFix)

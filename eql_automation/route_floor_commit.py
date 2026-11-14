@@ -139,7 +139,8 @@ class RouteFloorCommit:
                 raw=reference_fix.raw_fix
                 check=validate_ground_binding(reference_fix,height_calibration=r.height_calibration,
                     geometry_evidence=r.geometry_evidence,mesh_sha256=r.route.mesh_sha256,
-                    zone_short_name=r.route.zone,now=now,motion_calibration_record_id=r.calibration)
+                    zone_short_name=r.route.zone,now=now,motion_calibration_record_id=r.calibration,
+                    mode=r.mode_reader())
                 if (not check.candidate or raw.log_line_seq!=r.last_seq
                         or raw.received_monotonic!=r.last_fix_at
                         or (raw.zone_id,raw.zone_display_name,raw.log_epoch,raw.zone_generation)!=r.binding

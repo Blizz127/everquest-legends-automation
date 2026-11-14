@@ -104,7 +104,6 @@ class FixedRouteFollower:
                 or not finite(heading) or not 0 <= heading < 360
                 or not calibration_record_id or not isinstance(calibration_record_id, str)
                 or not isinstance(height_calibration, HeightCalibration)
-                or height_calibration.live_verified is not True
                 or not isinstance(geometry_evidence, GroundGeometryEvidence)
                 or geometry_evidence.geometry_verified is not True
                 or not finite(max_step_seconds) or not 0 < max_step_seconds <= .2
@@ -112,6 +111,9 @@ class FixedRouteFollower:
                 or not isinstance(generation, int) or isinstance(generation, bool) or generation < 0
                 or not callable(generation_reader) or not callable(mode_reader)):
             raise ValueError("Fixed-route controller requires explicit calibration and limits")
+        from .observed_height import current_height_allowed
+        if not current_height_allowed(height_calibration,mode=mode_reader(),route_sha256=route.artifact_sha256):
+            raise ValueError('Height correspondence is unavailable in this route mode')
         for index, segment in enumerate(route.segments):
             if (not isinstance(segment, FixedSegment) or not xyz(segment.start) or not xyz(segment.end)
                     or not isinstance(segment.polygon, int) or isinstance(segment.polygon, bool)
@@ -166,12 +168,15 @@ class FixedRouteFollower:
             self.halt("Route cancelled or mode changed to assist/off")
         if not finite(now) or (self.last_at is not None and now < self.last_at):
             self.halt("Route observation clock is invalid")
+        from .observed_height import current_height_allowed
+        if not current_height_allowed(self.height_calibration,mode=mode,route_sha256=self.route.artifact_sha256):
+            self.halt('Height correspondence is unavailable in this route mode')
 
     def _point(self, aligned, now):
         check = validate_ground_binding(aligned, height_calibration=self.height_calibration,
             geometry_evidence=self.geometry_evidence,
             mesh_sha256=self.route.mesh_sha256, zone_short_name=self.route.zone,
-            now=now, motion_calibration_record_id=self.calibration)
+            now=now, motion_calibration_record_id=self.calibration,mode=self.mode_reader())
         if not check.candidate:
             self.halt("Current raw-fix ground binding refused: " + check.reason)
         raw = aligned.raw_fix

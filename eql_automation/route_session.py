@@ -56,10 +56,17 @@ class RouteSession:
         self.binding = binding_reader()
         if not immutable_binding(self.binding):
             raise ValueError('Owner settings/window/process binding must be immutable')
+        self.mode = r.mode_reader()
         cal = r.height_calibration
+        self.height_calibration = cal
+        from .observed_height import ObservedHeightCalibration, current_height_allowed
+        if isinstance(cal,ObservedHeightCalibration) and (
+                not current_height_allowed(cal,mode=self.mode,route_sha256=r.route.artifact_sha256,
+                                           owner_binding=self.binding)
+                or cal.evidence.log_identity != reader.tail.identity):
+            raise ValueError('Observed height belongs to another owner/log/route session')
         self.log_binding = (cal.zone_id, cal.zone_display_name, reader.tail.identity,
                             cal.log_epoch, cal.zone_generation)
-        self.mode = r.mode_reader()
         self.record_id, self.max_seconds = record_id, max_seconds
         self.started = self.last_at = now
         self.phase, self.reason = 'need_location', ''
@@ -95,7 +102,8 @@ class RouteSession:
             self._stop('Route session binding failed: '+str(error))
         if (not finite(now) or now < self.last_at or now-self.started > self.max_seconds
                 or self.runner.mode_reader() != self.mode or self.mode not in ('measurement','full_auto')
-                or binding != self.binding or self.ledger.runner is not self.runner):
+                or binding != self.binding or self.ledger.runner is not self.runner
+                or self.runner.height_calibration is not self.height_calibration):
             self._stop('Route cancelled, session binding changed or deadline expired')
         current = (self.reader.zone_id, self.reader.zone_display_name, self.reader.tail.identity,
                    self.reader.tail.epoch, self.reader.zone_generation)
@@ -146,7 +154,8 @@ class RouteSession:
         aligned = self.ground.observe(raw, route=self.runner.route, segment_index=self.runner.index,
             height_calibration=self.runner.height_calibration, now=now,
             motion_calibration_record_id=self.runner.calibration, floor_chain=self.chain,
-            endpoint_radius=self.runner.radius, height_tolerance=self.runner.height_tolerance)
+            endpoint_radius=self.runner.radius, height_tolerance=self.runner.height_tolerance,
+            mode=self.runner.mode_reader())
         self._check()
         self.pending = None
         if self.first is None:
@@ -234,6 +243,7 @@ class RouteSession:
 
     def snapshot(self):
         with self.lock:
+            from .observed_height import height_record
             return dict(format='eql-fixed-route-session-v1', record_id=self.record_id,
                 outcome=self.phase, reason=self.reason, mode=self.mode,
                 route_sha256=self.runner.route.artifact_sha256, segment_index=self.runner.index,
@@ -242,6 +252,7 @@ class RouteSession:
                 command_requests=list(self.requests), raw_fixes=list(self.raw_fixes), stopped_pairs=list(self.pairs),
                 steps=list(self.steps), step_attempts=list(self.step_attempts),
                 executor_events=list(self.executor_events),
+                height_calibration=height_record(self.height_calibration),
                 real_client_accepted=False, request_correlation_verified=False)
 
 

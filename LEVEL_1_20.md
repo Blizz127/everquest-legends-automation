@@ -1,9 +1,18 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 10:17 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 10:29 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.42.6 supplies the missing height-startup producer from two current
+stopped positions and independent terrain samples. Its observed correspondence
+stays distinct from live collision/body verification and works only in the
+supervised measurement route. Ground/follower/session/floor-stage integration
+and the copied GFay bootstrap pass focused checks, with no real-client input.
+The owner route entry, current zone and scene/motion providers still need to be
+connected; the pending motion result alone does not make a route runnable.
+Assist 0.39.13, motion 0.39.12 and passed G0 are unchanged.
 
 Source 0.42.5 binds the installed `/location` text to direct actor coordinates
 and records the state-dependent offset used by the movement clamp. The downward

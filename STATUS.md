@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 10:19 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 10:29 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,15 @@ Updated 2026-11-14 10:19 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.6:** current stopped-height startup now derives its offset from
+  two fresh log positions and independently sampled source terrain. The typed
+  record retains live_verified=false and works through measurement-mode ground
+  observation, follower, floor staging and route startup; full-auto refuses it.
+  146 focused tests plus 20 subtests pass. The copied GFay bootstrap passes with
+  explicitly synthetic observations; it does not prove a real route. **Next:**
+  connect current-zone/session observation and the owner route/scene/motion
+  assembly. Pending 0.39.12 results alone cannot activate the route. Assist
+  0.39.13 and passed G0 are unchanged; no new owner test or current run metrics.
 - **Source 0.42.5:** `/location` output order is now bound to the installed
   string resource and direct actor coordinate loads. The ground clamp's virtual
   offset is bound to two constructor-installed vtables; the downward query

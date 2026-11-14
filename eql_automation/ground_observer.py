@@ -145,11 +145,14 @@ class RouteGroundObserver:
 
     def observe(self, raw_fix, *, route, segment_index, height_calibration,
                 motion_calibration_record_id, now, floor_chain=None,
-                endpoint_radius=.25, height_tolerance=.25):
+                endpoint_radius=.25, height_tolerance=.25, mode='full_auto'):
         """Preserve exact raw identity/XY and independently measure both heights."""
         raw,cal,g=raw_fix,height_calibration,self.geometry
+        from .observed_height import ObservedHeightCalibration, current_height_allowed
         if (not isinstance(raw,RawLocationFix) or not point(raw.raw_coordinates)
-                or not isinstance(cal,HeightCalibration) or cal.live_verified is not True
+                or not isinstance(cal,HeightCalibration)
+                or not current_height_allowed(cal,mode=mode,
+                    route_sha256=getattr(route,'artifact_sha256',None))
                 or cal.raw_xy_to_wld_transform!='identity'
                 or not isinstance(route,FixedRoute) or route.zone!=g.zone_short_name
                 or route.mesh_sha256!=g.mesh_sha256
@@ -211,9 +214,11 @@ class RouteGroundObserver:
             g.source_archive_sha256,g.source_wld_sha256,source_ids,g.same_floor_evidence_sha256,
             g.maximum_source_baked_z_difference,neighbors,True,True)
         aligned=AlignedWldFix(raw,source,projection,cal,route.zone,motion_calibration_record_id,
-                              live_alignment_verified=cal.live_verified)
+            live_alignment_verified=cal.live_verified,
+            alignment_kind=('current_stopped_height_correspondence'
+                if isinstance(cal,ObservedHeightCalibration) else 'external_live_verification'))
         check=validate_ground_binding(aligned,height_calibration=cal,geometry_evidence=g,
             mesh_sha256=g.mesh_sha256,zone_short_name=route.zone,now=now,
-            motion_calibration_record_id=motion_calibration_record_id)
+            motion_calibration_record_id=motion_calibration_record_id,mode=mode)
         if not check.candidate:raise GroundObservationUnavailable(check.reason)
         return aligned
