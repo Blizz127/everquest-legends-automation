@@ -14,6 +14,10 @@ pass, with no route relaxation. Next: establish the actor query position and
 classification callback, and consume the pending owner motion/current-scene
 result. Assist 0.39.13 and measurement 0.39.12 remain unchanged; G0 is passed.
 
+Source `aee7341` is staged at Alienware `owner-tools/0.42.3/source`;
+no-input point-query/rounding/null distinctions and volume-refusal startup
+checks pass. No engine or client input was used.
+
 Source 0.42.2 replays the complete terrain/static candidate and checks exact
 closed BSP intersections: 1,046 ordinary cells plus all phases of seven steps.
 The complete audit still refuses 926 cells and all seven steps because a BSP

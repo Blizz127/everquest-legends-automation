@@ -73,6 +73,16 @@ leg. G0 is passed and needs no repeat. Assist 0.39.13 remains based on the
 existing rotation bot. Current level, XP/hour, deaths and camp are unknown;
 no real route, automated level gain or fresh-character run is accepted.
 
+**VERIFIED private staging:** source commit
+`aee7341a0bf5e391e0fd9943df2ce71dc6aa7065` is staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.3/source`. Archive SHA
+`2863ce50a3cd04e51a36640da2f4f8fb706356866242315564c5cc5c880e9e7b`.
+Remote no-input startup passes zero-branch selection, null-root/child
+distinction, region-before-children, binary32 rounding and unchanged
+conservative volume refusal. Startup SHA
+`3250015e2b0bb55e3073c376fed38b3c04636271f9333ef00eb8ef631f4c607b`.
+No client engine was constructed or native client code executed.
+
 ## Clipped BSP audit of complete source path — 2026-11-14 09:50 UTC
 
 **VERIFIED implementation:** source 0.42.2 adds exact rational clipping of a

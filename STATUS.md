@@ -21,6 +21,10 @@ Updated 2026-11-14 10:02 UTC for coordinator task `829a00229b29`.
   Bounds/live MXCSR, actor body/step capability, dynamic obstacles and real
   traversal remain unverified. Assist 0.39.13 and measurement 0.39.12 unchanged;
   no new owner test and no G0 repeat. Level, XP/hour, deaths and camp unknown.
+  Source `aee7341` is staged at Alienware `owner-tools/0.42.3/source`;
+  no-input point-query/rounding/null distinctions and unchanged-volume startup
+  checks pass. Startup SHA
+  `3250015e2b0bb55e3073c376fed38b3c04636271f9333ef00eb8ef631f4c607b`.
 - **Assist 0.39.13 staged:** stale HP/mana is cleared on stop, inactive arm
   and settings changes. Actual retained-engine regression and offscreen GUI
   pass on Alienware without devices or game input; explicit F10 still works
