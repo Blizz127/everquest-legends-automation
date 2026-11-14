@@ -1,5 +1,18 @@
 # FINDINGS
 
+## Private 0.41.59 staging — 2026-11-14 02:59 UTC
+
+**VERIFIED:** Commit `c783b99`, archive SHA
+`7e0ec71d7dd30128f466f782692aa60621e71ab46308c4645184e09856edaa16`, matched at Alienware
+`~/.local/share/eql-automation/owner-tools/0.41.59/source`. Six lightweight
+remote checks passed: continuous floor beneath an overhead platform,
+intersecting-wall refusal without changing prior state, exact new XP awards
+and invalid-time byte preservation, level-loss reset, CLI startup and invalid
+option refusal. Remote `../smoke.json` records these synthetic checks.
+No copied assets, input device or client were opened. Assist 0.39.6 and
+G0 candidate 0.39.7 remain unchanged; F11 is not accepted. Local staging
+record: `releases/eql-automation-0.41.59-staging.json` in the private data store.
+
 ## Conditional floor-aware follower replay — 2026-11-14 02:58 UTC
 
 **VERIFIED source 0.41.59:** Each proposed movement footprint forks the

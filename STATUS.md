@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 02:58 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 02:59 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No real-client 1–20 route or automated level gain
   is accepted. Fresh-character hands-off 1–50 and strict assist remain required.
@@ -11,7 +11,11 @@ Updated 2026-11-14 02:58 UTC for coordinator task `829a00229b29`.
   remains 0.39.6, reusing the existing rotation bot: F8 rotation, F9 stop,
   F10 heal; manual movement/target/loot/vendor/camp and native melee.
   F11/F12 are disabled. Live HP and target/chat identity remain unverified.
-- Source **0.41.59** is being privately packaged. **VERIFIED:** 64 focused
+- Source **0.41.59** is privately staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.59/source`, commit
+  `c783b99`. Archive SHA
+  `7e0ec71d7dd30128f466f782692aa60621e71ab46308c4645184e09856edaa16`
+  matched, and six no-input remote checks passed. **VERIFIED:** 64 focused
   checks pass. The copied GFay follower reaches segment 125 of 155/step 1,820,
   after fixing a ground-support comparison against a platform 74 units overhead.
   Terrain occupancy still includes all heights. It now refuses baked face 166882
