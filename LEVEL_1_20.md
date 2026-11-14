@@ -1,9 +1,15 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 06:07 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 06:14 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.78 supplies one-frame gauge/combat feature reading without PNG
+round trips, shared with the existing capture writer. Seventy-two checks pass.
+This implements a pixel-reading stage; current layout alignment, player/target
+identity and chat focus/draft interpretation still need real evidence and
+integration. No live route control or new owner test is enabled.
 
 Source 0.41.77 implements the collector's command/pulse executors on the
 existing bot's sender. Fifty-six focused checks pass, including F9 during a

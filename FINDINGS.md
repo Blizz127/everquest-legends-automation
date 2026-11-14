@@ -1,5 +1,59 @@
 # FINDINGS
 
+## One-frame feature reading 0.41.78 — 2026-11-14 06:15 UTC
+
+**VERIFIED implementation:** `sample_focused_ui` now separates the existing
+borrowed-gate capture/layout path from PNG/JSON persistence. The original
+capture writer uses it, preserving its saved metadata/crop contract.
+`read_focused_ui_features` consumes that same in-memory frame with the actual
+retained `rotation_core.bar_fraction` and client-derived combat matcher.
+It returns HP/mana candidates, source/crop identity, combat ranking and timing
+through final focus/process checks. It writes no files, creates no gate/device,
+changes no Engine state and invokes no input. Source changes, frame mutation,
+cancellation and focus/process changes refuse a result. Missing/unrecognized
+gauges and combat crops remain unknown rather than implying a dead player or
+an absent target. Chat, target and player presence remain unresolved; no
+`G2UiObservation` or movement/healing permission is manufactured.
+
+**VERIFIED focused checks:** 72 tests passed in 4.88 seconds under the private
+NumPy interpreter with Pillow 13.0.0. The tests exercise the actual retained
+gauge reader, in-memory versus saved-PNG ranking equality, existing owner
+capture/adapter paths, missing/offscreen regions, interrupted observations and
+timing that includes layout work. Pillow was added only to the devbox's
+private `python-nav` environment; the owner's client/prefix was unchanged.
+No full suite ran. Compile and whitespace checks pass.
+
+**OBSERVED synthetic timing:** ten synthetic 2560×1600 frames used the five
+actual copied client combat sprites and retained gauge reader. All ranked
+correctly and read the fabricated HP/mana bands as 0.5/1.0. Cold processing was
+5.859 seconds; warm median 1.690 seconds; maximum 6.126 seconds on the loaded
+devbox (load 220.98/238.84/249.77 at 06:14 UTC). This exceeds the existing
+100 ms observation budget. It excludes real capture, real layout loading and
+input/log scans; it is not proof of live timing. Private artifact:
+`evidence/ui-frame-features-0.41.78.json`, SHA
+`1fb997572f4192ae2edad6de9c5c8b81696c9df006b81b103be2ee91b84600a7`.
+
+**VERIFIED source clarification:** selected UI/config files were copied
+read-only from Alienware to `client-data/ui-layout-20261114T061034Z`;
+manifest SHA `ed4383e03ca937798a5607b62ae3d606966c6523774d589d4ffb77e802488888`.
+The saved skin is `default_light`. Its chat XML SHA
+`5aae64a0d193acdb664eae0ede4495151a19b39044decb3951e24b0d55ed9abf`
+defines a painted, borderless 21-unit input with right offset 35. The default
+XML instead defines a transparent 20-unit input; that default geometry must
+not be applied to this saved skin. Neither definition proves current focus.
+The selected INI describes one container with two runtime chat pages. The
+retained layout walker has no runtime page expansion and returns no
+`CW_ChatInput` under MainChat; it also ignores template border overlap.
+Resolving that parent chain remains concrete chat-reader work. No chat text
+or screenshot was read by this audit, and no client config was modified.
+
+**Still unverified:** current owner scene/position pair, live layout alignment,
+chat focus/draft ownership, target/player identity, initial travel envelope,
+current motion/height calibration and real route acceptance. G0 remains passed
+with no repeat; no additional owner test or movement control is enabled.
+Assist remains 0.39.6 and observation candidate 0.39.10. Current level, XP/hour,
+deaths and camp remain unknown; 1–20 and hands-off 1–50 are not achieved.
+
 ## Private source 0.41.77 staged — 2026-11-14 06:08 UTC
 
 **VERIFIED:** commit `97ca10885747b769536a7dd134585b7f9795cb37`, archive SHA

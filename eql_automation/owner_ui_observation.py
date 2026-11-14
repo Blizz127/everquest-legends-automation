@@ -4,6 +4,7 @@ No input, delays, display ownership or live-state inference. The owner invokes
 collection; saved UI layout is a crop proposal, never a live safety permit.
 """
 from datetime import datetime, timezone
+from dataclasses import dataclass
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -54,10 +55,37 @@ def validate_request(label, character, server, output, private_root):
         raise ValueError("Output must stay in the private G2 UI observation store")
 
 
-def capture_focused_ui(*, label, gate, layout_loader, game, character, server,
-                       output, include_chat=False, private_root=DEFAULT_OUTPUT,
-                       still_current=lambda: None, clock=time.monotonic):
-    validate_request(label, character, server, output, private_root)
+@dataclass(frozen=True)
+class UiFrameSample:
+    """One borrowed-gate frame and its source-proposed regions, never a permit.
+
+    Keep this ephemeral. The image/layout are caller-owned Python objects;
+    callers must not mutate them while consuming the sample.
+    """
+    image: object
+    layout: object
+    boxes: dict
+    sources: dict
+    source_paths: frozenset
+    metadata: dict
+
+    def check_sources(self):
+        if self.sources != {str(p): file_sha(p) for p in self.source_paths if p.is_file()}:
+            raise RuntimeError("Client UI files changed while observing the frame")
+
+
+def sample_focused_ui(*, gate, layout_loader, game, character, server,
+                      include_chat=False, still_current=lambda: None, clock=time.monotonic):
+    """Capture once and resolve regions in memory, without writing PNG/JSON.
+
+    Uses only the supplied gate's read methods; it neither owns nor closes it.
+    Source hashes describe files after capture, not proven active runtime UI.
+    """
+    if not all(isinstance(v,str) and re.fullmatch(r"[A-Za-z0-9_-]{1,64}",v)
+               for v in (character,server)):
+        raise ValueError("Invalid character/server identifier")
+    game=Path(game)
+    sample_started=clock()
     still_current()
     windows = gate.windows()
     focused = gate.focused_window()
@@ -74,6 +102,7 @@ def capture_focused_ui(*, label, gate, layout_loader, game, character, server,
     if (final_focus is None or final_focus.id != focused.id or
             gate.game_session() != session):
         raise RuntimeError("Game focus or process changed during capture")
+    layout_started=clock()
     layout = layout_loader(game, character, server,
                            width=image.width, height=image.height)
     crops = {}
@@ -92,7 +121,47 @@ def capture_focused_ui(*, label, gate, layout_loader, game, character, server,
     ui_ini = [ini_exact] if ini_exact.is_file() else sorted(game.glob(f"UI_{character}_{server}_*.ini"))
     source_paths = {game / "eqclient.ini", *layout.sources.values(), *ui_ini}
     sources = {str(path): file_sha(path) for path in source_paths if path.is_file()}
+    still_current()
+    final_focus = gate.focused_window()
+    if (final_focus is None or final_focus.id != focused.id or
+            gate.game_session() != session):
+        raise RuntimeError("Game focus or process changed during layout observation")
+    metadata = {
+        "capture_started_utc": capture_started_utc,
+        "capture_ended_utc": capture_ended_utc,
+        "capture_started_monotonic": capture_started_monotonic,
+        "capture_ended_monotonic": capture_ended_monotonic,
+        "capture_duration_monotonic_seconds": capture_ended_monotonic - capture_started_monotonic,
+        "sample_started_monotonic": sample_started,
+        "layout_started_monotonic": layout_started,
+        "game_session": dict(session),
+        "focused_window_id": focused.id,
+        "window_size": list(image.size),
+        "frame_rgb_sha256": sha256(image.tobytes()).hexdigest(),
+        "ui_skin_from_saved_ini": layout.skin,
+        "ui_scale_from_saved_ini": layout.ui_scale,
+        "source_sha256_postcapture": sources,
+        "combat_widget_source": (
+            {"file": str(layout.sources["PW_CombatStateAnim"]),
+             "sha256": sources.get(str(layout.sources["PW_CombatStateAnim"]))}
+            if "PW_CombatStateAnim" in layout.sources else None),
+        "saved_layout_is_live_verified": False,
+        "map_label_is_current_zone_verified": False,
+        "map_label_requires_current_zone_selection": True,
+        "missing_or_offscreen_crops": [name for name, box in crops.items() if box is None],
+    }
+    metadata["sample_finished_monotonic"]=clock()
+    return UiFrameSample(image,layout,crops,sources,frozenset(source_paths),metadata)
 
+
+def capture_focused_ui(*, label, gate, layout_loader, game, character, server,
+                       output, include_chat=False, private_root=DEFAULT_OUTPUT,
+                       still_current=lambda: None, clock=time.monotonic):
+    validate_request(label, character, server, output, private_root)
+    sample=sample_focused_ui(gate=gate,layout_loader=layout_loader,game=game,
+        character=character,server=server,include_chat=include_chat,
+        still_current=still_current,clock=clock)
+    image,crops=sample.image,sample.boxes
     still_current()
     output.mkdir(mode=0o700, parents=True, exist_ok=True)
     stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
@@ -108,15 +177,10 @@ def capture_focused_ui(*, label, gate, layout_loader, game, character, server,
         path.chmod(0o600)
         saved[name] = {"box": list(box), "file": path.name,
                        "sha256": file_sha(path)}
-    if sources != {str(path): file_sha(path) for path in source_paths if path.is_file()}:
-        raise RuntimeError("Client UI files changed while writing the observation")
+    sample.check_sources()
     metadata = {
+        **sample.metadata,
         "format": "eql-owner-ui-observation-v1",
-        "capture_started_utc": capture_started_utc,
-        "capture_ended_utc": capture_ended_utc,
-        "capture_started_monotonic": capture_started_monotonic,
-        "capture_ended_monotonic": capture_ended_monotonic,
-        "capture_duration_monotonic_seconds": capture_ended_monotonic - capture_started_monotonic,
         "metadata_written_at_utc": datetime.now(timezone.utc).isoformat(),
         "owner_label_unverified": label,
         "game_input_sent": False,
@@ -124,24 +188,7 @@ def capture_focused_ui(*, label, gate, layout_loader, game, character, server,
         "g2_safety_flags": {name: "unknown" for name in
                             ("chat_clear", "target_absent", "combat_clear",
                              "native_melee_off", "no_incoming_attack")},
-        "game_session": session,
-        "focused_window_id": focused.id,
-        "window_size": list(image.size),
-        "frame_rgb_sha256": sha256(image.tobytes()).hexdigest(),
-        "ui_skin_from_saved_ini": layout.skin,
-        "ui_scale_from_saved_ini": layout.ui_scale,
-        "source_sha256_postcapture": sources,
-        "combat_widget_source": (
-            {"file": str(layout.sources["PW_CombatStateAnim"]),
-             "sha256": sources.get(str(layout.sources["PW_CombatStateAnim"]))}
-            if "PW_CombatStateAnim" in layout.sources else None),
-        "saved_layout_is_live_verified": False,
-        # The map can browse other zones. A captured label alone is not a
-        # current-zone observation, even if it matches a historical log line.
-        "map_label_is_current_zone_verified": False,
-        "map_label_requires_current_zone_selection": True,
         "crops": saved,
-        "missing_or_offscreen_crops": [name for name, box in crops.items() if box is None],
     }
     still_current()
     (dest / "metadata.json").write_text(json.dumps(metadata, indent=2, sort_keys=True) + "\n")
