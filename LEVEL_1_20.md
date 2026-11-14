@@ -1,9 +1,21 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 09:31 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 09:46 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.42.1 finishes the remaining copied-source Crushbone corridor with
+five automatically discovered step crossings. It replays 1,006 accepted cells
+and two earlier step certificates, then checks 40 further connector/cap cells
+and five new transfers through the final source goal. All target height layers
+remain candidates; travel-distance ranking avoids an unnecessary upper-floor
+detour. This is conditional terrain/static geometry evidence only: BSP,
+current scene/body/motion binding, dynamic obstacles and actual client traversal
+remain unresolved. The seven total steps use recorded hypotheses, not measured
+client capabilities. Seventy-one focused source/assist tests pass. Assist
+0.39.13 is staged with stale HP/mana invalidation; owner motion test 0.39.12 is
+unchanged. No automated level gain or real 1–20 route is accepted.
 
 Source 0.42.0 adds an explicit conditional lift/transfer/settle model for copied
 source risers. It handles sloping departure/landing floors and both directions,

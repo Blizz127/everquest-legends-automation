@@ -1,16 +1,34 @@
 # STATUS
 
-Updated 2026-11-14 09:31 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 09:46 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
 - **G0 passed:** owner-confirmed visible stop plus trace evidence; no repeat.
-  Current assist remains **0.39.6**, built on the existing rotation bot:
+  Current assist is **0.39.13**, built on the existing rotation bot:
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Assist 0.39.13 staged:** stale HP/mana is cleared on stop, inactive arm
+  and settings changes. Actual retained-engine regression and offscreen GUI
+  pass on Alienware without devices or game input; explicit F10 still works
+  with HP unknown. Live gauge/frame/chat/target acceptance remains pending.
+  HOWTO has the new launch command; measurement 0.39.12 is unchanged. Current
+  level, XP/hour, deaths and camp remain unknown. Automatic source-step
+  discovery is under copied-data validation; no real route is enabled.
+- **Source 0.42.1:** automatic projected-boundary discovery and distance-ranked
+  crossing proposals now finish the copied Crushbone source suffix. The run
+  replays 1,006 existing terrain/static cells and both prior step certificates,
+  then accepts five generated steps plus 40 new connector/cap cells to the
+  source goal. No manually added crossing points. All 71 focused source/assist
+  checks pass. Bounds (radius 1.2, height 6, step 2, lift 4) remain unmeasured
+  hypotheses; BSP and real-client route acceptance remain false. **Next:**
+  bind the pending owner motion/current-scene observations to the first GFay
+  leg and resolve copied BSP classifications for this completed source path.
+  Measurement 0.39.12 is unchanged; G0 is passed and needs no repeat. No actual
+  level gain, current level, XP/hour, death count or camp is verified.
 - **Source 0.42.0:** explicit source-backed up/down step diagnostics now
   check departure lift, the complete raised transfer and landing settle,
   retaining risers and all terrain/static faces. The landing has a distinct

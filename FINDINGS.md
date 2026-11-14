@@ -1,5 +1,91 @@
 # FINDINGS
 
+## Automatic source-step continuation — 2026-11-14 09:46 UTC
+
+**VERIFIED implementation:** source 0.42.1 indexes full source boundary edges,
+groups exact projected lines, requires opposite floor interiors, and clips
+affine height gaps at zero and both explicit step bounds. Valid partial edge
+intervals survive over-limit endpoints elsewhere. It generates departure and
+landing squares using exact diagonal footprint erosion, retaining the original
+expanded footprint. The graph keeps all target height layers; arrival-specific
+travel-distance ranking prevents fewest-step paths from choosing impractically
+long approaches. Discovery and ranking confer no terrain, BSP or input authority.
+Every accepted approach and generated transfer still passes the existing source
+floor, complete-riser, lift/transfer/settle and static checks on its own branch.
+No source grades, numeric margins or occupancy checks were weakened.
+
+**VERIFIED copied-client run:**
+`nav-candidates/crushbone-auto-source-steps-ranked-0.42.1.json`, SHA
+`fcc23ce2a7f91a2642c7c482307d62d293d8fd33c31b4c15db2154e94fd90a7e`.
+The retained 1,006 cells and two prior steps replay with exact matching proof
+hashes. Discovery produces 1,276 directed links. The chosen five-step chain is:
+`2459/3 → 2468/0 → 2478/5 → 2482/5 → 2484/0 → 2492/0`.
+The first crossing has an affine positive rise; subsequent transitions drop 2,
+rise 1, rise 2 and drop 1 source units. Generated cap centers and all details
+are in the artifact. Forty additional connector/cap cells pass and reach the
+final guide goal `(426.5, 73.97)` in the lower source component. Final proof SHA
+`0a49c84e8be0beafc822fda6dc77cc74bf58dd46092cb2ca0f6d15df0103f521`.
+Runtime 22.61 seconds. No new crossing was positioned by hand.
+
+This uses radius 1.2, body height 6, maximum step 2 and maximum total lift 4 as
+explicit, unmeasured kinematic hypotheses. The complete terrain/static chain
+is a candidate; `route_accepted`, `real_client_accepted`, `bsp_classified` and
+`game_input_sent` remain false. All 866 historical BSP refusals remain in force.
+It does not establish actual step capability, doors, water, mobs or transitions.
+
+The initial fewest-step graph run is retained as
+`nav-candidates/crushbone-auto-source-steps-0.42.1.json`, SHA
+`ad0695dca5410a89205b1ff6c4f4a137ddccd391003e68676cfca8295a25b5b2`.
+It passed two westward crossings then refused an over-80-unit approach; it is
+not a successful route. Distance ranking fixes that search-choice limitation
+without enlarging the continuous-floor search bounds.
+
+**VERIFIED focused tests:** 71 pass across discovery, step, component, detour,
+floor-chain and assist adapter/recovery tests. New geometry cases cover exact
+affine clipping, zero-gap rejection, reversed winding/direction, diagonal cap
+erosion, narrow intervals, same-side rejection, pair budgets, multiple goal
+layers and distance ranking. Generated synthetic caps pass the actual step
+checker, while a missing riser still refuses. Read-only math review found no
+concrete interval or orientation defect. Actual-engine assist regression and
+Alienware startup evidence are recorded below.
+
+**Remaining:** consume the existing owner 0.39.12 hotbutton/motion result and
+current scene/zone observations for the first supervised GFay leg; finish BSP
+classification on the source path. No accepted real route or automated XP.
+G0 passed with the owner's visible-stop confirmation and requires no repeat.
+
+## Assist gauge lifecycle fix — 2026-11-14 09:39 UTC
+
+**VERIFIED:** owner preview 0.39.13 builds on the retained 0.39.6 rotation
+engine and command restrictions. The old engine preserved HP/mana after OFF;
+its idle loop advanced the sampling timer without reading gauges. An inert
+actual-engine fixture reproduced OFF → F8 → `/alt activate 6001` from cached
+20% HP, with no intervening gauge sample. The new adapter clears HP/mana before
+stop cleanup, before an inactive arm, and on all settings changes, and makes
+sampling due. It preserves rotation timers and explicit F10 healing.
+
+The actual-engine regression passed on Devbox and Alienware: old failure
+reproduced, stale automatic heal prevented, a synthetic fresh low sample
+restored support, inactive calibration/character changes invalidated readings,
+stale queued starts remained refused, and F10 sent only `/cast 1` to an inert
+recorder with HP unknown. No worker, device, capture or game input was created.
+Focused adapter/recovery tests: 31 passed, including release failure.
+
+**VERIFIED private staging:** `owner-assist/0.39.13` is installed separately on
+Alienware; archive SHA
+`7e4f98f831020d9449ac2a512a4816f4a4cde1b820a0965ad05b0da41eb04209`.
+Source guard and offscreen GUI startup pass; the inspected screenshot shows
+ASSIST OFF and travel unavailable. Startup record SHA
+`2e4a67881a27da46b7c3d2ee274ece94f50e6781075673252b528f33248b35ae`.
+HOWTO contains the new assist launch command. Measurement 0.39.12 is unchanged.
+
+**Limits:** this fixes cached observation lifetime, not active-character,
+current-layout or frame identity. Live HP calibration and chat/target behavior
+still need owner acceptance. No automated XP, real route or level milestone
+was produced. G0 remains passed with explicit owner visible-stop confirmation;
+no repeat is needed. A 09:36 UTC read-only check found zero saved hotbutton and
+motion records; no helper was started or owner session interrupted.
+
 ## Explicit source-step transitions — 2026-11-14 09:30 UTC
 
 **VERIFIED implementation:** source 0.42.0 keeps ordinary exact-edge floor

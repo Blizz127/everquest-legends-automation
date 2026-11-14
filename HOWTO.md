@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.0** · rotation preview **0.39.6** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
+Source **0.42.1** · rotation preview **0.39.13** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -20,10 +20,11 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** The next owner check is the combined hotbutton + motion measurement
 below. The manual position observation remains available separately.
 
-Source 0.42.0 adds offline checks for stepping up and down, alongside automatic
-detours. Two Crushbone step transitions pass the geometry model; the remaining
-route and actual client stepping are unverified. Your helper, hotkeys and next
-test below are unchanged.
+Source 0.42.1 discovers step crossings automatically. The remaining copied-data
+Crushbone route now passes terrain/static checks under explicit body and step
+assumptions. BSP, real movement and the full leveling route remain unverified.
+Assist 0.39.13 fixes stale HP/mana after restarting; the 0.39.12 motion test
+below is unchanged.
 
 ## Next owner test on Alienware: 0.39.12
 
@@ -76,19 +77,24 @@ a route or a guaranteed maximum speed. It is not installed as autopilot data.
 
 The actual staged helper passed Alienware pipe-only completion and cancellation
 smokes plus offscreen GUI/dialog checks; no game input was sent. No live motion
-result or route has been accepted yet. Assist stays the separate 0.39.6 preview.
+result or route has been accepted yet. Assist uses the separate 0.39.13 preview.
 If the helper was restarted, run its hotbutton check again before measurement.
 
-## Owner-run rotation test on Alienware today: preview 0.39.6
+## Owner-run rotation test on Alienware today: preview 0.39.13
 
 Close any already running Solo Assist window. Blizz starts the game through
 Lutris and logs in himself. In an Alienware terminal, start the isolated
 preview:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.6
+cd ~/.local/share/eql-automation/owner-assist/0.39.13
 EQL_ROTATION_TRACE="$HOME/eql-assist-trace.jsonl" ./launch.sh
 ```
+
+Preview 0.39.13 fixes stale HP/mana surviving OFF → F8 or settings changes.
+Automatic healing waits for a new reading; explicit F10 remains available
+without HP. The actual engine regression and offscreen startup passed on
+Alienware without game input. Live HP calibration still needs owner feedback.
 
 The GUI starts disarmed. Blizz chooses his character and current level there.
 At full HP, click **Find / calibrate HP**. The saved client layout proposes
