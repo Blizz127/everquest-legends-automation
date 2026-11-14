@@ -118,14 +118,14 @@ Updated 2026-11-13 18:24 CST for coordinator task `829a00229b29`.
   the sixth still needs a portal choice. Their live camps remain unaccepted. The
   guide markers are not client-certified positions. Current level remains
   last observed 7; XP/hour and deaths remain unavailable, and F11 is off.
-- Private publish: source-only project **0.41.44**, commit `0cb5167`, is
-  staged under Alienware `~/.local/share/eql-automation/owner-tools/0.41.44`.
+- Private publish: source-only project **0.41.45**, commit `0503d58`, is
+  staged under Alienware `~/.local/share/eql-automation/owner-tools/0.41.45`.
   Local/remote source archive SHA-256 matched
-  `b6043c05109c8dd6374394052a2414fbf1a0ee39d6b95dc042924171fa2a091f`.
-  Remote navigation startup returned ARRIVED with `no_game_input=true`;
-  the new preview-builder and bake-comparison CLI help checks passed.
-  Runnable assist is **0.39.6**; source tools and assist are separate paths.
-  No live character input was sent, G0 is already passed, and F11 stays off.
+  `4e10cab4502313f3e1769af7699705188d0b4a9e8e51bab159946bf47b4e3d1e`.
+  Remote builder startup passed; the offline navigation demo returned ARRIVED
+  with `no_game_input=true`. Recommended assist remains **0.39.6**; separate
+  G0 measurement candidate **0.39.7** adds the watchdog. No live character
+  input was sent. The old G0 pass remains recorded, and G2/F11 stay off.
 - Read-only UI progress: the installed Legira layout puts the HP gauge at
   `(1966,693,330,17)` at 2560×1600; the saved HP crop starts 32 pixels too
   high and spans 51 pixels. The 0.39.4 reader explicitly rejects its height

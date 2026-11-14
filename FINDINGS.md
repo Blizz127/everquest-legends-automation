@@ -50,6 +50,12 @@ current zone/location bootstrap, live alignment and a preceding fresh speed
 calibration. These are implementation/evidence dependencies, not a request
 for private-server permission. G2 and F11 remain disabled.
 
+Source project 0.41.45 (`0503d58`) is staged separately under Alienware
+`~/.local/share/eql-automation/owner-tools/0.41.45/source`. Local/remote archive
+SHA-256 is `4e10cab4502313f3e1769af7699705188d0b4a9e8e51bab159946bf47b4e3d1e`.
+Its builder CLI/startup smoke passed; the offline navigation demo returned
+ARRIVED with `no_game_input=true`. No client acceptance follows from that demo.
+
 ## Crushbone detail-distance experiment rejected — 2026-11-13 18:24 CST
 
 **VERIFIED bounded offline bake:** After the initial CPU-pressure hold, one
