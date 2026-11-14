@@ -13,6 +13,7 @@ import math
 import threading
 
 from .camp_probe_preparation import CampProbePreparation,CampProbeStart,_height_state,_raw_record
+from .flat_record import flat_record_state
 from .ground_binding import finite,point
 from .ground_sweep import motion_footprint
 from .location_log import RawLocationFix
@@ -98,27 +99,27 @@ class CampProbeTransaction:
     def _ticket_values(ticket):
         s=ticket.start;h=s.height
         return (id(ticket),id(s),id(h),_height_state(h),id(h.first),id(h.second),
-                encoded([_raw_record(h.first),_raw_record(h.second)]),
+                (flat_record_state(h.first),flat_record_state(h.second)),
                 s.preparation_sha256,s.observed_at,s.expires_at,s.input_authorized,
                 s.current_motion_verified,ticket.preparation_sha256,ticket.kind,ticket.movement_key,
                 ticket.requested_seconds,ticket.maximum_actual_hold,ticket.proposed_at,ticket.input_authorized)
 
     @staticmethod
     def _seal_values(seal):
-        return (id(seal),id(seal.ticket),id(seal.receipt),encoded(asdict(seal.receipt)),
+        return (id(seal),id(seal.ticket),id(seal.receipt),flat_record_state(seal.receipt),
                 seal.sealed_at,seal.expires_at,seal.input_authorized,seal.sender_origin_verified)
 
     @staticmethod
     def _result_values(result):
         return (id(result),id(result.seal),id(result.first),id(result.second),
-                encoded([_raw_record(result.first),_raw_record(result.second)]),
+                (flat_record_state(result.first),flat_record_state(result.second)),
                 result.package_xyz,result.raw_z_minus_source_z,result.observed_at,result.expires_at,
                 result.payload,result.sha256,result.input_authorized,result.current_motion_verified,
                 result.real_client_accepted,result.sender_origin_verified)
 
     def _geometry_values(self):
         a,b=self._planning_pair
-        return (id(self._endpoint),id(a),id(b),encoded([_raw_record(a),_raw_record(b)]),
+        return (id(self._endpoint),id(a),id(b),(flat_record_state(a),flat_record_state(b)),
                 self._planning_position,self._planning_offset,self._endpoint_payload,
                 self._confirmation_deadline)
 
@@ -127,6 +128,11 @@ class CampProbeTransaction:
                 or self.lock is not self._context[1]):
             raise ValueError(self.reason or 'Camp probe transaction changed')
         now=self.preparation.check()
+        self._assert_context()
+        return now
+
+    def _assert_context(self):
+        """Provider-free transaction identity/evidence checks for ancestry."""
         if (self.phase=='stopped' or self.preparation is not self._context[0]
                 or self.lock is not self._context[1]
                 or self._ticket_state is not None and (type(self.ticket) is not CampProbeTicket
@@ -142,7 +148,6 @@ class CampProbeTransaction:
                     or self._geometry_values()!=self._geometry_state
                     or _chain_snapshot(self._endpoint)!=self._endpoint_state)):
             raise ValueError('Camp probe evidence or scope changed')
-        return now
 
     def stage(self,start,*,movement_key,requested_seconds):
         """Record the selected proposal after sender READY; never authorizes DOWN."""

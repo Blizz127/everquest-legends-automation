@@ -3,11 +3,11 @@
 No default producer or movement policy is supplied. A launcher must provide
 current bounds/evidence and admission before this path can be enabled.
 """
-from dataclasses import asdict,dataclass
+from dataclasses import dataclass
 
+from .flat_record import flat_record_state
 from .ground_binding import finite
 from .motion_calibration import PROBES,Probe
-from .native_region_policy import encoded
 from .route_geometry import RouteMotionBounds
 from .source_itinerary import SourceItineraryGuide,_guide_snapshot
 
@@ -31,7 +31,7 @@ class CampProbePlan:
                 or self.route_plan_factory is not None and (not callable(self.route_plan_factory)
                     or self.route_guide is None)):
             raise ValueError('Explicit camp probe bounds, policy and finite plan required')
-        return (id(self),id(self.bounds),encoded(asdict(self.bounds)),self.bounds_basis,
-                id(self.policy_factory),encoded([asdict(p) for p in self.probes]),self.maximum_seconds,
+        return (id(self),id(self.bounds),flat_record_state(self.bounds),self.bounds_basis,
+                id(self.policy_factory),tuple(flat_record_state(p) for p in self.probes),self.maximum_seconds,
                 None if self.route_guide is None else (id(self.route_guide),_guide_snapshot(self.route_guide)),
                 id(self.route_plan_factory))

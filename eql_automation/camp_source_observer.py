@@ -11,9 +11,10 @@ import json
 import threading
 
 from .camp_probe_floor import CampProbeFloorReference,assert_camp_ancestry
-from .camp_probe_preparation import _raw_record, _height_state
+from .camp_probe_preparation import _height_state
 from .camp_route_preparation import CampRoutePreparation, CampRouteStart
 from .camp_source_height import CampSourceHeight
+from .flat_record import flat_record_state
 from .ground_binding import finite, point
 from .location_log import RawLocationFix
 from .native_region_policy import encoded
@@ -62,7 +63,7 @@ class CampSourceObserver(SourceItineraryObserver):
         self.policy = preparation.checkpoint._policy
         self._width = walk_half_width
         self._width_state, self._generation = walk_half_width, generation
-        self._route_bounds, self._route_bounds_bytes = route_bounds, encoded(onward)
+        self._route_bounds, self._route_bounds_bytes = route_bounds, flat_record_state(route_bounds)
         self.cancelled, self.reason = False, ''
         self._chain = None
         with stop_lock:
@@ -84,7 +85,7 @@ class CampSourceObserver(SourceItineraryObserver):
                 self._payload = self.itinerary.payload
                 self.start_xy = h.package_xyz[:2]
                 self._start_xy = self.start_xy
-                self._start_bytes = encoded([_raw_record(h.first), _raw_record(h.second)])
+                self._start_bytes = (flat_record_state(h.first), flat_record_state(h.second))
                 self._start_state = (id(h), _height_state(h), start.preparation_sha256,
                                      start.itinerary_sha256, start.observed_at, start.expires_at,
                                      start.input_authorized, start.real_client_accepted)
@@ -163,13 +164,13 @@ class CampSourceObserver(SourceItineraryObserver):
                     or self._height_bytes is not self._height_identity
                     or height_snapshot(c) != self._height_state
                     or h.sha256 != c.measured_height_sha256 or h.first is not c.first or h.second is not c.second
-                    or encoded([_raw_record(h.first), _raw_record(h.second)]) != self._start_bytes
+                    or (flat_record_state(h.first), flat_record_state(h.second)) != self._start_bytes
                     or (id(h), _height_state(h), self.start.preparation_sha256,
                         self.start.itinerary_sha256, self.start.observed_at, self.start.expires_at,
                         self.start.input_authorized, self.start.real_client_accepted) != self._start_state
                     or self.start_xy != self._start_xy or _chain_snapshot(self._chain) != self._chain_state
                     or self._width != self._width_state or self.generation != self._generation
-                    or encoded(asdict(self._route_bounds)) != self._route_bounds_bytes
+                    or flat_record_state(self._route_bounds) != self._route_bounds_bytes
                     or mode != 'camp_route' or type(generation) is not int or generation != self.generation
                     or self.reader.tail.partial or self._reader_identity() != self._identity
                     or not finite(now) or not c.valid_from_monotonic <= self.last_at <= now <= c.valid_until_monotonic):

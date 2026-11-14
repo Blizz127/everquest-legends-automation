@@ -5,13 +5,14 @@ planning hypotheses, never current measured motion. Geometry work may outlive
 the planning pair; another newly collected pair must match its exact reference.
 Neither a prepared envelope nor a fresh start admits any input.
 """
-from dataclasses import asdict,dataclass,field
+from dataclasses import dataclass,field
 from hashlib import sha256
 import json
 import time
 
 from .camp_probe_floor import CAMP_FLOOR_TYPES
 from .camp_stopped_height import CampStoppedHeight,measure_camp_stopped_height
+from .flat_record import flat_record_state
 from .ground_binding import finite
 from .motion_collection import immutable_binding
 from .native_region_policy import encoded
@@ -88,7 +89,7 @@ class CampProbePreparation:
         self.wall=local_wall_clock;self.clock=clock
         self._context=(checkpoint,height,lease,lease.reader,bounds,bounds_basis,probe_kind,
                        owner_binding,binding_reader,local_wall_clock,clock)
-        self._height_state=_height_state(height);self._bounds_bytes=encoded(asdict(bounds))
+        self._height_state=_height_state(height);self._bounds_bytes=flat_record_state(bounds)
         self.phase='new';self.reason='';self.last_at=None
         self._envelope=self._envelope_state=self._start=None
         self._prepared_record=None
@@ -105,38 +106,45 @@ class CampProbePreparation:
         try:
             if self.phase=='stopped':raise ValueError(self.reason)
             binding=self.binding_reader();self.lease.check();self.checkpoint.check()
-            now=self.clock()
-            self.checkpoint._assert_intact()
-            actual=(self.checkpoint,self.height,self.lease,self.reader,self.bounds,self.bounds_basis,
-                    self.kind,self.owner_binding,self.binding_reader,self.wall,self.clock)
-            if (self.phase=='stopped' or any(a is not b for a,b in zip(self._context,actual))
-                    or binding!=self.owner_binding or self.lease.reader is not self.reader
-                    or not self.lease.active or self.lease._tracker.lease is not self.lease
-                    or self.reader is not self.checkpoint._reader
-                    or _height_state(self.height)!=self._height_state
-                    or encoded(asdict(self.bounds))!=self._bounds_bytes
-                    or self.reader.tail.partial or not finite(now)
-                    or self.last_at is not None and now<self.last_at):
-                raise ValueError('Camp probe preparation context changed')
-            if self._envelope is not None:
-                envelope,payload,digest,chain=self._envelope_state
-                if (self._envelope is not envelope or envelope.payload is not payload
-                        or envelope.sha256!=digest
-                        or _chain_snapshot(envelope.branch)!=chain):
-                    raise ValueError('Prepared source envelope changed')
-            if self._prepared_record is not None:
-                payload,digest=self._prepared_record
-                if self.payload is not payload or self.sha256!=digest:
-                    raise ValueError('Camp probe preparation record changed')
-            if fresh is not None:
-                _check_height_record(fresh,self.checkpoint,self.owner_binding)
-                if (self.reader.latest is not fresh.second or self.reader.log_line_seq!=fresh.second.log_line_seq
-                        or not fresh.observed_at<=now<=fresh.expires_at):
-                    raise ValueError('Camp probe needs a fresh latest stopped pair')
-            self.last_at=now
-            return now
+            return self._check_local(binding,self.clock(),fresh=fresh)
         except Exception as error:
             self.cancel(str(error));raise ValueError(self.reason) from error
+
+    def _check_local(self,binding,now,*,fresh=None):
+        """Validate this preparation after its shared providers were checked.
+
+        No reader is polled and no input is authorized. A flattened ancestor
+        scan may use this only with the same exact owner callback/lease/clock.
+        """
+        self.checkpoint._assert_intact()
+        actual=(self.checkpoint,self.height,self.lease,self.reader,self.bounds,self.bounds_basis,
+                self.kind,self.owner_binding,self.binding_reader,self.wall,self.clock)
+        if (self.phase=='stopped' or any(a is not b for a,b in zip(self._context,actual))
+                or binding!=self.owner_binding or self.lease.reader is not self.reader
+                or not self.lease.active or self.lease._tracker.lease is not self.lease
+                or self.reader is not self.checkpoint._reader
+                or _height_state(self.height)!=self._height_state
+                or flat_record_state(self.bounds)!=self._bounds_bytes
+                or self.reader.tail.partial or not finite(now)
+                or self.last_at is not None and now<self.last_at):
+            raise ValueError('Camp probe preparation context changed')
+        if self._envelope is not None:
+            envelope,payload,digest,chain=self._envelope_state
+            if (self._envelope is not envelope or envelope.payload is not payload
+                    or envelope.sha256!=digest
+                    or _chain_snapshot(envelope.branch)!=chain):
+                raise ValueError('Prepared source envelope changed')
+        if self._prepared_record is not None:
+            payload,digest=self._prepared_record
+            if self.payload is not payload or self.sha256!=digest:
+                raise ValueError('Camp probe preparation record changed')
+        if fresh is not None:
+            _check_height_record(fresh,self.checkpoint,self.owner_binding)
+            if (self.reader.latest is not fresh.second or self.reader.log_line_seq!=fresh.second.log_line_seq
+                    or not fresh.observed_at<=now<=fresh.expires_at):
+                raise ValueError('Camp probe needs a fresh latest stopped pair')
+        self.last_at=now
+        return now
 
     def prepare(self,*,maximum_seconds=30.):
         """Check full occupancy under the supplied hypotheses; never renew age."""

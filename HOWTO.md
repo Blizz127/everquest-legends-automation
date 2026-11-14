@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.54** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.55** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -640,10 +640,10 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Source 0.42.54 is privately published on Alienware at:
+Private source 0.42.55 package location on Alienware:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.54/source
+~/.local/share/eql-automation/owner-tools/0.42.55/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
@@ -661,9 +661,14 @@ assist starts. Successful arrival is captured and the bot stops before choosing
 a new camp; it does not resume the camp it just left. This path does not supply
 independent scene detection or certify unattended movement bounds.
 
-The exact standard seven-probe sequence followed by routing is the next
-integration check. The checked route handoff uses explicitly supplied synthetic
-motion after one probe. Preview **0.39.30** and its controls stay unchanged.
+Source **0.42.55** completes the standard seven-probe sequence, derives a
+fresh motion fit and uses it for source travel through stopped arrival in the
+synthetic game / actual watchdog-pipe harness. Shared ancestry checks retain
+every ancestor while avoiding repeated provider work and JSON conversion.
+Position freshness and input deadlines are unchanged. All 270 focused checks
+pass in the no-game harness. Concrete owner probe
+policy/plan wiring and new-camp entry are still pending. Preview **0.39.30** and
+its controls stay unchanged.
 No new owner test or G0 repeat is needed. Full 1–20 and fresh hands-off 1–50 are still unaccepted.
 
 Source 0.42.53 added the distinct camp-start height/observer consumed by this

@@ -1,5 +1,54 @@
 # FINDINGS
 
+## 2026-11-14 19:19 UTC — standard seven-probe to source-route integration
+
+VERIFIED candidate `0.42.55-validation-7` on Alienware: **1 passed in 70.15
+seconds**, output SHA
+`92db48c674b8b111c110fa2e5367ace5e29131a1df29c416e6ea1941eb7f11d7`.
+The retained engine runs exactly the standard four forward / three turn
+probes through the actual watchdog and an OS pipe. A synthetic game updates
+from actual receipt intervals and supplies rounded log coordinates. The route
+plan uses the resulting fitted speed, turn rate, latency, sign and final
+heading, keeps all seven ancestors alive, collects new startup observations,
+executes the source itinerary and captures stopped arrival. No game input.
+
+Candidates 1/2 refused source DOWN at its original 50 ms deadline. Diagnostic
+candidate 3 found 112 observer checks and 761 owner binding calls in one failed
+source attempt. Shared ancestry validation now observes identical provider
+scopes once, then checks every ancestor's fields and evidence; distinct scopes
+keep recursive validation. In-memory scalar/tuple/type/identity snapshots
+replace repeated JSON/deepcopy conversions without changing exported evidence.
+Two immediately duplicated sender ledger checks were removed. The 0.5-second
+position freshness and 50 ms DOWN deadlines are unchanged. Candidate 4 reached
+later travel but still hit the timing limit. Candidate 5 exposed a mixed
+snapshot comparison, corrected before candidate 6. Candidate 6 executed 33
+source pulses and correctly stopped at the fixture's six-second reserved-hold
+allowance; the fixture's reconnect/backtrack guide needed allowance for all
+64 declared steps at the unchanged 0.18-second bound. Candidate 7 passes with
+that explicit test-only allowance; production budgets were not raised.
+
+VERIFIED **51 local focused checks passed in 75.26 seconds**. New regressions
+cancel a middle ancestor or mutate its bounds, clock, receipt or raw reading
+from the final shared clock callback; the leaf refuses without input. A
+different binding context still takes the recursive path. VERIFIED final
+Alienware candidate `0.42.55-validation-8`: **270 passed in 279.56 seconds**,
+output SHA `d932716e6adde266b02e618f77642542fe10b6a62e3b9c490b504cc57986f92e`.
+It covers standard probes/fit/travel, F8/F9 cleanup, source transfer and
+ancestor/stale-observation regressions. Publication is next. Owner preview
+remains 0.39.30, G0 passed, and real 1–20/1–50 acceptance
+and level/XP/hour/deaths/camp remain unknown.
+
+Next implementation is a shared `SupervisedCampProbeScope` plus per-transaction
+`CampProbeInputPolicy`. One retained input monitor and log veto must span all
+seven probes and the onward route, with the original owner deadline and one
+aggregate hold budget. Policies are constructed during `collect_start`, then
+require fresh physical-input/log observations through holding and release;
+DOWN expiry must not become a release deadline. The owner launcher still
+supplies no `camp_probe_plan_provider`. Wire explicit continuation intent there,
+then the fresh fit/source execution and a separately checked new-camp handoff.
+This is an implementation plan, not installed owner behavior or a request for
+another G0 test.
+
 ## 2026-11-14 19:01 UTC — source 0.42.54 privately published
 
 VERIFIED Alienware `owner-tools/0.42.54/source`, revision

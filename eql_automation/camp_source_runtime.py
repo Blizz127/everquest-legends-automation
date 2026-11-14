@@ -4,14 +4,14 @@ No default motion estimate or scene declaration is supplied. The caller must
 provide a route plan and a current policy; the original camp deadline remains
 in force throughout startup, walking and step transfer.
 """
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 
 from .camp_probe_runtime import CampProbeRuntime
 from .camp_source_observer import CampSourceObserver
+from .flat_record import flat_record_state
 from .ground_binding import finite
 from .location_hotkey import HOTKEY_CODES, send_location_hotkey
 from .motion_collection import CommandReceipt, LocationRequest
-from .native_region_policy import encoded
 from .route_geometry import RouteMotionBounds
 from .route_step_sender import _fd_identity
 from .source_execution_loop import SourceExecutionLoop
@@ -37,8 +37,8 @@ class CampSourcePlan:
                 or not finite(self.heading) or not 0 <= self.heading < 360
                 or not finite(self.walk_half_width) or not .05 <= self.walk_half_width <= 6.):
             raise ValueError('Explicit camp route bounds, motion, heading and policy required')
-        return (id(self), id(self.bounds), encoded(asdict(self.bounds)), id(self.legacy),
-                id(self.motion), encoded(vars(self.motion)), self.heading,
+        return (id(self), id(self.bounds), flat_record_state(self.bounds), id(self.legacy),
+                id(self.motion), flat_record_state(self.motion), self.heading,
                 self.walk_half_width, id(self.policy_factory))
 
 

@@ -1,11 +1,28 @@
 # STATUS
 
-Updated 2026-11-14 19:01 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 19:19 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.55 checked; publication pending.** VERIFIED complete
+  standard seven-probe → fresh conditional fit → source travel → stopped
+  arrival in Alienware no-game harness: **1 passed in 70.15 seconds**, candidate
+  `0.42.55-validation-7`, output SHA
+  `92db48c674b8b111c110fa2e5367ace5e29131a1df29c416e6ea1941eb7f11d7`.
+  Earlier timing refusals led to shared ancestor-provider checks, immutable
+  field/type snapshots and two duplicate sender-check removals. Every ancestor
+  and all original deadlines remain checked; no production limit increased.
+  The fixture also needed a hold allowance covering all 64 declared steps:
+  its guide reconnects to the original start before heading onward. Candidate
+  6 correctly refused when that earlier allowance was exhausted.
+  **51 focused local checks passed in 75.26 seconds**. VERIFIED final Alienware
+  candidate `0.42.55-validation-8`: **270 passed in 279.56 seconds**, output SHA
+  `d932716e6adde266b02e618f77642542fe10b6a62e3b9c490b504cc57986f92e`.
+  No real character action or owner launcher change. Next:
+  concrete shared supervised probe policy, explicit continuation plan provider
+  and new-camp entry. G0 passed; real level/XP/hour/deaths/camp unknown.
 - **Source 0.42.54 privately published; preview stays 0.39.30.** Optional camp
   execution now adopts the prepared source route, collects a new startup pair,
   reuses the existing walk/step loop, confirms movement, captures arrival and

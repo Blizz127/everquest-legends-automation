@@ -19,7 +19,9 @@ def run_checked_source_step(sender,ledger,*,policy,kind,requested_seconds,
     ui=identity=original_fd=reference=None
 
     def binding():
-        ledger._check()
+        # Pending validation below already checks the complete ledger after
+        # descriptor callbacks. Do not repeat that ancestry scan here.
+        if ticket is None:ledger._check()
         if (sender._eql_route_operation is not operation or sender.ui is not ui
                 or ui.fileno()!=original_fd or _fd_identity(original_fd)!=identity
                 or ledger.reference is not reference):
@@ -43,7 +45,7 @@ def run_checked_source_step(sender,ledger,*,policy,kind,requested_seconds,
         observed=scene()
         ticket=ledger.stage(geometry,requested_seconds=requested_seconds)
         authorization=policy.authorize(ticket,observed)
-        binding();check_sender()
+        check_sender()
         if authorization.expires_at>ticket.proposed_at+.05:
             raise RouteHalt('Source DOWN deadline changed')
         key=ticket.movement_key;sender.held.add(key)

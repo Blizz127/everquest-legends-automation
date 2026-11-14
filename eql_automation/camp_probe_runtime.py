@@ -12,12 +12,12 @@ from .camp_probe_sender import CampProbeInputPolicy,send_camp_probe
 from .camp_probe_transaction import CampProbeTransaction
 from .camp_route_preparation import CampRoutePreparation
 from .camp_stopped_height import measure_camp_stopped_height
+from .flat_record import flat_record_state
 from .ground_binding import finite
 from .location_hotkey import OwnerLocationHotkey,send_location_hotkey
 from .location_hotkey import HOTKEY_CODES
 from .motion_calibration import PROBES,Probe
 from .motion_collection import CommandReceipt,LocationRequest
-from .native_region_policy import encoded
 from .stopped_location_pair import StoppedLocationPair
 from .source_itinerary import SourceItineraryGuide, _guide_snapshot
 
@@ -44,7 +44,7 @@ class CampProbeRuntime:
         self.owner_input=owner_input;self.lock=stop_lock
         self.policy_factory=movement_policy_factory;self.current=check_current
         self.command_clear=command_state_clear;self.pump=pump
-        self.probes=probes;self._probes_bytes=encoded([asdict(p) for p in probes])
+        self.probes=probes;self._probes_bytes=tuple(flat_record_state(p) for p in probes)
         self.maximum_seconds=maximum_seconds
         self.clock=preparation.clock;self.wall=preparation.wall;self.lease=preparation.lease
         self._context=(preparation,sender,hotkey,owner_input,stop_lock,movement_policy_factory,
@@ -76,7 +76,7 @@ class CampProbeRuntime:
             self.current,self.command_clear,self.pump,self.probes,self.clock,self.wall,self.lease,self.maximum_seconds)
         if (self.phase=='stopped' or self.closed
                 or any(a is not b for a,b in zip(self._context,actual))
-                or encoded([asdict(p) for p in self.probes])!=self._probes_bytes
+                or tuple(flat_record_state(p) for p in self.probes)!=self._probes_bytes
                 or (self._route_guide_state is None)!=(self.route_guide is None)
                 or self.route_guide is not None and (type(self.route_guide) is not SourceItineraryGuide
                     or (id(self.route_guide),_guide_snapshot(self.route_guide))!=self._route_guide_state)

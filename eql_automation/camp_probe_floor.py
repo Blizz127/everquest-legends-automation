@@ -73,9 +73,29 @@ class CampProbeFloorReference:
         """Check provenance and the original lease; do not renew observation age."""
         with self._transaction.lock:
             try:
-                self._assert_intact()
-                self._transaction._check()
-                self._assert_intact()
+                nodes=[];node=self;seen=set()
+                while type(node) is CampProbeFloorReference:
+                    if id(node) in seen:raise ValueError('Cyclic camp floor ancestry')
+                    seen.add(id(node));node._assert_intact();nodes.append(node);node=node._parent
+                if type(node) is not CampFloorCheckpoint:
+                    raise ValueError('Missing original camp floor ancestor')
+                p=self._transaction.preparation
+                scope=(p.binding_reader,p.owner_binding,p.lease,p.reader,p.clock,p.wall,self._transaction.lock)
+                if any(any(a is not b for a,b in zip(scope,
+                        (v._transaction.preparation.binding_reader,v._transaction.preparation.owner_binding,
+                         v._transaction.preparation.lease,v._transaction.preparation.reader,
+                         v._transaction.preparation.clock,v._transaction.preparation.wall,v._transaction.lock)))
+                       for v in nodes):
+                    # Distinct scopes cannot share a provider observation.
+                    self._transaction._check();self._assert_intact();return
+                binding=p.binding_reader();p.lease.check();node.check();now=p.clock()
+                node._assert_intact()
+                for v in reversed(nodes):
+                    preparation=v._transaction.preparation
+                    try:preparation._check_local(binding,now)
+                    except Exception as error:
+                        preparation.cancel(str(error));raise
+                    v._transaction._assert_context();v._assert_intact()
             except Exception as error:
                 self.invalidate(str(error));raise ValueError(self.reason) from error
 

@@ -4,14 +4,15 @@ No baked support is selected and no old travel observer is restarted. Planning
 may outlive its input pair; a newly collected matching pair must follow it.
 This preparation owns no sender and does not authorize route execution.
 """
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from hashlib import sha256
 import json
 import time
 
 from .camp_probe_floor import CAMP_FLOOR_TYPES
-from .camp_probe_preparation import _check_height_record, _height_state, _raw_record
+from .camp_probe_preparation import _check_height_record, _height_state
 from .camp_stopped_height import CampStoppedHeight, measure_camp_stopped_height
+from .flat_record import flat_record_state
 from .ground_binding import finite
 from .motion_collection import immutable_binding
 from .native_region_policy import encoded
@@ -53,9 +54,9 @@ class CampRoutePreparation:
         self._objects = (checkpoint, height, lease, lease.reader, guide, bounds, owner_binding,
                          binding_reader, clock, local_wall_clock)
         self._height = _height_state(height)
-        self._height_raw = encoded([_raw_record(height.first), _raw_record(height.second)])
+        self._height_raw = (flat_record_state(height.first), flat_record_state(height.second))
         self._guide = _guide_snapshot(guide)
-        self._bounds = encoded(asdict(bounds))
+        self._bounds = flat_record_state(bounds)
         self.phase, self.reason, self.last_at = 'new', '', None
         self.itinerary = self.payload = self.sha256 = self.start = None
         self._itinerary_state = self._record_state = self._start_state = None
@@ -83,8 +84,8 @@ class CampRoutePreparation:
                     or self.lease.reader is not self.reader or self.reader is not self.checkpoint._reader
                     or not self.lease.active or self.lease._tracker.lease is not self.lease
                     or _height_state(self.height) != self._height
-                    or encoded([_raw_record(self.height.first), _raw_record(self.height.second)]) != self._height_raw
-                    or _guide_snapshot(self.guide) != self._guide or encoded(asdict(self.bounds)) != self._bounds
+                    or (flat_record_state(self.height.first), flat_record_state(self.height.second)) != self._height_raw
+                    or _guide_snapshot(self.guide) != self._guide or flat_record_state(self.bounds) != self._bounds
                     or self.reader.tail.partial or not finite(now)
                     or self.last_at is not None and now < self.last_at):
                 raise ValueError('Camp route planning scope changed')
@@ -158,7 +159,7 @@ class CampRoutePreparation:
             self.start = CampRouteStart(height, self.sha256, self.itinerary.sha256,
                                         height.observed_at, height.expires_at)
             self._start_state = (self.start, _height_state(height),
-                                encoded([_raw_record(height.first), _raw_record(height.second)]))
+                                (flat_record_state(height.first), flat_record_state(height.second)))
             self.phase = 'ready'
             self.check_start(self.start)
             return self.start
@@ -171,7 +172,7 @@ class CampRoutePreparation:
                 or start.preparation_sha256 != self.sha256 or start.itinerary_sha256 != self.itinerary.sha256
                 or start.observed_at != start.height.observed_at or start.expires_at != start.height.expires_at
                 or (start, _height_state(start.height),
-                    encoded([_raw_record(start.height.first), _raw_record(start.height.second)])) != self._start_state):
+                    (flat_record_state(start.height.first), flat_record_state(start.height.second))) != self._start_state):
             raise ValueError('Exact current onward-route start required')
         self.check(fresh=start.height)
         if self.phase != 'ready' or self.start is not start:

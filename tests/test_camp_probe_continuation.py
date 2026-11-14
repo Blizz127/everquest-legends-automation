@@ -153,3 +153,49 @@ def test_next_transaction_cannot_replace_shared_stop_lock(probe):
 def test_reference_cannot_be_constructed_from_an_unconfirmed_transaction(probe):
     f=probe;tx,ticket=staged(f)
     with pytest.raises(ValueError):CampProbeFloorReference(tx,ticket)
+
+
+def retained_three(f,*,distinct_binding=False):
+    tx,result=confirmed(f);transactions=[tx]
+    for i in range(2):
+        reference=tx.retain_endpoint(result)
+        p=next_preparation(f,reference)
+        if distinct_binding and i==1:
+            # A genuinely different provider must keep the recursive path.
+            old=p
+            p=CampProbePreparation(reference,old.height,f.lease,probe_kind=old.kind,
+                bounds=old.bounds,bounds_basis=old.bounds_basis,owner_binding=f.camp_binding,
+                binding_reader=lambda:old.binding_reader(),clock=f.clock,local_wall_clock=f.wall)
+        tx,result=finish_probe(f,p,transactions[0].lock,x=4.5)
+        transactions.append(tx)
+    return tx.retain_endpoint(result),transactions
+
+
+@pytest.mark.parametrize('fault',('cancel','bounds','clock','receipt','raw','raw_type'))
+def test_shared_final_clock_cannot_change_middle_ancestor(probe,monkeypatch,fault):
+    f=probe;leaf,transactions=retained_three(f);middle=transactions[1]
+    check=f.checkpoint.check;fired=[]
+    def change():
+        fired.append(True)
+        if fault=='cancel':middle.cancel('F9 from final shared clock')
+        elif fault=='bounds':middle.preparation.bounds=replace(middle.preparation.bounds,body_radius=2.)
+        elif fault=='clock':middle.preparation.clock=lambda:f.now
+        elif fault=='receipt':object.__setattr__(middle.seal.receipt,'up_completed_at',f.now+1.)
+        elif fault=='raw':object.__setattr__(middle.result.first,'raw_coordinates',(9.,9.,9.))
+        else:object.__setattr__(middle.result.first,'log_line_seq',float(middle.result.first.log_line_seq))
+    def root_check():
+        check();f.clock_hook=change
+    monkeypatch.setattr(f.checkpoint,'check',root_check)
+    with pytest.raises(ValueError):leaf.check()
+    assert fired==[True] and not leaf.valid and f.drain_events()==()
+
+
+def test_different_binding_context_keeps_ancestor_callbacks(probe):
+    f=probe;leaf,transactions=retained_three(f,distinct_binding=True)
+    calls=[]
+    f.binding_hook=lambda:calls.append(True)
+    leaf.check()
+    assert len(calls)>=2 and leaf.valid
+    f.binding_hook=lambda:transactions[1].cancel('F9 from distinct binding')
+    with pytest.raises(ValueError):leaf.check()
+    assert not leaf.valid and f.drain_events()==()
