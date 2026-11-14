@@ -10,9 +10,11 @@ from dataclasses import dataclass
 import math
 import re
 import time
+from pathlib import Path
 
 from .g2_scene_observer import G2ObservationUnavailable, G2SafetyObservation, MAX_SAFETY_AGE
 from .owner_input_observer import OwnerInputObservation
+from .scene_log_veto import SceneLogVeto
 
 
 @dataclass(frozen=True)
@@ -83,9 +85,13 @@ class G2SafetyProvider:
     Construct per owner-started measurement, bound to its window/process and
     cancel generation. A first-attach input observation is intentionally not
     clear; the engine must collect its input baseline before arming G2.
-    Nothing here authorizes movement or bootstraps a zone from log history.
+    The caller must bind expected_log_path to this window's owner-selected
+    character/server. A filename is not proof of the active character. The log
+    monitor persists for the whole scope, and supplements rather than replaces
+    the independently validated UI classifier. Nothing here authorizes movement
+    or bootstraps a zone from log history.
     """
-    def __init__(self, *, gate, input_observer, ui_observer, expected_window,
+    def __init__(self, *, gate, input_observer, ui_observer, log_veto, expected_log_path, expected_window,
                  calibration_sha256, cancel_generation, generation_reader,
                  mode_reader,
                  clock=time.monotonic):
@@ -93,7 +99,11 @@ class G2SafetyProvider:
                 or not isinstance(cancel_generation, int) or isinstance(cancel_generation, bool)
                 or cancel_generation < 0 or not callable(generation_reader) or not callable(mode_reader)
                 or not callable(ui_observer) or not callable(clock)
-                or not callable(getattr(input_observer, "sample", None))):
+                or not callable(getattr(input_observer, "sample", None))
+                or not isinstance(log_veto, SceneLogVeto)
+                or not isinstance(expected_log_path, Path)
+                or log_veto.tail.path != expected_log_path
+                or log_veto.cancel_generation != cancel_generation):
             raise ValueError("G2 needs bound current input, UI calibration and cancellation")
         self.gate, self.input_observer, self.ui_observer = gate, input_observer, ui_observer
         self.window, self.calibration = expected_window, calibration_sha256
@@ -101,6 +111,24 @@ class G2SafetyProvider:
         self.mode_reader = mode_reader
         self.clock = clock
         self.last_ui = None
+        self.log_veto = log_veto
+        self.log_path = expected_log_path
+        self.last_log_veto = None
+
+    def _check_log(self, began):
+        if (self.log_veto.tail.path != self.log_path
+                or self.log_veto.cancel_generation != self.generation):
+            raise G2ObservationUnavailable("Client log source/generation changed")
+        observation = self.log_veto.poll()
+        self.last_log_veto = observation
+        now = self.clock()
+        if (observation.reason is not None or observation.continuity_available is not True
+                or observation.cancel_generation != self.generation
+                or not all(_finite(v) for v in (observation.started_at, observation.finished_at, now))
+                or not began <= observation.started_at <= observation.finished_at <= now
+                or now - began > MAX_SAFETY_AGE):
+            raise G2ObservationUnavailable(
+                f"Client log veto or unavailable continuity: {observation.reason or 'timing/binding'}")
 
     def _binding(self):
         generation = self.generation_reader()
@@ -112,10 +140,13 @@ class G2SafetyProvider:
 
     def __call__(self):
         self.last_ui = None
+        self.last_log_veto = None
         try:
             began = self.clock()
             if not _finite(began):
                 raise G2ObservationUnavailable("Invalid safety observation clock")
+            self._binding()
+            self._check_log(began)
             self._binding()
             before = self.input_observer.sample()
             input_at = self.clock()
@@ -124,6 +155,8 @@ class G2SafetyProvider:
                 raise G2ObservationUnavailable("Owner input coverage is incomplete or active")
             visual = self.ui_observer(self.window)
             after = self.input_observer.sample()
+            self._binding()
+            self._check_log(began)
             self._binding()
             finished = self.clock()
             if (not _finite(finished) or not 0 <= finished - began <= MAX_SAFETY_AGE

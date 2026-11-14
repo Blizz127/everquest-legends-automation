@@ -1,5 +1,51 @@
 # FINDINGS
 
+## Latched movement log veto — 2026-11-14 05:14 UTC
+
+**VERIFIED source 0.41.71:** `scene_log_veto.py` baselines the expected character/
+server log once per owner-started measurement generation. New incoming attacks,
+native melee ON, death, zoning, target selection and observed player hazards
+latch a veto. Missing files, replacement/truncation/backlog/anchor resets,
+partial lines, decode/parser errors and backward/invalid clocks lose continuity
+and latch refusal. Existing history is never replayed; equal source seconds are
+accepted. Neither silence nor OFF clears a latch or supplies a safety flag.
+
+`G2SafetyProvider` now requires this monitor and the caller's expected log path,
+checks it before and after UI/input observations, and rechecks cancellation,
+mode, focus and process after log I/O. An independent review reproduced a
+cancellation during the final poll; the added post-poll binding check and four
+regressions address it. Recognized malformed transition/melee prefixes also
+veto. Filename binding is not active-character proof: the eventual assembly
+must bind the owner-selected character/log to the window. Current UI flags
+remain independently required and the provider remains measurement-only.
+
+**VERIFIED focused checks:** 80 reader/provider tests passed in 0.58 seconds;
+three real-watchdog pipe cases passed in 1.06 seconds. Those cases inject a
+logged attack before DOWN, after DOWN and during final release, confirming
+release/no floor commit. Their scene, motion and geometry evidence is synthetic;
+no input device or real client was used. Compile and whitespace checks passed;
+no full suite ran.
+
+**VERIFIED retained-log audit:** 22,705 parsed lines from owner log SHA
+`d622b3c12567f903d411860d3de1a0be28e4e8b38be7bbdc2bebfdd62c60f04e`.
+The corrected classifier finds 4,350 incoming attacks, 67 native melee ON,
+214 target selections, six deaths, 57 zone-transition messages and 58 player
+hazards, with no chat matches in the checked chat envelopes. All retained
+` YOU for ` / ` YOU,` shapes match. Initial audit exposed 1,336 missed singular
+`point of damage` lines; the plural-optional pattern and regression fix that.
+The first audit remains retained and is superseded by private
+`evidence/scene-log-veto-0.41.71-v2.json`, SHA
+`d9ee4eaa7f27dead154054f8636cac9e48ed58fc059daf39bc4a76e04b632631`.
+These observed formats are a subset, not proof of complete combat logging or
+live safety. No client capture/input/login was initiated.
+
+**Live gate unchanged:** G0 visible stop is owner-confirmed and needs no repeat.
+Assist 0.39.6 and observation candidate 0.39.9 are unchanged; the source adapter
+is not wired into an owner movement control. The pending stationary owner
+position/UI pair, current calibration, complete live scene/motion providers
+and actual route acceptance are still missing. Level, XP, XP/hour, deaths and
+camp remain unknown; there is no accepted 1–20 run or fresh-character 1–50 proof.
+
 ## Private source 0.41.70 staging — 2026-11-14 05:07 UTC
 
 **VERIFIED:** Commit `7ff2503642f52bb490cf1b30a607fe63fdcd7965`, archive SHA

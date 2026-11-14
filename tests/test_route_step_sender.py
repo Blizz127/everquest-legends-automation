@@ -168,6 +168,34 @@ def test_revocation_after_down_releases_and_never_commits(harness,monkeypatch,ch
     assert_refused(f,down=True,retained=change=='device')
 
 
+@pytest.mark.parametrize('when', ['before_down', 'after_down', 'final_release'])
+def test_latched_log_veto_releases_without_floor_commit(harness,monkeypatch,tmp_path,when):
+    from eql_automation.scene_log_veto import SceneLogVeto
+    from eql_automation.g2_scene_observer import G2ObservationUnavailable
+    f=harness
+    path=tmp_path/'eqlog_Probe_private.txt'
+    path.touch()
+    veto=SceneLogVeto(path,expected_character='Probe',expected_server='private',
+                      cancel_generation=1)
+    original=f.options['scene_provider']
+    def scene():
+        observation=veto.poll()
+        if observation.reason or not observation.continuity_available:
+            raise G2ObservationUnavailable(observation.reason)
+        # UI, motion and geometry remain explicitly synthetic in this pipe test.
+        return original()
+    def hazard():
+        with path.open('a') as output:
+            output.write('[Sat Nov 14 01:00:00 2026] Training dummy hits YOU for 2 points of damage.\n')
+    f.options['scene_provider']=scene
+    if when=='before_down':hazard()
+    elif when=='after_down':after_down(monkeypatch,hazard)
+    else:f.sender.on_release=hazard
+    with pytest.raises(RuntimeError):f.run()
+    assert veto.poll().reason=='incoming_attack'
+    assert_refused(f,down=when!='before_down')
+
+
 def test_final_release_failure_retains_key_and_old_floor(harness):
     f=harness
     def fail():raise OSError('UP/SYN failed')

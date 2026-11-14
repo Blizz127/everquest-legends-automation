@@ -10,6 +10,7 @@ from eql_automation.g2_safety_provider import (
 from eql_automation.g2_scene_observer import G2ObservationUnavailable, G2ReadOnlySceneObserver
 from eql_automation.location_log import LocationLogReader
 from eql_automation.owner_input_observer import OwnerInputObservation
+from eql_automation.scene_log_veto import SceneLogVeto
 
 
 WINDOW = GameWindowIdentity(42, 1234, 600)
@@ -35,7 +36,7 @@ class Gate:
         return self.ready
 
 
-def fixture():
+def fixture(tmp_path):
     clock, generation, mode = [100.0], [7], ["measurement"]
     gate = Gate()
     records, frames = [], []
@@ -51,7 +52,12 @@ def fixture():
         current = G2UiObservation(started, clock[0], window, "f" * 64, "c" * 64,
                                   True, True, True, True, True)
         return frames.pop(0)(current) if frames else current
-    provider = G2SafetyProvider(gate=gate, input_observer=SimpleNamespace(sample=sample),
+    log_path = tmp_path / "eqlog_Probe_private.txt"
+    log_path.touch(exist_ok=True)
+    veto = SceneLogVeto(log_path, expected_character="Probe", expected_server="private",
+                        cancel_generation=7, clock=lambda: clock[0])
+    provider = G2SafetyProvider(log_veto=veto, expected_log_path=log_path,
+                                gate=gate, input_observer=SimpleNamespace(sample=sample),
                                 ui_observer=ui, expected_window=WINDOW,
                                 calibration_sha256="c" * 64, cancel_generation=7,
                                 generation_reader=lambda: generation[0], mode_reader=lambda: mode[0],
@@ -59,8 +65,8 @@ def fixture():
     return provider, gate, clock, generation, mode, records, frames
 
 
-def test_success_preserves_oldest_time_and_brackets_frame_with_input():
-    provider, gate, clock, *_ = fixture()
+def test_success_preserves_oldest_time_and_brackets_frame_with_input(tmp_path):
+    provider, gate, clock, *_ = fixture(tmp_path)
     result = provider()
     assert result.observed_at == 100.0 < clock[0]
     assert result.owner_keys_clear and result.chat_clear and result.focused
@@ -76,8 +82,8 @@ def test_success_preserves_oldest_time_and_brackets_frame_with_input():
     lambda o: replace(o, unsupported_motion_devices=1),
     lambda o: replace(o, topology_generation=2),
 ])
-def test_owner_activity_or_topology_change_during_image_rejects(transform):
-    provider, gate, clock, generation, mode, records, frames = fixture()
+def test_owner_activity_or_topology_change_during_image_rejects(tmp_path, transform):
+    provider, gate, clock, generation, mode, records, frames = fixture(tmp_path)
     records.extend([lambda o: o, transform])
     with pytest.raises(G2ObservationUnavailable):
         provider()
@@ -85,8 +91,8 @@ def test_owner_activity_or_topology_change_during_image_rejects(transform):
 
 
 @pytest.mark.parametrize("kind", ["cancel", "mode", "process", "window", "focus", "grabs"])
-def test_off_assist_switch_relogin_focus_or_window_change_during_image_rejects(kind):
-    provider, gate, clock, generation, mode, records, frames = fixture()
+def test_off_assist_switch_relogin_focus_or_window_change_during_image_rejects(tmp_path, kind):
+    provider, gate, clock, generation, mode, records, frames = fixture(tmp_path)
     def during(o):
         if kind == "cancel": generation[0] += 1
         if kind == "mode": mode[0] = "assist"
@@ -113,15 +119,15 @@ def test_off_assist_switch_relogin_focus_or_window_change_during_image_rejects(k
     lambda o: replace(o, no_transition=False),
     lambda o: replace(o, no_incoming_attack=False),
 ])
-def test_cached_unbound_or_unknown_ui_never_supplies_safety(transform):
-    provider, gate, clock, generation, mode, records, frames = fixture()
+def test_cached_unbound_or_unknown_ui_never_supplies_safety(transform, tmp_path):
+    provider, gate, clock, generation, mode, records, frames = fixture(tmp_path)
     frames.append(transform)
     with pytest.raises(G2ObservationUnavailable):
         provider()
 
 
-def test_initial_input_attach_prevents_ui_capture_and_clock_or_callback_failure_refuses():
-    provider, gate, clock, generation, mode, records, frames = fixture()
+def test_initial_input_attach_prevents_ui_capture_and_clock_or_callback_failure_refuses(tmp_path):
+    provider, gate, clock, generation, mode, records, frames = fixture(tmp_path)
     records.append(lambda o: replace(o, coverage_complete=False))
     frames.append(lambda o: pytest.fail("UI should not capture while input is incomplete"))
     with pytest.raises(G2ObservationUnavailable):
@@ -140,6 +146,7 @@ def test_initial_input_attach_prevents_ui_capture_and_clock_or_callback_failure_
     frames.append(backward)
     with pytest.raises(G2ObservationUnavailable):
         provider()
+    provider, gate, clock, generation, mode, records, frames = fixture(tmp_path)
     def failed(window):
         raise OSError("capture unavailable")
     provider.ui_observer = failed
@@ -155,7 +162,7 @@ def test_multiple_game_windows_are_not_bound_even_with_one_focused():
 
 
 def test_provider_connects_to_existing_fresh_log_scene_without_movement(tmp_path):
-    provider, gate, clock, generation, mode, records, frames = fixture()
+    provider, gate, clock, generation, mode, records, frames = fixture(tmp_path)
     path = tmp_path / "eqlog_Probe_private.txt"
     path.touch()
     zones = tmp_path / "ZoneNames.txt"
@@ -166,6 +173,7 @@ def test_provider_connects_to_existing_fresh_log_scene_without_movement(tmp_path
     with path.open("a") as output:
         output.write(prefix + "You have entered Greater Faydark.\n")
         output.write(prefix + "Your Location is 1, 2, 3\n")
+    provider, gate, clock, generation, mode, records, frames = fixture(tmp_path)
     scene = G2ReadOnlySceneObserver(reader, zone_short_name="gfaydark",
                                   zone_display_name="Greater Faydark", zone_id=54,
                                   safety_provider=provider, monotonic_clock=lambda: clock[0],
@@ -176,3 +184,53 @@ def test_provider_connects_to_existing_fresh_log_scene_without_movement(tmp_path
     mode[0] = "assist"
     with pytest.raises(G2ObservationUnavailable):
         scene()
+
+
+@pytest.mark.parametrize("when", ["before", "during", "after"])
+def test_log_hazard_brackets_ui_and_stays_latched(tmp_path, when):
+    provider, gate, clock, generation, mode, records, frames = fixture(tmp_path)
+    def attack():
+        with provider.log_path.open("a") as output:
+            output.write("[Sat Nov 14 01:00:00 2026] Training dummy hits YOU for 2 points of damage.\n")
+    if when == "before": attack()
+    if when == "during": frames.append(lambda o: (attack(), o)[1])
+    if when == "after": records.extend([lambda o:o, lambda o:(attack(),o)[1]])
+    with pytest.raises(G2ObservationUnavailable, match="log veto"):
+        provider()
+    assert provider.last_ui is None
+    assert provider.last_log_veto.reason == "incoming_attack"
+    with provider.log_path.open("a") as output:
+        output.write("[Sat Nov 14 01:00:00 2026] Auto attack is off.\n")
+    with pytest.raises(G2ObservationUnavailable, match="log veto"):
+        provider()
+
+
+@pytest.mark.parametrize("change", ["generation", "focus", "mode", "process"])
+def test_binding_change_during_final_log_io_refuses(tmp_path, change):
+    provider, gate, clock, generation, mode, records, frames = fixture(tmp_path)
+    original = provider.log_veto.tail.poll
+    calls = [0]
+    def poll():
+        result = original()
+        calls[0] += 1
+        if calls[0] == 2:
+            if change == "generation": generation[0] += 1
+            elif change == "focus": gate.focused = False
+            elif change == "mode": mode[0] = "assist"
+            elif change == "process": gate.window = replace(WINDOW, start_ticks=601)
+        return result
+    provider.log_veto.tail.poll = poll
+    with pytest.raises(G2ObservationUnavailable): provider()
+    assert provider.last_ui is None
+
+
+def test_wrong_log_binding_and_generation_refuse(tmp_path):
+    provider, gate, clock, generation, mode, records, frames = fixture(tmp_path)
+    kwargs = dict(gate=gate, input_observer=provider.input_observer, ui_observer=provider.ui_observer,
+                  log_veto=provider.log_veto, expected_log_path=provider.log_path,
+                  expected_window=WINDOW, calibration_sha256="c" * 64, cancel_generation=7,
+                  generation_reader=lambda:generation[0], mode_reader=lambda:mode[0], clock=lambda:clock[0])
+    with pytest.raises(ValueError): G2SafetyProvider(**{**kwargs, "expected_log_path":tmp_path/"other.txt"})
+    with pytest.raises(ValueError): G2SafetyProvider(**{**kwargs, "cancel_generation":8})
+    provider.log_veto.tail.path = tmp_path / "other.txt"
+    with pytest.raises(G2ObservationUnavailable, match="source/generation"): provider()

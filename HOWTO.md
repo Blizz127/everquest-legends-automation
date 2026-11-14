@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.70 / assist 0.39.6 / observation candidate 0.39.9
+# EverQuest Legends automation — project 0.41.71 / assist 0.39.6 / observation candidate 0.39.9
 
 ## Current availability
 
@@ -19,9 +19,19 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.70 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.70/source`; the runnable
+Source tools 0.41.71 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.71/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.71 adds a latched client-log veto to the measurement scene provider.
+New incoming attacks (including misses and single-point damage), native melee
+ON, death, hazards, targeting and zoning cancel the scope. Missing/replaced logs,
+incomplete lines and clock failures also refuse. Old history is skipped; quiet
+logs and melee OFF never establish safety or clear a latch. Independent current
+UI evidence remains mandatory. Eighty focused reader/provider checks and three
+actual-watchdog pipe checks pass. This is source infrastructure, not a new
+owner movement control; the existing stationary observation remains the next
+live step. G0 needs no repeat.
 
 Source 0.41.70 extracts exact combat/attack visual templates from the installed
 client's XML and textures. Thirteen focused tests pass; 11 real client frames
