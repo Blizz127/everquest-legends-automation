@@ -1,5 +1,57 @@
 # FINDINGS
 
+## Receipt-bound floor commits and completed printed-feedback replay — 2026-11-14 04:47 UTC
+
+**VERIFIED source 0.41.68:** `RouteFloorCommit` owns one committed source chain and
+one pending update. It gives the geometry callback the exact immutable proposal,
+current aligned fix, footprint/source tuple, key, requested/maximum hold and
+external motion-bound record ID, plus a shallow chain fork. It checks the
+returned floor proof's ancestry, geometry digest, expanded footprint and selected
+patches. Deep snapshots catch changed chain contents, pose, motion, calibration,
+route, mode and generation. This preserves identity; the external guard must
+still prove the supplied footprint covers actual movement with current measured
+bounds and complete scene/static/BSP/dynamic checks.
+
+Receipt integration uses the same reentrant OFF/GO lock, matching key/duration,
+finite ordered times, a current one-use ticket, DOWN no earlier than completed
+staging and no later than the proposal deadline, and UP-complete minus DOWN-start
+within the staged bound (at most 0.20 seconds). Only successful
+`FixedRouteFollower.record_release()` commits the fork. Failure, stale/repeated
+receipt, context change, cancellation, swallowed/no-op integration or reentrant
+operation discards pending state and halts. It does not pretend already-simulated
+or physical movement was rolled back. No input device is owned or opened, no
+key is sent, and preparation/ticket/conditional floor records remain explicitly
+non-authorizing. The sender adapter must establish receipt provenance and client
+key consumption; constructing a PulseReceipt object cannot prove either.
+
+**VERIFIED:** 39 focused checks pass. The actual separate watchdog writes DOWN/UP
+to a pipe; its returned timestamps commit the checked fork, then synthetic
+stopped fixes run through the real ground producer and retained follower back
+to `ready`. The extended pipe/ground/follower test was also rerun alone after its
+last assertion was added. No game/device/live scene was used and no full suite
+was run. The initial immutable-Motion fixture error was corrected to replace the
+calibration object. Review caught and corrected staging-time ordering and
+reentrant-operation gaps before release.
+
+**VERIFIED completed copied replay (source 0.41.67):**
+`nav-candidates/gfay-client-observation-replay-0.41.67-budget1200.json`, SHA
+`b70de7f0f9bfa193ce83e1b9bcee3d16be63b8920357a9c49e622e8b4de0f603`,
+arrived at **155/155 segments in 2,323 steps**. All 2,323 source-floor, static-object
+and BSP-volume trials passed, as did 2,324 stopped observation pairs. There were
+2,324 committed floor cells; final proof
+`c5aff2f9d468fd646b79cf7d44d1007267b4790a65ae9d2c77ce5a7adb2b8431`.
+All 48 input pins rechecked. Runtime **508.417698391 wall / 147.502962158 CPU
+seconds**, no budget exhaustion, observation failure or sweep failure. Maximum
+physical/printed XY difference is 0.006980280448 and raw-height residual
+0.007485565464. The first 600-second attempt remains unchanged evidence of its
+checked prefix; variable scheduling made elapsed time differ between attempts.
+
+**Not verified:** current live zone/UI/frame/height/speed/drift, sender integration,
+real route movement, dynamic hazards, camp combat, XP or level gain. The completed
+replay uses simulated physical-pose guards and conditional body/motion bounds.
+No owner adapter imports the new commit component. Read-only Alienware listing at
+04:46 UTC still found zero paired position records. G0 passed and needs no repeat.
+
 ## Private source 0.41.67 staging and longer replay — 2026-11-14 04:37 UTC
 
 **VERIFIED:** Commit `a944b44a5d8ce229f4993fc6530b27ceb3243595`, archive SHA

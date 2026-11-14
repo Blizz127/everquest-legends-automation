@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.67 / assist 0.39.6 / observation candidate 0.39.9
+# EverQuest Legends automation — project 0.41.68 / assist 0.39.6 / observation candidate 0.39.9
 
 ## Current availability
 
@@ -19,19 +19,23 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.67 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.67/source`; the runnable
+Source tools 0.41.68 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.68/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
-Source 0.41.67 drives the retained route follower using client-formatted raw
-positions through the ground observer. The simulated physical pose stays
-separate from the printed position, and each changed movement is checked again.
-Four focused checks pass, including straight and turning feedback. The first
-full copied-GFay run passed all checks through 1,771 steps/117 of 155 segments,
-then reached its 600-second wall budget (121 CPU seconds). It did not arrive.
-A new bounded run is needed to establish the remaining offline behavior.
-This remains a simulator: it adds no live movement, calibration or F11 control.
-Owner assist 0.39.6 and observation candidate 0.39.9 are unchanged.
+Source 0.41.68 adds receipt-bound floor updates to the route library. It stages
+one checked fork and commits it only after a matching successful release receipt;
+changed context, cancellation, timing overrun or reentrant operations halt it.
+It sends no input and creates no movement permit. Thirty-nine focused checks
+pass, including the real watchdog on a pipe followed by ground observations and
+the retained follower. No owner helper imports this component yet.
+
+The full copied-GFay replay with printed-coordinate feedback has now arrived:
+155/155 segments, 2,323 steps and passing terrain/static/BSP checks at every step.
+All 2,324 stopped observation pairs passed. This uses simulated physical pose,
+body, speed and drift, and creates no live acceptance. Fresh owner position/UI,
+current calibration and a checked live sender remain missing; F11 stays disabled.
+Assist 0.39.6 and observation candidate 0.39.9 are unchanged.
 
 Source 0.41.66 corrects the offline position probe to use the two-decimal
 `/location` format found in 68 retained client log examples. It can reconstruct
