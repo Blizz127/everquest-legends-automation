@@ -2,6 +2,11 @@
 
 Updated 2026-11-14 01:25 UTC for coordinator task `829a00229b29`.
 
+- Private source **0.41.51**, commit `bfc9d7e`, is staged on Alienware at
+  `~/.local/share/eql-automation/owner-tools/0.41.51/source`. Archive SHA
+  `35893d8b96ac0c73e8340bdb8c2577af836910423054d72c4309fc8ce4ce7d01`
+  matched. Remote ground-footprint smoke, two CLI startup checks and offline
+  navigation smoke passed; no input device or game input was used.
 - Source **0.41.51** adds continuous detail-ground footprint checks with
   explicit numerical tolerances. Twenty-three focused tests passed, including
   holes hidden from endpoint/rail samples, overlapping floors, cumulative

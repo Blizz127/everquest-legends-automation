@@ -1,5 +1,14 @@
 # FINDINGS
 
+## Private 0.41.51 staging — 2026-11-14
+
+**VERIFIED:** Commit `bfc9d7e` archive SHA
+`35893d8b96ac0c73e8340bdb8c2577af836910423054d72c4309fc8ce4ce7d01`
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.51/source`.
+Remote import, complete flat-ground footprint smoke, both CLI help checks and
+offline navigation demo passed. Evidence is `../smoke.json` in that release.
+No input device, character or game install was touched.
+
 ## Continuous ground footprints and GFay portal discrepancy — 2026-11-14 01:25 UTC
 
 **VERIFIED source semantics:** The existing half_width1.2 is a lateral sample
