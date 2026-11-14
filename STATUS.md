@@ -1,7 +1,24 @@
 # STATUS
 
-Updated 2026-11-14 01:41 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:50 UTC for coordinator task `829a00229b29`.
 
+- Source **0.41.54** adds bounded reciprocal one-ULP precision retries with
+  full copied-source ground support. Twenty-six focused tests passed. Source
+  triangles must cover the expanded footprint continuously and without other
+  floors; the full source/baked height difference is checked. No mesh writes.
+- **VERIFIED:** Default 0.6 diagnostic Z limit reaches segment 20, step 239,
+  then refuses a 0.600690 source/bake difference. A separate 0.9 sensitivity
+  reaches segment 38, step 458, then refuses overlapping detail faces. The
+  default remains 0.6; neither replay completes the route or sends input.
+- The pinned G0/source comparison confirms source-relative character height
+  varies only 0.000788 across its two positions; raw-to-baked offset varies
+  0.01939. Next: split source-floor and mesh-projection observations in the
+  future G2/follower binding, preserving strict endpoint and raw-height checks.
+  Historical offsets do not establish fresh live calibration.
+- Current level, XP, XP/hour, deaths and camp remain unknown beyond Legira 7
+  in GFay. G0 stop passed; no accepted 1–20 route or automated XP. Live scene,
+  calibration, full collision/hazard checks and sender integration remain
+  unaccepted. Owner assist 0.39.6 and G0 candidate 0.39.7 are unchanged.
 - Private source **0.41.53**, commit `fb0733f`, is staged at Alienware
   `~/.local/share/eql-automation/owner-tools/0.41.53/source`. Archive SHA
   `efb26be50ce614ad7b0791efe44496c9e2957eaf35537e19d72256cdf173f2bb`

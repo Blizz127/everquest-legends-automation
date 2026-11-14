@@ -209,3 +209,13 @@ radius-1.2 ground tubes, legacy strips/turns and the complete centerline BSP
 audit. The guarded follower now reaches segment 11, where another reciprocal
 one-ULP tile gap refuses coverage. The original meshes and client data remain
 unchanged. These conditional copied-data results still do not enable F11.
+
+Source 0.41.54 applies a source-supported, ephemeral precision correction only
+to proven reciprocal one-ULP coverage gaps. The repaired GFay plan reaches
+segment 20 with the default 0.6-unit diagnostic source/bake Z limit; a separate
+0.9-unit sensitivity run reaches segment 38 and stops on overlapping detail
+faces. The default is unchanged. No entire route or input path is accepted.
+Historical G0 fixes show raw-to-source height offset changes by only 0.000788,
+while raw-to-baked offset changes by 0.01939. The next runtime binding must
+carry physical source ground and baked mesh projection separately, with fresh
+live calibration; a constant raw-to-baked correction is unsuitable.

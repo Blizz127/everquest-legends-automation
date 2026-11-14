@@ -65,7 +65,8 @@ def local_seam_diagnostic(view, footprint, reference, component, window, detail_
 
 
 def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=False,
-        shorten_ground_step=False, plan=PLAN, plan_sha256=PLAN_SHA):
+        shorten_ground_step=False, plan=PLAN, plan_sha256=PLAN_SHA, precision_portals=False,
+        source_z_limit=.6, wall_budget=35.):
     began = time.monotonic()
     sys.path[:0] = [str(PROJECT), str(HELPER)]
     from eql_automation.fixed_route_follower import FixedRoute, FixedRouteFollower, RouteHalt
@@ -82,6 +83,15 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         pins[path] = sha256(path.read_bytes()).hexdigest()
     if ground_sweep:
         for path in (PROJECT / 'eql_automation/ground_sweep.py', PROJECT / 'eql_automation/ground_sweep_view.py'):
+            pins[path] = sha256(path.read_bytes()).hexdigest()
+    source_archive = STORE/'client-data/retail-full/assets/gfaydark.s3d'
+    if precision_portals:
+        if local_seam_experiment or not ground_sweep:
+            raise ValueError('Precision retry requires ground checks and excludes the older seam experiment')
+        pins[source_archive] = 'ea95f51a2d4645410223d24cc7da9eb0e7095310c6e9f8756e8c51d67df13d9f'
+        for module in ('portal_precision','portal_precision_view','pfs_archive','wld_inventory',
+                       'mesh_geometry','material_audit'):
+            path = PROJECT/'eql_automation'/(module+'.py')
             pins[path] = sha256(path.read_bytes()).hexdigest()
     seam_evidence = None
     if local_seam_experiment:
@@ -101,10 +111,14 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     route = FixedRoute.load(plan, expected_sha256=plan_sha256, mesh_sha256=MESH_SHA)
     mesh = BspDetailMeshView.load(MESH, zone=route.zone)
     sweep_view = None
+    precision_view = None
     if ground_sweep:
         from eql_automation.ground_sweep import motion_footprint
         from eql_automation.ground_sweep_view import GroundSweepView
         sweep_view = GroundSweepView.load(MESH, zone=route.zone)
+        if precision_portals:
+            from eql_automation.portal_precision_view import PortalPrecisionView
+            precision_view = PortalPrecisionView(sweep_view,MESH,source_archive,zone=route.zone)
     start = route.segments[0].start
     heading = steer.bearing(*start[:2], *route.segments[0].end[:2])
     calibration = "synthetic-replay-not-live-alignment"
@@ -118,6 +132,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     sweep_checks, sweep_failure = 0, None
     local_seam_retries = []
     ground_shortening_trials = []
+    precision_retries = []
     def stopped_pair(release):
         nonlocal seq, clock
         aligned = []
@@ -135,7 +150,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         for step in range(10000):
             if runner.phase == "arrived":
                 break
-            if time.monotonic() - began > 35:
+            if time.monotonic() - began > wall_budget:
                 raise RouteHalt("Offline replay wall-clock budget exceeded")
             index = runner.index
             segment = route.segments[index]
@@ -146,6 +161,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                 # Deliberately hypothetical: these are NOT current client
                 # speed, heading, latency, body-size or drift measurements.
                 trials = []
+                precision_last = None
                 while True:
                     reach = (speed * 1.2 * (seconds + .02)) if proposal.forward else 0.
                     footprint = motion_footprint(tuple(position[:2]), heading, reach,
@@ -154,6 +170,15 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                     check, detail_ids = sweep_view.check(footprint, reference=tuple(position),
                         component=int(sweep_view.components[segment.polygon]), vertical_window=window)
                     sweep_checks += 1
+                    precision_last = None
+                    if check.reason == 'uncovered_ground_area' and precision_view is not None:
+                        precision_last = precision_view.retry(check,footprint,detail_ids,
+                            reference=tuple(position),component=int(sweep_view.components[segment.polygon]),
+                            vertical_window=window,maximum_source_z_difference=source_z_limit)
+                        precision_retries.append({'step':step,'segment':index,'hold':seconds,
+                            'original':asdict(check),'retry':asdict(precision_last)})
+                        if precision_last.candidate:
+                            check = precision_last.coverage
                     if check.reason == 'uncovered_ground_area' and seam_evidence is not None:
                         retry = local_seam_diagnostic(sweep_view, footprint, position,
                             int(sweep_view.components[segment.polygon]), window, detail_ids, seam_evidence)
@@ -173,7 +198,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                 if not check.candidate:
                     sweep_failure = {'step': step, 'segment': index, 'proposal': asdict(proposal),
                         'reach': reach, 'footprint': footprint, 'reference': list(position),
-                        'detail_ids': detail_ids, 'result': asdict(check)}
+                        'detail_ids': detail_ids, 'result': asdict(check),
+                        'precision_retry':None if precision_last is None else asdict(precision_last)}
                     raise RouteHalt('Ground sweep: ' + check.reason)
             # Independent idealized actuation. No actual sender or swept-volume
             # guard is exercised. Reject leaving the selected polygon's detail.
@@ -234,6 +260,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                     "heading_error_degrees": 2., "position_error": .05, "post_release_drift": .05,
                     "extra_radius": .2, "verified_live_calibration": False} if ground_sweep else None),
               "phase": runner.phase, "error": error, "segments_reached": runner.index,
+              "wall_budget":wall_budget,"budget_exhausted":error=='Offline replay wall-clock budget exceeded',
               "total_segments": len(route.segments), "steps": runner.steps,
               "simulated_seconds": clock - 100., "wall_seconds": time.monotonic() - began,
               "position": position, "history": history, "recent": recent,
@@ -244,6 +271,11 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
               "local_seam_retries": local_seam_retries,
               "shorten_ground_step": shorten_ground_step,
               "ground_shortening_trials": ground_shortening_trials,
+              "precision_portals":precision_portals,"precision_retries":precision_retries,
+              "precision_limits":({"maximum_source_baked_z_difference":source_z_limit,"source_boundary_margin":.002,
+                    "vertical_bound_is_diagnostic_not_proven_bake_error":True,
+                    "eligible_seams":len(precision_view.seams),"source_faces":len(precision_view.sources),
+                    "source_wld_sha256":precision_view.wld_sha256} if precision_view is not None else None),
               "pins": {str(p): h for p, h in pins.items()}}
     with output.open("x") as out:
         json.dump(report, out, indent=2); out.write("\n")
@@ -264,6 +296,12 @@ def main():
                         help='Check full detail-ground footprints with hypothetical uncertainty bounds')
     parser.add_argument('--local-seam-experiment', action='store_true',
                         help='Offline only: try one pinned source-supported XY seam correction')
+    parser.add_argument('--precision-portals', action='store_true',
+                        help='Offline only: retry one-ULP reciprocal gaps with full source-ground support')
+    parser.add_argument('--source-z-limit',type=float,default=.6,
+                        help='Diagnostic source/baked height-difference limit, not live calibration (default .6)')
+    parser.add_argument('--wall-budget',type=float,default=35.,
+                        help='Bounded offline wall-clock budget in seconds (default 35; maximum 120)')
     parser.add_argument('--shorten-ground-step', action='store_true',
                         help='Offline only: recheck successively shorter forward holds down to --min-hold')
     args = parser.parse_args()
@@ -276,19 +314,24 @@ def main():
         if (plan.parent.resolve() != (STORE/'nav-candidates').resolve() or plan.is_symlink()
                 or not plan.is_file() or not 0 < plan.stat().st_size <= 10*1024*1024):
             parser.error('Plan must be a bounded regular private nav-candidates file')
-    if (args.local_seam_experiment or args.shorten_ground_step) and not args.ground_sweep:
+    if (args.local_seam_experiment or args.shorten_ground_step or args.precision_portals) and not args.ground_sweep:
         parser.error('Ground experiments require --ground-sweep')
+    if args.local_seam_experiment and args.precision_portals:
+        parser.error('Use only one precision experiment')
     output = args.output.expanduser()
     if (output.parent.resolve() != (STORE / "nav-candidates").resolve() or output.exists()
             or output.is_symlink() or output.suffix != ".json"
             or not math.isfinite(args.speed) or not 0 < args.speed <= 100
-            or not math.isfinite(args.min_hold) or not 0 < args.min_hold <= .1):
+            or not math.isfinite(args.min_hold) or not 0 < args.min_hold <= .1
+            or not math.isfinite(args.source_z_limit) or not 0 < args.source_z_limit <= 2
+            or not math.isfinite(args.wall_budget) or not 1 <= args.wall_budget <= 120):
         parser.error("use a new private nav-candidates JSON and finite bounded motion parameters")
     os.umask(0o077)
     os.nice(15)
     run(output, speed=args.speed, min_hold=args.min_hold, ground_sweep=args.ground_sweep,
         local_seam_experiment=args.local_seam_experiment, shorten_ground_step=args.shorten_ground_step,
-        plan=plan, plan_sha256=plan_sha256)
+        plan=plan, plan_sha256=plan_sha256,precision_portals=args.precision_portals,
+        source_z_limit=args.source_z_limit,wall_budget=args.wall_budget)
 
 
 if __name__ == "__main__":

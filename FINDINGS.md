@@ -1,5 +1,75 @@
 # FINDINGS
 
+## Source-supported tile precision and separate ground heights — 2026-11-14 01:50 UTC
+
+**VERIFIED implementation:** `portal_precision.py` recognizes only unique,
+reciprocal, same-component area-63 links with constant X or Y, identical other
+coordinate/Z endpoints and exactly adjacent float32 coordinates (gap no more
+than 0.001 unit). Duplicate/nonreciprocal links, other endpoint differences,
+forbidden areas and different components cannot supply a repair. Only an
+original `uncovered_ground_area` can be retried. Local vertices must lie on
+the named portal span; both local boundary edges must be present. Their XY
+coordinates move to a float64 midpoint without changing Z, area, component,
+source arrays or the stored mesh. The complete corrected footprint must pass
+the existing ground/grade/seam/overlap checks again.
+
+`portal_precision_view.py` selects every source triangle whose XY bounds
+intersect the footprint plus a 0.002-unit margin, without any height filter.
+The copied-source partition must continuously cover that expanded footprint,
+with flag 0/Diffuse faces, grade at most 1, no positive-area floor overlap,
+no hole and continuous shared-edge height. Competing floors cannot disappear
+through a height window. Affine source-versus-baked height differences are
+checked at every source/detail intersection vertex, covering the whole area.
+The default 0.6-unit difference limit is an explicit diagnostic choice, not
+a proved bake error bound or live calibration. Twenty-six analytic tests pass,
+including two-face partitions, X/Y/negative coordinate seams, actual midpoint
+precision, layers away from the reference, different source height, material,
+source holes/steps, portal-span limits and unchanged original arrays.
+This remains a ground diagnostic; source object/headroom/BSP volume checks,
+actual body dimensions, dynamic obstacles and live input acceptance are separate.
+
+**VERIFIED copied-data replay:** 1,088 eligible reciprocal seam pairs were
+found in the pinned mesh; 74,981 source terrain faces were read. The default
+run passes six local retries across the first two seams, reaches segment 20,
+step 239, and refuses the next seam because max source/baked delta is
+0.6006898934 > 0.6. A separately requested offline sensitivity with limit 0.9
+passes fifteen retries (largest observed delta 0.6984934), reaches segment 38,
+step 458, and stops on `overlapping_ground_faces`. That failure is not retried.
+The default limit is unchanged. Both runs use hypothetical motion and neither
+completes the route, validates actual movement or enables F11.
+
+**VERIFIED G0 comparison:** The retained owner trace and alignment artifact
+were hash-checked, and copied source and baked heights recomputed independently.
+Two distinct raw locations land on source fragment 698 face 65. Raw character
+Z minus source Z is 2.56429032 and 2.56350270, span 0.0007876231. Raw Z minus
+baked Z is 2.06549075 and 2.08488382, span 0.0193930717. Thus a constant historical
+raw-to-baked correction would inherit variable bake error. The source values
+corroborate earlier historical alignment; they are not fresh live calibration.
+
+**Next interface correction:** `AlignedWldFix.ground_wld_xyz` currently
+conflates physical source ground with the baked approximation. No production
+G2/follower input caller exists. It should carry two explicitly bound same-XY
+observations: a unique source floor with source/character-height calibration,
+and selected-polygon mesh ground with mesh provenance and same-floor evidence.
+The follower can keep its strict 0.25-unit mesh endpoint tolerance while
+checking raw/source vertical movement independently. G2's 0.0005 mesh snap
+check must also remain. Synthetic replay currently fabricates raw Z from baked
+Z; regression coverage must give raw/source and baked Z independent values.
+This is a pending code change, not a claim that the new binding is implemented.
+
+Private `nav-candidates/` evidence:
+
+| Artifact | SHA-256 | Result |
+| --- | --- | --- |
+| `gfay-precision-replay-0.41.54-v2.json` | `fd49d84674c500e6f6da8f1e9b56887be1084ab3beca3479c2a6935f28b9b640` | Default 0.6 limit; segment 20 refusal |
+| `gfay-precision-z09-replay-0.41.54.json` | `454c8218244e39e152021d7f094d9c2d606d9d7c7f187f9387fe9ca053c26852` | Separate sensitivity; segment 38 overlap refusal |
+| `g0-source-mesh-height-comparison-0.41.54.json` | `cc91b3615afb605d3b9b02fa146c38a599fa7c44c1caff326bc341625978dc2b` | Two retained G0 positions, source/baked heights kept separate |
+
+The earlier `gfay-precision-replay-0.41.54.json` is superseded by v2 after
+explicit replay wall-budget/sensitivity arguments were added. No timeout is
+reported as route success; the final runs completed their diagnostic refusals.
+
+
 ## Private 0.41.53 staging — 2026-11-14 01:41 UTC
 
 **VERIFIED:** Commit `fb0733f` archive SHA
