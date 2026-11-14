@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 13:25 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 13:27 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -22,7 +22,10 @@ Updated 2026-11-14 13:25 UTC for coordinator task `829a00229b29`.
   and native-region classification separated from terrain/static clearance.
   Owner crossing0.39.19 still needs real traversal acceptance; assist0.39.13 and
   passed G0 remain. No accepted 1–20/1–50 run; current level, XP/hour, deaths and
-  camp unknown.
+  camp unknown. Commit `1324841` is staged at Alienware
+  `owner-tools/0.42.23/source`; all 43 checks pass there without skips and the
+  copied-data report matches. Startup SHA
+  `73c14d1f66b4aac5b90a911b9aa1e46ad9ce3b9011122b03660fa6b230d73c14`.
 - **Source 0.42.22 / owner preview 0.39.19 staged:** a distinct **Travel into
   Crushbone…** action now connects calibration, fresh-source planning, checked
   corridor moves and expected destination positions. It retains one observer,

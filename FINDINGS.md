@@ -56,6 +56,15 @@ Private evidence `client-data/native-region-movement-20261114T1325Z.json` SHA
 `3f171fbcd905adbfe2edcc2376dc61bd18b34cbd5ebcc3ab29efd6251056b081` retains full
 file/span hashes. No movement policy changed from this static finding.
 
+**VERIFIED private publication:** commit `1324841637894f3b7d05adc2c4130678a62dd99a`
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.42.23/source`.
+The seven pinned data files are staged separately under the private data root.
+All 43 focused checks pass there, with zero skips. The annotation report matches
+the devbox byte-for-byte. Archive SHA
+`d37f41c70c433fdcb71239e2285542a9bcd823e0d5999fe5711a23b69731317a`;
+startup SHA `73c14d1f66b4aac5b90a911b9aa1e46ad9ce3b9011122b03660fa6b230d73c14`.
+No worker/device/game input or installed-prefix modification occurred.
+
 **Next:** an explicit unique-Diffuse floor proposal with overhead Boundary
 checks and fresh height continuation; represent the observed native default
 classification separately from terrain/static occupancy. Real crossing remains
