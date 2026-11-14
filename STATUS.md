@@ -22,7 +22,12 @@ Updated 2026-11-14 23:08 UTC for coordinator task `829a00229b29`.
   install or batch restart. Installed owner/runtime/source remain
   0.39.32/0.42.61/0.42.68. G0 is VERIFIED passed and must not repeat.
   Level, XP, XP/hour, deaths and camp remain unknown; no accepted real 1–20
-  route or fresh-character hands-off 1–50 run. Package hashes follow below.
+  route or fresh-character hands-off 1–50 run. Source commit
+  `bfa1846d804fb232ad77ab7ea0e584ee7f331ad1`; local candidate
+  `releases/eql-source-tools-0.42.73-candidate.tar.gz`, SHA
+  `fb85488717b52f40f021cafd7d524c31fa868739607d9d603c5e90a1532a01c7`.
+  All 555 packaged Python pins and evidence hashes match. Validation SHA
+  `be195931b4bccd9b49f42c05025e2d0f48bd1b4d9101c4ddd2939450fff51be0`.
 - **Source 0.42.72 locally verified; not installed.** Source commit
   `53d729a6409b96919110de4c42b691ac83ebdab8`; private candidate
   `releases/eql-source-tools-0.42.72-candidate.tar.gz`, SHA

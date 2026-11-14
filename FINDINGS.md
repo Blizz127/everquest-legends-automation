@@ -2,6 +2,12 @@
 
 ## 2026-11-14 23:08 UTC — 0.42.73 distinct contact camp history and recovery
 
+VERIFIED source commit `bfa1846d804fb232ad77ab7ea0e584ee7f331ad1` is staged locally as
+`releases/eql-source-tools-0.42.73-candidate.tar.gz`, SHA
+`fb85488717b52f40f021cafd7d524c31fa868739607d9d603c5e90a1532a01c7`. All 555 archived
+Python source pins and evidence hashes match. Validation SHA
+`be195931b4bccd9b49f42c05025e2d0f48bd1b4d9101c4ddd2939450fff51be0`. Not installed on Alienware.
+
 VERIFIED locally: **71 focused checks** using synthetic client observations.
 The 65 history/observation cases cover actual rug height preservation, retired
 controller and expired historical calibration, original reader/source/model
