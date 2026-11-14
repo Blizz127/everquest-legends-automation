@@ -47,3 +47,32 @@ def test_backward_pending_level_is_rejected_in_same_batch():
         raw=stamp.strftime('[%a %b %d %H:%M:%S %Y] ')+f'You have gained a level! Welcome to level {level}!'
         c.observe(raw,seq,0.,stamp,consider=lambda b:None,safe=lambda *a:True)
     assert not c.running and c.pending_level==8
+
+
+def test_level_advance_marker_coalesces_increases_but_ignores_duplicates():
+    c=StationaryCamp((),7,3,0.,'fixture',repeat=True)
+    stamp=datetime(2026,11,14,17)
+    def ding(level,seq):
+        raw=stamp.strftime('[%a %b %d %H:%M:%S %Y] ')+f'You have gained a level! Welcome to level {level}!'
+        c.observe(raw,seq,1.,stamp,consider=lambda b:None,safe=lambda *a:True)
+    ding(8,1);first=c.last_level_advance
+    assert (first.previous_level,first.level,first.camp_log_seq,first.generation)==(7,8,1,3)
+    ding(8,2);assert c.last_level_advance is first
+    ding(9,3);latest=c.last_level_advance
+    assert latest is not first and (latest.previous_level,latest.level,latest.camp_log_seq)==(8,9,3)
+    c.level=9;c.pending_level=None;c.level_source='client_log';c.reset_round()
+    ding(9,4);assert c.last_level_advance is latest
+    assert c.snapshot()['last_level_advance']['camp_log_seq']==3
+
+
+@pytest.mark.parametrize('fault',('delayed','sequence','backwards'))
+def test_invalid_level_message_never_replaces_the_last_advance(fault):
+    c=StationaryCamp((),7,3,0.,'fixture',repeat=True)
+    stamp=datetime(2026,11,14,17)
+    def ding(level,seq,wall):
+        raw=stamp.strftime('[%a %b %d %H:%M:%S %Y] ')+f'You have gained a level! Welcome to level {level}!'
+        c.observe(raw,seq,1.,wall,consider=lambda b:None,safe=lambda *a:True)
+    ding(8,2,stamp);first=c.last_level_advance
+    ding(7 if fault=='backwards' else 9,2 if fault=='sequence' else 3,
+        stamp+timedelta(seconds=10) if fault=='delayed' else stamp)
+    assert not c.running and c.last_level_advance is first

@@ -16,7 +16,7 @@ from test_owner_route_trial import finish
 
 
 @pytest.fixture
-def h(tmp_path, retained, monkeypatch):
+def h(tmp_path, retained, monkeypatch, request):
     import rotation_engine as client
     import rotation_core
     factory = route_fixture.make_owner_route_trial_engine
@@ -29,6 +29,8 @@ def h(tmp_path, retained, monkeypatch):
     monkeypatch.setattr(camp_runtime,'observed_candidates',lambda *args,**kwargs:(candidate,))
     def combined(base, **options):
         return make_owner_journey_engine(base, client=client, **options,
+            camp_probe_plan_provider=((lambda engine,p:engine._test_camp_probe_provider(p))
+                if getattr(request,'param',None)=='level_provider' else None),
             camp_options=dict(
                 posture_loader=lambda p:SimpleNamespace(check=lambda:None),
                 preparation_catalog_loader=lambda p:prep))

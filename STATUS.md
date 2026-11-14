@@ -1,11 +1,24 @@
 # STATUS
 
-Updated 2026-11-14 19:36 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 19:39 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.57 local; level-up reconsideration checked.** A strictly
+  increasing fresh camp-log level event can schedule a new stopped-position /
+  optional plan pass after spell preparation. Duplicate messages, configured
+  level edits and ordinary camps without a provider do not enable relocation.
+  The exact observed event remains bound through collection and release; F8/F9
+  cancel it. VERIFIED **15 focused checks passed in 5.21 seconds**, including
+  actual retained-engine position collection and existing auto-memorization.
+  JUnit SHA `b6f2036b45f53156a1bfc8b18043b7dade003efd757418ed3656dbbc788b0829`.
+  Low-priority testing under load first hit a watchdog DOWN confirmation timeout;
+  no deadline was loosened. Final small serial checks passed at normal priority.
+  No new owner launcher is published: Alienware SSH is unavailable. Next: wire
+  the explicit continuation choice and current guide/bounds plan provider, then
+  new-camp entry; Trainer/Throne route coverage remains unfinished. G0 passed.
 - **Source 0.42.56 local; remote verification/publication pending.** A concrete shared
   supervised probe policy now carries the same input monitor, owner generation,
   veto reader, original deadline and aggregate hold reservations through all

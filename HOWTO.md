@@ -1,9 +1,9 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.56** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.57** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-Source 0.42.56 is local development only: final remote verification and publication
-are pending an Alienware SSH timeout. The launchable owner preview remains 0.39.30.
+Source 0.42.57 is local development only; 15 focused level-up checks pass.
+Private publication is pending Alienware SSH availability. The launchable owner preview remains 0.39.30.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -643,14 +643,19 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Private source 0.42.56 package location on Alienware:
+Last verified private source package on Alienware (0.42.55):
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.56/source
+~/.local/share/eql-automation/owner-tools/0.42.55/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source **0.42.56** supplies a concrete `SupervisedCampProbeScope` and
+above. Local source **0.42.57** lets an explicitly configured continuation provider
+reconsider after a newly observed level-up and finished spell preparation. It
+checks each increase once, ignores duplicate level messages and retains F8/F9
+cancellation. The provider is not yet connected to the owner launcher; this
+does not turn on automatic camp relocation. Sources 0.42.56/0.42.57 have not
+been published on Alienware. Source **0.42.56** supplies a concrete `SupervisedCampProbeScope` and
 per-probe policy. It retains the same physical-input monitor, log veto, original
 deadline and total movement allowance across all seven probes. The veto starts
 before the first recovered-position pair, and the source route must reuse it.

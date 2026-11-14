@@ -32,6 +32,7 @@ class Journey:
     arrival_floor: object = None
     location_binding: object = None
     height_check_done: bool = False
+    last_considered_level_advance: object = None
 
 
 @dataclass(frozen=True)

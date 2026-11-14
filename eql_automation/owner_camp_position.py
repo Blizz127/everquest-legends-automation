@@ -15,6 +15,8 @@ from .camp_probe_runtime import CampProbeRuntime
 from .camp_probe_calibration import reduce_camp_probes
 from .camp_source_runtime import CampSourcePlan,CampSourceRuntime
 from .camp_floor_checkpoint import CampFloorCheckpoint
+from .camp_session import CampLevelAdvance
+from .flat_record import flat_record_state
 from .motion_calibration import CalibrationUnavailable
 from .owner_camp_probe import CampProbePlan
 from .ground_binding import finite
@@ -79,6 +81,9 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     or p.journey.location_binding is not p.hotkey or p.journey.camp_motion is not p.monitor
                     or not p.monitor.valid or p.monitor.closed
                     or p.camp.recovery is not p.recovery or p.recovery.phase!='recovered'
+                    or p.camp.last_level_advance is not p.level_advance
+                    or (None if p.level_advance is None else flat_record_state(p.level_advance))
+                        !=p.level_advance_state
                     or p.recovery.last_stand_completed_at!=p.released_at
                     or probing and p.probe_plan.state()!=p.probe_plan_state
                     or not finite(now) or not p.started<=now<=deadline
@@ -115,8 +120,21 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
 
         def _camp_recovery_complete(self,camp,now):
             j=self.journey
-            if j is None or j.phase!='camp' or j.height_check_done or camp.kills==0:
+            if j is None or j.phase!='camp' or camp.kills==0:
                 return super()._camp_recovery_complete(camp,now)
+            advance=camp.last_level_advance
+            if j.height_check_done:
+                # Ordinary stationary camping still checks once. A configured
+                # continuation provider can reconsider only a new current-log
+                # level increase, after automatic spell preparation finishes.
+                if (probe_plan_provider is None or type(advance) is not CampLevelAdvance
+                        or advance is j.last_considered_level_advance
+                        or advance.generation!=camp.generation
+                        or advance.generation!=j.generation or advance.generation!=self.cancel_generation
+                        or advance.level!=camp.level or advance.level!=self.settings.level
+                        or camp.level_source!='client_log' or camp.pending_level is not None
+                        or camp.preparation_due or self.preparing):
+                    return super()._camp_recovery_complete(camp,now)
             lease=None
             try:
                 if (not self._camp_current() or self.camp_session is not camp
@@ -142,7 +160,8 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     route_record=None,route_complete=False,
                     probe_plan=None,probe_plan_state=None,probe_started=None,probe_record=None,
                     position_record=None,probe_complete=False,probe_log_veto=None,_probe_log_veto=None,
-                    _probe_veto_state=None)
+                    _probe_veto_state=None,level_advance=advance,
+                    level_advance_state=None if advance is None else flat_record_state(advance))
                 p.owner_binding=('camp-position',id(j),id(camp),id(p.sender),id(p.ui),
                     id(tracker),id(p.reader),p.generation,p.settings,p.window)
                 self.camp_position=p;camp.phase='position_check'
@@ -161,6 +180,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 self._camp_position_current(p)
                 self.trace('camp_position_started',minimum_log_seq=p.baseline,
                     floor_checkpoint_sha256=p.floor.sha256,stand_command_completed_at=p.released_at,
+                    level=camp.level,level_advance_seq=None if advance is None else advance.camp_log_seq,
                     posture_observed=None,movement_sent=False)
                 self.emit('Checking stopped position after recovery · F9 stops')
             except (OSError,ValueError,RuntimeError) as error:
@@ -368,7 +388,12 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
             self._release_camp_position(p)
             if (self.journey is not p.journey or self.camp_session is not p.camp
                     or not self._camp_current() or p.cancelled):return
+            if (p.camp.last_level_advance is not p.level_advance
+                    or (None if p.level_advance is None else flat_record_state(p.level_advance))
+                        !=p.level_advance_state):
+                self.stop_action('Camp level changed during position release');return
             p.journey.height_check_done=True
+            p.journey.last_considered_level_advance=p.level_advance
             self.camp_position_last_result=record
             p.camp.record('stopped_height_checked',height_sha256=p.result.sha256)
             self.trace('camp_position_complete',**record)

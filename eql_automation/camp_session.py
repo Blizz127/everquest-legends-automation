@@ -6,7 +6,7 @@ looting or unattended leveling acceptance.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from hashlib import sha256
 import math
@@ -30,6 +30,15 @@ class NpcCandidate:
     pairs: tuple[tuple[int, int], ...]
     origin: str = 'selected_character_log'
     history_sha256: str | None = None
+
+
+@dataclass(frozen=True)
+class CampLevelAdvance:
+    """A fresh level increase in this camp's own log sequence."""
+    previous_level: int
+    level: int
+    camp_log_seq: int
+    generation: int
 
 
 def observed_candidates(path: Path, zone_name: str, *, consider, safe, excluded=(), max_bytes=4*1024*1024):
@@ -107,6 +116,7 @@ class StationaryCamp:
     engaged_wall: datetime | None = None
     completed_kills: set = field(default_factory=set)
     level_source: str='owner_configuration'
+    last_level_advance: CampLevelAdvance | None=None
     wait_until: float=0.
     empty_since: float | None=None
     recovery: object | None=None
@@ -186,8 +196,14 @@ class StationaryCamp:
         if level is not None and self.repeat:
             if self.phase=='preparing':
                 self.stop('Level changed during spell preparation');return
-            if level<max(self.level,self.pending_level or 0) or level>50:
+            previous=max(self.level,self.pending_level or 0)
+            if level<previous or level>50:
                 self.stop('Unexpected level change');return
+            if level>previous:
+                if (type(seq) is not int or seq<=0 or self.last_level_advance is not None
+                        and seq<=self.last_level_advance.camp_log_seq):
+                    self.stop('Level observation sequence did not advance');return
+                self.last_level_advance=CampLevelAdvance(previous,level,seq,self.generation)
             self.pending_level=level;self.grant_until=0.
             if self.phase=='consider':self.level_reply_pending=True
             elif self.phase in {'fight','probe'}:self.phase='probe'
@@ -293,6 +309,7 @@ class StationaryCamp:
             inventory_full=self.inventory_full, con_window=[max(1, self.level-3), self.level],
             loot_messages=self.loot_messages, loot_completion_verified=False,
             logged_xp_awards=self.xp_awards, current_xp=None,level=self.level,level_source=self.level_source,
+            last_level_advance=None if self.last_level_advance is None else asdict(self.last_level_advance),
             target_level=self.target_level,rest_count=self.rest_count,round_number=self.round_number,
             posture_requested=getattr(self.recovery,'posture_requested',None),posture_observed=None,
             preparation=self.preparation.snapshot() if self.preparation else None,

@@ -1,5 +1,34 @@
 # FINDINGS
 
+## 2026-11-14 19:39 UTC — observed level-up reconsideration (source 0.42.57)
+
+VERIFIED focused local checks: **15 passed in 5.21 seconds**, JUnit
+`releases/eql-0.42.57-level-checks.xml`, SHA `b6f2036b45f53156a1bfc8b18043b7dade003efd757418ed3656dbbc788b0829`.
+`StationaryCamp` now records a frozen `CampLevelAdvance` only for a strictly
+increasing fresh client-log level event. Duplicate levels retain the same
+marker; multiple increases before recovery coalesce to the latest. Reordered,
+backward and delayed messages cannot replace it. Camp log sequence numbers
+remain distinct from the location reader's sequence.
+
+A Journey with an optional probe-plan provider may reconsider after the next
+completed spell preparation/recovery when that exact new event matches its
+camp, generation and current level. Successful no-plan collection consumes the
+marker once; ordinary camps without a provider keep their first-check-only
+behavior. Position collection pins the event identity and values, including
+release callbacks. New tests cover repeated recovery, duplicate messages,
+deferral for preparation, F8/F9 and changed marker/settings; the existing actual
+preparation-after-ding case also passes.
+
+Earlier low-priority local runs had one watchdog fail to confirm DOWN under
+measured devbox load around 190 on 48 CPUs. The sender stopped and released the
+pipe key. The final small serial batch passed at normal priority with unchanged
+deadlines. This is synthetic game/scene evidence, not real-client acceptance.
+No game input, device or character action occurred. Source 0.42.56 final remote
+result remains unconfirmed after its 510-second SSH timeout; 0.42.56/0.42.57 are
+not published on Alienware. Last verified published source is 0.42.55, owner
+preview 0.39.30. Next is the concrete continuation plan/provider and new-camp
+entry. Actual level/XP/hour/deaths/camp unknown; G0 remains passed.
+
 ## 2026-11-14 19:29 UTC — shared supervised camp-probe policy
 
 `SupervisedCampProbeScope` and its per-transaction policy implement the existing
