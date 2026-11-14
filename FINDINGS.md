@@ -1,5 +1,68 @@
 # FINDINGS
 
+## Crushbone camp inputs and native region consumers — 2026-11-14 13:25 UTC
+
+**VERIFIED implementation:** source 0.42.23 adds a reusable, pinned Crushbone
+loader for complete terrain/detail/static/BSP views and five copied map camp
+annotations. Inputs are checked before and after parsing; geometry arrays are
+read-only. The private store is
+`~/.local/share/eql-automation/owner-route-data/crushbone-camps-20261114`.
+`tools/prepare_crushbone_assets.py` assembles only retained approved copies;
+`tools/inspect_crushbone_camps.py` prints exact annotation intersections without
+client access. No historical position or label Z becomes a current floor seed.
+`source_hits_at()` exposes all terrain intersections/materials while preserving
+the strict existing `source_floor_at()` decision and all-height footprint query.
+
+**VERIFIED focused checks:** 43 pass, including the actual retained-data loader,
+changed/symlinked input refusal, point layers, immutable views and current-start
+regressions. The loader has 21,834 terrain faces, 9,576 static faces and 178
+placements. Copied source archives remain pinned at `a2591482...` and
+`d80521fd...`; full hashes are in `crushbone_assets.py` and the private report.
+Report `nav-candidates/crushbone-camp-annotations-0.42.23.json` SHA
+`7b43a48bd1b6a8307e71bc97fb3e2956086f23e98d8e7484ceeb60f8409e27bc`:
+
+- Entrance annotation package XY `(150,-520)` has no terrain intersections.
+- Slave Mines `(426,74)` has Diffuse Z -17, 0 and 26.0212337, plus Boundary623.75.
+- Trainer Hill `(119,-212)` has Diffuse80.1933236 plus Boundary623.75.
+- North Wall `(-95,-78)` has Diffuse0 plus Boundary623.75.
+- Throne Room `(106,154)` has Diffuse16,46.96875,54.96875 plus Boundary624.75.
+
+These are copied annotations, not verified mob levels or usable destinations.
+A separate six-point read-only inspection finds historical entrance
+`(274.06,-424.04)` has Diffuse0 plus Boundary624.75. That is not a current
+character position. Multiple Diffuse layers remain ambiguous; distant Boundary
+sheets explain the generic point-material refusal at the single-floor points.
+No material or BSP refusal was waived in this release.
+
+**VERIFIED static evidence, not execution:** a read-only helper using the
+reverse-engineer-anything workflow found no available REA native provider
+(Ghidra Java runtime unavailable), then used retained evidence plus bounded
+objdump/PE byte spans. No environment change or game operation occurred.
+The known fallback-0 query result flows through actor `+0xac` into
+`0x140332920`, which stores its low byte at `+0xb6` (previous at `+0xb7`).
+The clamp getter `0x140277010` tests that byte at `0x140277040`; class0 takes the
+same below-5 branch as DR0. Movement consumer `0x1403388f0–0x140338d31` also
+tests it at `0x140338b7a` before conditionally zeroing an input scalar used on
+actor vectors. Upper sample `+0xa8` flows through `0x140338350` into byte`+0xb4`;
+its old/new-medium switches cover classes5..10. Class0 skips new-medium cases,
+while old-medium cleanup may still run.
+
+**INFERRED scope:** missing-child and untyped-region metadata can be named
+native default class0 for this exact fallback path. This is a classification
+result, not solid collision clearance, universal dry volume, live actor state
+or route acceptance. Scene predicates can skip classification updates.
+Root independently rehashed both binaries and all five exact PE-mapped spans.
+Private evidence `client-data/native-region-movement-20261114T1325Z.json` SHA
+`3f171fbcd905adbfe2edcc2376dc61bd18b34cbd5ebcc3ab29efd6251056b081` retains full
+file/span hashes. No movement policy changed from this static finding.
+
+**Next:** an explicit unique-Diffuse floor proposal with overhead Boundary
+checks and fresh height continuation; represent the observed native default
+classification separately from terrain/static occupancy. Real crossing remains
+owner-test gated. G0 passed; assist0.39.13 and crossing0.39.19 are unchanged.
+Current level, XP/hour, deaths and camp remain unknown. No automated level gain,
+accepted 1–20 route or completed fresh-character 1–50 run.
+
 ## Owner crossing action integration — 2026-11-14 13:18 UTC
 
 **VERIFIED implementation:** source 0.42.22 adds a distinct owner crossing job,

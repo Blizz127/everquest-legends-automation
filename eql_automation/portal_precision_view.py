@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from dataclasses import dataclass
 from hashlib import sha256
 from io import BytesIO
 import json
@@ -15,6 +16,20 @@ from .pfs_archive import PFSArchive
 from .portal_precision import PortalLink, PrecisionCheck, SourceFace, collect_seams, retry_precision_gap
 from .wld_inventory import WLDInventory
 from .tile_rounding import grid_from_metadata
+
+
+@dataclass(frozen=True)
+class SourcePointHit:
+    """One exact XY terrain intersection, without a supporting-floor claim."""
+    height: float
+    fragment: int
+    face: int
+    flag: int
+    material_class: str
+
+    @property
+    def identity(self):
+        return f'wld:{self.fragment}:face:{self.face}'
 
 
 class PortalPrecisionView:
@@ -92,11 +107,12 @@ class PortalPrecisionView:
         coordinates = np.asarray([f.vertices_wld for f in self.sources],dtype=np.float64)[:,:,[1,0,2]]
         self.source_minimum,self.source_maximum = coordinates.min(axis=1),coordinates.max(axis=1)
 
-    def source_floor_at(self, package_xy):
-        """Sample all copied terrain layers at exact XY; never choose nearest Z.
+    def source_hits_at(self, package_xy):
+        """Return every terrain intersection, preserving flags and materials.
 
-        This is an offline terrain point observation, not a body/obstacle
-        check. Shared source edges may have multiple faces at the same Z.
+        This diagnostic does not discard overhead sheets, choose a floor or
+        use map/raw actor Z. Vertical triangles still belong to the separate
+        all-height footprint occupancy query even when they have no point Z.
         """
         x,y = package_xy
         if not np.isfinite((x,y)).all():
@@ -110,12 +126,18 @@ class PortalPrecisionView:
             face = self.sources[index]
             height = _triangle_height(y,x,face.vertices_wld)
             if height is not None:
-                if face.flag != 0 or face.material_class != 'Diffuse':
-                    raise ValueError('Source floor has unsupported collision/material')
-                hits.append((height, f'wld:{face.fragment}:face:{face.face}'))
-        if not hits or max(h[0] for h in hits)-min(h[0] for h in hits)>1e-7:
+                hits.append(SourcePointHit(height, face.fragment, face.face,
+                                           face.flag, face.material_class))
+        return tuple(hits)
+
+    def source_floor_at(self, package_xy):
+        """Require a single supported layer; retain the strict original rule."""
+        hits = self.source_hits_at(package_xy)
+        if any(h.flag != 0 or h.material_class != 'Diffuse' for h in hits):
+            raise ValueError('Source floor has unsupported collision/material')
+        if not hits or max(h.height for h in hits)-min(h.height for h in hits)>1e-7:
             raise ValueError('Copied source floor missing or layered at exact XY')
-        return hits[0][0], tuple(h[1] for h in hits)
+        return hits[0].height, tuple(h.identity for h in hits)
 
     def source_faces_for_footprint(self,footprint):
         """All XY source candidates across every height, including margin."""

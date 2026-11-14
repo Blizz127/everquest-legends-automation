@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.22** · rotation preview **0.39.13** · crossing preview **0.39.19** · approach preview **0.39.18**.
+Source **0.42.23** · rotation preview **0.39.13** · crossing preview **0.39.19** · approach preview **0.39.18**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -37,6 +37,13 @@ source transaction; only fresh destination positions can complete the handoff.
 Source 0.42.22 connects that core to a separate owner action in preview 0.39.19.
 The existing **Travel toward Crushbone…** action still stops at the approach.
 Crushbone camp execution and level 1–20 automation remain unfinished.
+
+Source 0.42.23 adds a reusable Crushbone geometry/camp loader and exact terrain
+diagnostics. Copied level-range labels remain hints: the entrance label lacks
+terrain support, Slave Mines/Throne Room have multiple terrain levels, and
+Trainer Hill/North Wall have distant overhead Boundary sheets. These are not
+accepted camp destinations. This source update sends no game input and does not
+change the 0.39.19 crossing or 0.39.13 assist controls. G0 remains passed.
 
 ## Travel into Crushbone on Alienware: 0.39.19
 

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 13:19 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 13:25 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,18 @@ Updated 2026-11-14 13:19 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.23:** added pinned full Crushbone geometry/camp loading and
+  exact all-layer point diagnostics. 43 focused checks pass, including actual
+  copied inputs. Entrance annotation has no support; Mines/Throne are layered;
+  Trainer Hill/North Wall have distant overhead Boundary sheets. No label Z or
+  historical position is used as a seed. Static native inspection now links
+  fallback class0 to movement-related below-5 branches, independently rehashed;
+  this does not establish solid collision or live traversal. Strict movement
+  checks remain unchanged. **Next:** explicit unique-floor/height continuation
+  and native-region classification separated from terrain/static clearance.
+  Owner crossing0.39.19 still needs real traversal acceptance; assist0.39.13 and
+  passed G0 remain. No accepted 1–20/1–50 run; current level, XP/hour, deaths and
+  camp unknown.
 - **Source 0.42.22 / owner preview 0.39.19 staged:** a distinct **Travel into
   Crushbone…** action now connects calibration, fresh-source planning, checked
   corridor moves and expected destination positions. It retains one observer,
