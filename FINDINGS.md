@@ -1,5 +1,51 @@
 # FINDINGS
 
+## 2026-11-14 21:40 UTC — source 0.42.66: runtime stair preflight and fresh departure handoff
+
+VERIFIED **49** focused stair checks passed on the devbox (45.260s); JUnit SHA
+`51d5142937d072de59c875479cbc216ad795ae6eaa7aa3ba0d3fce66607c4a52`. The genuine source observer, floor ledger and planner
+now participate in one stair preflight lease. Geometry runs outside the shared
+stop lock, while original scope, focus, physical-input and log checks continue.
+The cache seals the complete bounds, motion, source plan, original calibration
+and departure. Its checked radius encloses the declared body and bound-derived
+forward/turn uncertainty; this is not per-pulse phase containment or evidence of
+actual client stepping behavior.
+
+Planning may outlive the old .5s fix. It cannot extend the original calibration,
+trip deadline, aggregate hold allowance or movement counters. Two fresh replies
+must arrive after preparation and match the original printed XYZ exactly, with
+the existing .4–2.5s pair spacing and release+.12s boundary. A single-use start
+refreshes only the reference on the original floor under the shared lock.
+Original floor/pose/heading/counters stay unchanged. The planning-only future
+landing is discarded. Cancellation can interrupt geometry; late cleanup after
+consumption cannot stop a successor. Idle physical observations have a distinct
+type and cannot satisfy movement authorization. Freshness uses raw receipt time,
+including the final handoff check, not the later observation timestamp.
+
+The three conditional stair kernels now live in `eql_automation`; existing
+`tools` imports remain compatibility exports. Old topology/flight/plan checks
+pass. Additional tests cover changed sources/bounds/pose/owner, stale/cloned
+fixes, deadline expiry, cache mutation, callback cancellation and zero input.
+
+VERIFIED **14** retained source sender/transfer checks passed on Alienware in
+**1.12s** using actual watchdog pipes with synthetic game positions; JUnit SHA
+`aa2956668b2c4504a7e7278db5f64689367079aef681ecd2bffdb2d1d4cc82e9`. All 532 remote source/test/tool pins match
+this working tree. The preceding devbox attempt had 10 passes and two expired
+reference failures at ages .500040/.500630s under load >200; that failed artifact
+is retained. No production deadline changed. Alienware load was 1.80 on 24 CPUs;
+the short test used one BLAS thread and bounded resources, no game input or
+install/prefix change, and no running helper was restarted. Private test copy:
+`owner-build-drafts/source-0.42.66-sender-check`. Validation record SHA
+`f465a652ff348b94c28752cdde4499fbc85482b65b3da4bc8a7c7c92d7df8d6b`.
+
+NOT VERIFIED / next: no stair pulse controller, all-phase maximum-hold coverage,
+provisional flight observations, final observed landing commit, itinerary/driver
+wiring or live stair/contact traversal. These are still required before Throne
+is an owner destination. Owner preview/runtime remain 0.39.32/0.42.61 pending
+integration. Read-only trace stat remains 17,821 bytes, mtime
+2026-11-14T19:31:12.111509Z. G0 already passed; no repeat. Current real level, XP,
+XP/hour, deaths and camp unknown; accepted 1–20 and fresh hands-off 1–50 unmet.
+
 ## 2026-11-14 21:27 UTC — source 0.42.65 published; full conditional replay completed offline
 
 VERIFIED installed `~/.local/share/eql-automation/owner-tools/0.42.65/source`

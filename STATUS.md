@@ -1,11 +1,24 @@
 # STATUS
 
-Updated 2026-11-14 21:27 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 21:40 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.66 checked; private publication pending.** VERIFIED 49 stair
+  checks plus 14 retained sender/transfer checks. Stair preflight now leases the
+  real source ledger, builds conditional geometry outside the stop lock, then
+  requires a newly issued stopped pair at exactly the original printed XYZ.
+  It retains scope/calibration/hold budgets and floor/pose/counters; late
+  ancestor cancellation cannot stop a successor. No pulse controller or new
+  owner control is enabled. The 14 pipe checks passed on Alienware in 1.12s;
+  two devbox checks hit the unchanged .5s reference limit under heavy load.
+  No game input, install change or helper restart. Owner preview/runtime remain
+  0.39.32/0.42.61. Trace unchanged at 19:31; G0 passed; current level, XP,
+  XP/hour, deaths and camp unknown. Next: whole-motion coverage for every
+  retained stair phase, provisional receipts/observations and final landing,
+  then itinerary/driver integration. Full 1–20/1–50 not met.
 - **Source tools 0.42.65 privately published; owner preview stays 0.39.32.**
   VERIFIED 12 focused tests; all 527 installed source/test pins, imports and
   three auditor startups pass. Bundle SHA

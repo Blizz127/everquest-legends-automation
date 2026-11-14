@@ -37,6 +37,19 @@ class SupervisedSourceAuthorization:
     motion_bounds_verified: bool = field(default=False,init=False)
 
 
+@dataclass(frozen=True)
+class SupervisedSourceIdleObservation:
+    """Physical/log observation during planning; never a movement scene."""
+    declaration: SupervisedRouteDeclaration
+    at: float
+    finished_at: float
+    window: GameWindowIdentity
+    input_before: OwnerInputObservation
+    input_after: OwnerInputObservation
+    log_observation: object
+    input_authorized: bool = field(default=False,init=False)
+
+
 class SupervisedSourcePolicy:
     def __init__(self,ledger,*,declaration,gate,owner_input,log_veto,
                  expected_window,topology_generation,check_current):
@@ -115,13 +128,10 @@ class SupervisedSourcePolicy:
         self.last_at=finished
         return began
 
-    def observe(self):
-        began=self._check();reference=self.ledger.reference
-        self.ledger.validate_reference()
+    def _physical_observation(self,began):
         before=self.owner_input.sample();log=self.log_veto.poll();after=self.owner_input.sample()
-        self._check();finished=self.ledger.clock()
-        if (reference is not self.ledger.reference
-                or not 0<=finished-began<=.1
+        self._check();finished=self.last_at
+        if (not 0<=finished-began<=.1
                 or not all(type(v) is OwnerInputObservation and v.clear_at(finished)
                     and v.topology_generation==self.topology for v in (before,after))
                 or not log.continuity_available or log.reason is not None
@@ -129,6 +139,31 @@ class SupervisedSourcePolicy:
                     <=log.finished_at<=after.started_at<=after.finished_at<=finished
                 or log.cancel_generation!=self.ledger.observer.generation):
             raise RouteHalt('Source owner activity or log/observation veto')
+        return before,log,after,finished
+
+    def observe_preflight(self,lease):
+        """Keep scope/input/log checks while deliberately aging the old fix.
+
+        This distinct type cannot satisfy validate_scene/authorize. Planning
+        neither reserves movement time nor extends the original scope.
+        """
+        self._scene=self._authorization=None
+        def check_lease():
+            if (lease is None or self.ledger is not self._ordinary_ledger
+                    or self.ledger.phase!='stair_preflight' or self.ledger._busy is not lease):
+                raise RouteHalt('Idle observation requires the current stair preflight lease')
+        check_lease();began=self._check()
+        before,log,after,finished=self._physical_observation(began)
+        check_lease()
+        return SupervisedSourceIdleObservation(self.declaration,began,finished,
+            self.window,before,after,log)
+
+    def observe(self):
+        began=self._check();reference=self.ledger.reference
+        self.ledger.validate_reference()
+        before,log,after,finished=self._physical_observation(began)
+        if reference is not self.ledger.reference:
+            raise RouteHalt('Source supervised reference changed')
         if self.origin is None:self.origin=reference.package_xyz
         if math.dist(self.origin[:2],reference.package_xyz[:2])>self.declaration.maximum_distance:
             raise RouteHalt('Source displacement budget exhausted')
