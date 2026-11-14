@@ -12,7 +12,8 @@ from test_source_itinerary import fixture
 from test_source_step import face, rectangle
 
 
-def test_internal_edge_discovery_and_center_filter_choose_the_raised_floor(monkeypatch):
+@pytest.mark.parametrize('explicit_goal', [False, True])
+def test_internal_edge_discovery_and_center_filter_choose_the_raised_floor(monkeypatch, explicit_goal):
     prefix, _, terrain, static, bsp, policy = fixture()
     sources = (*terrain.source_faces_for_footprint(()), *rectangle(0., 5., 0., 10))
     terrain.source_faces_for_footprint = lambda _: sources
@@ -22,14 +23,15 @@ def test_internal_edge_discovery_and_center_filter_choose_the_raised_floor(monke
         step_links=links, radius=1.2, max_step_height=.5, max_lift=1.)
     start, goal = (-2., 0.), (2., 0.)
     monkeypatch.setattr(audit, 'START', start)
-    monkeypatch.setattr(audit, 'GOAL', goal)
+    monkeypatch.setattr(audit, 'GOAL', (900., 900.) if explicit_goal else goal)
     before = _chain_snapshot(prefix)
     layers = graph.components.goal(prefix, goal).goal_components
     assert set(layers) == {(1, 0), (1, 2)}
     snapshots = []
     proposal = audit.filter_centers(graph, prefix, SimpleNamespace(source=terrain, static=static),
         rounds=4, check=lambda: None,
-        progress=lambda attempts, cache, count: snapshots.append((dict(cache), count)))
+        progress=lambda attempts, cache, count: snapshots.append((dict(cache), count)),
+        **({'goal': goal} if explicit_goal else {}))
     cache, exclusions = snapshots[-1]
     visited_underlay = set(cache) & {(1, 10), (1, 11)}
     assert exclusions and visited_underlay

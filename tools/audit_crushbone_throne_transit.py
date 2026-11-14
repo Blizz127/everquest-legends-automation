@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Develop North Wall -> Throne hints from copied client geometry only.
+"""Develop North Wall -> Throne or Trainer hints from copied client geometry only.
 
 The start is an independent, synthetic unique-floor hypothesis, never a replay
 of the Mines route or an observation of the owner's character. The complete
@@ -39,9 +39,10 @@ from eql_automation.static_floor_guard import check_source_static_floor
 
 START = (-95., -78.)
 GOAL = (106., 154.)
+DESTINATIONS = {'throne': GOAL, 'trainer': (119., -212.)}
 
 
-def filter_centers(graph, prefix, planner, *, rounds, check, progress):
+def filter_centers(graph, prefix, planner, *, rounds, check, progress, goal=None):
     """Prune fixed graph waypoints, never whole components or goal layers.
 
     Each face center is a mandatory point in this proposal graph. Its own
@@ -49,6 +50,7 @@ def filter_centers(graph, prefix, planner, *, rounds, check, progress):
     Passing caps do not replace the caller's floor or accept any route edge.
     Query/budget/ambiguity failures abort rather than becoming exclusions.
     """
+    goal = GOAL if goal is None else goal
     excluded = set()
     cache = {}
     attempts = []
@@ -56,7 +58,7 @@ def filter_centers(graph, prefix, planner, *, rounds, check, progress):
                         'other_source_surface_intersects_body_band'}
     for attempt in range(rounds+1):
         check()
-        proposal = graph.propose(prefix, START, GOAL, excluded=excluded, max_seconds=10.)
+        proposal = graph.propose(prefix, START, goal, excluded=excluded, max_seconds=10.)
         if proposal is None:
             progress(attempts, cache, len(excluded))
             raise ValueError('No proposal after bounded fixed-center exclusions; physical disconnection not proven')
@@ -131,7 +133,11 @@ def filter_centers(graph, prefix, planner, *, rounds, check, progress):
 
 
 def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, walk_range=None,
-        center_rounds=0, smooth=False, underlay_steps=False, exclude_covered=False):
+        center_rounds=0, smooth=False, underlay_steps=False, exclude_covered=False,
+        destination='throne'):
+    if destination not in DESTINATIONS:
+        raise ValueError('Unknown copied camp destination')
+    goal_xy = DESTINATIONS[destination]
     began, cpu_began = time.monotonic(), time.process_time()
     pins = {str(p.relative_to(PROJECT)): sha256(p.read_bytes()).hexdigest()
             for p in (Path(__file__).resolve(),
@@ -139,8 +145,8 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
                       Path(__file__).with_name('source_walk_shortcuts.py').resolve(),
                       Path(__file__).with_name('source_covered_floors.py').resolve(),
                       *sorted((PROJECT/'eql_automation').glob('*.py')))}
-    record = dict(format='eql-offline-throne-transit-v1',
-        origin='north-wall', destination='throne', start=START, goal=GOAL,
+    record = dict(format='eql-offline-'+destination+'-transit-v1',
+        origin='north-wall', destination=destination, start=START, goal=goal_xy,
         status='running', stage='loading', completed=False, source_candidate=False,
         synthetic_start=True, current_character_observation=False,
         historical_prefix_replayed=False, label_z_used_for_floor_selection=False,
@@ -160,9 +166,9 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
 
     def check():
         if time.monotonic()-began > wall_budget:
-            raise TimeoutError('Offline Throne audit wall budget exhausted')
+            raise TimeoutError('Offline camp audit wall budget exhausted')
         if time.process_time()-cpu_began > cpu_budget:
-            raise TimeoutError('Offline Throne audit CPU budget exhausted')
+            raise TimeoutError('Offline camp audit CPU budget exhausted')
 
     def stage(name):
         check()
@@ -185,7 +191,7 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
         # XY is confirmed against the pinned client annotations. Their Z and
         # suggested level ranges are recorded, not used to select a floor.
         annotations = {}
-        for name, xy in (('north-wall', START), ('throne', GOAL)):
+        for name, xy in (('north-wall', START), (destination, goal_xy)):
             matches = [a for a in assets.annotations
                        if (-a.map_xyz[0], -a.map_xyz[1]) == xy]
             if len(matches) != 1:
@@ -207,7 +213,7 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
         if not floor.candidate:
             raise ValueError('Synthetic start footprint: '+floor.reason)
         record.update(seed=seed, seed_sha256=seed_pin, initial_floor=asdict(floor),
-            goal_intersections=[asdict(h) for h in planner.source.source_hits_at(GOAL)])
+            goal_intersections=[asdict(h) for h in planner.source.source_hits_at(goal_xy)])
         stage('checking_start_cap')
         cap_guide = SourceItineraryGuide('crushbone', planner.source.wld_sha256,
             planner.static.inventory_sha256, seed_pin, 1.2, 6., START,
@@ -224,7 +230,7 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
             graph = SourceTransitGraph(tuple(planner.source.sources),
                 inventory_sha256=planner.source.wld_sha256, step_links=links,
                 radius=1.2, max_step_height=2., max_lift=4.)
-            record['goal_components'] = asdict(graph.components.goal(chain, GOAL))
+            record['goal_components'] = asdict(graph.components.goal(chain, goal_xy))
             stage('proposing')
             if center_rounds:
                 def progress(attempts, cache, excluded):
@@ -237,7 +243,7 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
                         checked_centers=len(cache), excluded_centers=sum(r['excluded_center'] for r in cache.values()),
                         excluded_edges=excluded)), flush=True)
                 transit = filter_centers(graph, chain, planner, rounds=center_rounds,
-                                         check=check, progress=progress)
+                                         check=check, progress=progress, goal=goal_xy)
             else:
                 if exclude_covered:
                     from tools.source_covered_floors import propose_above_covered_floors
@@ -245,12 +251,12 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
                     def progress(evidence):
                         record['covered_floor_filter'] = evidence
                         save()
-                    transit = propose_above_covered_floors(graph, chain, START, GOAL,
+                    transit = propose_above_covered_floors(graph, chain, START, goal_xy,
                         body_height=6., check_context=check, progress=progress)
                 else:
-                    transit = graph.propose(chain, START, GOAL, max_seconds=10.)
+                    transit = graph.propose(chain, START, goal_xy, max_seconds=10.)
             if transit is None:
-                raise ValueError('No Throne proposal under current source/step model')
+                raise ValueError('No '+destination+' proposal under current source/step model')
             record['proposal'] = asdict(transit)
             guide = transit.guide(static_inventory_sha256=planner.static.inventory_sha256,
                                   radius=1.2, body_height=6.)
@@ -269,7 +275,7 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
                 raise ValueError('Prior proposal does not use this independent source seed')
             guide = SourceItineraryGuide.from_record(prior['guide'])
             record['guide'] = guide.record()
-            if (guide.goal != GOAL or guide.radius != 1.2 or guide.body_height != 6.
+            if (guide.goal != goal_xy or guide.radius != 1.2 or guide.body_height != 6.
                     or guide.operations[0].start != START):
                 raise ValueError('Prior guide has different bounds or endpoints')
             if smooth:
@@ -355,6 +361,8 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--destination', choices=tuple(DESTINATIONS), default='throne',
+                        help='Copied map marker; annotation height never selects a floor')
     parser.add_argument('--wall-budget', type=float, default=180.)
     parser.add_argument('--cpu-budget', type=float, default=40.)
     parser.add_argument('--prior', type=Path, help='Pinned earlier offline proposal to repair')
@@ -392,7 +400,7 @@ if __name__ == '__main__':
     # None of these signal handlers are used by the owner runtime.
     def expired(signum, frame):
         label = 'wall' if signum == signal.SIGALRM else 'CPU'
-        raise TimeoutError('Offline Throne audit '+label+' process budget exhausted')
+        raise TimeoutError('Offline camp audit '+label+' process budget exhausted')
     signal.signal(signal.SIGALRM, expired)
     signal.signal(signal.SIGXCPU, expired)
     cpu_limit = math.ceil(time.process_time()+args.cpu_budget)
@@ -401,4 +409,4 @@ if __name__ == '__main__':
     run(args.output, wall_budget=args.wall_budget, cpu_budget=args.cpu_budget,
         prior_path=args.prior, prior_pin=args.prior_sha256, walk_range=args.replace_walks,
         center_rounds=args.center_rounds, smooth=args.smooth, underlay_steps=args.underlay_steps,
-        exclude_covered=args.exclude_covered_floors)
+        exclude_covered=args.exclude_covered_floors, destination=args.destination)

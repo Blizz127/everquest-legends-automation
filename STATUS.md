@@ -1,11 +1,27 @@
 # STATUS
 
-Updated 2026-11-14 23:34 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 23:39 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Early-camp source work progressed; owner build remains 0.39.34.** VERIFIED
+  copied Butcherblock map annotations include Newbie Hills 1–4 and two 5–8
+  alternatives; copied GFay map identifies Orc Camps 4–7. A fresh offline
+  reconstruction checks 52,695 terrain faces, 81,683 static faces, both object
+  libraries, 1,862 placements and 22 explicitly excluded parked records.
+  Three camp footprints and all seven cells of one 12-unit Newbie Hills spoke
+  pass terrain/static and copied BSP checks, with complete native metadata
+  flags `[0]`. Artifact SHA
+  `3c70caf431ef88c5afa9179764ea26263ec13c5e9ee12d542b068475c0a8a85e`.
+  No executable Butcher guide or live acceptance: runtime itinerary/region
+  integration still supports Crushbone only. Trainer internal-edge discovery
+  examines the newer 1,792-step-link model but still finds no proposal; no
+  physical-disconnection claim. Twelve focused discovery tests and both tool
+  startup checks pass. Next: use the checked Butcher inputs for a bounded
+  owner-runtime integration; continue Trainer approach discovery through
+  supporting geometry. Current real metrics remain unknown. G0 stays passed.
 - **Owner 0.39.34 / runtime/source 0.42.74 privately published on Alienware.**
   Alienware is reachable. VERIFIED five current-revision watchdog/OS-pipe cases
   pass in 66.09s: contact route, both DOWN cancellation cases, full owner contact
@@ -26,6 +42,11 @@ Updated 2026-11-14 23:34 UTC for coordinator task `829a00229b29`.
   Next: owner-run travel/camp acceptance and remaining low-level route coverage.
   Owner test command and current controls are in HOWTO. Full 1–20/1–50 remain
   unfinished; real metrics unknown. G0 remains passed, with no repeat needed.
+## Historical development entries
+
+The entries below retain earlier results and blockers. The current publication
+status above supersedes their installed-version and availability statements.
+
 - **Source 0.42.74 / owner 0.39.34 local candidate; not installed or accepted.**
   Terminal contact now runs through the shared itinerary/execution loop, retains
   the actual stair landing connector, and hands its distinct stopped arrival to

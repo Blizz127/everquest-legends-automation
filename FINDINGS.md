@@ -1,5 +1,68 @@
 # FINDINGS
 
+## 2026-11-14 23:39 UTC — early map labels and first Butcher source segment
+
+VERIFIED retained client maps under
+`~/.local/share/eql-automation/client-data/retail-full/maps/Solo_Leveling/`:
+`butcher_3.txt` SHA `96b4c8c3efd7d8209fa4820008b4db4e766195cfa7544ea39aca7b3e5341bf1d`
+labels Newbie Hills 1–4, Dwarf Skeletons 5–8 and Goblin Camp 5–8. `gfaydark_3.txt`
+SHA `473a65146ab6ac239a6ddfc08ffbb980abc692a85c10c2fbbd8c781b721457aa`
+labels Orc Camps 4–7. These are copied map hints, not observed live suitability.
+The Newbie Hills map marker resolves to package XY `(-650,2700)`, independently
+matching the retained short-spoke start. No label or mesh height selects a floor.
+
+New `tools/inspect_butcher_camps.py` reconstructs the entire source/static
+inventory from pinned retained archives and both object libraries. VERIFIED
+52,695 terrain faces, 81,683 static faces, 1,862 applicable placements and 22
+explicit parked-height exclusions. Exact model matching is required by the
+existing loader. Static inventory SHA
+`3d4f552ef2449335db63349f08e8d55f39f16b28224aa0f8a8a79f4897e92867`;
+BSP inventory SHA `ec67696e3d8e771792e85506b79727fdd245a2a168dca698fb156930d521ce55`.
+This uses retained authorized data, not the removed historical working copy.
+
+Private result `nav-candidates/butcher-camp-source-20261114-cap-fix.json`, SHA
+`3c70caf431ef88c5afa9179764ea26263ec13c5e9ee12d542b068475c0a8a85e`, completed
+in 14.93 seconds. All three camp footprints pass terrain/static and copied BSP
+checks with complete native metadata flags `[0]`. The transition annotation
+at `(-3061,-1316)` refuses a source seed because its Boundary surface is not
+strictly above the body band; it is not promoted into a usable camp/transition.
+
+The retained 12-unit spoke ends at `(-639.6076951545867,2706)`. Its initial cap
+and six sequential swept cells pass the same checks while carrying source-floor
+lineage. Source height changes from `8.9836125143` to `9.8776174233`; the old
+mesh's `11.99040127` to `12.84170940` heights were not used. `spoke.completed`
+means terrain/static cells completed; BSP/native results are separately present
+and were inspected. Top-level `completed` means the diagnostic finished, not
+that a route is accepted. No runtime policy was broadened. Butcher executable
+itinerary, live placement, motion, combat suitability and level gain remain
+unverified. The current runtime guide/policy is still Crushbone-only.
+
+The first recipe run exposed an initial-cap API error: a floor prefix cannot
+be forked before its first accepted cap. The corrected recipe creates that
+first cap before forking later cells. Initial failed evidence is retained at
+`nav-candidates/butcher-camp-source-20261114.json`, SHA
+`a286877613feaf7c5102a38b84bc035b702ddc612ea5ba37b5168616fbb366cb`.
+
+Trainer discovery now reuses the later internal-edge model through
+`tools/audit_crushbone_throne_transit.py --destination trainer --underlay-steps
+--exclude-covered-floors`. VERIFIED 1,792 step links but no graph proposal to
+the exact copied Trainer Hill marker. No covered-floor exclusion occurred.
+Result `nav-candidates/crushbone-trainer-underlay-transit-20261114.json`, SHA
+`adf97378a5aea93e197526d1fa2fd33ed543c6ac13a2c5953c43c5f671d621c8`, finished
+in 28.83s / 8.13 CPU seconds. This supersedes only the old graph-model question;
+it does not prove physical disconnection or justify larger movement limits.
+Static supporting geometry and other approaches remain to be examined.
+
+VERIFIED 12 focused discovery tests, including explicit destination propagation
+through the center filter; JUnit SHA
+`3c8149980e30fca13464d9bab7324d6955e49a54967d940c118ad5cf321b1956`.
+Both diagnostic CLI startup checks pass. Changes are development tools only;
+owner/runtime/source release **0.39.34/0.42.74** remains installed. No lead game
+input, client/prefix edit, helper restart or character change. G0 stays passed.
+Current level, XP, XP/hour, deaths and camp remain unknown. Full 1–20/1–50 are
+unfinished; next work is bounded Butcher runtime integration from these inputs
+and further Trainer supporting-geometry discovery.
+
 ## 2026-11-14 23:34 UTC — 0.39.34 privately installed, owner launch ready
 
 VERIFIED additive publication on Alienware: owner preview **0.39.34**, runtime
