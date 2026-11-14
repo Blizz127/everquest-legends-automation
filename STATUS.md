@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 09:12 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 09:19 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,20 @@ Updated 2026-11-14 09:12 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.99:** the offline source planner now searches bounded detours
+  and rejoins the original guide automatically. Failed branches preserve the
+  accepted floor prefix; each candidate checks full swept terrain/static space
+  and a fixed endpoint footprint. Twenty-one focused tests pass. The real copied
+  Crushbone probe cleared three obstructions with no hand-added waypoints and
+  verified 982 consecutive terrain/static cells/proof links. It then stopped
+  at a 0.3125-unit riser near polygon 3954; the current equal-edge floor model
+  has no connection to the next floor. Four searches exhausted their budgets;
+  an independent source-connectivity audit identifies a missing step-transition
+  model, not merely insufficient search time. BSP still has 866 refusals and
+  the whole route remains unaccepted. **Next:** model and check the observed
+  step transition, while consuming the pending 0.39.12 owner motion results.
+  A read-only Alienware check still found zero saved hotbutton/motion results.
+  No game input or current character metrics; assist/helper versions unchanged.
 - **Source 0.41.98:** four local Crushbone source-floor crossings at the
   658→623 opening pass terrain/static clearance and the separately scoped
   above-support BSP check. The complete 174-polygon alternative is **not

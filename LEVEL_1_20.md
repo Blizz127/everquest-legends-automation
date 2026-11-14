@@ -1,9 +1,22 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 09:12 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 09:19 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.99 adds automatic bounded source-floor detours. On the copied
+Crushbone route it bypassed the raised corner, low deck and a third obstruction
+without manual waypoint repairs, then continued the guide. All 982 retained
+terrain/static cells have a consecutive proof chain. The next refusal is an
+observed 0.3125-unit riser near polygon 3954. The selected lower floor and east
+floor belong to different exact-edge source components; a separate checked
+step-transition model is needed. The four bounded searches there timed out,
+which alone is not evidence of physical disconnection. Twenty-one focused
+checks pass, including thin-wall avoidance, independent branches, unchanged
+floor selection and exact rejoin/suffix continuation. BSP and live movement
+remain unaccepted; no F11 change or new owner test. Measurement 0.39.12 remains
+pending, with G0 passed and no repeat needed.
 
 Source 0.41.98 separates source-floor occupancy from baked navigation heights.
 Four six-unit local crossings through Crushbone portal 658→623 pass terrain,

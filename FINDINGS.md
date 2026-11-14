@@ -1,5 +1,60 @@
 # FINDINGS
 
+## Automatic source-floor detours — 2026-11-14 09:19 UTC
+
+**VERIFIED implementation:** source 0.41.99 introduces a bounded local A*
+search using the copied terrain/static views. Every edge checks its complete
+swept square and a stationary endpoint square. The source-floor chain forks
+from an accepted prefix; failed terrain/static branches never replace it.
+Node keys include exact lattice coordinates and selected source identities.
+Canonical endpoint footprints preserve that key's geometric meaning; queued
+records retain independent proof ancestry when a better visit is found.
+An arbitrary downstream guide point is rejoined through the same complete
+sweep check, without reseeding. BSP and real movement remain outside this
+planner's result. No radius, body height, source grade or clearance was relaxed.
+
+**VERIFIED checks:** 21 focused source-chain/detour tests pass. These cover
+thin static-wall bypass, full turn footprints, failed-branch isolation,
+blocked/budget-limited search, separate upper/lower floor selection, arbitrary
+non-grid rejoin and continued suffix proof ancestry. No partial route is
+returned on exhausted budgets. CLI/module compilation and diff whitespace
+checks pass. Independent source review found no concrete branch/rejoin defect.
+
+**VERIFIED actual copied-client probe:**
+`nav-candidates/crushbone-auto-source-detours-0.41.99.json`, SHA
+`94116bdf777333bb875e537e450818950a4683b0ffd4965b002a0607689002c8`.
+Run with `tools/audit_crushbone_source_corridor.py --auto-detours` and the pinned
+approved inputs. No manual polygon-440 repair flag was used. Three searches
+bypassed obstructions at guide segments 70, 72 and 149 and rejoined waypoints
+71, 74 and 150. Their successful searches expanded 2, 1 and 2 nodes. The low-deck
+midpoint attempt timed out before its next downstream rejoin succeeded.
+All 982 retained terrain/static cells pass, their indices run 0–981, and every
+stored proof links to the preceding accepted proof. Four rejected guide cells
+are retained separately. Full route flags remain false; 866 BSP refusals remain
+recorded and are not cleared by detour success. The bounded run took 107.64 s.
+
+**Remaining source-route limit:** the next failure is segment 153/division 16
+near polygon 3954. Four downstream rejoin searches hit their eight-second
+budgets; those timeouts do not establish global disconnection. Independent
+read-only geometry review identifies a separate 0.3125-unit riser: source
+1528/4 ends at Z=-0.3125 and the adjacent east floor begins at Z=0, with vertical
+riser faces 1528/1–3. The current equal-3D-edge, grade≤1 connectivity model reaches
+1,685 faces from 1528/4 but not east floor 1538/3, even before occupancy checks.
+This needs an explicit step/ledge-transition model or another supported route;
+additional search time alone cannot create the missing connection. The same
+component review found none of the four attempted rejoin floors in the carried
+component (6,549 total eligible faces), so a future component precheck can avoid
+those repeated searches. This is model disconnection, not physical impossibility. Actual
+client step capability is unverified, and no stair acceptance was inferred.
+
+**Owner/live state:** the read-only Alienware listing found zero saved location
+hotbutton and motion results. Owner candidate 0.39.12 and existing rotation
+preview 0.39.6 stay unchanged. G0 is passed and needs no repeat. No game input,
+login, character mutation, accepted 1–20 route or automated XP occurred. Current
+level, XP/hour, deaths and camp remain unknown. Continue step-aware source
+planning and consume the existing owner motion/current-scene test when present.
+
+
 ## Crushbone source corridor diagnostics — 2026-11-14 09:13 UTC
 
 **VERIFIED implementation/tests:** source 0.41.98 adds direct source-step

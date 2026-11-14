@@ -7,6 +7,7 @@ that placed objects/dynamics were supplied, or authorize game input.
 """
 from __future__ import annotations
 
+from copy import copy
 from dataclasses import asdict, dataclass
 from fractions import Fraction
 from hashlib import sha256
@@ -89,6 +90,16 @@ class SourceFloorChain:
         self.previous=None
         self._expanded=None
         self._selected={}
+
+    def fork(self):
+        """Branch an accepted prefix for offline search without altering it."""
+        if self.halted or self.previous is None:
+            raise ValueError('An accepted active floor prefix is required')
+        branch=copy(self)
+        # Faces, vertices, patches and proof records are immutable tuples or
+        # frozen values. The mutable lookup itself belongs to the branch.
+        branch._selected=self._selected.copy()
+        return branch
 
     def advance(self, footprint, sources):
         """Accept a whole footprint or latch refusal without advancing state."""

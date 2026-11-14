@@ -21,7 +21,7 @@ ENDPOINTS=STORE/'nav-candidates/crushbone-detail025-avoid-658-623-route-0.41.39.
 CROSSING=STORE/'nav-candidates/crushbone-source-body-crossings-0.41.98.json'
 
 
-def run(output, *, repair_raised_corner=False):
+def run(output, *, repair_raised_corner=False, auto_detours=False):
     sys.path[:0]=[str(PROJECT),str(HELPER)]
     from eqnav.mesh import NavMesh
     from eqnav import zonegeom
@@ -38,6 +38,7 @@ def run(output, *, repair_raised_corner=False):
     from eql_automation.static_floor_guard import check_source_static_floor
     from eql_automation.bsp_floor_guard import check_source_body_bsp
     from eql_automation.bsp_volume import BspVolumeView
+    from eql_automation.source_detour import find_source_detour
     pins=dict(PINS)
     pins[ENDPOINTS]='5762a13cf23d5b3a957d7e896662ff114700a1711c3d42cbe644f1a4eb15d9ad'
     pins[CROSSING]='b14bed5ed58a855e01eba453280660a708759ec2a727353f9d5215ffad5f9435'
@@ -97,6 +98,7 @@ def run(output, *, repair_raised_corner=False):
         source_route_candidate=False,source_occupancy_candidate=False,bsp_refusals=[],route_accepted=False,real_client_accepted=False,game_input_sent=False,
         graph=asdict(graph),waypoints=points,segment_polygons=segment_polygons,
         repair_raised_corner=repair_raised_corner,source_seed=seed,source_seed_live_verified=False,
+        auto_detours=auto_detours,detours=[],rejected_guide_cells=[],detour_attempts=[],
         source_wld_sha256=source.wld_sha256,static_inventory_sha256=static.inventory_sha256,
         bsp_inventory_sha256=bsp.inventory_sha256,hypothetical_body_radius=radius,hypothetical_body_height=body,
         maximum_source_grade=1.,maximum_cell_length=2.,baked_mesh_modified=False,
@@ -107,31 +109,70 @@ def run(output, *, repair_raised_corner=False):
         temporary=output.with_suffix('.json.tmp')
         temporary.write_text(json.dumps(record,indent=2)+'\n');temporary.replace(output)
     def check(index,division,cell):
+        nonlocal chain
         if time.monotonic()-began>240:raise TimeoutError('Source corridor work budget exceeded')
         sources=source.source_faces_for_footprint(cell)
-        step=chain.advance(cell,sources)
+        trial=chain if chain.previous is None else chain.fork()
+        step=trial.advance(cell,sources)
         item=dict(segment=index,division=division,polygon=None if index<0 else segment_polygons[index],
                   footprint=cell,terrain=asdict(step),static=None,bsp=None)
         record['cells'].append(item)
         if not step.candidate:record['reason']=step.reason;return False
         placed=check_source_static_floor(step,cell,sources,static);item['static']=asdict(placed)
         if not placed.candidate:record['reason']=placed.reason;return False
+        chain=trial
         volume=check_source_body_bsp(step,cell,sources,bsp);item['bsp']=asdict(volume)
         if not volume.candidate:
             record['bsp_refusals'].append(dict(segment=index,division=division,reason=volume.reason))
         return True
+    def detour(index,start):
+        nonlocal chain
+        if len(record['detours'])>=8:return None
+        for target in range(index+1,min(len(points),index+5)):
+            if time.monotonic()-began>210:return None
+            if math.dist(start,points[target])>80:continue
+            plan,final=find_source_detour(chain,start,points[target],source,static,
+                radius=radius,spacing=2.,padding=8.,max_expansions=96,max_seconds=8.)
+            summary=asdict(plan);summary.pop('cells')
+            summary.update(from_segment=index,rejoin_waypoint=target)
+            record['detour_attempts'].append(summary)
+            if not plan.candidate:continue
+            first=len(record['cells'])
+            for cell in plan.cells:
+                sources=source.source_faces_for_footprint(cell.footprint)
+                volume=check_source_body_bsp(cell.terrain,cell.footprint,sources,bsp)
+                item=dict(segment=index,division=None,polygon=None,detour=len(record['detours']),
+                    footprint=cell.footprint,terrain=asdict(cell.terrain),static=asdict(cell.static),bsp=asdict(volume))
+                record['cells'].append(item)
+                if not volume.candidate:
+                    record['bsp_refusals'].append(dict(segment=index,division=None,
+                        cell_index=len(record['cells'])-1,reason=volume.reason))
+            summary.update(first_cell_index=first,cell_count=len(plan.cells))
+            record['detours'].append(summary);chain=final
+            record.pop('reason',None)
+            print(json.dumps(dict(detour=len(record['detours']),from_segment=index,
+                rejoin_waypoint=target,cells=len(plan.cells),expanded=plan.expanded)),flush=True)
+            return target
+        return None
     save()
     try:
         okay=check(-1,0,initial)
-        for index,(a,b) in enumerate(zip(points,points[1:])):
-            if not okay:break
+        index=0
+        while okay and index<len(points)-1:
+            a,b=points[index:index+2];rejoin=None
             count=max(1,math.ceil(math.dist(a,b)/2.))
             for j in range(count):
                 start=tuple(a[k]+(b[k]-a[k])*j/count for k in range(2))
                 end=tuple(a[k]+(b[k]-a[k])*(j+1)/count for k in range(2))
-                if not check(index,j,footprint(start,end)):okay=False;break
+                if not check(index,j,footprint(start,end)):
+                    if auto_detours:
+                        record['rejected_guide_cells'].append(record['cells'].pop())
+                        rejoin=detour(index,start)
+                    okay=rejoin is not None
+                    break
             if index%20==0:
                 save();print(json.dumps(dict(segment=index,cells=len(record['cells']),candidate=okay)),flush=True)
+            index=rejoin if rejoin is not None else index+1
         record.update(source_occupancy_candidate=okay,source_route_candidate=okay and not record['bsp_refusals'],status='checked',completed=True)
         if okay and record['bsp_refusals']:record['reason']='source_body_bsp_refused'
     except (ValueError,TimeoutError) as error:
@@ -148,7 +189,10 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--repair-raised-corner',action='store_true',
                         help='Test the source-supported polygon-440 waypoint alternative')
+    parser.add_argument('--auto-detours',action='store_true',
+                        help='Search bounded source/static detours and rejoin the guide automatically')
     args=parser.parse_args()
     if args.output.exists() or args.output.is_symlink() or args.output.parent.resolve()!=(STORE/'nav-candidates').resolve():
         parser.error('Use a new output directly in approved nav-candidates store')
-    os.umask(0o077);os.nice(10);run(args.output,repair_raised_corner=args.repair_raised_corner)
+    os.umask(0o077);os.nice(10);run(args.output,repair_raised_corner=args.repair_raised_corner,
+                                auto_detours=args.auto_detours)
