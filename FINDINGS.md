@@ -1,5 +1,25 @@
 # FINDINGS
 
+## 2026-11-14 17:12 UTC — source 0.42.41 privately published
+
+VERIFIED on Alienware: source revision `17d3a344b22226f8ed87ed1618ce7392052df0a7` is published at
+`~/.local/share/eql-automation/owner-tools/0.42.41/source`. All 56 focused
+probe/current-route checks pass (synthetic feedback), imports and diagnostic
+CLI startup pass, and copied client-data pins match. The 122-check local
+validation also covered precision/native-region behavior.
+
+- Archive SHA: `6c801445f27c3a1047256e00100a25f3c2831d5c2101e7eef659be63796f69a2`.
+- Startup SHA: `9a601aa7d45f023d7ed71b6f9f182cb22824fdc29071dfc509b6fcfaf13c7033`.
+- Check output SHA: `aacfea503fe5fe2403a1d7e56062d25fe182d7dec1b382936e22c235c05ee608`.
+- Local publication record: `releases/eql-automation-0.42.41-staging.json`.
+
+Owner preview stays **0.39.28**, with the existing rotation bot. This source
+increment is not a new owner launcher and enables no game input. Both copied
+camp probe refusals remain. G0 stays passed, including the owner's visible-stop
+confirmation. No repeat, login, game action, prefix edit, helper interruption
+or real-client route acceptance. Actual level, XP, XP/hour, deaths and camp
+remain unknown; full 1–20 and fresh hands-off 1–50 remain unfinished.
+
 ## 2026-11-14 17:11 UTC — source 0.42.41, unknown-heading probe area
 
 VERIFIED locally: 122 focused checks pass in 16.01 seconds across the new

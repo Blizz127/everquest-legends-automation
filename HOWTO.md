@@ -625,7 +625,7 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Source 0.42.41 is being staged at the following private Alienware path:
+The latest private source is staged on Alienware at:
 
 ```text
 ~/.local/share/eql-automation/owner-tools/0.42.41/source
