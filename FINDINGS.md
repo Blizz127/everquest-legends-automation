@@ -1,5 +1,30 @@
 # FINDINGS
 
+## 2026-11-14 17:40 UTC — source 0.42.44 and preview 0.39.30 published
+
+VERIFIED private publication on Alienware at `owner-assist/0.39.30` and
+`owner-tools/0.42.44/source`, revision `593d66e65531e6a64b3a3e8da4e4dcc0ba0bf285`.
+Runtime and test files are byte-identical to the final 50-pass snapshot.
+Existing tools match too; the additional packaging wrapper was exercised by
+the successful local preview build. Preview manifest, installed executable/
+spell pins, both source guides, reduced NPC history and no-input GUI startup
+pass. This supersedes preview 0.39.29 for owner-run travel/camp testing.
+
+- Archive SHA: `dbb9a11dcca82312e98fc1af2dfb6aac70f5d2603c1ec2da9f5d62b526a22364`.
+- Startup SHA: `da52755c351fb87704008a76bcc717f0c743aeab3248ce2cc24c51d0f5ccf683`.
+- Focused check output SHA: `8e6e5437350b022af9ebebc8086130bfb1ba5acb92a0d7636de65e9e852bb895`.
+- Record: `releases/eql-owner-journey-0.39.30-staging.json`.
+
+The new collection runs automatically only after the first kill/recovery at a
+camp reached by travel; it requests positions and resumes the same camp.
+F8 cancellation preserves the queued switch to assist until original-key
+cleanup completes. No automatic relocation is enabled. No lead game input,
+input-device creation, settings save, prefix edit, login, character action or
+session interruption occurred. G0 remains passed. No actual camp/route
+acceptance or current level, XP, XP/hour, death/camp metrics; full 1–20 and
+fresh hands-off 1–50 remain incomplete. Next: checked unknown-heading probe
+preparation on that actual fresh source floor, then automatic camp relocation.
+
 ## 2026-11-14 17:39 UTC — source 0.42.44, automatic post-recovery position collection
 
 Implemented in the same owner helper: after the first matching kill and

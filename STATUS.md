@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 17:39 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 17:40 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.44 / preview 0.39.30 validated, publication pending:** reached-camp
+- **Source 0.42.44 / preview 0.39.30 privately published:** reached-camp
   recovery now automatically collects two fresh positions once after the first
   matching kill, validates the actual retained floor/height, releases its reader
   and resumes the same camp. It uses the exact existing configured hotbutton,
@@ -16,8 +16,12 @@ Updated 2026-11-14 17:39 UTC for coordinator task `829a00229b29`.
   the final snapshot passes **50 checks in 90.99 seconds**, including actual
   retained-engine/OS-pipe travel→camp→fresh-pair→camp and recovery/continuity
   checks. Output SHA `8e6e5437350b022af9ebebc8086130bfb1ba5acb92a0d7636de65e9e852bb895`.
-  Preview manifest and runtime/source bytes match locally. Publication pending. Game feedback is
-  synthetic and all input is to pipes; no client input or character action.
+  Published on Alienware at `owner-assist/0.39.30` and
+  `owner-tools/0.42.44/source`, revision `593d66e`. Runtime/tests match the
+  validated snapshot; manifest/client/data pins and no-input GUI smoke pass.
+  Startup SHA `da52755c351fb87704008a76bcc717f0c743aeab3248ce2cc24c51d0f5ccf683`.
+  Game feedback is synthetic and all test input is to pipes; no client input
+  or character action.
   Next: geometry-checked fresh heading measurement and actual camp relocation;
   full 1–20/1–50 and current run metrics remain unverified. G0 passed.
 - **Source 0.42.43 / preview 0.39.29 privately published:** exact reached
