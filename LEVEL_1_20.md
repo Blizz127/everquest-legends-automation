@@ -14,6 +14,9 @@ pass. Devbox timing refusals are recorded in FINDINGS; no limits were relaxed.
 HOWTO contains the exact next owner test. No real route or automated level gain
 is accepted; bind actual motion, current scene/zone/height to the first leg next.
 
+Source `a1d5301` is staged at Alienware `owner-tools/0.41.97/source`;
+no-input imports, retained-engine composition and reserved-key refusal pass.
+
 Source 0.41.96 ships the stationary hotbutton setup test as owner candidate
 0.39.11. It shares route acquisition's sender and cleanup implementation and
 requires an explicit configured key; no key is assumed. The existing helper

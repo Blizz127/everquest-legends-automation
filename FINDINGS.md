@@ -58,6 +58,13 @@ motion feedback still need binding to the first supervised route leg. No real
 1–20 leg, automated XP or fresh1–50 run has been accepted. G0 passed from the
 trace plus owner's visible-stop confirmation; no repeat. Metrics remain unknown.
 
+**VERIFIED source staging:** commit `a1d53019c6acc45104f825bc86916fd90b18bba8`
+is staged at Alienware `owner-tools/0.41.97/source`, archive SHA
+`af9ca6832b0a19a574387356ab2a0d22db86d77ae2f5cf762570e21fa537b64b`.
+Remote imports, retained-engine composition and reserved-key refusal passed
+without constructing an engine or sending input. Startup SHA
+`6c1d6b93c8534a7b39c060c866307e3ddd370bfb7d0218ed4965d66f2c1030f8`.
+
 ## Stationary hotbutton test shipped as 0.39.11 — 2026-11-14 08:45 UTC
 
 **VERIFIED implementation:** source 0.41.96 extracts the existing hotbutton

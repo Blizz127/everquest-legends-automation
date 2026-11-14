@@ -29,6 +29,9 @@ Updated 2026-11-14 08:59 UTC for coordinator task `829a00229b29`.
   **Next:** consume real owner motion + current position/zone observations and
   bind the first supervised route leg. Actual level, XP/hour, deaths and camp
   remain unknown; G0 is passed and needs no repeat.
+  Source `a1d5301` is staged at `owner-tools/0.41.97/source`; no-input
+  imports/composition/reserved-key checks pass. Startup SHA
+  `6c1d6b93c8534a7b39c060c866307e3ddd370bfb7d0218ed4965d66f2c1030f8`.
 - **Source 0.41.96 / owner candidate 0.39.11:** the stationary location-hotbutton
   setup test is now runnable from the existing measurement GUI. An explicit
   owner-selected key and setup confirmation start a four-second focus countdown,
