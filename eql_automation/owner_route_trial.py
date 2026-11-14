@@ -544,6 +544,9 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
         def _continue_finished_trial(self, pending, arrival):
             return None
 
+        def _finish_trial_input_observer(self,pending):
+            pending['observer'].close()
+
         def _finish_trial(self,reason):
             p=self.route_trial
             if p is None:return
@@ -567,7 +570,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 reason=str(reason)+'; continuation stopped: '+str(error)
                 if not self.cancelled:self.stop_action(str(error))
             finally:
-                try:p['observer'].close()
+                try:self._finish_trial_input_observer(p)
                 except Exception as error:
                     reason=str(reason)+'; input observer cleanup: '+str(error)
                     self.stop_action(str(error))

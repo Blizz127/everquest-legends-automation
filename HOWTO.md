@@ -1,8 +1,8 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.39** · travel/camp test **0.39.27** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.40** · travel/camp test **0.39.28** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.27 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.28 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -25,14 +25,14 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
 Preview 0.39.24 switches between assist and the repeated stationary camp test without a
-restart. Preview 0.39.27 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
+restart. Preview 0.39.28 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
 
-## Choose a travel/camp destination — preview 0.39.27
+## Choose a travel/camp destination — preview 0.39.28
 
 Close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.27/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.28/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
@@ -59,6 +59,13 @@ Stay present for this test. **F8** switches to assist after movement releases;
 shown in the travel/camp status. Stop before choosing another. There is no
 restart or re-login between these activities. G0 passed; do not repeat it.
 
+In 0.39.28, after travel hands over to camp, manual keyboard/mouse activity,
+lost focus or lost input-device coverage stops the camp. Brief movement followed
+by releasing the key also stops it. **F8 switches to assist and gives movement
+back to you**; F9/F11 stops and closing the helper releases the monitor.
+This monitor is read-only and sends no keys. It applies to a camp reached by
+the Travel button; standalone F11 camp behavior is unchanged.
+
 The North Wall path passed copied terrain/object/region checks and a bounded
 long-leg fixture. It has **not been traversed or accepted in the real client**.
 A start without a checked connection is refused. Later-camp relocation is still
@@ -77,7 +84,7 @@ fresh matching consideration inside the current level window. A PC selection
 or mismatched target is rejected. The inherited matching-consideration path
 does not require an NPC-selection receipt when none is logged.
 
-This build also fixes a camp bookkeeping error that could block casting after
+The 0.39.27 fix is retained for a camp bookkeeping error that could block casting after
 a normal NPC-selection message. It sends no native melee command. Fresh-character
 login, new NPC discovery outside the retained names, automatic camp relocation
 and complete 1–20 remain unfinished. G0 is passed; no repeat is needed.

@@ -1,5 +1,51 @@
 # FINDINGS
 
+## 2026-11-14 16:56 UTC — camp input continuity for later relocation
+
+VERIFIED locally: 26 focused checks pass for source 0.42.40 / preview 0.39.28
+candidate. The original read-only physical-input observer is now retained across
+successful source-route arrival into camp. The navigation lease is still released
+and navigation remains inactive. Failed/cancelled handoffs keep default cleanup.
+F8/F9/F11/quit closes the retained monitor; F8 enters assist only after cleanup.
+
+The monitor rejects brief turn press/release, mouse activity, lost coverage,
+topology changes and replaced sender/UI/tracker/window/character/log bindings.
+Loss is latched; a later clear scan cannot restore it. Synthetic OS-pipe camp
+checks confirm no new command after invalidation. Observed camp level changes
+are accepted through the existing camp binding; unobserved settings edits stop.
+Same-thread helper events remain excluded by the observer's existing exact
+uinput-device identity. No permission/access/device changes were made. The final monitor additionally
+pins its observer/clock/binding context and rechecks after callbacks, so a direct
+sample call cannot return successfully after reentrant cancellation. The first
+local fixture for helper exclusion changed topology after capture and correctly
+failed; it now establishes topology before the synthetic handoff.
+
+The arrival basis copies the final source ledger's heading, actual motion values,
+checked bounds, floor/itinerary hashes and stopped position/sequence into immutable
+bytes. It does not reuse the calibration-start heading. Every snapshot explicitly
+states movement is unauthorized and current heading/motion are unverified: no
+physical input alone cannot rule out forced movement, auto-facing or speed effects
+in combat. Automatic relocation still needs fresh stopped positions and a
+geometry-checked heading/motion measurement. No route authority is retained in
+the monitor. Camp checks, not the old navigation combat veto, govern encounters.
+
+VERIFIED on Alienware: the initial candidate passes all 26 selected checks
+in 219.46 seconds, including full travel→camp and late F9 at four handoff stages.
+Output SHA `8b8cd2bec94bc82bdef3c42cb9979bdace9f40cef4e2739e6ffb7fee85d2de64`.
+That snapshot is retained at `owner-tools/0.42.40-validation-1`. The final monitor
+context/callback refinement has 26 local passes in 1.02 seconds; the separate
+final snapshot passes all 27 selected checks in 45.08 seconds, including a
+complete handoff. Final output SHA
+`72096bcca85bdcf1872ad76261c23843c716cc71daf190d9a1285a6cd9af0537`;
+retained at `owner-tools/0.42.40-validation-2`. The first local
+preview is retained at `owner-build-drafts/0.39.28-first-snapshot`; it was never
+published. No running helper was replaced. Alienware aggregate load was 3.70
+on 24 CPUs with about 13.6 GiB available memory before the short final check.
+Publication is pending. A read-only check
+found no `~/eql-journey-trace.jsonl`; the G0 trace remains historical, and the
+owner's visible-stop confirmation remains accepted. No repeat G0. Current level,
+XP/hour, deaths and camp remain unknown. Complete hands-off 1–20/1–50 is unfinished.
+
 ## 2026-11-14 16:51 UTC — 0.39.27 published on Alienware
 
 VERIFIED: source 0.42.39 revision `056a9cb5ab570091ac03565a426c1f28baa8f84b` and owner preview

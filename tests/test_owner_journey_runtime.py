@@ -85,12 +85,18 @@ def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,
     assert e.camp_session is not None and e.journey.phase=='camp'
     assert loads==[(e.settings.server,'crushbone')]
     assert e.camp_session.candidates==(fallback,)
-    assert e.sender is h.sender and not e.sender.held and h.observer_closed
+    assert e.sender is h.sender and not e.sender.held and not h.observer_closed
+    assert e.journey.camp_motion.observer is captured[0].pending['observer']
+    assert e.journey.camp_motion.snapshot()['movement_authorized'] is False
+    import json
+    basis=json.loads(captured[0].motion_basis)
+    assert basis['arrival_heading_estimate']==captured[0].runtime.ledger.pose.heading
     assert e.live_zone_tracker.lease is None and not navigation_active(e)
     assert e.camp_session.preparation_due and not record['real_client_accepted']
     h.tick();assert e.camp_session.phase=='preparing'
     h.tick();assert h.commands==['/outputfile spellbook eql-rotation-spellbook.txt']
     e.stop_action('F9');before=list(h.commands);h.tick();assert h.commands==before
+    assert h.observer_closed
 
 
 @pytest.mark.parametrize('stop',('movement','location'))
@@ -106,7 +112,7 @@ def test_f9_never_hands_off_and_late_f11_release_cannot_restart(h,monkeypatch,st
     assert not h.sender.held and e.live_zone_tracker.lease is None
 
 
-@pytest.mark.parametrize('where',('lease_release','gauges','start_stop','observer_close'))
+@pytest.mark.parametrize('where',('lease_release','gauges','start_stop','monitor_transfer'))
 def test_late_f9_during_arrival_or_cleanup_never_arms_camp(h,monkeypatch,where):
     from eql_automation.owner_zone_tracker import ZoneReaderLease
     configure(h,monkeypatch);e=h.engine;fired=[]
@@ -127,16 +133,11 @@ def test_late_f9_during_arrival_or_cleanup_never_arms_camp(h,monkeypatch,where):
             return emit(text)
         e.emit=notice
     else:
-        # Observer remains open until the handoff releases its ownership.
-        original=e._capture_trial_continuation
-        def capture(p):
-            token=original(p)
-            if token:
-                close=p['observer'].close
-                def end():close();stop()
-                p['observer'].close=end
-            return token
-        e._capture_trial_continuation=capture
+        # F9 wins even after the monitor changes ownership, before the commit.
+        original=e._retain_camp_input
+        def retain(token):
+            original(token);stop()
+        e._retain_camp_input=retain
     start(h);h.due_trial();record=finish(h,timeout=80.)
     assert fired,(record,h.notices)
     assert e.camp_session is None and e.cancelled and not e.active

@@ -15,6 +15,7 @@ from .owner_navigation_preflight import settings_identity, window_identity
 from .owner_route_trial import SOURCE_JOB, make_owner_route_trial_engine, zone_binding
 from .source_walk_driver import SourceWalkFinished
 from .crushbone_source_guide import destination_spec
+from .camp_motion_continuity import CampInputContinuity, arrival_motion_basis
 
 
 @dataclass
@@ -25,6 +26,7 @@ class Journey:
     candidates: tuple = ()
     destination_id: str = 'slave-mines'
     destination_assets: object = None
+    camp_motion: object = None
 
 
 @dataclass(frozen=True)
@@ -42,6 +44,7 @@ class Arrival:
     destination_id: str
     destination: object
     source_evidence: bytes
+    motion_basis: bytes
 
 
 def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
@@ -83,16 +86,26 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             if self.journey is not None:
                 data['journey_phase'] = self.journey.phase
                 data['journey_destination_id'] = self.journey.destination_id
+                if self.journey.camp_motion is not None:
+                    data['camp_input_continuity']=self.journey.camp_motion.snapshot()
             data['journey_last_result'] = self.journey_last_result
             return data
 
         def stop_action(self, reason, *, keep_autopilot=False):
             j, self.journey = self.journey, None
             self._journey_assist = None
+            continuity=None
+            if j is not None and j.camp_motion is not None:
+                monitor,j.camp_motion=j.camp_motion,None
+                try:monitor.close(reason)
+                except Exception as error:reason=str(reason)+'; camp input cleanup: '+str(error)
+                continuity=monitor.snapshot(include_basis=True)
+                self.trace('journey_camp_input_closed',**continuity)
             if j is not None:
                 self.journey_last_result = dict(phase='stopped', reason=str(reason),
                     prior_phase=j.phase,destination_id=(j.destination_id if j.destination_assets is None
-                        else j.destination_assets.destination_id),real_client_accepted=False)
+                        else j.destination_assets.destination_id),camp_input_continuity=continuity,
+                    real_client_accepted=False)
             return super().stop_action(reason, keep_autopilot=keep_autopilot)
 
         def stop_autopilot(self, reason):
@@ -213,8 +226,9 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             destination=p['continuation']['destination']
             if destination is not j.destination_assets or destination.destination_id!=j.destination_id:
                 raise ValueError('Source destination changed before arrival')
+            basis=arrival_motion_basis(r,p)
             token = Arrival(j,p,r,receipt,tracker,r.zone,p['window'],self.sender,self.gate,clock(),
-                            j.destination_id,destination,destination.source_evidence)
+                            j.destination_id,destination,destination.source_evidence,basis)
             j.phase = 'handoff'
             return token
 
@@ -275,12 +289,59 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                 self.stop_action('Source destination changed during camp handoff')
                 return dict(camp_started=False,reason='Destination changed before handoff commit')
             j.phase = 'camp'
+            self._retain_camp_input(token)
+            if self.journey is not j or not self._camp_current():
+                if self.journey is j:self.stop_action('Camp input continuity changed during handoff')
+                return dict(camp_started=False,reason='Camp input continuity changed')
             self.journey_last_result = dict(phase='camp', itinerary_sha256=token.receipt.itinerary_sha256,
                 destination_id=token.destination_id,destination=json.loads(token.source_evidence),
                 stopped_log_seq=token.receipt.reference.raw_fix.log_line_seq,
-                camp_started=True, safe_camp_verified=False, real_client_accepted=False)
+                camp_started=True, safe_camp_verified=False, real_client_accepted=False,
+                camp_input_continuity=j.camp_motion.snapshot(include_basis=True))
             self.trace('journey_camp_handoff', **self.journey_last_result)
             return dict(self.journey_last_result)
+
+        def _camp_motion_binding(self):
+            tracker=self.live_zone_tracker
+            if tracker is None or tracker.lease is not None or self.sender is None:
+                raise ValueError('Camp cannot retain navigation ownership')
+            tracker.poll()
+            window=window_identity(self.gate,require_focus=True)
+            return (self.sender,self.sender.ui,self.gate,tracker,tracker.reader,self.camp_session,
+                self.cancel_generation,settings_identity(self.settings)[:4],
+                zone_binding(tracker.reader),window)
+
+        def _retain_camp_input(self,token):
+            j=token.journey
+            binding=self._camp_motion_binding()
+            if (self.journey is not j or j.phase!='camp' or self.camp_session is None or
+                    binding[0] is not token.sender or binding[2] is not token.gate or
+                    binding[3] is not token.tracker or binding[8]!=token.zone or binding[9]!=token.window):
+                raise ValueError('Arrival input monitor lost its camp owner')
+            j.camp_motion=CampInputContinuity(token.pending['observer'],topology=token.pending['topology'],
+                basis=token.motion_basis,binding=binding,clock=clock)
+
+        def _camp_current(self,*,allow_pending_level=False):
+            if not super()._camp_current(allow_pending_level=allow_pending_level):return False
+            j=self.journey;camp=self.camp_session
+            if j is None or j.phase!='camp':return True
+            monitor=j.camp_motion
+            if monitor is None:return False
+            try:
+                monitor.check(self._camp_motion_binding())
+                monitor.check_binding(self._camp_motion_binding())
+                if self.journey is not j or j.camp_motion is not monitor or self.camp_session is not camp:
+                    raise ValueError('Camp owner changed during input observation')
+            except Exception as error:
+                monitor.invalidate(str(error));camp.stop(str(error));return False
+            return True
+
+        def _finish_trial_input_observer(self,pending):
+            j=self.journey
+            if j is not None and j.phase=='camp' and j.camp_motion is not None and j.camp_motion.observer is pending['observer']:
+                if self._camp_current():return  # Ownership transferred; no route input authority.
+                self.stop_action('Camp input continuity changed at navigation cleanup')
+            return super()._finish_trial_input_observer(pending)
 
         def start_stationary_camp(self, **kwargs):
             if self._navigation_busy() or self.journey is not None and self.journey.phase != 'handoff':

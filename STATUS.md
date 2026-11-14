@@ -1,11 +1,22 @@
 # STATUS
 
-Updated 2026-11-14 16:51 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 16:56 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.40 / preview 0.39.28 candidate:** preserve the same read-only
+  input monitor across travel→camp, reject brief released turns and coverage/
+  binding loss, and close it before assist. Final arrival heading/motion/bounds
+  are retained as immutable historical evidence, with no movement authority.
+  **26 focused checks pass locally**. The initial Alienware candidate passed
+  26 checks including five full handoff cases; the final snapshot passes
+  27 focused checks in 45.08 seconds, including a complete handoff. Output SHA
+  `72096bcca85bdcf1872ad76261c23843c716cc71daf190d9a1285a6cd9af0537`.
+  Publication/startup checks are in progress. Next: fresh stopped observations and a geometry-checked heading
+  measurement for camp relocation, then a supported camp sequence. Actual
+  level/XP/hour/deaths/camp unknown; no new owner journey trace exists. G0 passed.
 - **Source 0.42.39 / published preview 0.39.27:** empty character history can
   bootstrap NPC names from the pinned reduced owner observations on Freeport:
   GFay five names, Crushbone four, Butcherblock none. Existing character history
