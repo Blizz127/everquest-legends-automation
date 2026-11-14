@@ -1,5 +1,16 @@
 # FINDINGS
 
+## Private 0.41.58 staging — 2026-11-14 02:45 UTC
+
+**VERIFIED:** Commit `c042a8d`, archive SHA
+`f82f22ac87ba20c66520ba43e2534e264029019d76639cc5499b52a093081548`,
+matched at Alienware `~/.local/share/eql-automation/owner-tools/0.41.58/source`.
+Six lightweight remote checks passed: same-floor travel beneath an overhead
+surface, exact-edge continuation with linked proof, shared-edge source sample,
+wall refusal with latched stop, CLI startup and invalid-body refusal. Remote
+`../smoke.json` records them. No input device or game was opened. Assist0.39.6,
+G0candidate0.39.7 and the owner's install remain unchanged. No F11 acceptance.
+
 ## Complete conditional GFay source-floor chain — 2026-11-14 02:44 UTC
 
 **VERIFIED source 0.41.58:** The ordered source-floor tracker carries exact

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 02:44 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 02:45 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No real-client 1–20 route or automated level gain
   is accepted. Fresh-character hands-off 1–50 and strict assist remain required.
@@ -14,7 +14,10 @@ Updated 2026-11-14 02:44 UTC for coordinator task `829a00229b29`.
   F9 stop, F10 heal; movement/target/loot/vendor/camp stay manual. F11/F12 are
   disabled. Separate G0 candidate 0.39.7 is unchanged. Live HP, target/chat
   identity and native melee stop remain unverified.
-- Source **0.41.58** is prepared for private staging. **VERIFIED:** 27 focused
+- Source **0.41.58**, commit `c042a8d`, is privately staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.58/source`. Archive SHA
+  `f82f22ac87ba20c66520ba43e2534e264029019d76639cc5499b52a093081548`
+  matched; six lightweight remote checks passed without device/game input. **VERIFIED:** 27 focused
   floor-chain/occupancy tests pass. The complete copied GFay source chain
   passes all 2,399 cells, tracking 266 faces through 268 exact-edge join
   events. All source layers remain in each occupancy check. Body height8 is
