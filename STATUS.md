@@ -1,11 +1,23 @@
 # STATUS
 
-Updated 2026-11-14 17:40 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 17:44 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.45 validated; publication pending; preview remains 0.39.30:**
+  route-independent probe preparation now binds the actual camp-height record,
+  exact floor/reader lease and explicit bounds to a checked all-heading source
+  envelope. Slow planning never renews its starting observations. A new pair
+  must match the checked reference before the preparation is ready; neither
+  state authorizes input. **38 focused local checks passed**, and final
+  **53 Alienware checks pass in 2.07 seconds**, output SHA
+  `c5bb60d5caa65d8a9432a8df3ada6a0dbacbc2fb02d1360a330cf3def647710c`.
+  This source-only increment is not enabled in owner controls. A read-only
+  Alienware check found no EverQuest client process and no journey trace.
+  Next: current independent scene and supported motion-bound producers, plus
+  the checked pulse/post-pair transaction. No new owner test or G0 repeat.
 - **Source 0.42.44 / preview 0.39.30 privately published:** reached-camp
   recovery now automatically collects two fresh positions once after the first
   matching kill, validates the actual retained floor/height, releases its reader

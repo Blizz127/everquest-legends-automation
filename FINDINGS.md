@@ -1,5 +1,41 @@
 # FINDINGS
 
+## 2026-11-14 17:44 UTC — source 0.42.45, fresh source-probe preparation
+
+VERIFIED `CampProbePreparation` consumes an actual `CampStoppedHeight`, the
+exact retained floor and active reader lease. It checks an all-heading source
+body envelope using explicit caller-supplied planning hypotheses. It does not
+construct a walking route, pose, turn calibration or `open_flat_clear` claim.
+Slow geometry work may outlive the original pair; those timestamps remain
+unchanged. A new consecutive stopped pair must match the exact checked source
+position/offset before a start record is issued. That record retains its own
+0.5-second expiry. Input and current-motion authority remain false throughout.
+Cancellation or changed scope, envelope, bounds, record or reader discards the
+preparation without mutating the original camp floor.
+
+VERIFIED 38 focused local checks passed in 9.46 seconds. The final Alienware
+snapshot `owner-tools/0.42.45-validation-1` passes all 53 selected preparation,
+source-geometry and fresh-height checks in 2.07 seconds, output SHA
+`c5bb60d5caa65d8a9432a8df3ada6a0dbacbc2fb02d1360a330cf3def647710c`.
+All positions, guards and geometry fixtures are synthetic; no game input.
+Private source publication pending. Owner preview remains 0.39.30, and the
+new preparation class is not enabled in owner controls.
+
+VERIFIED read-only Alienware process inspection this turn found no process
+named `eqgame.exe` or `EverQuest Legends` and no `~/eql-journey-trace.jsonl`.
+No client launch, capture, login or character action was attempted. This
+provides no current level/XP/death/camp information. G0 remains passed; no repeat.
+
+OBSERVED in source: no production `G2UiObservation` producer or
+`G2SafetyProvider` construction exists. The frame reader retains unknown scene
+flags. `RouteMotionBounds` checks hypotheses; the motion fitter explicitly
+returns `verified_speed_upper_bound=None`. The route's conditional speed upper
+interval times 1.25 and finite 150 limit are not independent physical caps.
+Neither historical arrival speed nor quiet logs is promoted to current proof.
+Current scene/body/speed/drift evidence and a checked pulse/post-pair transaction
+remain necessary for automatic remeasurement. No live 1–20 or fresh hands-off
+1–50 acceptance, and no automatic relocation is claimed.
+
 ## 2026-11-14 17:40 UTC — source 0.42.44 and preview 0.39.30 published
 
 VERIFIED private publication on Alienware at `owner-assist/0.39.30` and

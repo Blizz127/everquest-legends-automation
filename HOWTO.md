@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.44** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.45** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -640,14 +640,23 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Source 0.42.44 is privately published on Alienware at:
+Source 0.42.45 is being staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.44/source
+~/.local/share/eql-automation/owner-tools/0.42.45/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.42.44 connects a fresh post-recovery position collection to the
+above. Source 0.42.45 adds `CampProbePreparation` for a future camp heading
+measurement. It checks an all-heading source envelope from a fresh stopped
+height and explicit motion hypotheses. It requires another newly collected pair
+at the exact checked position afterward, retains both original timestamps and
+rejects changed or expired state. It grants no movement authority and is not
+enabled in the owner controls. Current scene and independently supported motion
+bounds are still required before automatic measurement. Owner preview remains
+**0.39.30**; there is no new owner check for this source-only increment.
+
+Source 0.42.44 connects a fresh post-recovery position collection to the
 existing helper, retaining the actual configured hotbutton and acquiring its
 own reader lease. Collection starts once after the first kill/recovery, records
 both request receipts and fresh height correspondence, and resumes the same
