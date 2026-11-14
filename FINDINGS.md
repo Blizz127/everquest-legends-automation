@@ -1,5 +1,76 @@
 # FINDINGS
 
+## Owner destination travel and pulse steering — 2026-11-14 11:52 UTC
+
+**VERIFIED implementation:** source 0.42.13 / owner preview 0.39.16 adds the
+separate `supervised_destination_travel` job and **Travel toward Crushbone…**
+button to the existing rotation tool. The action retains the same seven-pulse
+calibration, input observer, sender, stop lock and log lease, obtains fresh
+positions, invokes the full destination planner, measures current height and
+runs the checked route. It does not load saved heading or queue a new action.
+Ordinary motion still stops; the two-unit local trial retains its old scope.
+
+The destination comes from the installed client's `maps/gfaydark_1.txt`,
+verified read-only SHA `84a1e1a655a73ddb13a71a7afc121acfe73d8737554a3ac1a5ad78249d0db882`.
+The copied map/alignment bundle is private under
+`owner-route-data/gfay-crushbone-approach-20261114`; tile geometry remains in
+`gfay-destination-20261114-tiles`. Exact label/alignment hashes and the unique
+approach marker bind the endpoint; no manual route recording or guessed game
+coordinates. This marker is not a verified zone trigger or a selected camp.
+
+Destination scope is explicitly bounded to 1,500 seconds, 3,000 controls,
+10,000 planned units and 600 seconds of reserved maximum hold. Startup has
+its own 180-second cap after asset loading, including countdown/calibration.
+Height correspondence lasts 1,560 seconds, while every later position keeps
+its original freshness and source-floor residual checks. The execution clock
+is extended exactly once after valid startup. These limits permit an attempt;
+they do not prove that a 4,996-unit route will finish before the cap. Focus,
+physical input, jobs, process/settings, log hazards, zone transitions, geometry,
+watchdog and release conditions remain active. Assist rejects movement.
+
+**VERIFIED steering defect and fix:** the full owner-path harness exposed a
+real controller mismatch: a 0.6-unit lookahead could be followed by 2–3 units
+of blind pulse travel, causing corrective steering to overshoot the centerline.
+The retained follower's default 20ms continuous-loop tick also widened the
+requested 1-degree turn threshold to roughly 3.4 degrees. The wrapper now aims
+at least one maximum nominal hold ahead and sets the fresh follower's unused
+continuous tick to zero. Input duration, corridor width, collision bounds and
+freshness are unchanged. A deterministic 40-unit / 0.3-width regression with
+one-degree calibration disagreement and a late but bounded pivot failed at
+0.549 units cross-track before the fix; it now arrives inside the strip.
+
+**VERIFIED focused checks:** 42 policy/preflight cases passed before the final
+steering correction; all 25 follower cases plus 20 subtests pass with that fix.
+The complete retained-engine destination flow passes across two polygons with
+actual watchdog pipes and synthetic log/physics feedback (26.69s). The
+three destination preflight cases and original local-trial runtime pass; a
+calibration timing overrun prevented the first F9 test from reaching its
+intended event. The isolated F9 recheck passes (13.74s): it stops during route
+DOWN, releases keys, closes the observer/lease and emits no later input.
+Earlier pipeline failures were an authorization deadline under CPU contention
+and the steering defect above; neither is hidden as a passing run.
+Private copied test records are in `releases/eql-destination-0.42.13-evidence`.
+Arrival SHA `444a9291bb82db59b2153d81666ef327b076498bb31892a725aa74f78415fdc0`;
+F9 SHA `3caf4f10547b0253f413a1286562d2e8a79100e50ccd615016159351d4f61aec`. They are simulation evidence only.
+
+**VERIFIED private publication:** owner preview is on Alienware at
+`owner-assist/0.39.16`. GUI startup shows both short-trial and destination
+buttons. The screenshot was inspected; controls and stop button are visible.
+The complete loader matches installed archives, catalog and destination map,
+using a synthetic tracker identity for this read-only startup. No engine worker,
+device, game input, settings save or protected-prefix change occurred.
+Archive SHA `ca3be29d31a969fe52ae96a3f92917bc1e408146593d7404289a35c53eaff99b`;
+startup SHA `7b5c7df74f3e8f93038fce6ec656f4b949e9c7c7a5ccb0a5e0ec504ce1628fb5`;
+GUI SHA `a73d8076f2d703a55e736ac5d187ca997e2d46331ce15876714ccfdbe851c3d1`. HOWTO has the command and controls.
+
+**Remaining:** owner-run current-session zone/hotbutton setup and real traversal
+are unverified. The approach does not zone, choose camps, fight, loot, buy/sell,
+recover death or level. Existing assist 0.39.13 remains separate; seamless mode
+switching and unattended 1–20/1–50 remain unfinished. Current level, XP/hour,
+deaths and camp remain unknown; saved UI level 7 is not a current observation.
+G0 is passed; no repeat requested. Next consume actual owner travel evidence,
+continue zone/camp execution and improve current-zone startup independently.
+
 ## Pinned tile policy in route geometry — 2026-11-14 11:43 UTC
 
 **VERIFIED implementation:** source 0.42.12 carries an immutable, explicit

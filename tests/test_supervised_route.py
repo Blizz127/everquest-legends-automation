@@ -128,6 +128,29 @@ def test_declaration_is_finite_and_bound_to_exact_plan(tmp_path, legacy, changes
     with pytest.raises(ValueError): setup(tmp_path, legacy, declaration_changes=changes)
 
 
+def test_destination_scope_has_explicit_limits_and_preserves_measurement_evidence(tmp_path, legacy):
+    f=setup(tmp_path,legacy,declaration_changes=dict(scope='destination_travel',
+        maximum_seconds=1500.,maximum_steps=3000,maximum_distance=10000.,maximum_total_hold=600.))
+    # A destination may proceed beyond the former short-trial step budget.
+    f.runner.steps=33
+    observed=f.scene();f.policy.validate_scene(observed,f.ledger)
+    assert not observed.scene.independent_scene_verified
+    assert f.policy.snapshot()['declaration']['scope']=='destination_travel'
+    f.runner.steps=3000
+    with pytest.raises(RouteHalt):f.scene()
+
+
+@pytest.mark.parametrize('changes',[
+    {'maximum_seconds':1500.01},{'maximum_steps':3001},
+    {'maximum_distance':10000.01},{'maximum_total_hold':600.01},{'scope':'unattended'},
+])
+def test_destination_scope_is_still_finite(tmp_path,legacy,changes):
+    values=dict(scope='destination_travel',maximum_seconds=1500.,maximum_steps=3000,
+                maximum_distance=10000.,maximum_total_hold=600.)
+    values.update(changes)
+    with pytest.raises(ValueError):setup(tmp_path,legacy,declaration_changes=values)
+
+
 @pytest.mark.parametrize('hazard', ['wall', 'water'])
 def test_supervised_scope_cannot_waive_source_geometry(tmp_path, legacy, hazard):
     f = setup(tmp_path, legacy, hazard=hazard)

@@ -8,7 +8,7 @@ import pytest
 
 from eql_automation.location_hotkey import OwnerLocationHotkey
 from eql_automation.owner_navigation_preflight import window_identity
-from eql_automation.owner_route_trial import TRIAL_JOB, make_owner_route_trial_engine
+from eql_automation.owner_route_trial import TRIAL_JOB, DESTINATION_JOB, make_owner_route_trial_engine
 from eql_automation.supervised_motion import SupervisedMotionExecutors
 from test_motion_collection import retained
 from test_current_route_start import fixture as geometry_fixture
@@ -29,9 +29,10 @@ def h(tmp_path,retained,monkeypatch):
         for x,y,z in s.vertices_wld)) for s in p.source.sources)
     xyz=np.asarray([s.vertices_wld for s in p.source.sources])[:,:,[1,0,2]]
     p.source.source_minimum=xyz.min(axis=1);p.source.source_maximum=xyz.max(axis=1)
-    loading=[lambda:p]
+    loading=[lambda:p];destination_loading=[lambda:None]
     def factory(engine,*,observer_factory,output):
         return make_owner_route_trial_engine(engine,planner_loader=lambda _:loading[0](),
+            destination_loader=lambda _:destination_loading[0](),
             observer_factory=observer_factory,output_root=output/'trials',
             motion_output=output/'motion',hotkey_output=output/'hotkey')
     monkeypatch.setattr(setup,'make_owner_nov12_engine',factory)
@@ -45,6 +46,7 @@ def h(tmp_path,retained,monkeypatch):
     e.last_hotkey_test=dict(outcome='observed_location',window_identity=window_identity(h.gate,require_focus=False),
         expected_character='Probe',expected_server='private',owner_setup=asdict(binding),record_id='synthetic-setup')
     h.point=[200.,400.,2.7];h.heading=350.;h.loader=p;h.loading=loading
+    h.destination_loading=destination_loading
     def start():
         e.post(TRIAL_JOB,{'open_flat_clear':True});e.handle_job(*e.jobs.get_nowait())
     h.start_trial=start

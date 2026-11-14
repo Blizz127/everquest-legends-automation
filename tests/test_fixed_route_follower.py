@@ -308,6 +308,35 @@ class FixedRouteTests(unittest.TestCase):
             with self.assertRaises(ValueError): FixedRoute.load(path, expected_sha256=pin, mesh_sha256=MESH)
             with self.assertRaises(ValueError): FixedRoute.load(path, expected_sha256=sha256(path.read_bytes()).hexdigest(), mesh_sha256=MESH)
 
+    def test_fast_short_pulses_do_not_overshoot_the_steering_aim(self):
+        self.motion=replace(self.motion,run_speed=30.,turn_rate=169.2,turn_latency=.0296)
+        self.route=replace(self.route,half_width=.3,
+            segments=(FixedSegment(1,(0.,0.,0.),(0.,40.,0.)),))
+        runner=self.runner(heading=4.)
+        self.start(runner)
+        point=[0.,0.,0.];actual_heading=3.;delayed=False
+        for _ in range(160):
+            if runner.phase=='arrived':break
+            proposal=runner.propose(runner.last_at+.01)
+            seconds=runner.suggest_hold(proposal,minimum_seconds=.02,maximum_seconds=.1)
+            # The receipt, rather than the requested duration, controls both
+            # the synthetic actor and the estimator. One pivot releases late
+            # but remains below the existing 0.2-second bound.
+            if proposal.turn and not delayed:seconds+=.06;delayed=True
+            if proposal.turn:
+                sign=-1 if proposal.turn=='right' else 1
+                actual_heading=(actual_heading+sign*170.*max(0.,seconds-.03))%360
+            elif proposal.forward:
+                point[0]+=math.sin(math.radians(actual_heading))*30.*seconds
+                point[1]+=math.cos(math.radians(actual_heading))*30.*seconds
+            self.assertLessEqual(abs(point[0]),self.route.half_width)
+            began=proposal.at+.01;released=began+seconds
+            runner.record_release(proposal,started_at=began,released_at=released)
+            first,second=self.pair(point,released)
+            runner.observe_stopped(first,second,released_at=released,now=second.raw_fix.received_monotonic)
+        self.assertTrue(delayed)
+        self.assertEqual(runner.phase,'arrived')
+
     def test_neighbor_projection_only_within_shared_endpoint_disk(self):
         for y, accepted in ((.6, True), (.3, False)):
             with self.subTest(y=y):

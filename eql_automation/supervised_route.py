@@ -29,6 +29,16 @@ class SupervisedRouteDeclaration:
     maximum_steps: int
     maximum_distance: float
     maximum_total_hold: float
+    scope: str = 'local_trial'
+
+
+def scope_limits(scope):
+    """Separate explicit actions; a local trial never inherits travel limits."""
+    if scope == 'local_trial':
+        return (120., 32, 20., 2.)
+    if scope == 'destination_travel':
+        return (1500., 3000, 10000., 600.)
+    raise ValueError('Unknown supervised route scope')
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -70,15 +80,16 @@ class SupervisedRoutePolicy:
                 or not callable(check_current) or not callable(getattr(owner_input, 'sample', None))):
             raise ValueError('Explicit supervised scope, real observation providers and geometry required')
         d, r, b = declaration, geometry.ledger.runner, geometry.bounds
+        seconds, steps, distance, hold = scope_limits(d.scope)
         if (not all(isinstance(v, str) and v for v in
                     (d.record_id, d.route_sha256, d.motion_record_id, d.planning_bounds_record_id))
                 or d.open_flat_clear is not True or d.route_sha256 != r.route.artifact_sha256
                 or d.motion_record_id != r.calibration or d.planning_bounds_record_id != b.record_id
                 or not all(finite(v) for v in
                            (d.maximum_seconds, d.maximum_distance, d.maximum_total_hold))
-                or not 0 < d.maximum_seconds <= 120 or not 0 < d.maximum_distance <= 20
-                or not 0 < d.maximum_total_hold <= 2
-                or type(d.maximum_steps) is not int or not 1 <= d.maximum_steps <= 32
+                or not 0 < d.maximum_seconds <= seconds or not 0 < d.maximum_distance <= distance
+                or not 0 < d.maximum_total_hold <= hold
+                or type(d.maximum_steps) is not int or not 1 <= d.maximum_steps <= steps
                 or sum(s.length for s in r.route.segments) > d.maximum_distance
                 or b.maximum_requested_hold > .1 or b.maximum_actual_hold > .2
                 or log_veto.tail.path != expected_log_path

@@ -14,7 +14,7 @@ PROJECT = Path(__file__).resolve().parents[1]
 PATCH = PROJECT/'patches/nov12-7e3cd28-local-route-trial.patch'
 
 
-def build(source, output):
+def build(source, output, *, version='0.39.15', entry_path=None, extra_patches=(), change=None):
     if output.exists() or output.is_symlink():
         raise ValueError('Refusing to replace an owner preview')
     if source.is_symlink() or not source.is_dir():
@@ -39,23 +39,25 @@ def build(source, output):
             if path.is_symlink():
                 raise ValueError('Package source must be a direct file')
             shutil.copy2(path, work/'eql_automation'/path.name)
-        subprocess.run(['patch', '--batch', '--forward', '-p1', '-i', str(PATCH)],
-                       cwd=work, check=True, capture_output=True)
+        patches=(PATCH,*extra_patches)
+        for patch in patches:
+            subprocess.run(['patch', '--batch', '--forward', '-p1', '-i', str(patch)],
+                           cwd=work, check=True, capture_output=True)
         shutil.copy2(PROJECT/'HOWTO.md', work/'HOWTO.md')
         pins = {str(p.relative_to(work)): sha256(p) for p in sorted(work.rglob('*'))
                 if p.is_file() and p.name != 'BUILD_INFO.json'}
         raw = (json.dumps(pins, indent=2, sort_keys=True)+'\n').encode()
         (work/'SOURCE_HASHES.json').write_bytes(raw)
         manifest_hash = sha256(work/'SOURCE_HASHES.json')
-        entry = (PROJECT/'tools/owner_nov12_entry_03915.py').read_text()
+        entry = (entry_path or PROJECT/'tools/owner_nov12_entry_03915.py').read_text()
         assert entry.count('@MANIFEST_SHA256@') == 1
         (work/'owner_nov12_entry.py').write_text(entry.replace('@MANIFEST_SHA256@', manifest_hash))
         info = work/'BUILD_INFO.json'; record = json.loads(info.read_text())
-        record.update(version='0.39.15', preview_hashes=pins, source_manifest_sha256=manifest_hash,
+        record.update(version=version, preview_hashes=pins, source_manifest_sha256=manifest_hash,
             entry_sha256=sha256(work/'owner_nov12_entry.py'),
-            patch_sha256=[*record['patch_sha256'], sha256(PATCH)],
-            change='Separate owner-started same-session motion and short GFay route trial',
-            mode='measurement only; explicit finite route trial; combat and leveling disabled',
+            patch_sha256=[*record['patch_sha256'], *(sha256(patch) for patch in patches)],
+            change=change or 'Separate owner-started same-session motion and short GFay route trial',
+            mode='measurement only; explicit bounded movement action; combat and leveling disabled',
             real_position_acceptance=False, real_route_acceptance=False)
         info.write_text(json.dumps(record, indent=2)+'\n')
         work.rename(output)

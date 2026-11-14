@@ -276,12 +276,24 @@ class FixedRouteFollower:
                 or self.pose._sign_votes or self.pose.sign_conflict or self.pose.turn_dead):
             self.halt("Unknown heading or contradictory motion cannot start an automatic probe")
         segment = self.route.segments[self.index]
+        # The retained follower normally corrects steering continuously. Here
+        # it runs once before a stopped pulse: a sub-unit aim point followed
+        # by several units of forward travel can overshoot the correction and
+        # oscillate out of the strip. Aim at least one maximum nominal hold
+        # ahead. This changes steering only, never the checked motion envelope,
+        # selected corridor, actual hold limit or required fresh observations.
+        lookahead = max(2 * self.route.half_width, self.pose.speed * self.max_step_seconds)
         tuning = self.legacy.FollowTuning(arrive_radius=self.radius,
                     lookahead_min=min(1.2, self.route.half_width),
-                    lookahead_max=2 * self.route.half_width, turn_start=1., turn_stop=.5)
+                    lookahead_max=lookahead, turn_start=1., turn_stop=.5)
         follower = self.legacy.PathFollower((segment.start, segment.end), self.motion,
                     estimator=self.pose, fix_mode="typed", last_fix_at=now,
                     tuning=tuning)
+        # This instance never applies continuous turn ticks. Its inherited
+        # 20ms tick would override the explicit 1-degree start band with a
+        # 3.4-degree band at the measured turn rate. Pulse duration instead
+        # comes from suggest_hold and the actual release receipt below.
+        follower._tick = 0.
         # A fresh legacy follower projects only s±60 units. Seed s from the
         # measured pose on this exact segment so a long segment does not make
         # its lookahead point fall behind us after 60 units of actual progress.

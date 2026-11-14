@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 11:42 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 11:52 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,20 @@ Updated 2026-11-14 11:42 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.13 / owner 0.39.16:** separate owner-started travel action
+  now connects live-session motion and fresh positions to full GFay→Crushbone
+  approach planning, tile geometry and checked movement. Installed map hash
+  matches. Destination has explicit 25-minute/3,000-control bounds; short-trial
+  limits remain unchanged. Fixed a steering lookahead/deadband mismatch found
+  by the complete runtime harness. Simulated two-polygon arrival and F9 during
+  DOWN pass; follower 25 cases/20 subtests and 42 policy/preflight checks pass.
+  Timing refusals under devbox load are recorded; no deadlines were relaxed.
+  Alienware 0.39.16 GUI and copied/installed-data startup pass without input;
+  startup SHA `7b5c7df74f3e8f93038fce6ec656f4b949e9c7c7a5ccb0a5e0ec504ce1628fb5`.
+  **Remaining gate:** owner current-session zone/hotbutton setup and actual
+  traversal; no real route or leveling accepted. Next consume travel evidence
+  and implement zone/camp execution/current-zone startup. Assist 0.39.13 remains
+  separate. G0 passed; current level, XP/hour, deaths and camp unknown.
 - **Source 0.42.12:** explicit pinned tile/overlap policy now follows fresh
   plans into per-movement terrain/static/BSP preparation. Copied five- and
   forty-ULP GFay seams pass all three checks and refuse without overlap

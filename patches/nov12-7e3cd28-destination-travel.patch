@@ -1,0 +1,89 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -383,7 +383,7 @@
+             column.addWidget(self.ap_state)
+             self.ap_default_status = (
+                 "Test your /location hotbutton, then use Supervised motion measurement on open flat ground. "
+-                "The separate route trial measures, checks a short GFay path, moves, then stops. No leveling starts."
++                "Choose a short GFay test or supervised travel to the Crushbone approach. Combat and leveling stay manual."
+                 if measurement_only else
+                 "Travel is unavailable in this assist preview. Movement and targeting stay manual.")
+             self.ap_status = QLabel(self.ap_default_status)
+@@ -453,12 +453,19 @@
+                 self.supervised_route_trial.setObjectName("supervisedLocalRouteTrialButton")
+                 self.supervised_route_trial.setToolTip("Measure motion, plan two units from here in GFay, follow the checked path, then stop.")
+                 self.supervised_route_trial.clicked.connect(self.configure_supervised_route_trial)
+-                column.addWidget(self.supervised_route_trial)
++                travel_row = QHBoxLayout()
++                travel_row.addWidget(self.supervised_route_trial)
++                self.supervised_destination = QPushButton("Travel toward Crushbone…")
++                self.supervised_destination.setObjectName("supervisedDestinationTravelButton")
++                self.supervised_destination.setToolTip("Calibrate here, plan from your current GFay position, then follow the checked approach route.")
++                self.supervised_destination.clicked.connect(self.configure_supervised_destination)
++                travel_row.addWidget(self.supervised_destination)
++                column.addLayout(travel_row)
+                 limits = QLabel(
+                     "The supervised measurement saves relative speed/turn observations and finishes stopped. "
+                     "Open ground is your confirmation; this does not independently check obstacles or certify a route. "
+                     "G0 is a separate single-pulse stop check. "
+-                    "Only the separate short route trial can move along a checked two-unit GFay plan. "
++                    "Short route tests and supervised destination travel follow checked GFay paths and stop on failure. "
+                     "Combat, targeting, route recording and leveling remain disabled. The measurement "
+                     "does not determine character radius, height, climb, or slope limits.")
+                 limits.setWordWrap(True)
+@@ -819,6 +826,37 @@
+             if dialog.exec() == QDialog.DialogCode.Accepted and confirmation.isChecked():
+                 self.post("supervised_local_route_trial", {"open_flat_clear": True})
+ 
++        def configure_supervised_destination(self):
++            if not measurement_only:
++                return
++            dialog = QDialog(self)
++            dialog.setWindowTitle("Supervised travel — Crushbone approach")
++            layout = QVBoxLayout(dialog)
++            text = QLabel("This moves toward the client map's Crushbone approach in Greater Faydark. "
++                          "It does not enter Crushbone, fight, loot or level unattended. "
++                          "The helper needs a Greater Faydark zone entry observed since startup and a successful "
++                          "Test /location hotbutton in this same helper session.\n\n"
++                          "Start on wide open, flat ground with chat closed, target cleared and melee off. "
++                          "After a four-second focus countdown, seven short calibration presses measure movement. "
++                          "The helper then plans from fresh current positions and checks terrain and objects before each move.\n\n"
++                          "Stay present and watch for enemies or moving obstacles. F9/F11 or Stop measurement cancels. "
++                          "The action stops on arrival, a failed check or after 25 minutes of travel. "
++                          "It never resumes itself. This is an experimental route; actual traversal is unverified.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            confirmation = QCheckBox("I will supervise travel; the starting calibration area is clear, flat and open.")
++            layout.addWidget(confirmation)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Start travel toward Crushbone")
++            ok.setEnabled(False)
++            confirmation.toggled.connect(ok.setEnabled)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if dialog.exec() == QDialog.DialogCode.Accepted and confirmation.isChecked():
++                self.post("supervised_destination_travel", {"open_flat_clear": True})
++
+         def configure_supervised_motion(self):
+             if not measurement_only:
+                 return
+@@ -1043,6 +1081,8 @@
+                     "location_hotkey_test_enabled": measurement_only and window.test_location_hotkey.isEnabled(),
+                     "supervised_route_trial_visible": measurement_only and window.supervised_route_trial.isVisible(),
+                     "supervised_route_trial_enabled": measurement_only and window.supervised_route_trial.isEnabled(),
++                    "supervised_destination_visible": measurement_only and window.supervised_destination.isVisible(),
++                    "supervised_destination_enabled": measurement_only and window.supervised_destination.isEnabled(),
+                     "supervised_motion_visible": measurement_only and window.supervised_motion.isVisible(),
+                     "supervised_motion_enabled": measurement_only and window.supervised_motion.isEnabled(),
+                 }, indent=2) + "\n")
+@@ -1096,7 +1136,7 @@
+ 
+ TRAVEL STATUS
+ F11 travel and F12 recording are disabled in this preview. Routes for levels 1–20 are being built from copied client geometry; real movement validation is incomplete. You do not need to record routes by hand.
+-The separate --measure-navigation mode offers only the supervised G0 stop check. Passing G0 does not enable leveling or certify a route.
++The separate --measure-navigation mode offers supervised motion, a short GFay test and travel toward the Crushbone approach. It does not run combat or leveling. G0 is already passed; do not repeat it.
+ 
+ SOURCE OF SPELL LEVELS
+ The installed client's spells_us.txt is authoritative for this installation. The progression tab is a preview; your live bar is filtered against a fresh /outputfile spellbook export. No third-class skills are assumed.
