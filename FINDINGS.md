@@ -1,5 +1,62 @@
 # FINDINGS
 
+## Live zone tracking and route reader handoff — 2026-11-14 10:41 UTC
+
+**VERIFIED implementation:** source 0.42.7 adds `owner_zone_tracker.py` to the
+actual retained-helper route adapter. It creates a `LocationLogReader` lazily
+from helper `read_log()` ticks, after the game window exists. It starts at EOF
+and accepts newly appended, catalog-resolved zone entries. It never imports the
+old helper's historical `self.zone`, guesses GFay, or replays saved positions.
+The binding contains canonical game path, character/server, window ID, PID and
+process start ticks. Level changes do not destroy zone knowledge; process,
+character and path changes do. This is in-memory same-session state, not a
+persistent checkpoint or proof of uninterrupted client logging.
+
+`lease_current_zone()` lends the exact reader to height/route startup, discards
+passively observed positions, and pauses passive cursor consumption for the
+whole lease, including reentrant helper pumps. The inherited rotation log tail
+continues independently. Stop/job cancellation revokes the lease immediately;
+passive polling resumes only after borrower cleanup releases it. `RouteSession`
+checks an optional exact-reader lease on every operation; route attachment
+rejects a competing lease. Competing hotbutton/motion/pointer work cannot acquire
+it. Missing providers create no sender, command, capture or movement authority.
+No source entry point for owner route execution is enabled by this change.
+
+**VERIFIED checks:** 86 focused cases pass, including actual retained-engine
+log handling and no-input route-session handoff/revocation. Three existing
+wall-clock pipe movement tests were outside this focused run, not claimed as
+passed. `tools/probe_observed_height_bootstrap.py` now sends the copied GFay
+fixture through passive zone observation, exclusive handoff, new stopped
+positions and the real source-floor height producer. All positions remain
+synthetic. Artifact `nav-candidates/gfay-observed-height-bootstrap-0.42.7.json`,
+SHA `c20daad6fef7a65e8554ec0fd06d573704c4e5a3e9dafe5c18eaa397ec082155`.
+
+**VERIFIED static query investigation; no client commands executed:** retained
+executable SHA `fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36`
+and resource SHA `0dd0117a23092cb195d0e62d6b03a49bf1aaf8dbfb843dd629e38ca950732fde`
+were used. `/who` table `0x140de9480` points to `0x14023c800`, then handler
+`0x1402b88d0–0x1402b92d8`; no-argument/all modes send a request. Resources
+12316/12317/12318 resemble zone footers, but the current-zone argument source
+and response/loading semantics were not established. No trusted footer parser
+was added. `/pickzone` only prints its current-zone status in a cooldown branch;
+the no-argument available branch can issue a zone-selection request. It is not
+used as a query-only shortcut. `/charinfo` reports origin/bind point, `/time`
+reports clocks, and `/waypoint` requests a path/map marker without establishing
+a current-zone output or autonomous movement. Exact command table bindings and
+three handler byte hashes were rechecked in
+`client-data/native-zone-query-20261114T104025Z/probe.json`, SHA
+`edf2da3c52e47dab11fb595d96dd23060fe3992c19f1c616a3c91f00a4d7baf5`.
+
+**Remaining real-client work:** initial current-zone observation when launched
+mid-zone, current scene interpretation, measured motion/body bounds and the
+owner route entry are still incomplete. The passive handoff helps only after a
+new zone entry is observed in that helper/game session. One read-only Alienware
+process check found no `eqgame.exe`; it supplied no current logfile-writer
+binding or game-scene evidence. The owner motion 0.39.12 result alone cannot
+enable the route. Assist 0.39.13 and passed G0 are unchanged; no new test or
+G0 repeat was requested. Current level, XP/hour, deaths and camp remain unknown;
+no real 1–20 route, automated level gain or fresh hands-off 1–50 run is accepted.
+
 ## Observed ground-height startup — 2026-11-14 10:29 UTC
 
 **VERIFIED implementation:** source 0.42.6 adds `observed_height.py`, which

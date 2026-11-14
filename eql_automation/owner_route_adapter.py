@@ -10,13 +10,14 @@ from uuid import uuid4
 
 from .fixed_route_follower import RouteHalt
 from .route_session import RouteSessionDriver
+from .owner_zone_tracker import make_zone_tracking_engine
 
 
 def make_route_session_engine(base_engine, *, output_root=None):
     output_root = Path(output_root) if output_root is not None else (
         Path.home()/'.local/share/eql-automation/route-sessions')
 
-    class RouteSessionEngine(base_engine):
+    class RouteSessionEngine(make_zone_tracking_engine(base_engine)):
         def __init__(self,*args,**kwargs):
             self.route_session_driver = None
             self.route_session_epoch = 0
@@ -27,8 +28,9 @@ def make_route_session_engine(base_engine, *, output_root=None):
             return (self.measurement_only is True and not self.active and not self.preparing
                 and not self.stopping and not self.command_recovery_pending
                 and not any(getattr(self,name,None) is not None for name in
-                    ('autopilot','deferred','loc_request','loc_wanted','recorder',
-                     'position_observation','navigation_preflight','motion_collection_driver')))
+                    ('autopilot','deferred','loc_request','loc_wanted','recorder','pointer',
+                     'position_observation','navigation_preflight','motion_collection_driver',
+                     'hotkey_test','supervised_motion')))
 
         def attach_route_session(self,driver):
             epoch = self.route_session_epoch
@@ -39,6 +41,10 @@ def make_route_session_engine(base_engine, *, output_root=None):
                     or self.sender is not driver.sender):
                 raise ValueError('Idle measurement helper, same sender/stop lock and explicit route driver required')
             driver.session._check()
+            tracker = self.live_zone_tracker
+            if (tracker is not None and tracker.lease is not None
+                    and driver.session.zone_lease is not tracker.lease):
+                raise ValueError('Route must consume the exclusive current-zone lease')
             self.route_session_driver = driver
             if epoch != self.route_session_epoch or not self.jobs.empty():
                 driver.session.cancel('helper job raced route attachment')
@@ -66,6 +72,9 @@ def make_route_session_engine(base_engine, *, output_root=None):
             driver,self.route_session_driver = self.route_session_driver,None
             if driver is None:return
             if driver.session.phase != 'arrived':driver.session.cancel(reason)
+            self._revoke_zone_lease()
+            if driver.session.zone_lease is not None:
+                driver.session.zone_lease.release()
             record = driver.session.snapshot()
             self.last_route_session_result = record
             self.last_route_session_path = None

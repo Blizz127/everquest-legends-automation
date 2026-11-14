@@ -20,7 +20,7 @@ from test_route_floor_commit import legacy,setup
 from test_route_step_sender import PipeSender
 
 
-def make(tmp_path,legacy,*,real=False,lock=None):
+def make(tmp_path,legacy,*,real=False,lock=None,tracked_zone=False):
     h=SimpleNamespace(now=100.,mode='measurement',generation=1,window=42,
         point=(1.,2.,.6),events=[],commands=[],refs=[],chain_reads=[],hook=lambda:None)
     h.clock=time.monotonic if real else lambda:h.now
@@ -38,11 +38,21 @@ def make(tmp_path,legacy,*,real=False,lock=None):
     def append(body):
         with h.log.open('a') as out:out.write(h.wall().strftime('[%a %b %d %H:%M:%S %Y] ')+body+'\n')
     h.append=append
-    h.reader=LocationLogReader(h.log,zones,expected_character='Probe',expected_server='private')
-    append('You have entered Fixture.');h.reader.poll(now=h.clock())
+    if tracked_zone:
+        from eql_automation.owner_zone_tracker import LiveZoneTracker
+        h.tracker=LiveZoneTracker(h.log,zones,expected_character='Probe',expected_server='private',
+            binding_reader=lambda:(h.window,'Probe','private'),clock=h.clock)
+        h.reader=h.tracker.reader
+        append('You have entered Fixture.');h.tracker.poll()
+        h.zone_lease=h.tracker.acquire()
+    else:
+        h.reader=LocationLogReader(h.log,zones,expected_character='Probe',expected_server='private')
+        append('You have entered Fixture.');h.reader.poll(now=h.clock())
+        h.zone_lease=None
     assert h.reader.tail.epoch==1 and h.reader.zone_generation==1
     h.session=RouteSession(ledger,h.reader,f.observer,initial_release_at=h.clock(),
-        binding_reader=lambda:(h.window,'Probe','private'),record_id='synthetic-route-loop',local_wall_clock=h.wall)
+        binding_reader=lambda:(h.window,'Probe','private'),record_id='synthetic-route-loop',local_wall_clock=h.wall,
+        zone_lease=h.zone_lease)
     h.f,h.runner,h.ledger=f,runner,ledger
     h.rd,h.wr=os.pipe();h.sender=PipeSender(h.wr)
     def location(request):
@@ -97,6 +107,7 @@ def make(tmp_path,legacy,*,real=False,lock=None):
             h.point=(h.point[0]+10.*duration,h.point[1],h.point[2])
     h.tick=tick
     def close():
+        if h.zone_lease is not None:h.zone_lease.release()
         os.close(h.wr)
         data=b''
         while chunk:=os.read(h.rd,4096):data+=chunk
@@ -104,6 +115,31 @@ def make(tmp_path,legacy,*,real=False,lock=None):
         h.events=[(kind,key,value) for _,_,kind,key,value in _EVENT.iter_unpack(data)]
     h.close=close
     return h
+
+
+@pytest.mark.parametrize('change',['none','revoke','release','process'])
+def test_tracked_reader_handoff_enters_route_and_honors_revocation(tmp_path,legacy,change):
+    h=make(tmp_path,legacy,tracked_zone=True)
+    try:
+        request=first_request(h)
+        assert h.session.reader is h.zone_lease.reader
+        if change=='revoke':h.tracker.revoke_lease()
+        elif change=='release':h.zone_lease.release()
+        elif change=='process':h.window+=1
+        if change=='none':
+            h.session.command_sent(request,CommandReceipt(h.clock(),h.clock()))
+            h.append('Your Location is 2.00, 1.00, 2.70')
+            cursor=h.reader.tail.position
+            h.tracker.poll()
+            assert h.reader.tail.position==cursor
+            h.now+=.01;h.session.tick()
+            assert h.session.first.raw_fix is h.reader.latest
+        else:
+            with pytest.raises(RouteHalt):h.session.tick()
+            assert h.session.phase=='stopped'
+        assert not h.session.steps and not h.sender.held
+    finally:h.close()
+    assert not h.events
 
 
 @pytest.fixture

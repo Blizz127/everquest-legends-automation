@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.6** · rotation preview **0.39.13** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
+Source **0.42.7** · rotation preview **0.39.13** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -20,11 +20,15 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** The next owner check is the combined hotbutton + motion measurement
 below. The manual position observation remains available separately.
 
-Source 0.42.6 adds the height-measurement connection needed during supervised
-route startup. The owner route launcher and current-zone/scene connections
-are still in development. The 0.39.12 motion result is one required input;
-it does not enable autopilot by itself. Assist 0.39.13 and the motion test
-below are unchanged. No repeat of G0 is needed.
+Source 0.42.7 adds passive zone tracking to the route adapter. When the helper
+has observed a new zone entry, route startup can borrow that same reader without
+losing the zone or reusing old positions. This source change is not installed in
+the current assist/motion previews. Starting after an earlier zone entry still
+leaves zone identity unknown; no historical scan or guessed map is used.
+The owner route launcher, current scene and motion connections remain in
+development. The 0.39.12 motion result does not enable autopilot by itself.
+Assist 0.39.13 and the motion test below are unchanged. No new owner test or
+repeat of G0 is needed.
 
 ## Next owner test on Alienware: 0.39.12
 

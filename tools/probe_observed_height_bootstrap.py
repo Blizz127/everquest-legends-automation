@@ -18,7 +18,7 @@ from tools.probe_route_ground_observer import REPLAY,REPLAY_SHA,PLAN,MESH,ARCHIV
 from eql_automation.fixed_route_follower import FixedRoute
 from eql_automation.ground_binding import GroundGeometryEvidence
 from eql_automation.ground_observer import RouteGroundObserver
-from eql_automation.location_log import LocationLogReader
+from eql_automation.owner_zone_tracker import LiveZoneTracker
 from eql_automation.observed_height import measure_current_height,height_record,current_height_allowed
 
 ZONES=STORE/'client-data/retail-sample/Resources/ZoneNames.txt'
@@ -34,7 +34,8 @@ def run(output):
     pins={REPLAY:REPLAY_SHA,PLAN:fixture['plan'],MESH:fixture['mesh'],ARCHIVE:fixture['source_archive'],
           ZONES:sha256(ZONES.read_bytes()).hexdigest()}
     for path in (Path(__file__),*(PROJECT/'eql_automation'/name for name in (
-            'observed_height.py','ground_observer.py','ground_binding.py','location_log.py'))):
+            'observed_height.py','ground_observer.py','ground_binding.py','location_log.py',
+            'owner_zone_tracker.py'))):
         pins[path]=sha256(path.read_bytes()).hexdigest()
     def verify():
         for path,pin in pins.items():
@@ -57,18 +58,23 @@ def run(output):
     owner=('synthetic-window','Probe','private')
     with TemporaryDirectory(prefix='eql-height-fixture-') as directory:
         log=Path(directory)/'eqlog_Probe_private.txt'; log.touch()
-        reader=LocationLogReader(log,ZONES,expected_character='Probe',expected_server='private')
+        tracker=LiveZoneTracker(log,ZONES,expected_character='Probe',expected_server='private',
+            binding_reader=lambda:owner,clock=lambda:now)
+        reader=tracker.reader
         def append(text):
             with log.open('a') as stream:
                 stream.write(wall().strftime('[%a %b %d %H:%M:%S %Y] ')+text+'\n')
         names=[name for name,zone_id in reader.zone_ids.items() if zone_id==54]
         if len(names)!=1:raise ValueError('Copied zone catalog does not uniquely name GFay')
-        append('You have entered '+names[0]+'.'); reader.poll(now=now)
+        append('You have entered '+names[0]+'.'); tracker.poll()
         assert reader.zone_id==54
+        append(body);tracker.poll()
+        lease=tracker.acquire()
+        assert lease.reader is reader and reader.latest is None
         append(body); first=reader.poll(now=now)[0]
         now+=.5;append(body);second=reader.poll(now=now)[0]
         cal=measure_current_height(observer,reader,first,second,route=route,segment_index=0,
-            owner_binding=owner,binding_reader=lambda:owner,clock=lambda:now,
+            owner_binding=owner,binding_reader=lease.check,clock=lambda:now,
             record_id='copied-gfay-synthetic-height',released_at=99.8,local_wall_clock=wall)
         now+=.2;append(body);new_fix=reader.poll(now=now)[0]
         aligned=observer.observe(new_fix,route=route,segment_index=0,height_calibration=cal,
@@ -76,6 +82,7 @@ def run(output):
         assert aligned.raw_fix is new_fix and not aligned.live_alignment_verified
         assert current_height_allowed(cal,mode='measurement',route_sha256=route.artifact_sha256)
         assert not current_height_allowed(cal,mode='full_auto')
+        lease.release()
     verify()
     result=dict(format='eql-copied-observed-height-bootstrap-v1',simulation_only=True,
         pins={str(p):h for p,h in pins.items()},synthetic_actor_offset=synthetic_actor_offset,
@@ -83,6 +90,7 @@ def run(output):
         source_height=aligned.source_floor.ground_wld_xyz[2],
         baked_height=aligned.mesh_projection.package_xyz[2],
         fresh_sequence=aligned.raw_fix.log_line_seq,
+        same_reader_zone_handoff=True,passive_positions_discarded=True,
         observed_scope_retained=True,full_auto_refused=True,game_input_sent=False,
         native_executed=False,real_client_accepted=False,route_accepted=False)
     output.parent.mkdir(parents=True,exist_ok=True)

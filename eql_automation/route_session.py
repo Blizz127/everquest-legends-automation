@@ -35,7 +35,7 @@ class RouteSession:
     """
     def __init__(self, ledger, reader, ground, *, initial_release_at,
                  binding_reader, record_id, max_seconds=1800.,
-                 local_wall_clock=datetime.now):
+                 local_wall_clock=datetime.now, zone_lease=None):
         if (not isinstance(ledger, RouteFloorCommit)
                 or not isinstance(reader, LocationLogReader)
                 or not isinstance(ground, RouteGroundObserver)
@@ -43,6 +43,12 @@ class RouteSession:
                 or not isinstance(record_id, str) or not record_id
                 or not finite(max_seconds) or not 0 < max_seconds <= 86400):
             raise ValueError('Route ledger, exclusive log, ground producer and bounded session required')
+        if zone_lease is not None:
+            from .owner_zone_tracker import ZoneReaderLease
+            if not isinstance(zone_lease, ZoneReaderLease) or zone_lease.reader is not reader:
+                raise ValueError('Zone lease must own the route reader')
+            zone_lease.check()
+        self.zone_lease = zone_lease
         r = ledger.runner
         now = ledger.clock()
         if (r.phase != 'need_start' or r.steps or ledger._pending is not None or ledger._busy is not None
@@ -97,6 +103,8 @@ class RouteSession:
         now = self.clock()
         try:
             self.runner._check(now)
+            if self.zone_lease is not None:
+                self.zone_lease.check()
             binding = self.binding_reader()
         except Exception as error:
             self._stop('Route session binding failed: '+str(error))

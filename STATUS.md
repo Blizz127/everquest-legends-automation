@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 10:31 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 10:41 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,17 @@ Updated 2026-11-14 10:31 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.7:** the route adapter now observes new zone entries during
+  helper log ticks and lends the same reader exclusively to height/route
+  startup. Old positions are discarded; reentrant helper ticks cannot consume
+  route replies. Stops/jobs revoke the lease; process/character changes clear
+  zone knowledge. 86 focused cases pass; the copied GFay zone-to-height probe
+  passes with synthetic observations. No current-zone query command was proven,
+  and a helper started after zoning still cannot bootstrap from old history.
+  **Next:** complete initial current-zone/scene acquisition and the owner route
+  assembly using current motion results. Assist 0.39.13, pending motion 0.39.12
+  and passed G0 are unchanged. No new owner action, real route or XP accepted;
+  current level, XP/hour, deaths and camp unknown.
 - **Source 0.42.6:** current stopped-height startup now derives its offset from
   two fresh log positions and independently sampled source terrain. The typed
   record retains live_verified=false and works through measurement-mode ground
