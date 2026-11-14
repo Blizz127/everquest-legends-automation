@@ -1,11 +1,25 @@
 # STATUS
 
-Updated 2026-11-14 18:06 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 18:12 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.49 validated; private publication pending.** Finite camp
+  runtime now joins preparation, selected movement, configured location-key
+  collection, endpoint checks and continued probes. Missing/refusing movement
+  policy sends no movement; there is no permissive default. Completed collectors
+  detach before geometry; stop revokes the lease and defers release through
+  actual key cleanup. Two local admission checks pass. All 11 Alienware checks
+  pass in 33.68 seconds, including a complete seven-probe OS-pipe run, stop
+  requests after DOWN, focus loss and pinned-descriptor replacement handling.
+  Policy/game feedback is synthetic; no game input or native owner-control
+  integration. Output SHA
+  `f285d8ba47dd44c3438d0bbbd00224bae4b1679ef0481c6f16b3d0b4c700df72`.
+  Next: camp-position scope handoff plus retained-engine F8/F9 integration and
+  explicit current movement policy. Preview stays 0.39.30; G0 passed. Current
+  level/XP/hour/deaths/camp unknown; no real 1–20/1–50 acceptance.
 - **Source 0.42.48 privately published; preview stays 0.39.30.** Exact confirmed
   probe endpoints now continue through a private floor reference and genuinely
   new stopped pairs. The original checkpoint/calibration stays unchanged; all
