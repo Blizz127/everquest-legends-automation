@@ -1,6 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 00:59 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:01 UTC for coordinator task `829a00229b29`.
+
+- Private source **0.41.48**, commit `b671d2d`, is staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.48/source`. Archive SHA
+  `2cbc8b52a66849121480ae686fd2f1fe5c00634686a9c01ea03783647a99cb05`
+  matched; remote API/CLI startup and offline navigation smoke passed after
+  correcting the smoke wrapper's JSON-key assumption. No client input.
 
 - Source **0.41.48** adds a G2 safety-provider boundary using fresh input
   scans around independent UI evidence, bound to window/process, calibration,

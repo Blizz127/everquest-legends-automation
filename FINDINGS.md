@@ -1,5 +1,24 @@
 # FINDINGS
 
+## Source 0.41.48 private publication — 2026-11-14 01:01 UTC
+
+**VERIFIED:** Source commit `b671d2d` is staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.41.48/source`. Archive SHA-256
+`2cbc8b52a66849121480ae686fd2f1fe5c00634686a9c01ea03783647a99cb05`
+matched before extraction outside the game install. API import, both new
+CLI startup checks, and the offline navigation demo returned zero. The demo
+reports `final_directive=ARRIVED`, `simulation_only=true`, `no_game_input=true`.
+The initial smoke wrapper expected the wrong JSON key `state`; parsing the
+saved output with its actual `final_directive` key resolved that reporting
+error without rerunning the demo. Private `smoke.json` retains that note.
+No devices were opened, game input sent, or character/prefix changed.
+
+Recommended assist remains 0.39.6 and separate G0 candidate 0.39.7. The owner
+has not yet supplied readiness for the pending read-only Current Zone map
+capture; that observation, live scene calibration, alignment/speed and a
+bounded fixed-route controller remain required. No 1–20 leg, live camp or
+automated level gain is accepted. The goal remains active.
+
 ## Scene integration and fixed GFay segment export — 2026-11-14 00:59 UTC
 
 **VERIFIED focused tests:** `g2_safety_provider.py` joins the existing
