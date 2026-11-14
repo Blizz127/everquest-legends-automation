@@ -16,6 +16,8 @@ class Device:
         self.closed = 0
         self.fail = False
         self.on_events = lambda: None
+        self.contacts = 0
+        self.motion_supported = None
 
     def check_identity(self):
         if self.fail:
@@ -23,6 +25,10 @@ class Device:
 
     def held_count(self):
         return self.held
+
+    def motion_state(self):
+        supported = 3 not in self.types if self.motion_supported is None else self.motion_supported
+        return supported, self.contacts
 
     def events(self):
         self.on_events()
@@ -78,6 +84,7 @@ def test_initial_attach_needs_stable_scan_and_held_keys_are_seen_before_events()
     [(1, 272, 1), (1, 272, 0)],  # mouse button, no function keys required
     [(1, 304, 1)],  # gamepad button
     [(2, 0, 1)],  # mouse motion
+    [(3, 32, 0)],  # absolute volume changing to zero is still activity
 ])
 def test_brief_owner_activity_cannot_disappear_between_snapshots(events):
     observer, backend, device, clock = setup()
@@ -96,6 +103,19 @@ def test_uninterpreted_absolute_axis_is_not_assumed_neutral():
     observed = observer.sample()
     assert observed.coverage_complete and observed.unsupported_motion_devices == 1
     assert not observed.clear_at(clock[0])
+
+
+def test_touchpad_contact_held_before_attach_or_released_during_scan_blocks_clear():
+    observer, backend, device, clock = setup()
+    device.types.add(3)
+    device.motion_supported = True
+    device.contacts = 1
+    observer.sample()
+    device.on_events = lambda: setattr(device, "contacts", 0)
+    observed = observer.sample()
+    assert observed.held_key_count == 0 and observed.active_contact_count == 1
+    assert not observed.clear_at(clock[0])
+    assert observer.sample().clear_at(clock[0])
 
 
 def test_inaccessible_node_stays_in_inventory_and_prevents_clear():
@@ -178,7 +198,7 @@ def test_slow_scan_clock_rollback_device_failure_and_close_never_clear():
 
 def test_native_backend_opens_readonly_and_closes_on_capability_failure(monkeypatch):
     opened, closed = [], []
-    monkeypatch.setattr(os, "open", lambda path, flags: opened.append((path, flags)) or 17)
+    monkeypatch.setattr(os, "open", lambda path, flags: opened.append((path, flags)) or (16 + len(opened)))
     monkeypatch.setattr(os, "close", closed.append)
     monkeypatch.setattr(os, "fstat", lambda fd: SimpleNamespace(st_dev=1, st_ino=2, st_rdev=3))
     def fail(fd):
@@ -188,4 +208,47 @@ def test_native_backend_opens_readonly_and_closes_on_capability_failure(monkeypa
         _ReadOnlyDevice(DeviceIdentity("/dev/input/event7", 1, 2, 3), api)
     assert opened[0][1] & os.O_ACCMODE == os.O_RDONLY
     assert opened[0][1] & os.O_NONBLOCK
-    assert closed == [17]
+    assert len(opened) == 2 and all(flags & os.O_ACCMODE == os.O_RDONLY for _, flags in opened)
+    assert closed == [17, 18]
+
+
+def test_state_ioctl_cannot_flush_event_reader_queue(monkeypatch):
+    opened, closed, queues = [], [], {}
+    def open_device(path, flags):
+        fd = 17 + len(opened)
+        opened.append(fd)
+        queues[fd] = []
+        return fd
+    monkeypatch.setattr(os, "open", open_device)
+    monkeypatch.setattr(os, "close", closed.append)
+    monkeypatch.setattr(os, "fstat", lambda fd: SimpleNamespace(st_dev=1, st_ino=2, st_rdev=3))
+    def current_keys(fd, kind):
+        assert kind == 1
+        queues[fd].clear()  # Linux EVIOCGKEY clears this client's queued keys.
+        return []
+    def read(fd):
+        if not queues[fd]:
+            raise BlockingIOError()
+        events, queues[fd] = queues[fd], []
+        return events
+    api = SimpleNamespace(ioctl_capabilities=lambda fd: {1: [30]},
+                          ioctl_EVIOCG_bits=current_keys, device_read_many=read)
+    device = _ReadOnlyDevice(DeviceIdentity("/dev/input/event7", 1, 2, 3), api)
+    assert device.fd != device.state_fd and len(opened) == 2
+    for fd in opened:
+        queues[fd] = [(1, 0, 1, 30, 1), (1, 1, 1, 30, 0)]
+    assert device.held_count() == 0
+    assert device.events() == [(1, 30, 1), (1, 30, 0)]
+    device.close()
+    assert closed == opened
+
+
+def test_evdev_system_error_invalidates_observation_and_closes_devices():
+    observer, backend, device, clock = setup()
+    observer.sample()
+    def fail():
+        raise SystemError("evdev returned NULL without exception")
+    device.held_count = fail
+    result = observer.sample()
+    assert not result.coverage_complete and not result.clear_at(clock[0])
+    assert device.closed == 1

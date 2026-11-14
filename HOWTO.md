@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.46 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.47 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,8 +19,8 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.46 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.46/source`; the runnable
+Source tools 0.41.47 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.47/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
 Preview 0.39.6 builds on the existing rotation bot and proposes its HP crop
@@ -53,6 +53,21 @@ The bounded Crushbone `--comparison detail` experiment has now run. It
 reproduced the baseline exactly, then changed only sample distance 6→3.
 The suspect outer-ring grade worsened and warnings rose from 21 to 439.
 That candidate is not adopted; no route gains movement acceptance.
+
+Project 0.41.47 adds contact-state handling for the Alienware touchpad and
+its mouse volume control. It also corrects the new observer's key-event loss:
+Linux held-key queries clear queued key events for that descriptor, so state
+queries and event reads now use two independent read-only opens. Thirty-two
+focused checks passed. A brief read-only Alienware probe covered all 26 input
+devices, including the actual touchpad slot API; it sent no input. This is
+not a supervised held-finger/quick-key acceptance test and is not wired into
+movement yet. Unknown controllers and other absolute-axis layouts still refuse.
+
+The read-only capture now includes the map's zone label. When a current-zone
+observation is requested, open the game map, click **Current Zone**, and leave
+the game focused. The lead can then run the capture over SSH without typing
+into the game. The map can browse another zone, so a label by itself remains
+unverified. No new movement test is requested by this source release.
 
 Project 0.41.46 adds a read-only owner-input observer for future movement
 checks. It opens event devices read-only, counts held keys/buttons and recent
@@ -436,7 +451,7 @@ and HP calibration, but its movement implementation is not client-accepted.
 
 Project 0.41.35 and later include an optional owner-run screenshot crop tool. It reads
 one focused EverQuest window without sending any input, saves only the player,
-target and chat window crops under
+target, chat and map window crops under
 `~/.local/share/eql-automation/g2-ui-observations/`, and marks every G2 safety
 flag **unknown**. The saved client UI layout places Legira's HP gauge at
 `(1966, 693, 330, 17)` on the 2560×1600 layout; the old HP calibration
@@ -447,7 +462,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.46/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.47/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -455,7 +470,7 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.46/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.47/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 
@@ -463,6 +478,13 @@ Its numeric result remains unverified until the owner confirms the live
 screen state at full HP and a second known HP state. The earlier 0.39.4
 preview still requires manual **Calibrate HP** on the inner red band at full
 health for its own smart-heal setting; do not use the old 51-pixel saved crop.
+
+For an explicitly requested map observation, select **Current Zone** in the
+map first and use `--label current-zone` instead of `--label idle`. The tool
+never opens the map or clicks its controls. The saved map may be hidden or
+have stale geometry, and all zone/scene flags remain unverified until the
+image is reviewed. The current-zone button rectangle does not resolve through
+the old layout parser, so this release does not attempt an automatic click.
 
 The tool prints its private output directory. It requires the reviewed 0.39.4
 preview files and exactly one focused game process. It does not turn on F11 or

@@ -25,7 +25,7 @@ DEFAULT_PREVIEW = Path.home() / ".local/share/eql-automation/owner-assist/0.39.4
 DEFAULT_GAME = (Path.home() / "Games/everquest-legends/drive_c/users/Public/"
                 "Daybreak Game Company/Installed Games/EverQuest Legends")
 DEFAULT_OUTPUT = Path.home() / ".local/share/eql-automation/g2-ui-observations"
-WINDOWS = ("PlayerWindow", "TargetWindow", "MainChat")
+WINDOWS = ("PlayerWindow", "TargetWindow", "MainChat", "MapViewWnd")
 CONTROLS = (
     ("PlayerWindow", "Player_HP"),
     ("PlayerWindow", "Player_Mana"),
@@ -33,6 +33,7 @@ CONTROLS = (
     ("TargetWindow", "Target_HP"),
     ("TargetWindow", "Target_Class"),
     ("TargetWindow", "Target_Level"),
+    ("MapViewWnd", "MRA_ZoneLabel"),
 )
 
 
@@ -151,6 +152,10 @@ def capture(*, label: str, delay: float, preview: Path, game: Path,
         "ui_scale_from_saved_ini": layout.ui_scale,
         "source_sha256_postcapture": sources,
         "saved_layout_is_live_verified": False,
+        # The map can browse other zones. A captured label alone is not a
+        # current-zone observation, even if it matches a historical log line.
+        "map_label_is_current_zone_verified": False,
+        "map_label_requires_current_zone_selection": True,
         "crops": saved,
         "missing_or_offscreen_crops": [name for name, box in crops.items() if box is None],
     }

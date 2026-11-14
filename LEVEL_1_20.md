@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 00:40 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 00:50 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -48,6 +48,14 @@ A new read-only input observer passes 13 focused tests, but its live device
 coverage, axis/contact interpretation and integration remain unverified.
 Independent scene, current position, alignment and speed observations still
 precede the first short GFay leg. The old G0 visible stop remains recorded.
+The 0.41.47 input observer now reads the Alienware touchpad's actual contact
+slots and separates held-key queries from queued events. Thirty-two focused
+checks and a brief read-only 26-device probe passed their stated scope.
+The first probe exposed same-descriptor EVIOCGKEY event loss; it is superseded
+for event-history claims. No intentional held-finger/quick-key acceptance was
+run, and the observer is not connected to movement. The current-zone map label
+is now included in read-only capture, pending an owner-selected Current Zone
+view. UI scene checks, fresh live alignment/speed and a follower remain open.
 The Crushbone alternatives let the planner compare same-zone options before
 committing to the unresolved Cauldron→Unrest crossing; they do not authorize
 F11 or a pull. The helper's protected-target rules must still exclude

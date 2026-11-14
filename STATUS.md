@@ -1,7 +1,28 @@
 # STATUS
 
-Updated 2026-11-14 00:40 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 00:50 UTC for coordinator task `829a00229b29`.
 
+- Source **0.41.47** corrects the observer's same-descriptor event loss:
+  EVIOCGKEY can flush pending key events. Two independent read-only opens now
+  separate current-state queries from event history; the new regression
+  reproduces that kernel behavior. Touchpad slots and volume-only absolute
+  controls are handled explicitly. Thirty-two focused tests passed.
+- A bounded read-only Alienware probe exercised all 26 actual devices after
+  the fix: profiles 24 without absolute axes, one type-B touchpad and one
+  absolute-volume device; two complete observations after startup, zero
+  unsupported axes, contacts or held keys. It sent no game input. This quiet
+  probe does not verify a deliberate quick-key or held-finger transition.
+  Report SHA `5c8faa35c9bb9684a79f1a6a5af21cce5154a59f717448540820f21b411dde0a`.
+- A focused UI capture still refused without a unique focused game/session.
+  Client XML defines map label MRA_ZoneLabel/EQType1020, but maps may browse
+  other zones. The capture now includes that label; current zone needs the
+  owner-selected Current Zone view. Map label, chat, target and combat pixels
+  remain unobserved. No lead character input or accepted 1–20 movement leg.
+- Current level, XP/hour, deaths and camp remain unobserved beyond the older
+  Legira7 GFay report. G0's old visible stop remains passed. Next: owner-ready
+  current-zone/idle UI observation, then independent scene integration and
+  fresh position/alignment/speed for the first short GFay leg. Assist 0.39.6
+  remains the owner recommendation; 0.39.7 is the separate G0 candidate.
 - Private source build **0.41.46**, commit `a920826`, is staged on Alienware
   at `~/.local/share/eql-automation/owner-tools/0.41.46/source`. Archive
   SHA-256 matched locally/remotely:

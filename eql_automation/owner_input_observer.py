@@ -14,6 +14,8 @@ import re
 import stat
 import time
 
+from .input_contacts import absolute_profile, touchpad_contact_count
+
 
 @dataclass(frozen=True, order=True)
 class DeviceIdentity:
@@ -41,6 +43,7 @@ class OwnerInputObservation:
     activity: bool
     unsupported_motion_devices: int
     reason: str
+    active_contact_count: int = 0
 
     def clear_at(self, now: float) -> bool:
         """Use collection start for freshness; never freshen a slow scan."""
@@ -49,29 +52,46 @@ class OwnerInputObservation:
                 and now - self.started_at <= 0.1
                 and self.coverage_complete and self.device_count > 0
                 and self.held_key_count == 0 and not self.activity
-                and self.unsupported_motion_devices == 0)
+                and self.unsupported_motion_devices == 0 and self.active_contact_count == 0)
 
 
 class _ReadOnlyDevice:
     def __init__(self, node, api):
         self.node, self.api = node, api
-        self.fd = os.open(node.path, os.O_RDONLY | os.O_NONBLOCK | os.O_CLOEXEC | os.O_NOFOLLOW)
+        self.fd = self.state_fd = -1
+        flags = os.O_RDONLY | os.O_NONBLOCK | os.O_CLOEXEC | os.O_NOFOLLOW
         try:
+            self.fd = os.open(node.path, flags)
+            # EVIOCGKEY flushes queued EV_KEY events for its evdev client.
+            # A distinct open (NOT dup) keeps the event reader's queue intact.
+            # See Linux drivers/input/evdev.c: evdev_handle_get_val().
+            self.state_fd = os.open(node.path, flags)
             self.check_identity()
-            self.types = frozenset(api.ioctl_capabilities(self.fd))
+            capabilities = api.ioctl_capabilities(self.state_fd)
+            self.types = frozenset(capabilities)
+            properties = api.ioctl_EVIOCGPROP(self.state_fd) if 3 in self.types else ()
+            self.absolute_profile = absolute_profile(capabilities, properties)
         except BaseException:
             self.close()
             raise
 
     def check_identity(self):
-        info = os.fstat(self.fd)
-        if ((info.st_dev, info.st_ino, info.st_rdev) !=
-                (self.node.device, self.node.inode, self.node.rdev)):
-            raise OSError("input descriptor identity changed")
+        for fd in (self.fd, self.state_fd):
+            info = os.fstat(fd)
+            if ((info.st_dev, info.st_ino, info.st_rdev) !=
+                    (self.node.device, self.node.inode, self.node.rdev)):
+                raise OSError("input descriptor identity changed")
 
     def held_count(self):
         # EV_KEY includes keyboard, mouse and controller buttons.
-        return len(self.api.ioctl_EVIOCG_bits(self.fd, 1)) if 1 in self.types else 0
+        return len(self.api.ioctl_EVIOCG_bits(self.state_fd, 1)) if 1 in self.types else 0
+
+    def motion_state(self):
+        if self.absolute_profile in ("none", "volume"):
+            return True, 0
+        if self.absolute_profile == "type_b_touchpad":
+            return True, touchpad_contact_count(self.state_fd, self.api)
+        return False, 0
 
     def events(self):
         collected = []
@@ -86,9 +106,17 @@ class _ReadOnlyDevice:
         raise OSError("input event budget exhausted")
 
     def close(self):
-        if self.fd >= 0:
-            fd, self.fd = self.fd, -1
-            os.close(fd)
+        error = None
+        for attribute in ("fd", "state_fd"):
+            fd = getattr(self, attribute)
+            setattr(self, attribute, -1)
+            if fd >= 0:
+                try:
+                    os.close(fd)
+                except OSError as caught:
+                    error = caught
+        if error is not None:
+            raise error
 
 
 class LinuxInputBackend:
@@ -171,7 +199,7 @@ class OwnerInputObserver:
 
     def sample(self):
         began = self.clock()
-        complete, activity, held, unsupported = True, False, 0, 0
+        complete, activity, held, unsupported, contacts = True, False, 0, 0, 0
         reason, count = "observed", 0
         try:
             if self.closed or not math.isfinite(began):
@@ -198,10 +226,14 @@ class OwnerInputObserver:
                 # Snapshot both sides of draining: keys held before attach
                 # and brief presses between scans must not disappear.
                 held_before = device.held_count()
+                supported_before, contacts_before = device.motion_state()
                 events = device.events()
                 held += max(held_before, device.held_count())
-                unsupported += int(3 in device.types)  # EV_ABS needs contact/neutral interpretation.
-                activity |= any(t == 1 or (t in (2, 3) and v != 0) for t, c, v in events)
+                supported_after, contacts_after = device.motion_state()
+                contacts += max(contacts_before, contacts_after)
+                unsupported += int(not (supported_before and supported_after))
+                # Absolute zero is a value change too (e.g. volume-to-zero).
+                activity |= any(t in (1, 3) or (t == 2 and v != 0) for t, c, v in events)
                 dropped = False
                 for event_type, code, value in events:
                     if event_type == 0 and code == 3:  # SYN_DROPPED
@@ -215,7 +247,9 @@ class OwnerInputObserver:
                     raise OSError("input_scan_too_slow")
             if (self.backend.enumerate(), self.backend.excluded_helper(self.helper_ui)) != topology:
                 raise OSError("input_topology_changed_during_scan")
-        except (OSError, ValueError, RuntimeError) as error:
+        # Installed evdev 1.9.3 returns NULL without setting an exception on
+        # failed EVIOCGKEY, which Python reports as SystemError.
+        except (OSError, ValueError, RuntimeError, SystemError) as error:
             complete, reason = False, str(error)
             self._drop_devices()
             self.topology = None
@@ -223,4 +257,4 @@ class OwnerInputObserver:
         if not math.isfinite(finished) or not 0 <= finished - began <= 0.05:
             complete, reason = False, "invalid_or_slow_observation_clock"
         return OwnerInputObservation(began, finished, self.generation, complete,
-                                     count, held, activity, unsupported, reason)
+                                     count, held, activity, unsupported, reason, contacts)

@@ -1,5 +1,86 @@
 # FINDINGS
 
+## Alienware input contacts and event-queue correction — 2026-11-14 00:50 UTC
+
+**VERIFIED read-only installed metadata:** The laptop exposes 26 input event
+nodes. The only absolute-axis devices observed are a VEN_06CB:00 06CB:CE26
+buttonpad (axes 0,1,47,53,54,55,57; properties POINTER+BUTTONPAD) and the Razer
+DeathAdder Elite's ABS_VOLUME axis32. `input_contacts.py` accepts that exact
+buttonpad capability shape, queries every bounded type-B tracking slot with
+EVIOCGMTSLOTS, and requires unused slots plus clear touch/tool keys. Other
+axis layouts remain unsupported. Absolute volume has no neutral-position
+requirement, but every ABS event, including value zero, counts as activity.
+Contact interpretation follows the [kernel multitouch protocol](https://docs.kernel.org/input/multi-touch-protocol.html)
+and the read-only buffer ABI in [Linux input.h](https://raw.githubusercontent.com/torvalds/linux/master/include/uapi/linux/input.h).
+The ioctl encoding is restricted to the tested x86_64 Linux ABI.
+
+**VERIFIED defect found in the real probe:** The first source candidate saw
+held-key counts 0→1→0 but no queued activity. Review of
+[evdev_handle_get_val](https://raw.githubusercontent.com/torvalds/linux/master/drivers/input/evdev.c)
+shows EVIOCGKEY flushes that client's queued key events. The 0.41.46 observer
+used one descriptor for queries and event reads, so its synthetic brief-tap
+tests did not model this kernel behavior. Its real event-history completeness
+is not accepted. Source-only 0.41.46 was never wired into movement; existing
+assist 0.39.6 does not use this new observer.
+
+**VERIFIED fix and focused checks:** Each input node now has two independent
+O_RDONLY/nonblocking/no-follow opens, one for event reads and another for
+state ioctls. `dup()` would share the evdev client and is deliberately not
+used. Both fstats must match, and both descriptors close on failure. A new
+regression emulates the state query flushing its own queue while a short
+press/release remains on the event reader. Thirty-two focused tests passed,
+including contact held before attachment, contact release during scanning,
+invalid/changed/oversized/incomplete slot data, unknown axes and ABS-to-zero.
+The installed evdev 1.9.3 C wrapper may surface failed EVIOCGKEY as SystemError;
+that error also invalidates observation. Its `input.c` SHA-256 is
+`c083605053c070502c8e75da4236b73ebff887ebb846c5f67046ff21fcaf39d9`.
+
+**VERIFIED brief read-only laptop execution:** `tools/observe_owner_input.py`
+records counts/errors only, never typed keys. Final candidate2 archive SHA
+`a22826b0fe374727b97b8d24c410aaecbd44fb29caa4c1c74554180a764eb6cf`
+matched before extraction outside the game prefix. Three samples covered all
+26 devices: first attach was rejected, then two complete quiet observations
+with zero unknown axes, contacts or held keys. Each scan took under one
+millisecond. This exercised the actual read-only APIs but did not deliberately
+test a held finger or brief key tap. No device was grabbed, no virtual device
+created, no permissions changed and no game input sent. The new observer is
+still not wired into G2/F11.
+
+Retained locally/remotely under `owner-input-observations/`:
+
+| Evidence | SHA-256 | Scope |
+| --- | --- | --- |
+| `20261114T004600Z-1794617160427839439.json` | `3f3340b3cc807b03fc31cc576ea209cf620b8cc8039f40a0ad9d561fe0d6ffcf` | Initial device API/contact evidence; superseded for event-history completeness |
+| `20261114T004852Z-1794617332296603712.json` | `5c8faa35c9bb9684a79f1a6a5af21cce5154a59f717448540820f21b411dde0a` | Separate-descriptor quiet probe; no movement acceptance |
+
+Final observer source SHA:
+`296171170fa9aee7b3b021e00f3fa29103bb822f8f2c0e854c4c28e5f405b4a6`;
+contact reader SHA:
+`4521dde1d977bf6ea7cc912586fafd0ff73613fd9324f2314bc4bdb5a628a577`.
+
+## Fresh-zone UI source located — 2026-11-14 00:50 UTC
+
+**VERIFIED read-only Alienware source:** Installed
+`uifiles/default/EQUI_MapViewWnd.xml`, SHA
+`6bcdcc7b20c6510c5797e044ab3193b8a7fa2386dc87e8d770b5387346fe6419`,
+defines `MRA_ZoneLabel` with EQType1020 at lines310–327. The Current Zone
+button (`MVW_LoadCurrent`) resets a browsed map to the player's zone; the
+label alone cannot establish current zone. The saved Legira UI INI SHA
+`5876a4136283b692263bc2826ffc2b12cd7328f4faa320c5f4071f2092fbc76b`
+has the map hidden. The existing pinned layout parser computes a map rectangle
+(1288,476,1198,955) and label (1301,1403,250,15) at2560×1600. Its button
+rectangle has zero size; no automated click is implemented or inferred.
+
+The read-only capture now includes the map and label and explicitly marks
+current-zone verification false. One capture attempt this turn refused
+because a unique focused game/session was unavailable; no focus changed,
+image captured or game input sent. No new assist trace/UI capture was found;
+the old G0 trace is unchanged. Historical zone-entry text is insufficient
+for an independent current-zone bootstrap. Owner-selected Current Zone and
+idle scene images remain the next observation, followed by production scene
+integration, current location/alignment and speed calibration. No accepted
+1–20 leg, automated XP or new level observation exists.
+
 ## Source 0.41.46 privately staged — 2026-11-14 00:43 UTC
 
 **VERIFIED:** Commit `a920826` is staged on Alienware under
