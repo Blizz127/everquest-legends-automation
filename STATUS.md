@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 04:34 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 04:36 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,14 +11,14 @@ Updated 2026-11-14 04:34 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
-- **Source 0.41.67 in verification:** the actual retained follower now consumes
-  printed-format raw fixes through `RouteGroundObserver`, with separate physical
-  simulated pose and newly checked terrain/static/BSP footprints. Four focused
-  checks pass, including straight and turning feedback. Full copied replay is
-  running under PID 1470863 (tool session 10379); last observed step 1,500,
-  segment 104/155. Output will be private
-  `nav-candidates/gfay-client-observation-replay-0.41.67.json`. No result or live
-  acceptance is claimed until that process finishes; do not restart a live run.
+- **Source 0.41.67:** the actual retained follower now consumes printed-format
+  raw fixes through `RouteGroundObserver`, with separate physical simulated pose
+  and newly checked terrain/static/BSP footprints. Four focused checks pass.
+  The copied replay passed all checks through 1,771 steps, 117/155 segments and
+  1,772 observed pairs, then hit its 600-second wall budget (121 CPU seconds).
+  All 48 pins rechecked. Artifact SHA
+  `15a465a312e1981aed16f33d8fab04eae8f09e676b69bf7a36b4317f35505e6f`.
+  This is a checked prefix; the remaining route has no new acceptance yet.
 - **Source 0.41.66:** **VERIFIED** copied observation probe uses the two-decimal
   location format found in 68 retained client log examples and reconstructs
   all 2,192 committed source-floor cells with identical proofs. **211/211
@@ -32,15 +32,16 @@ Updated 2026-11-14 04:34 UTC for coordinator task `829a00229b29`.
   `5e6a93b72dae25b3a60ef1b78f7237a67d5c740481fb0fcef6c560dec27f4e4b` matched.
 - Offline 0.41.62 still records 155 segments/2,191 terrain, static-object and
   BSP-checked steps under hypothetical motion/body bounds. The new probe checks
-  sampled observations; full steering with printed positions remains untested.
+  sampled observations; full steering with printed positions now has a checked prefix only.
 - **Owner observation candidate 0.39.9** is staged on Alienware. Its **Observe
   current position** button is an alternative to the existing 0.41.61 terminal
   collector. It sends no input and saves private player/target/map crops plus
   an unbound location record. Ninety-eight local checks and actual-helper
   synthetic key/GUI smokes passed; live capture remains unrun. Read-only listing
-  at 04:17 UTC found zero paired records. No lead capture was initiated.
+  at 04:26 UTC found zero paired records. No lead capture was initiated.
 - **Next / real-client gate:** drive the retained follower with printed-format
-  ground observations, obtain the pending owner scene/position evidence, wire
+  ground observations to completion with a larger offline time budget; obtain
+  the pending owner scene/position evidence, wire
   current zone/UI and measured height/frame/speed providers, then checked
   movement. The source-ground producer exists, but its live runtime connection
   and calibration remain incomplete. No new owner test is requested.

@@ -639,7 +639,7 @@ def main():
     parser.add_argument('--source-z-limit',type=float,default=.6,
                         help='Diagnostic source/baked height-difference limit, not live calibration (default .6)')
     parser.add_argument('--wall-budget',type=float,default=35.,
-                        help='Bounded offline wall-clock budget in seconds (default 35; maximum 600)')
+                        help='Bounded offline wall-clock budget in seconds (default 35; maximum 1800)')
     parser.add_argument('--shorten-ground-step', action='store_true',
                         help='Offline only: recheck successively shorter forward holds down to --min-hold')
     args = parser.parse_args()
@@ -676,7 +676,7 @@ def main():
             or not math.isfinite(args.speed) or not 0 < args.speed <= 100
             or not math.isfinite(args.min_hold) or not 0 < args.min_hold <= .1
             or not math.isfinite(args.source_z_limit) or not 0 < args.source_z_limit <= 2
-            or not math.isfinite(args.wall_budget) or not 1 <= args.wall_budget <= 600):
+            or not math.isfinite(args.wall_budget) or not 1 <= args.wall_budget <= 1800):
         parser.error("use a new private nav-candidates JSON and finite bounded motion parameters")
     os.umask(0o077)
     os.nice(15)

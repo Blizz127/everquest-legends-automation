@@ -1,5 +1,50 @@
 # FINDINGS
 
+## Full follower with client-format feedback — 2026-11-14 04:36 UTC
+
+**VERIFIED source 0.41.67:** Commit `1de3504` adds optional
+`--client-observations` to the copied-route replay. Raw coordinates come from the
+physical source floor plus the synthetic character offset, printed through
+Python's two-decimal model of the retained log examples. Client tie-rounding
+semantics have not been separately verified. The production `RouteGroundObserver`
+re-samples exact source and baked support at those printed coordinates and feeds
+the existing `FixedRouteFollower`. The physical simulated pose/heading are never
+replaced by observed/estimated positions. The proposed source-floor fork is
+committed after simulated release, before the next observation. Producer refusal
+is retained as a route halt with physical and raw coordinates, not lost as an
+uncaught exception. Recent/history records retain both coordinate sets.
+
+**VERIFIED:** Four focused tests pass, including unchanged physical pose,
+independent source/baked heights, existing adjacent-portal bounds, exact-gap
+refusal with diagnostic data, and straight/turning feedback through the actual
+retained steering code. No full suite run.
+
+**VERIFIED partial copied run:**
+`nav-candidates/gfay-client-observation-replay-0.41.67.json`, SHA
+`15a465a312e1981aed16f33d8fab04eae8f09e676b69bf7a36b4317f35505e6f`,
+halted solely at the explicit 600-second wall budget: **1,771 steps, 117/155
+segments reached, 1,772 observation pairs**, with all 1,771 terrain, static-object
+and BSP trials accepted and no observation/sweep failure. Runtime was
+600.712159460 wall / 121.103933281 CPU seconds. All 48 input pins were rechecked
+before changing the wall-budget CLI bound. Maximum physical/observed XY difference
+was 0.006980280448; maximum raw-height residual 0.007485565464.
+This establishes a checked prefix only. The attempted path differs from the older
+ideal-coordinate replay and cannot inherit its remaining-segment result.
+
+The next run uses an explicit 1,200-second budget; the CLI's maximum is now
+1,800 seconds while its default remains 35. Priority remains nice 15. This changes
+only offline elapsed-time allowance, not route, pulse or geometry thresholds.
+The whole-volume guards still use simulated physical pose/heading and hypothetical
+body/speed/drift bounds; no live input permit is created. No account, client,
+input device or game capture was used. The read-only Alienware listing at
+04:26 UTC still found zero paired position records. G0 remains passed; no repeat.
+
+The next real runtime integration must bind each checked floor fork and permitted
+hold bound to the exact current proposal and commit only after a successful
+watchdog DOWN-start/UP-complete receipt. Cancellation/overrun must discard the
+fork and halt. Current zone/UI/frame/height/speed observations remain external
+requirements. Existing G0 and assist entry points are unchanged.
+
 ## Private source 0.41.66 staging — 2026-11-14 04:23 UTC
 
 **VERIFIED:** Commit `b48d4b37a18fa7b538ba23d74a76b42b504f8ff0`, source archive SHA

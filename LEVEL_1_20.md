@@ -1,9 +1,16 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 04:21 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 04:36 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.67 exercises full steering with printed coordinates and the actual
+ground observer, while keeping the simulated body position independent. Four
+focused checks pass. All geometry and observation checks passed for the first
+1,771 steps (117/155 segments); the run then hit its wall-clock budget. The
+remaining route and live behavior are unverified. The simulator still uses
+physical pose/heading to check motion bounds; this is not live sender integration.
 
 Source 0.41.66 corrects the offline observation model: retained client location
 lines print two decimals, while the older replay fed ideal double coordinates
