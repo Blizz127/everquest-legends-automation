@@ -15,7 +15,6 @@ from eql_automation.motion_calibration import PROBES
 from eql_automation.native_region_policy import encoded
 from eql_automation.owner_camp_probe import CampProbePlan
 from eql_automation.route_geometry import RouteMotionBounds
-from eql_automation.scene_log_veto import SceneLogVeto
 from eql_automation.source_itinerary import SourceItineraryGuide,SourceWalkHint
 from eql_automation.supervised_route import SupervisedRouteDeclaration
 from eql_automation.supervised_source import SupervisedSourcePolicy
@@ -29,7 +28,7 @@ from test_owner_journey_runtime import h
 from test_route_step_sender import after_down
 
 
-def standard_execution(h,monkeypatch,legacy):
+def standard_execution(h,monkeypatch,legacy,*,policy_provider=None,source_veto_provider=None):
     import eql_automation.camp_probe_runtime as probes
     import eql_automation.camp_source_runtime as route
     e=h.engine;h.game_x=4.;h.game_y=2.;h.game_heading=0.;h.receipts=[]
@@ -73,8 +72,7 @@ def standard_execution(h,monkeypatch,legacy):
             fit=calibration['estimate']['estimate'];h.used_fit=fit
             onward=replace(bounds,record_id='standard-fixture-onward',maximum_requested_hold=.1)
             def policy(ledger,current):
-                veto=SceneLogVeto(p.reader.tail.path,expected_character=p.reader.expected_character,
-                    expected_server=p.reader.expected_server,cancel_generation=p.generation,clock=time.monotonic)
+                veto=p.probe_log_veto if source_veto_provider is None else source_veto_provider(p)
                 declaration=SupervisedRouteDeclaration('synthetic-standard-camp-route',
                     ledger.observer.itinerary.sha256,onward.calibration_record_id,onward.record_id,
                     # This guide reconnects to its old start before travelling
@@ -89,13 +87,13 @@ def standard_execution(h,monkeypatch,legacy):
                     right_sign=fit['right_sign'],turn_latency=fit['turn_latency'],back_speed=0.),
                 fit['final_heading'],.25,policy)
         return CampProbePlan(bounds,encoded({'kind':'synthetic-seven-probe-fixture'}),
-            lambda tx:SyntheticCampPolicy(tx,e,p),PROBES,120.,guide,execution)
+            (lambda tx:SyntheticCampPolicy(tx,e,p)) if policy_provider is None else policy_provider(h,p,bounds),
+            PROBES,120.,guide,execution)
     e._camp_probe_plan=plan
 
 
-@pytest.mark.parametrize('f',['compact_long'],indirect=True)
-def test_standard_holds_fit_current_motion_and_complete_source_route(camp,monkeypatch,legacy):
-    h=camp;e=h.engine;standard_execution(h,monkeypatch,legacy);h.recovered();p=e.camp_position
+def finish_standard(h):
+    e=h.engine;h.recovered();p=e.camp_position
     deadline=time.monotonic()+125.
     while e.camp_position is not None and time.monotonic()<deadline:
         h.tick();h.drain();time.sleep(.01)
@@ -114,3 +112,9 @@ def test_standard_holds_fit_current_motion_and_complete_source_route(camp,monkey
     assert record['route']['route']['completed_movements']==len(h.receipts)-7
     assert not record['real_client_accepted'] and not e.sender.held and not h.commands
     assert e.live_zone_tracker.lease is None and e.camp_session is None and e.journey is None
+    return p
+
+
+@pytest.mark.parametrize('f',['compact_long'],indirect=True)
+def test_standard_holds_fit_current_motion_and_complete_source_route(camp,monkeypatch,legacy):
+    h=camp;standard_execution(h,monkeypatch,legacy);finish_standard(h)

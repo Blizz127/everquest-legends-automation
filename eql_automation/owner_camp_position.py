@@ -21,6 +21,7 @@ from .ground_binding import finite
 from .location_hotkey import HOTKEY_CODES, OwnerLocationHotkey, send_location_hotkey
 from .motion_collection import CommandReceipt, LocationRequest
 from .owner_navigation_preflight import settings_identity, window_identity
+from .scene_log_veto import SceneLogVeto
 from .stopped_location_pair import StoppedLocationPair
 
 
@@ -45,7 +46,11 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
             return None
 
         def _camp_position_current(self,p):
-            if self.camp_position is not p or p.cancelled or p.route_runtime is not p._route_runtime:
+            if (self.camp_position is not p or p.cancelled or p.route_runtime is not p._route_runtime
+                    or p.probe_log_veto is not p._probe_log_veto
+                    or type(p.probe_log_veto) is not SceneLogVeto
+                    or (p.probe_log_veto.tail,p.probe_log_veto.tail.path,p.probe_log_veto.clock,
+                        p.probe_log_veto.cancel_generation)!=p._probe_veto_state):
                 raise ValueError('Camp position collection ended')
             p.lease.check();p.hotkey.check()
             current=self._camp_current(observe_input=p.route_runtime is None)
@@ -136,10 +141,20 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     collector=None,request=None,result=None,events=[],runtime=None,route_runtime=None,_route_runtime=None,
                     route_record=None,route_complete=False,
                     probe_plan=None,probe_plan_state=None,probe_started=None,probe_record=None,
-                    position_record=None,probe_complete=False)
+                    position_record=None,probe_complete=False,probe_log_veto=None,_probe_log_veto=None,
+                    _probe_veto_state=None)
                 p.owner_binding=('camp-position',id(j),id(camp),id(p.sender),id(p.ui),
                     id(tracker),id(p.reader),p.generation,p.settings,p.window)
                 self.camp_position=p;camp.phase='position_check'
+                # Start once at recovery entry. A later probe/source policy
+                # must not skip hazards while fresh positions are collected
+                # or geometry is prepared. This separate reader grants no
+                # movement permission and never consumes the location cursor.
+                p.probe_log_veto=p._probe_log_veto=SceneLogVeto(p.reader.tail.path,
+                    expected_character=p.reader.expected_character,expected_server=p.reader.expected_server,
+                    cancel_generation=p.generation,clock=clock)
+                p._probe_veto_state=(p.probe_log_veto.tail,p.probe_log_veto.tail.path,
+                    p.probe_log_veto.clock,p.probe_log_veto.cancel_generation)
                 p.collector=StoppedLocationPair(lease,released_at=p.released_at,
                     check_current=lambda:self._camp_position_current(p),clock=clock,
                     local_wall_clock=self.camp_wall)
@@ -229,7 +244,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 owner_input=p.monitor.observer,stop_lock=self.g0_stop_lock,
                 movement_policy_factory=plan.policy_factory,check_current=lambda:self._camp_position_current(p),
                 command_state_clear=lambda:self._camp_command is None and not self.active and not self.target_ready,
-                pump=pump,probes=plan.probes,maximum_seconds=plan.maximum_seconds)
+                pump=pump,probes=plan.probes,maximum_seconds=plan.maximum_seconds,log_veto=p.probe_log_veto)
             self._camp_position_current(p)
             self.trace('camp_probe_started',initial_height_sha256=p.result.sha256,
                 floor_checkpoint_sha256=p.floor.sha256,real_client_accepted=False)

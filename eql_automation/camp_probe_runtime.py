@@ -20,18 +20,20 @@ from .motion_calibration import PROBES,Probe
 from .motion_collection import CommandReceipt,LocationRequest
 from .stopped_location_pair import StoppedLocationPair
 from .source_itinerary import SourceItineraryGuide, _guide_snapshot
+from .scene_log_veto import SceneLogVeto
 
 
 class CampProbeRuntime:
     def __init__(self,preparation,*,sender,hotkey,owner_input,stop_lock,
                  movement_policy_factory,check_current,command_state_clear,pump,
-                 probes=PROBES,maximum_seconds=120.):
+                 probes=PROBES,maximum_seconds=120.,log_veto=None):
         if (type(preparation) is not CampProbePreparation or preparation.phase!='new'
                 or type(hotkey) is not OwnerLocationHotkey
                 or not isinstance(stop_lock,type(threading.RLock()))
                 or not all(callable(v) for v in (movement_policy_factory,check_current,
                     command_state_clear,pump,getattr(owner_input,'sample',None)))
                 or type(probes) is not tuple or not 1<=len(probes)<=7
+                or log_veto is not None and type(log_veto) is not SceneLogVeto
                 or not finite(maximum_seconds) or not 0<maximum_seconds<=300):
             raise ValueError('Fresh preparation, explicit policy and finite retained runtime required')
         b=preparation.bounds
@@ -47,8 +49,14 @@ class CampProbeRuntime:
         self.probes=probes;self._probes_bytes=tuple(flat_record_state(p) for p in probes)
         self.maximum_seconds=maximum_seconds
         self.clock=preparation.clock;self.wall=preparation.wall;self.lease=preparation.lease
+        self.log_veto=log_veto
+        if log_veto is not None and (log_veto.clock is not self.clock
+                or log_veto.tail.path!=self.lease.reader.tail.path):
+            raise ValueError('Camp probe veto must retain the original clock and log')
+        self._log_veto_state=(None if log_veto is None else
+            (log_veto.tail,log_veto.tail.path,log_veto.clock,log_veto.cancel_generation))
         self._context=(preparation,sender,hotkey,owner_input,stop_lock,movement_policy_factory,
-            check_current,command_state_clear,pump,probes,self.clock,self.wall,self.lease,maximum_seconds)
+            check_current,command_state_clear,pump,probes,self.clock,self.wall,self.lease,maximum_seconds,log_veto)
         self.phase='prepare';self.reason='';self.busy=False;self.closed=False
         self.started=self.last_at=self.clock()
         self.collector=None;self.collection_kind=None;self.baseline=None;self.released_at=None
@@ -73,10 +81,14 @@ class CampProbeRuntime:
         """
         now=self.clock()
         actual=(self.root,self.sender,self.hotkey,self.owner_input,self.lock,self.policy_factory,
-            self.current,self.command_clear,self.pump,self.probes,self.clock,self.wall,self.lease,self.maximum_seconds)
+            self.current,self.command_clear,self.pump,self.probes,self.clock,self.wall,self.lease,self.maximum_seconds,
+            self.log_veto)
         if (self.phase=='stopped' or self.closed
                 or any(a is not b for a,b in zip(self._context,actual))
                 or tuple(flat_record_state(p) for p in self.probes)!=self._probes_bytes
+                or self.log_veto is not None and
+                    (self.log_veto.tail,self.log_veto.tail.path,self.log_veto.clock,
+                     self.log_veto.cancel_generation)!=self._log_veto_state
                 or (self._route_guide_state is None)!=(self.route_guide is None)
                 or self.route_guide is not None and (type(self.route_guide) is not SourceItineraryGuide
                     or (id(self.route_guide),_guide_snapshot(self.route_guide))!=self._route_guide_state)
@@ -259,6 +271,7 @@ class CampProbeRuntime:
             completed_probes=len(self.results),proposed_probes=[asdict(p) for p in self.probes],
             result_sha256=[r.sha256 for r in self.results],collections=list(self.collections),
             sender_events=list(self.events),
+            shared_log_veto_retained=self.log_veto is not None,
             current_floor_sha256=None if self.reference is None else self.reference.sha256,
             route=None if self._route_preparation is None else self._route_preparation.snapshot(),
             input_policy_required=True,independent_scene_verified=False,motion_bounds_verified=False,

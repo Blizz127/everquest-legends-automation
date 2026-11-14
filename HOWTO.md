@@ -1,6 +1,9 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.55** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.56** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+
+Source 0.42.56 is local development only: final remote verification and publication
+are pending an Alienware SSH timeout. The launchable owner preview remains 0.39.30.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -640,14 +643,25 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Private source 0.42.55 package location on Alienware:
+Private source 0.42.56 package location on Alienware:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.55/source
+~/.local/share/eql-automation/owner-tools/0.42.56/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. The optional camp plan can now supply `route_plan_factory`, returning
+above. Source **0.42.56** supplies a concrete `SupervisedCampProbeScope` and
+per-probe policy. It retains the same physical-input monitor, log veto, original
+deadline and total movement allowance across all seven probes. The veto starts
+before the first recovered-position pair, and the source route must reuse it.
+Activity, focus loss, hazards, changed context or exhausted budgets stop input.
+The short DOWN permission does not interrupt required key-release cleanup.
+This is supervised operation; it does not certify independent scene clearance
+or motion bounds. An explicit continuation plan/provider and new-camp entry
+still need wiring into the owner launcher. Its current controls remain those
+of **0.39.30** above.
+
+The optional camp plan can now supply `route_plan_factory`, returning
 an explicit `CampSourcePlan` with current motion/heading, tightened route bounds,
 lateral tolerance and a source movement policy factory. There is no default
 plan or policy. The retained engine adopts the prepared route, collects a new

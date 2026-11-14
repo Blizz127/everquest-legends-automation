@@ -34,8 +34,10 @@ def configure_execution(h, monkeypatch, legacy, *, policy_fault=None):
                 if policy_fault=='F9':e.stop_action('F9 during source policy construction')
                 if policy_fault=='foreign_input':owner_input=object()
                 else:owner_input=p.monitor.observer
-                veto=SceneLogVeto(p.reader.tail.path, expected_character=p.reader.expected_character,
-                    expected_server=p.reader.expected_server, cancel_generation=p.generation, clock=time.monotonic)
+                veto=p.probe_log_veto
+                if policy_fault=='fresh_veto':
+                    veto=SceneLogVeto(p.reader.tail.path,expected_character=p.reader.expected_character,
+                        expected_server=p.reader.expected_server,cancel_generation=p.generation,clock=time.monotonic)
                 declaration=SupervisedRouteDeclaration('synthetic-camp-route',ledger.observer.itinerary.sha256,
                     bounds.calibration_record_id,bounds.record_id,True,60.,32,3.,2.)
                 return SupervisedSourcePolicy(ledger,declaration=declaration,gate=e.gate,
@@ -116,7 +118,7 @@ def test_stop_during_child_down_releases_before_lease_and_assist(camp,monkeypatc
     else:assert e._journey_assist is None and not e.active
 
 
-@pytest.mark.parametrize('fault',('missing','foreign_input','F9'))
+@pytest.mark.parametrize('fault',('missing','foreign_input','fresh_veto','F9'))
 def test_missing_changed_or_cancelled_policy_sends_no_onward_movement(camp,monkeypatch,legacy,fault):
     h=camp;e=h.engine;configure_execution(h,monkeypatch,legacy,policy_fault=fault)
     h.recovered();finish(h)

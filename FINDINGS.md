@@ -1,5 +1,90 @@
 # FINDINGS
 
+## 2026-11-14 19:29 UTC — shared supervised camp-probe policy
+
+`SupervisedCampProbeScope` and its per-transaction policy implement the existing
+abstract probe admission interface. Explicit continuation supervision remains
+an owner choice, not independent clearance or a verified speed bound. One
+scope retains the exact physical observer/topology, stop generation, root
+bounds and basis, original time limit and aggregate maximum-hold reservations.
+Each pulse brackets the same log-veto reader with fresh input observations;
+foreign/duplicate tickets or exhausted budgets are refused. DOWN authorization
+expires after at most 50 ms, while observation continues through the full
+0.15-second turn and unconditional sender UP cleanup.
+
+The recovered-position owner scope now constructs the veto before collecting
+its first pair. Both object and tail/path/clock/generation are pinned there,
+then passed into the probe runtime. A source child must use that same veto;
+it cannot rebaseline between calibration and travel. The new concrete policy
+also checks the veto generation against the retained camp monitor binding.
+The source launcher still supplies no continuation plan provider, so these
+changes do not turn on a new owner movement mode.
+
+VERIFIED initial candidate `0.42.56-validation-1`: 18 passed in 37.07 seconds,
+output SHA `5e1e8bfacd84e768bfc3083c89089062b0786c67cc1d0ace61849cc0384b22e8`.
+VERIFIED candidate 2: **21 passed in 132.90 seconds**, output SHA
+`bfff871870008a43371fcf60095d0fd6f95242297bf9d96006ea95e866007cb5`.
+That includes the standard seven probes, fresh fit and source arrival using the
+concrete policy, plus a hazard after calibration preventing route movement.
+A subsequent read-only review found that tail replacement before runtime
+creation could otherwise establish a new baseline; early transport now pins
+that state too. Final candidate 3 was launched for these latest changes and integration, but
+its SSH transport timed out after 510 seconds without a result. A separate
+read-only Alienware connection also timed out on port 22. Its remote process
+state and final result are unknown; do not claim a pass or start a duplicate.
+Local checks passed both early-veto replacement cases. The early-hazard case
+first stopped before policy construction (no movement); after adding diagnostic
+assertion text, it passed alone in 8.27 seconds. Current combined verification
+and private publication remain pending Alienware availability. All input
+uses OS pipes and actual watchdogs; scene/game observations are synthetic.
+No game input, device, login, character action or prefix change occurred.
+
+Next: carry an explicit continuation choice through SOURCE_JOB/Journey, build
+the plan from retained source hypotheses and a level-appropriate pinned guide,
+use the newly measured fit, then add a separately checked new-camp entry.
+No new G0 or owner test is requested. Actual level, XP/hour, deaths and camp
+remain unknown; the real 1–20 and fresh hands-off 1–50 goals remain incomplete.
+
+## 2026-11-14 19:30 UTC — next provider and route coverage evidence
+
+OBSERVED/read-only helper verification: the retained map
+`owner-route-data/crushbone-camps-20261114/crushbone_3.txt` hashes to
+`4b1c009838988b13507797afd1ccbce8ba23e1ca99adbafd1065956cfd71bda0`.
+Its hints are Entrance 4–7, Slave Mines 7–10, Trainer Hill 10–13,
+North Wall/Castle 13–17 and Throne Room 17–22. Only Slave Mines and North Wall
+have packaged source guides. Trainer Hill (package XY 119,-212) and Throne Room
+(106,154) remain buildable coverage work, not missing owner choices. Map Z
+must not select a floor: Trainer approaches still have unconnected tall-wall
+boundaries in the current graph and Throne has overlapping diffuse layers.
+
+The retained recipe `tools/audit_crushbone_camp_transit.py` already accepts
+`--destination trainer|throne --strategy graph|reverse --compact` and a new
+output under `nav-candidates`. It replays parent
+`crushbone-source-itinerary-0.42.28-final.json`, SHA
+`09c4cf3d6e69245249f8df9ef66a8f1914c7fc5038bb3dd8b5b1c01dee98bb28`,
+and fully rebuilds new proposed suffixes. No new bake was launched: VERIFIED
+19:29 UTC devbox pressure was load 185.72 on 48 CPUs, with 134,688 MiB swap
+used out of 139,263 MiB. Continue light provider/UI work while this pressure
+persists; do not use the owner's laptop for a heavy replacement bake. Future
+bakes should use an immutable source snapshot because the recipe pins code.
+
+The concrete provider can preserve arrival bounds as explicit historical
+planning hypotheses, change only its new record ID and request cap to .15s
+for the standard probes, then return to .10s for source travel. Existing actual
+hold bound is .20s, so seven probe reservations total 1.4s. Fresh reducer
+speed/heading and uncertainty must fit the preserved envelope; old arrival
+heading/speed cannot drive the new route. `navigation` supplies the fitter;
+`eqnav.steer.Motion` supplies the onward steering model. The source policy
+retains the original absolute camp deadline and shared veto/observer.
+
+A level-aware provider also needs scheduling: `Journey.height_check_done`
+currently suppresses later recovery collection. Reconsider on a new accepted
+`camp.level_source == 'client_log'` event/sequence, not an edited configured
+level or historical log. Absence of an appropriate packaged next guide keeps
+stationary camping active; it is not permission to send level 7 to North Wall.
+Preserve Butcherblock-first fresh-character work alongside this practical
+Crushbone branch. No new route or actual level progression is accepted here.
+
 ## 2026-11-14 19:19 UTC — source 0.42.55 privately published
 
 VERIFIED Alienware `owner-tools/0.42.55/source`, revision

@@ -185,6 +185,7 @@ class CampSourceRuntime(SourceExecutionLoop):
             self.check_current()
             if (type(policy) is not SupervisedSourcePolicy or policy.ledger is not self.ledger
                     or policy.owner_input is not self.owner_input
+                    or self.probe.log_veto is not None and policy.log_veto is not self.probe.log_veto
                     or policy.check_current != self.check_current):
                 raise ValueError('Exact current camp source policy and retained input observer required')
             self.policy = self._owned_policy = policy

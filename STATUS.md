@@ -1,11 +1,29 @@
 # STATUS
 
-Updated 2026-11-14 19:19 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 19:36 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.56 local; remote verification/publication pending.** A concrete shared
+  supervised probe policy now carries the same input monitor, owner generation,
+  veto reader, original deadline and aggregate hold reservations through all
+  probes. The owner engine starts that veto before initial position collection;
+  probe and source runtimes pin and reuse it. No default continuation provider
+  or launcher behavior enables movement. VERIFIED earlier candidate 2:
+  **21 passed in 132.90 seconds**, including seven supervised probes through
+  source arrival and a latched hazard blocking onward input. Output SHA
+  `bfff871870008a43371fcf60095d0fd6f95242297bf9d96006ea95e866007cb5`.
+  Final integration candidate 3 has no retrieved result: SSH transport timed
+  out after 510 seconds; a separate read-only connection also timed out on
+  port 22. Do not count that run as passed or restart a possibly retained
+  process. Local new-veto checks: two replacement cases pass; the early-hazard
+  case first stopped before creating its policy, then passed alone in 8.27s
+  after adding failure diagnostics. Combined current-snapshot verification is
+  still unconfirmed. Preview stays 0.39.30. Next: explicit
+  continuation intent/guide/bounds provider in the owner launcher and new-camp
+  entry. G0 passed; real level/XP/hour/deaths/camp unknown; no accepted 1–20/1–50.
 - **Source 0.42.55 privately published; preview stays 0.39.30.** VERIFIED complete
   standard seven-probe → fresh conditional fit → source travel → stopped
   arrival in Alienware no-game harness: **1 passed in 70.15 seconds**, candidate
