@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:50 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:58 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,21 @@ Updated 2026-11-14 07:50 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.90:** a route session now joins the actual log/ground reader,
+  fixed follower and checked sender across consecutive steps. The retained
+  helper adapter services it on ticks, cancels on stop/jobs/close, rejects
+  assist attachment and saves partial results. Twenty-seven focused checks
+  pass, plus a rerun of the failed-attempt evidence regression. A retained
+  helper run with synthetic scene/geometry/motion/position feedback completed
+  two segments: nine pipe pulses, ten stopped pairs, 20 simulated location
+  commands and 72 actual pipe events. Evidence SHA
+  `d248bb682531d8b62341b42bee0aeecfd5747f9b335d89522b27a93bba7cbc00`.
+  The system interpreter initially skipped the tests for missing NumPy; they
+  were then executed with the existing private numerical interpreter.
+  No client input or route acceptance. Next: supply current owner scene/
+  zone/ground/motion evidence and assemble the guarded route command executor;
+  owner hotkey wiring remains disabled. The pending stationary observation
+  and both owner helper versions are unchanged; G0 needs no repeat.
 - **Source 0.41.89:** the saved-position reader now checks the existing
   observation format, file hashes, timing records and parent/child crop pixels,
   and can summarize the pinned GFay route with its actual named zone mesh.

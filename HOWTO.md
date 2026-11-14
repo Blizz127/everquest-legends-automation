@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.89** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.90** · rotation preview **0.39.6** · observation candidate **0.39.10**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -108,11 +108,23 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.89/source
+~/.local/share/eql-automation/owner-tools/0.41.90/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.89 adds a saved-position diagnostic. After the existing
+above. Source 0.41.90 connects the fixed-route follower, ground reader and
+checked sender into an engine-tick loop. It collects two fresh stopped
+positions before each step, preserves the exact reference during the pulse,
+then continues from the committed floor state. The retained helper adapter
+handles stop/settings/close cancellation and saves partial or arrived records
+under `~/.local/share/eql-automation/route-sessions/`. Assist helpers reject
+this attachment. No owner job or hotkey creates a route session: current
+scene/zone/height/motion inputs and a guarded route-location command executor
+are required before it can be enabled. The completed route test used synthetic
+feedback and a pipe, not the game. Existing owner launchers and pending
+observation instructions are unchanged.
+
+Source 0.41.89 adds a saved-position diagnostic. After the existing
 observation helper reports a saved directory, the lead can analyze it without
 opening a display or sending game input:
 

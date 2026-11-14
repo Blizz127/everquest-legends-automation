@@ -1,9 +1,19 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 07:50 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 07:58 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.90 closes the runtime gap between one checked step and the next
+stopped-position pair. `RouteSession` owns the fresh log reader, aligns both
+fixes against the committed source floor, feeds the existing follower and
+uses `run_checked_route_step` before repeating. The helper adapter handles
+stop/job/close cancellation without enabling any owner movement control.
+Twenty-seven focused checks pass; a retained-engine pipe run completed two
+synthetic segments with nine steps, ten stopped pairs and 20 simulated
+location commands. Real scene, zone/height/motion bindings, a guarded command
+executor and owner control wiring remain missing. No live 1–20 leg is accepted.
 
 Source 0.41.89 adds the read-only saved-position consumer. It checks the
 existing pair/crop format and summarizes the pinned GFay route, requiring

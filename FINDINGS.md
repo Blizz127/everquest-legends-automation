@@ -1,5 +1,50 @@
 # FINDINGS
 
+## Consecutive checked route steps 0.41.90 — 2026-11-14 07:58 UTC
+
+**VERIFIED implementation:** `RouteSession` now owns the route's exclusive
+`LocationLogReader`, collects two fresh stopped fixes, aligns them through
+`RouteGroundObserver` against the committed floor and calls the retained
+fixed-route follower. `RouteSessionDriver` runs the existing checked sender,
+waits for final release and settling, then repeats through subsequent segments.
+The exact aligned reference is retained during each pulse. A matching fresh
+zone binding and explicit initial release are required; the saved unbound pair
+and old log history cannot start the loop.
+
+The loop defers replies arriving during command cleanup, rejects batched,
+unsolicited, partial, stale or changed-zone replies, and polls cancellation
+without recursively scheduling another step. It records unsuccessful executor
+attempts with unknown input delivery. The owner engine attachment handles
+stop/job/close cancellation, retains cleanup order, rejects assist attachment
+and saves partial/arrived records outside the game prefix. No job or hotkey
+constructs it. The guarded location-command executor and independent current
+scene/height/motion providers remain mandatory external dependencies.
+
+**VERIFIED tests:** 27 focused session/actual-helper checks passed, followed
+by the cancellation regression after adding unsuccessful-attempt evidence.
+The initial system-Python run skipped 16 tests because NumPy was absent;
+the successful runs used the existing private numerical interpreter with
+the installed pure-Python pytest package. No dependency was installed.
+
+**VERIFIED retained-engine pipe experiment:** two synthetic segments arrived
+after nine checked watchdog pulses, ten stopped position pairs, 20 simulated
+location commands and 72 actual pipe events. Every new pair used the committed
+floor; the initial floor remained unchanged. Actual helper ticks, follower,
+ground producer, log reader, transaction and watchdog were used. Scene,
+geometry, calibration and position feedback were synthetic. No real command
+or movement was sent to the client. Evidence
+`evidence/route-session-0.41.90.json`, SHA
+`d248bb682531d8b62341b42bee0aeecfd5747f9b335d89522b27a93bba7cbc00`.
+Paths are relative to the private `~/.local/share/eql-automation/` store;
+source and retained-helper hashes are in that artifact.
+
+The previous goal turn made progress by staging 0.41.89; this turn adds the
+missing runtime loop. Neither proves a playable 1–20 path or a fresh 1–50 run.
+Current level/XP/hour/deaths/camp remain unknown. Owner assist 0.39.6 and
+observation 0.39.10 remain unchanged; G0 passed and needs no repeat. The pending
+owner stationary observation remains the next live-data step, followed by
+actual scene/zone/ground/motion binding and route executor assembly.
+
 ## Private source 0.41.89 staged — 2026-11-14 07:50 UTC
 
 **VERIFIED:** source `79aeeea2aea0e39324d9cc3b500e87835f38ebe9`, archive SHA
