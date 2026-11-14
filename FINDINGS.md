@@ -1,5 +1,23 @@
 # FINDINGS
 
+## Private source 0.41.67 staging and longer replay — 2026-11-14 04:37 UTC
+
+**VERIFIED:** Commit `a944b44a5d8ce229f4993fc6530b27ceb3243595`, archive SHA
+`52dcb4254b6ec17c8fa709f7fa814c75f1b873d20e9ee82f3488929b220967cf`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.67/source`.
+Six no-input startup checks pass: source version, physical/printed-coordinate
+separation, paired timing/sequence, producer-refusal evidence, replay CLI and
+location collector CLI. These use synthetic records; no client assets, capture,
+input device or login was opened. Remote `../smoke.json` and local private
+`releases/eql-automation-0.41.67-staging.json` retain the result.
+
+A separate 1,200-second copied replay is **running**, PID 1908498 / tool session
+47911, output `nav-candidates/gfay-client-observation-replay-0.41.67-budget1200.json`.
+It has not yet produced an outcome; revalidate that handle/process before any
+restart. The first 600-second run remains immutable and incomplete at 117/155
+segments. Private publication is source tooling only; no live acceptance, F11
+enablement or automated character progress is claimed.
+
 ## Full follower with client-format feedback — 2026-11-14 04:36 UTC
 
 **VERIFIED source 0.41.67:** Commit `1de3504` adds optional

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 04:36 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 04:37 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -19,6 +19,12 @@ Updated 2026-11-14 04:36 UTC for coordinator task `829a00229b29`.
   All 48 pins rechecked. Artifact SHA
   `15a465a312e1981aed16f33d8fab04eae8f09e676b69bf7a36b4317f35505e6f`.
   This is a checked prefix; the remaining route has no new acceptance yet.
+  Source `a944b44` is privately staged at `owner-tools/0.41.67/source`; six
+  no-input remote startup checks pass. Archive SHA
+  `52dcb4254b6ec17c8fa709f7fa814c75f1b873d20e9ee82f3488929b220967cf` matched.
+  The new 1,200-second replay is live at PID 1908498 / tool session 47911,
+  output `nav-candidates/gfay-client-observation-replay-0.41.67-budget1200.json`.
+  Its result remains pending; inspect that handle rather than restarting.
 - **Source 0.41.66:** **VERIFIED** copied observation probe uses the two-decimal
   location format found in 68 retained client log examples and reconstructs
   all 2,192 committed source-floor cells with identical proofs. **211/211
