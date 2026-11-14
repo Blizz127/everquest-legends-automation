@@ -47,6 +47,17 @@ character position or live traversal. Report
 `nav-candidates/crushbone-start-bootstrap-0.42.24.json` SHA
 `50a1bc047f5867cea3824bc3a997ca49678816cfeebb6b4e93246f27ed05b411`.
 
+**VERIFIED final private startup:** commit
+`21fcc7660f1841d6df9f9f2a57312ed530e019ab` is staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.24/source`. All 53 selected
+checks pass without skips: copied-data loader, floor bootstrap suite, actual
+owner local route, crossing and active-plan replacement stop. This includes the
+final freshness fix. The copied floor-proposal report matches the devbox.
+Archive SHA `4d827dd8396fba9982970d52e2c7ddc58f0a6c60f6df6888b1f6f573f32dae94`;
+startup SHA `4a6efb36ff5b23edff2a64439b8a8a10fca9aed2db9c75698c552711e71f118d`;
+test-output SHA `c388125efa5c40532147ffadd6bae387bca2d5607d10bb515166a044dfd37554`.
+No worker/device/game input, client launch or installed-prefix modification.
+
 **Next:** compose `ClientBspTreeView` and `ClientRegionMap` into a separate native
 classification view. Native classification uses binary32 operation order,
 nonzero-region early termination and last-record-wins labels; the old exact

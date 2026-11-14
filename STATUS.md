@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 13:33 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 13:34 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -23,7 +23,10 @@ Updated 2026-11-14 13:33 UTC for coordinator task `829a00229b29`.
   native region classification from terrain/static collision and connect fresh
   Crushbone camp routing. Owner crossing0.39.19 acceptance remains pending;
   assist0.39.13 and passed G0 unchanged. Current level, XP/hour, deaths/camp
-  unknown; no accepted 1–20/1–50 run or automated XP.
+  unknown; no accepted 1–20/1–50 run or automated XP. Commit `21fcc76`
+  staged at Alienware `owner-tools/0.42.24/source`; all 53 final selected startup
+  checks pass without skips, including the three actual-owner-wrapper cases.
+  Startup SHA `4a6efb36ff5b23edff2a64439b8a8a10fca9aed2db9c75698c552711e71f118d`.
 - **Source 0.42.23:** added pinned full Crushbone geometry/camp loading and
   exact all-layer point diagnostics. 43 focused checks pass, including actual
   copied inputs. Entrance annotation has no support; Mines/Throne are layered;
