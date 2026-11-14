@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-13 18:20 CST. This is the prioritized route and acceptance
+Updated 2026-11-13 18:24 CST. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -33,9 +33,10 @@ fails grade 1.2 and warnings increased from 21 to 128. That mesh is not a
 replacement route and does not enable F11.
 A read-only source probe then found flat Z=0 terrain under all 65 points at
 cut 658→623, where the baked surface reaches Z=1.70. Nearby raised source
-geometry still matters to clearance. A detail-sampling-only bake comparison
-is prepared but unrun because the devbox was CPU-saturated; it does not
-change route acceptance. The owner assist 0.39.6 release fixes stopped-state
+geometry still matters to clearance. A completed detail-sampling-only bake comparison
+kept the same polygon graph but worsened the outer-ring maximum angular
+grade from 1.801 to 2.706 and raised warnings from 21 to 439. That candidate
+is rejected; no movement acceptance changed. The owner assist 0.39.6 release fixes stopped-state
 recovery and queued preparation cancellation while this route work continues.
 The Crushbone alternatives let the planner compare same-zone options before
 committing to the unresolved Cauldron→Unrest crossing; they do not authorize

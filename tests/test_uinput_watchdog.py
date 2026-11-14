@@ -46,20 +46,36 @@ def test_child_releases_while_caller_is_stalled():
     assert sent[:4] == [(1, 17, 1), (0, 0, 0), (1, 17, 0), (0, 0, 0)]
 
 
-def test_stop_after_down_releases_and_does_not_report_success():
+def test_stop_after_down_releases_and_does_not_report_success(monkeypatch):
     read_fd, write_fd = os.pipe()
-    checks = 0
+    down = False
+    original = watchdog._read_status
 
-    def stop():
-        nonlocal checks
-        checks += 1
-        return checks >= 2
+    def observe_ack(*args, **kwargs):
+        nonlocal down
+        result = original(*args, **kwargs)
+        down |= result == "DOWN"
+        return result
 
+    monkeypatch.setattr(watchdog, "_read_status", observe_ack)
     with pytest.raises(PulseError, match="interrupted"):
-        timed_key_pulse(write_fd, 17, 0.15, should_stop=stop)
+        timed_key_pulse(write_fd, 17, 0.15, should_stop=lambda: down)
     sent = frames(write_fd, read_fd)
     assert sent[0] == (1, 17, 1)
     assert (1, 17, 0) in sent
+
+
+def test_ready_wait_pumps_stop_without_sending_down():
+    read_fd, write_fd = os.pipe()
+    stopped = False
+
+    def pump():
+        nonlocal stopped
+        stopped = True
+
+    with pytest.raises(PulseError, match="did not arm"):
+        timed_key_pulse(write_fd, 17, 0.15, pump=pump, should_stop=lambda: stopped)
+    assert all(value != 1 for kind, _, value in frames(write_fd, read_fd) if kind == 1)
 
 
 def test_refuses_overlong_hold_before_spawning():

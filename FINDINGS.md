@@ -1,5 +1,79 @@
 # FINDINGS
 
+## Actual G0 dispatch wired to independent release — 2026-11-13 18:24 CST
+
+**VERIFIED source, pipe tests and Alienware engine smoke; no game input:**
+New `owner_g0_watchdog.py` wraps the existing 0.39.6 adapter. Its `hold()`
+accepts only measurement mode, running `stop_check`, `forward`, exactly 0.15
+seconds, and no jump, with combat/preparation off. Assist refuses before
+creating a sender. It passes the helper's existing uinput descriptor to
+`timed_key_pulse`, checks cancellation/focus/owner input around GO, and keeps
+failed-release held-key records for cleanup. A reentrant lock serializes
+stop_action/stop_autopilot with GO because sender checks can process F9 on
+the same thread. Cancellation after child UP also rejects the result.
+
+READY now pumps owner events; DOWN acknowledgment intentionally does not.
+An intermediate review caught why pumping inside that locked wait was wrong:
+a same-thread F9 could publish OFF before a queued GO was consumed. The final
+code retains the locked acknowledgment-or-kill/UP ordering. UP waits pump
+normally. This is not a hard real-time guarantee; OS scheduling and actual
+client release remain unverified.
+
+Twenty-eight focused pipe checks passed across adapter/watchdog/G2 bridge
+runs. The older G2 bridge fixture sat exactly at a floating-point 0.4-second
+subtraction boundary and failed at the current large monotonic uptime; its
+fixture now uses an interior 0.5-second interval. Production thresholds were
+not relaxed. Tests cover one DOWN/UP, pre-GO F9 reentrancy, F9/F11 after DOWN,
+GUI stop after UP, stale states and retained failed-release bookkeeping.
+
+Read-only introspection on Alienware confirms installed `evdev.UInput.fileno`
+returns its existing `self.fd`; no device was created. The staged no-device
+smoke constructs the actual Engine without running it, substitutes a pipe
+sender, dispatches the actual `Hold` intent, sees exactly one DOWN followed
+by release, and refuses that same hold after switching to assist. The prior
+HP/recovery smoke also passed. No keyboard devices or client input were used.
+
+Separate candidate path: `~/.local/share/eql-automation/owner-assist/0.39.7`.
+Local/remote archive SHA-256:
+`4c917a63f755e9ea3982a5939d5c9c7d3c35d9c7ffd0026c80680631df9d492b`.
+Adapter SHA-256:
+`9a905e4477494b944f8cad733b07907a9b7c35177890565f7f9c31c201d93b56`.
+Watchdog SHA-256:
+`00088c9733034d8aab1c00be65c800bed7deaf5a5a6b59f848c3ba20cf03dc79`.
+The 0.39.6 owner HP-test intake is unchanged; no immediate repeat G0 is
+requested. The older observed G0 pass does not certify this new sender.
+
+**Real-client gates still open:** a single focused read-only capture attempt
+refused because the game window/process condition was not met. No focus was
+changed or input sent. G2 lacks a production independent scene provider,
+current zone/location bootstrap, live alignment and a preceding fresh speed
+calibration. These are implementation/evidence dependencies, not a request
+for private-server permission. G2 and F11 remain disabled.
+
+## Crushbone detail-distance experiment rejected — 2026-11-13 18:24 CST
+
+**VERIFIED bounded offline bake:** After the initial CPU-pressure hold, one
+low-priority worker completed the pinned full-zone baseline and sample-distance
+6→3 comparison within a 120-second outer limit (90-second per-child limit).
+Baseline took 15.69 seconds and reproduced the prior EQNM hash and all 65
+sample heights exactly. The new variant took 31.44 seconds, kept 5,143
+polygons/10,260 links, and increased detail triangles 43,862→96,779. Warnings
+rose 21→439. At radius 1.2 the maximum height worsened 1.70053→1.93756 and
+maximum angular grade 1.80114→2.70633, still above the 1.2 limit. It is not
+adopted. Denser detail alone does not resolve the source-flat/baked-bump issue.
+
+Private directory: `nav-candidates/crushbone-detail-distance-0.41.45/`.
+Report SHA-256:
+`b0e7307e43d1b212ce8d5a973c3290014fb9f8eee862e2855de5a4bfa9246780`.
+Variant EQNM SHA-256:
+`549e0ba84bbe73ccb8093d2c842b49d17f864f513c70d7e073675ad547446269`.
+Executed probe-source SHA-256:
+`a920a11a5f14c0fc707c749c8e1731ecc757498ce7dccb7c0940e56b688981d6`.
+The ordered EQTR remains
+`ad521d7df14c0d4a578923595316794cb06181672bb8f22b21f0925ec43e9da5`.
+No client movement, route acceptance or character progress resulted. Next is
+source/voxel attribution; GFay remains the first same-zone route candidate.
+
 ## Owner assist 0.39.6 stop and draft recovery — 2026-11-13 18:20 CST
 
 **VERIFIED original-engine offline behavior and Alienware GUI, no game

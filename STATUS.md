@@ -1,8 +1,28 @@
 # STATUS
 
-Updated 2026-11-13 18:20 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 18:24 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
+- Separate **0.39.7 G0 watchdog candidate** is staged on Alienware. It
+  connects the existing one-pulse G0 intent to the same-device independent
+  release child; assist hold refuses. Stop/GO share a reentrant lock and a
+  stopped result cannot pass. Twenty-eight focused pipe checks passed;
+  Alienware original-engine dispatch smoke used a pipe, created no input
+  device and sent no game input. Archive SHA-256 matched
+  `4c917a63f755e9ea3982a5939d5c9c7d3c35d9c7ffd0026c80680631df9d492b`.
+  Actual watchdog client release remains unverified; keep owner HP testing
+  on 0.39.6. The earlier G0 pass is preserved, with no immediate repeat asked.
+- The bounded Crushbone detail-distance comparison completed: baseline
+  reproduced exactly; distance 6→3 worsened outer-ring maximum angular grade
+  from 1.801 to 2.706 and raised warnings 21→439. Reject this candidate.
+  Report SHA-256 `b0e7307e43d1b212ce8d5a973c3290014fb9f8eee862e2855de5a4bfa9246780`.
+  Next: attribute the bump to source rasterization/nearby geometry, keeping
+  same-zone GFay as the first route candidate. No live movement or XP gain.
+- A read-only screen capture attempt refused because there was not exactly
+  one focused game window/process. No focus change, input, capture or game
+  mutation followed. G2 still needs independent scene observations, a fresh
+  zone/location binding, live alignment and a preceding speed calibration;
+  the existing budget cannot manufacture its own prerequisite speed bound.
 - Owner assist **0.39.6** is privately staged on Alienware. F9 now invalidates
   a queued GUI preparation; explicit **Chat recovery** clears only local
   draft bookkeeping while stopped, sends no keys, and requires a fresh F8.
@@ -18,12 +38,12 @@ Updated 2026-11-13 18:20 CST for coordinator task `829a00229b29`.
   owner report (Legira level 7, GFay). Next real-client step is owner-run
   HP/current-scene observation before bounded G2/follower validation.
 - Read-only Crushbone source probe found flat Z=0 ground beneath all 65
-  sample points at cut 658→623, where the baked detail surface reaches
-  Z=1.70. A source wall begins nearby, so this is not a clearance waiver.
-  The new `--comparison detail` bake option isolates sample spacing 6→3.
-  It has not run: measured devbox pressure was 116 runnable processes and
-  100% CPU. Next offline step is that one-thread bounded probe when pressure
-  permits; same-zone GFay remains the first movement candidate.
+  sample points at cut 658→623, where the original baked surface reaches
+  Z=1.70. A wall begins nearby, so this is not a clearance waiver. Following
+  the initial CPU-pressure hold, one low-priority worker completed the
+  baseline/detail comparison within the outer 120-second bound. Both tested
+  mesh variations still fail the local grade criteria; neither replaces the
+  copied baseline or authorizes F11.
 - Controlled Crushbone full-zone bake comparison completed: identical
   copied source/baker reproduced all 65 baseline ground heights exactly.
   Halving horizontal cell size reduced the inner-ring error at 658→623,

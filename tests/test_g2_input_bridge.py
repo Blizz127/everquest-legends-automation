@@ -10,6 +10,7 @@ import pytest
 from eql_automation.g2_input_bridge import run_g2_forward
 from eql_automation.g2_pulse_budget import G2Halt, G2PulseBudget, G2Scene
 from eql_automation.uinput_watchdog import PulseError
+import eql_automation.uinput_watchdog as watchdog
 
 
 EVENT = struct.Struct("@llHHi")
@@ -50,7 +51,9 @@ def scene(*, target_absent=True):
 
 def budget():
     now = time.monotonic()
-    first = G2Scene(now - 0.5, "gfaydark", (0.0, 0.0, 10.0),
+    # Stay inside the stationary interval, not on a subtraction-sensitive
+    # exact 0.4-second boundary at large monotonic uptime values.
+    first = G2Scene(now - 0.6, "gfaydark", (0.0, 0.0, 10.0),
                     log_epoch=1, fix_seq=1, zone_generation=1, focused=True,
                     owner_keys_clear=True, chat_clear=True,
                     target_absent=True, combat_clear=True,
@@ -113,9 +116,23 @@ def test_changed_target_before_down_sends_no_key():
     assert policy.stage == "halted" and not sender.held
 
 
-def test_owner_stop_during_pulse_releases_and_halts():
+def test_owner_stop_during_pulse_releases_and_halts(monkeypatch):
     read_fd, write_fd = os.pipe()
-    sender = FakeSender(write_fd, fail_at=4)
+    down = False
+    original = watchdog._read_status
+
+    def observe_ack(*args, **kwargs):
+        nonlocal down
+        result = original(*args, **kwargs)
+        down |= result == "DOWN"
+        return result
+
+    def owner_check():
+        if down:
+            raise InterruptedError("Owner stopped after DOWN")
+
+    monkeypatch.setattr(watchdog, "_read_status", observe_ack)
+    sender = FakeSender(write_fd, on_check=owner_check)
     policy = budget()
     with pytest.raises(PulseError, match="interrupted"):
         run_g2_forward(sender, policy, scene, lambda: None, threading.RLock())

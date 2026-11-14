@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.44 / owner preview 0.39.6
+# EverQuest Legends automation — project 0.41.45 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,8 +19,8 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.44 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.44/source`; the runnable
+Source tools 0.41.45 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.45/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
 Preview 0.39.6 builds on the existing rotation bot and proposes its HP crop
@@ -42,10 +42,17 @@ stop made it stale. The banner shows ASSIST ON/OFF, and the unavailable travel
 tab is disabled. G0 remains available only in measurement mode. Previous
 previews remain retained; the original rotation tool is unchanged.
 
-Project 0.41.44 adds `--comparison detail` to the bounded Crushbone bake
-probe, changing only detail sample distance from 6 to 3 after reproducing the
-baseline. Its CLI check passed; this new bake has not run yet because the
-devbox was CPU-saturated at release time. It grants no route acceptance.
+Project 0.41.45 integrates the same-device release watchdog into the
+separate 0.39.7 G0 measurement candidate. It still allows only the existing
+single 0.15-second forward check, and refuses movement from assist. The
+ordinary assist recommendation remains 0.39.6 while its HP test is pending.
+The new watchdog path has passed pipe tests, not a real-client release test;
+the prior owner-confirmed G0 result belongs to the earlier sender.
+
+The bounded Crushbone `--comparison detail` experiment has now run. It
+reproduced the baseline exactly, then changed only sample distance 6→3.
+The suspect outer-ring grade worsened and warnings rose from 21 to 439.
+That candidate is not adopted; no route gains movement acceptance.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
 separate-process same-device release timer tested only with a pipe. Version
@@ -375,6 +382,31 @@ F11 travel/grinding remains disabled. The
 copied GFay and Crushbone mesh paths are connected offline but include narrow
 clearance and steep polygons, so they are not accepted movement routes.
 
+## Separate G0 watchdog candidate: 0.39.7
+
+This build is staged for a later supervised release check; it does not replace
+the current 0.39.6 HP-test instructions or enable G2/F11. No repeat is requested
+until that test is scheduled. To run that candidate on open, flat, dry ground,
+with melee/autorun off, no target and the same G0 precautions above:
+
+```bash
+cd ~/.local/share/eql-automation/owner-assist/0.39.7
+EQL_ROTATION_TRACE="$HOME/eql-g0-watchdog-trace.jsonl" ./launch.sh --measure-navigation
+```
+
+**Check movement stop** requests the same one forward pulse and four location
+fixes. A separate child uses the helper's existing input-device descriptor
+and attempts key-up even if its parent stalls. F9/F11 cancel future work;
+the stop and GO paths share a lock. Once GO is queued, the short DOWN
+acknowledgment wait finishes or aborts before a stop returns, so a delayed
+child cannot press after OFF has returned. OS scheduling and actual game
+release still need owner observation. The trace adds `g0_watchdog_start`,
+`g0_watchdog_failed` on error, and `release=same_device_watchdog` on a measured
+hold. An over-0.20-second reported hold or cancellation is not a pass.
+Assist's movement path refuses immediately; this adds no turn, targeting,
+combat, camp or route action. The candidate keeps the same assist controls
+and HP calibration, but its movement implementation is not client-accepted.
+
 ## Read-only UI observation for the next movement gate
 
 Project 0.41.35 and later include an optional owner-run screenshot crop tool. It reads
@@ -390,7 +422,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.44/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.45/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -398,7 +430,7 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.44/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.45/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 

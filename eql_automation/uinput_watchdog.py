@@ -1,7 +1,7 @@
 """One bounded key pulse with an independent release on the *same* uinput fd.
 
-This is an offline-tested building block for a future owner-run movement check.
-It creates no input device and is not wired to the current owner preview.
+This creates no input device. The isolated owner G0 adapter can supply its
+existing device; pipe tests alone do not prove release in the real client.
 The caller supplies an already-created uinput file descriptor, owns that key
 exclusively, and must still check focus, owner input, target and game state
 before and during a pulse. Deadlines depend on OS scheduling, not real time.
@@ -81,7 +81,8 @@ def timed_key_pulse(device_fd: int, key_code: int, seconds: float, *,
     )
     started = False
     try:
-        if _read_status(child.stdout, time.monotonic() + 2.0) != "READY":
+        if _read_status(child.stdout, time.monotonic() + 2.0,
+                        pump=pump, should_stop=should_stop) != "READY":
             raise PulseError("Release watchdog did not arm")
         if should_stop is not None and should_stop():
             raise PulseError("Pulse cancelled before key down")
@@ -93,6 +94,9 @@ def timed_key_pulse(device_fd: int, key_code: int, seconds: float, *,
             command = b"GO\n" if expires_at is None else f"GO:{expires_at:.9f}\n".encode("ascii")
             try:
                 child.stdin.write(command)
+                # No reentrant stop here: once GO is queued, OFF must not
+                # return until DOWN is acknowledged or the child is killed
+                # and UP written. READY and UP waits still pump owner input.
                 if _read_status(child.stdout, time.monotonic() + 0.30) != "DOWN":
                     raise PulseError("Release watchdog did not confirm key down")
                 started = True
