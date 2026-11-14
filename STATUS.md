@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 05:06 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:07 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -16,7 +16,9 @@ Updated 2026-11-14 05:06 UTC for coordinator task `829a00229b29`.
   The updated installed executable was copied read-only and its icon selector
   inspected statically. Standing also appears on a null-player fallback;
   that match alone cannot establish scene safety. No live classifier enabled.
-  Private source staging is next; current assist remains unchanged.
+  Source `7ff2503` is privately staged at `owner-tools/0.41.70/source`; six
+  no-input remote startup checks pass. Archive SHA
+  `a4b7f3ddcc1bc60724c810bb1c3a24d7b8b5695c19bb169aac6c30a6c3c0827b` matched.
 - **Client update reconciled:** executable is now `fe41a8db…7146bf36` and
   spell file `c179a57f…236c8e9`. Seven checked navigation archives still match.
   The new spell file has two added and 18 changed rows; Paladin/Cleric 1–20

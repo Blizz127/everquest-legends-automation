@@ -1,5 +1,19 @@
 # FINDINGS
 
+## Private source 0.41.70 staging — 2026-11-14 05:07 UTC
+
+**VERIFIED:** Commit `7ff2503642f52bb490cf1b30a607fe63fdcd7965`, archive SHA
+`a4b7f3ddcc1bc60724c810bb1c3a24d7b8b5695c19bb169aac6c30a6c3c0827b`,
+is staged on Alienware at `~/.local/share/eql-automation/owner-tools/0.41.70/source`.
+Six remote startup checks pass: version, synthetic exact-RGBA atlas extraction,
+unknown runtime fields preserved, changed texture refusal, extractor CLI and
+location collector CLI. These checks use fabricated textures, not game capture
+or client assets. No input device/login was opened. Remote `../smoke.json` and
+local `releases/eql-automation-0.41.70-staging.json` retain the result. Current
+assist and observation candidate are unchanged. Their rotation_core.py files
+have the same SHA `9f05379c407f7c9042b38dc7f39c72c0b603bc24d6e754330746f805211a3113`,
+so the new-data candidate-profile comparison covers that shared profile code.
+
 ## Current client UI templates and patch reconciliation — 2026-11-14 05:06 UTC
 
 **VERIFIED source 0.41.70:** `combat_ui_atlas.py` reads a hash-pinned private
