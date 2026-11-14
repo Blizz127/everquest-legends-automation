@@ -75,5 +75,8 @@ def test_retained_crushbone_loader_reports_real_layers_without_accepted_destinat
     assert all('source_refusal' in r and not r['usable_destination'] for r in report['rows'])
     assert not report['label_z_used_for_floor_selection'] and not report['route_accepted']
     assert not report['game_input_sent'] and not report['current_character_position']
+    proposals = assets.annotation_report(body_height=6.)['rows']
+    assert [i for i, r in enumerate(proposals) if 'floor_seed_proposal' in r] == [2, 3]
+    assert all(not r['usable_destination'] for r in proposals)
     with pytest.raises(ValueError): assets.planner.ground.triangles[0, 0, 0] = 99.
     with pytest.raises(ValueError): assets.planner.source.source_minimum[0, 0] = 99.

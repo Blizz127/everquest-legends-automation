@@ -41,7 +41,7 @@ class CrushboneAssets:
     planner: CurrentStartPlanner
     annotations: tuple
 
-    def annotation_report(self):
+    def annotation_report(self, *, body_height=None):
         """Inspect exact annotation XY, never turn label Z into a floor seed."""
         self.planner._check_views()
         rows = []
@@ -64,6 +64,12 @@ class CrushboneAssets:
                 row['strict_source_support'] = dict(height=height, identities=identities)
             except ValueError as error:
                 row['source_refusal'] = str(error)
+            if body_height is not None:
+                try:
+                    row['floor_seed_proposal'] = asdict(self.planner.source.propose_unique_diffuse_floor(
+                        xy, body_height=body_height))
+                except ValueError as error:
+                    row['floor_seed_refusal'] = str(error)
             rows.append(row)
         return dict(format='eql-crushbone-annotations-v1', zone='crushbone',
             zone_id=self.planner.zone_id, zone_name=self.planner.zone_name,

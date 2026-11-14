@@ -32,6 +32,21 @@ class SourcePointHit:
         return f'wld:{self.fragment}:face:{self.face}'
 
 
+@dataclass(frozen=True)
+class SourceFloorProposal:
+    package_xy: tuple[float, float]
+    archive_sha256: str
+    wld_sha256: str
+    height: float
+    selected_ids: tuple[tuple[int, int], ...]
+    intersections: tuple[SourcePointHit, ...]
+    body_height: float
+    numeric_margin: float = .01
+    scope: str = 'point_seed_only; complete_footprint_checks_required'
+    input_authorized: bool = False
+    real_client_accepted: bool = False
+
+
 class PortalPrecisionView:
     def __init__(self, ground_view, mesh_path: Path, archive_path: Path, *, zone, maximum_ulp_steps=1,
                  tile_rounding=False):
@@ -138,6 +153,30 @@ class PortalPrecisionView:
         if not hits or max(h.height for h in hits)-min(h.height for h in hits)>1e-7:
             raise ValueError('Copied source floor missing or layered at exact XY')
         return hits[0].height, tuple(h.identity for h in hits)
+
+    def propose_unique_diffuse_floor(self, package_xy, *, body_height):
+        """Propose one Diffuse layer below explicitly overhead Boundary sheets.
+
+        Every Diffuse intersection counts, including steep or inconvenient
+        ones. Only flag-zero Boundary sheets may be classified as overhead.
+        This point query cannot clear the body's full swept footprint. All
+        source faces remain available to the unchanged occupancy checks.
+        """
+        if (type(body_height) not in (int, float) or not np.isfinite(body_height)
+                or not 0 < body_height <= 100):
+            raise ValueError('Explicit bounded body-height hypothesis required')
+        hits = self.source_hits_at(package_xy)
+        if (len({(h.fragment, h.face) for h in hits}) != len(hits)
+                or any(h.flag != 0 or h.material_class not in ('Diffuse', 'Boundary') for h in hits)):
+            raise ValueError('Unsupported or duplicate source-floor intersection')
+        floors = tuple(h for h in hits if h.material_class == 'Diffuse')
+        if not floors or max(h.height for h in floors)-min(h.height for h in floors) > 1e-7:
+            raise ValueError('Unique Diffuse source floor missing or layered at exact XY')
+        if any(h.height <= max(f.height for f in floors)+body_height+.01
+               for h in hits if h.material_class == 'Boundary'):
+            raise ValueError('Boundary is not strictly above the proposed body band')
+        return SourceFloorProposal(tuple(package_xy), self.archive_sha256, self.wld_sha256,
+            floors[0].height, tuple((h.fragment, h.face) for h in floors), hits, body_height)
 
     def source_faces_for_footprint(self,footprint):
         """All XY source candidates across every height, including margin."""

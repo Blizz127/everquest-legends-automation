@@ -1,5 +1,64 @@
 # FINDINGS
 
+## Explicit floor proposal and bound height bootstrap — 2026-11-14 13:33 UTC
+
+**VERIFIED implementation:** source0.42.24 adds an explicit
+`propose_unique_diffuse_floor` query. Every Diffuse intersection counts; the
+query refuses multiple levels, nonzero flags and unknown materials. Only
+flag-zero Boundary sheets strictly above the sole floor plus the explicit body
+height and existing .01 margin can be classified overhead. All intersections
+remain recorded and all source faces remain in footprint occupancy. The
+original strict `source_floor_at` default is unchanged. Current-start planning
+must opt in, records the proposal in its seed, and still requires complete
+terrain, static-object and BSP checks.
+
+`measure_current_height(..., floor_plan=plan)` can now consume only the exact
+plan's already checked initial floor. It checks source/plan hashes, initial
+terrain/static/BSP proofs, seed owner/log/zone identity, body hypothesis and a
+newer stopped pair. Both local and destination-wrapped plans work. It snapshots
+the floor chain and observer identities around callbacks; `floor_at` retains
+the exact checked-cell limit. Evidence records floor and seed hashes. The owner
+wrapper also requires the active plan and collector to remain identical. No
+saved position or label Z selects a supporting floor; measurement-only and
+unverified body/live flags remain unchanged.
+
+**VERIFIED tests:** 129 focused geometry/bootstrap/copy checks pass. Tests
+include contact/unknown-material/multilevel refusal, sloping Boundary occupancy
+inside the swept footprint, static/water/missing-child refusal, fresh direct and
+destination height, changed seed/source/body/plan, out-of-cell coordinates and
+callback changes. Two actual owner-wrapper OS-pipe tests pass for local arrival
+and complete expected-zone crossing, with synthetic game feedback. A new active
+plan replacement case initially stopped during calibration (`Pulse cancelled
+before key down`) before reaching its intended assertion; focused retry passes.
+No timing limit was relaxed. A separate final-binding-delay case **reproduced a
+failure**: stale time sampled before callback work could allow expired height.
+Freshness is now evaluated after callbacks; it passes in the final129 checks.
+
+**VERIFIED copied-data diagnostic:** with explicit six-unit body-height
+hypothesis, Trainer Hill and North Wall produce point seed proposals. Mines and
+Throne remain layered and Entrance has no support. None is an accepted camp.
+`nav-candidates/crushbone-floor-seeds-0.42.24.json` SHA
+`14c561a20ca70de087008c8dad27a11560dec831c8362a4401123f903a8b458d`.
+A synthetic-reader comparison at the retained historical entrance XY
+`(274.06,-424.04)` changes from point material refusal to
+`Current-start BSP refused: missing_bsp_child`: the initial terrain/static
+checks now pass with the same radius1.2/height6 hypotheses. This is not a current
+character position or live traversal. Report
+`nav-candidates/crushbone-start-bootstrap-0.42.24.json` SHA
+`50a1bc047f5867cea3824bc3a997ca49678816cfeebb6b4e93246f27ed05b411`.
+
+**Next:** compose `ClientBspTreeView` and `ClientRegionMap` into a separate native
+classification view. Native classification uses binary32 operation order,
+nonzero-region early termination and last-record-wins labels; the old exact
+BSP volume/union-label check does not model those semantics. Preserve origin
+(missing child versus untyped region), transition flags and classification
+uncertainty; do not convert an unresolved query to class0 or infer solid
+clearance from metadata. Terrain/static collision checks remain independent.
+Owner crossing0.39.19 acceptance is still pending; source integration does not
+change its installed bundle. Assist0.39.13 and passed G0 remain. Current level,
+XP/hour, deaths and camp unknown; no accepted 1–20 route, automated XP or fresh
+hands-off1–50 run.
+
 ## Crushbone camp inputs and native region consumers — 2026-11-14 13:25 UTC
 
 **VERIFIED implementation:** source 0.42.23 adds a reusable, pinned Crushbone

@@ -137,7 +137,8 @@ class CurrentStartPlanner:
     def plan(self, reader, first, second, *, heading, motion_record_id, bounds,
              length, half_width, vertical_window, maximum_source_z_difference,
              owner_binding, binding_reader, released_at, record_id,
-             clock=time.monotonic, local_wall_clock=datetime.now, maximum_seconds=10.):
+             clock=time.monotonic, local_wall_clock=datetime.now, maximum_seconds=10.,
+             allow_overhead_boundary=False):
         """Check a short capsule from the second exact stopped fix, not old data.
 
         Planning can outlast the input fix lifetime. This never retimestamps
@@ -150,6 +151,7 @@ class CurrentStartPlanner:
                 or not all(finite(v) for v in (heading, length, half_width, vertical_window,
                     maximum_source_z_difference, released_at, maximum_seconds))
                 or not 0 <= heading < 360 or not .5 < length <= 3
+                or type(allow_overhead_boundary) is not bool
                 or not .25 < half_width <= 2 or not 0 < vertical_window <= 3
                 or not 0 < maximum_source_z_difference <= 3
                 or released_at < 0 or not 0 < maximum_seconds <= 30
@@ -204,7 +206,13 @@ class CurrentStartPlanner:
         end_polygon, end_z = self._support(end_xy)
         if end_polygon != polygon:
             raise ValueError('First local trial must remain in its starting polygon')
-        source_z, seed_names = self.source.source_floor_at(xy)
+        proposal = None
+        if allow_overhead_boundary:
+            proposal = self.source.propose_unique_diffuse_floor(xy, body_height=bounds.body_height)
+            source_z = proposal.height
+            seed_names = tuple(f'wld:{fragment}:face:{face}' for fragment, face in proposal.selected_ids)
+        else:
+            source_z, seed_names = self.source.source_floor_at(xy)
         seeds = []
         for name in seed_names:
             match = re.fullmatch(r'wld:(\d+):face:(\d+)', name)
@@ -239,6 +247,7 @@ class CurrentStartPlanner:
             pins=self.pins, bsp_inventory_sha256=self.bsp_pin, owner_binding=owner_binding,
             log_identity=identity, observations=[raw_record(first), raw_record(second)],
             motion_record_id=motion_record_id, heading=heading, source_z=source_z,
+            source_floor_proposal=asdict(proposal) if proposal is not None else None,
             selected_ids=seeds, planning_bounds=asdict(bounds), footprint=footprint,
             precision_policy=self.precision_policy.record() if self.precision_policy else None,
             released_at=released_at, began=began)

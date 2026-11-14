@@ -8,6 +8,8 @@ the legacy full-auto calibration or a real route as verified.
 """
 from dataclasses import asdict, dataclass
 from datetime import datetime
+from hashlib import sha256
+import json
 import math
 
 from .ground_binding import (HeightCalibration, SourceFloorObservation,
@@ -34,6 +36,9 @@ class StoppedHeightEvidence:
     coordinate_scope: str = 'printed_decimal_centers; source_geometry_not_live_collision'
     body_height_verified: bool = False
     real_client_accepted: bool = False
+    source_floor_kind: str = 'all_layers_exact_point'
+    source_floor_proof_sha256: str | None = None
+    source_floor_seed_sha256: str | None = None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -78,6 +83,14 @@ def current_height_allowed(calibration, *, mode, route_sha256=None, owner_bindin
             or (route_sha256 is not None and route_sha256 != e.route_sha256)
             or (owner_binding is not None and owner_binding != e.owner_binding)):
         return False
+    if e.source_floor_kind == 'all_layers_exact_point':
+        if e.source_floor_proof_sha256 is not None or e.source_floor_seed_sha256 is not None:
+            return False
+    elif e.source_floor_kind == 'checked_initial_plan_floor':
+        if not digest(e.source_floor_proof_sha256) or not digest(e.source_floor_seed_sha256):
+            return False
+    else:
+        return False
     a, b = e.first, e.second
     if (not isinstance(a, SourceFloorObservation) or not isinstance(b, SourceFloorObservation)
             or not isinstance(a.raw_fix, RawLocationFix) or not isinstance(b.raw_fix, RawLocationFix)
@@ -116,16 +129,68 @@ def current_height_allowed(calibration, *, mode, route_sha256=None, owner_bindin
     return True
 
 
+def _bound_initial_floor(plan, observer, route, reader, owner_binding, segment_index, first):
+    """Bind the accepted initial cell once, then recheck a small value snapshot."""
+    from .current_route_start import CurrentStartPlan, encoded
+    from .route_floor_commit import _chain_snapshot
+    if (not isinstance(plan, CurrentStartPlan) or plan.route is not route
+            or plan.observer is not observer or segment_index != 0):
+        raise ValueError('Exact initial plan, observer and first segment required')
+    chain = plan.floor_chain
+    snapshot = _chain_snapshot(chain)
+    geometry = observer.geometry
+    source, mesh, ground = observer.source, observer.mesh, observer.ground
+    plan_bytes, evidence_bytes, bounds = plan.plan_bytes, plan.evidence_bytes, plan.planning_bounds
+    if (sha256(plan_bytes).hexdigest() != route.artifact_sha256
+            or sha256(evidence_bytes).hexdigest() != geometry.same_floor_evidence_sha256
+            or chain.index != 1 or chain.inventory_sha256 != geometry.source_wld_sha256
+            or chain.body_height != bounds.body_height):
+        raise ValueError('Initial floor plan hashes or source context differ')
+    try:
+        evidence = json.loads(evidence_bytes)
+        if evidence['format'] == 'eql-current-destination-geometry-v1':
+            if (evidence['initial_chain_proof'] != chain.previous.proof_sha256
+                    or evidence['initial_chain_index'] != chain.index):
+                raise ValueError('Destination initial floor proof differs')
+            evidence = evidence['initial_geometry']
+        seed = evidence['seed']
+        seed_fix = seed['observations'][-1]
+        if (evidence['format'] != 'eql-current-start-geometry-v1'
+                or any(evidence[key]['candidate'] is not True for key in ('terrain', 'static', 'bsp'))
+                or encoded(evidence['terrain']['floor_step']) != encoded(asdict(chain.previous))
+                or sha256(encoded(seed)).hexdigest() != chain.seed_evidence_sha256
+                or seed['pins'][2] != chain.inventory_sha256
+                or encoded(seed['owner_binding']) != encoded(owner_binding)
+                or encoded(seed['log_identity']) != encoded(reader.tail.identity)
+                or tuple(seed_fix[k] for k in ('zone_id', 'zone_display_name', 'log_epoch', 'zone_generation')) !=
+                   (reader.zone_id, reader.zone_display_name, reader.tail.epoch, reader.zone_generation)
+                or first.log_line_seq <= seed_fix['log_line_seq']):
+            raise ValueError('Initial checked floor or fresh owner observations differ')
+    except (KeyError, TypeError, IndexError, json.JSONDecodeError) as error:
+        raise ValueError('Malformed initial floor geometry evidence') from error
+
+    def check():
+        if (plan.floor_chain is not chain or plan.route is not route
+                or plan.observer is not observer or observer.geometry is not geometry
+                or observer.source is not source or observer.mesh is not mesh or observer.ground is not ground
+                or plan.plan_bytes is not plan_bytes or plan.evidence_bytes is not evidence_bytes
+                or plan.planning_bounds is not bounds or _chain_snapshot(chain) != snapshot):
+            raise ValueError('Initial floor plan changed during height measurement')
+    return chain, check
+
+
 def measure_current_height(observer, reader, first, second, *, route, segment_index,
                            owner_binding, binding_reader, clock, record_id,
                            released_at, local_wall_clock=datetime.now,
-                           residual_limit=.05, valid_for=300.):
+                           residual_limit=.05, valid_for=300., floor_plan=None):
     """Create a measured record before constructing the route follower.
 
     Uses the same live reader that will be handed to RouteSession. The caller
     already owns release/request correlation and the current zone observation;
     an unbound relative-motion JSON cannot be substituted. The source lookup
     considers all terrain layers at each printed XY, without selecting by Z.
+    An explicit exact current plan may instead supply its already checked
+    initial floor cell; fresh positions must remain inside that unchanged cell.
     This function does no input and leaves the reader/geometry unchanged.
     """
     from .fixed_route_follower import FixedRoute
@@ -148,17 +213,28 @@ def measure_current_height(observer, reader, first, second, *, route, segment_in
             or observer.source.wld_sha256 != g.source_wld_sha256):
         raise ValueError('Current height geometry identity mismatch')
     log_identity = reader.tail.identity
+    source = observer.source
+    floor = check_floor = None
+    if floor_plan is not None:
+        floor, check_floor = _bound_initial_floor(floor_plan, observer, route, reader,
+            owner_binding, segment_index, first)
 
     def check():
-        now = clock()
+        binding = binding_reader()
         wall = local_wall_clock()
-        if (binding_reader() != owner_binding or not finite(now)
+        # Scope callbacks may pump events or take time. Judge freshness only
+        # after they finish, then check floor/reader values without callbacks.
+        now = clock()
+        if check_floor is not None:
+            check_floor()
+        if (binding != owner_binding or not finite(now)
                 or not finite(second.received_monotonic)
                 or not 0 <= now-second.received_monotonic <= .5
                 or reader.latest is not second or reader.tail.identity != log_identity
                 or log_identity is None or reader.tail.partial
                 or reader.log_line_seq != second.log_line_seq
                 or observer.geometry is not g
+                or observer.source is not source
                 or observer.source.archive_sha256 != g.source_archive_sha256
                 or observer.source.wld_sha256 != g.source_wld_sha256
                 or not isinstance(wall,datetime) or wall.tzinfo is not None
@@ -192,7 +268,7 @@ def measure_current_height(observer, reader, first, second, *, route, segment_in
         support = exact_detail_support(observer.mesh,polygon,xy)
         if support.status != 'supported':
             raise ValueError('Selected starting polygon does not uniquely support printed XY')
-        source_z, ids = observer.source.source_floor_at(xy)
+        source_z, ids = (observer.source.source_floor_at(xy) if floor is None else floor.floor_at(xy))
         if (not finite(source_z) or not isinstance(ids,tuple) or not 1 <= len(ids) <= 128
                 or any(not isinstance(v,str) or not v for v in ids) or len(set(ids))!=len(ids)
                 or abs(source_z-support.height)>g.maximum_source_baked_z_difference):
@@ -207,7 +283,10 @@ def measure_current_height(observer, reader, first, second, *, route, segment_in
         raise ValueError('Stopped height samples do not give a consistent positive correspondence')
     now,wall = check()
     evidence = StoppedHeightEvidence(*samples,owner_binding,log_identity,route.artifact_sha256,
-        route.mesh_sha256,segment_index,offsets,residuals,now,released_at,wall)
+        route.mesh_sha256,segment_index,offsets,residuals,now,released_at,wall,
+        source_floor_kind='all_layers_exact_point' if floor is None else 'checked_initial_plan_floor',
+        source_floor_proof_sha256=None if floor is None else floor.previous.proof_sha256,
+        source_floor_seed_sha256=None if floor is None else floor.seed_evidence_sha256)
     return ObservedHeightCalibration(record_id,route.zone,second.zone_id,second.zone_display_name,
         second.log_epoch,second.zone_generation,g.source_archive_sha256,g.source_wld_sha256,
         center,residual_limit,second.log_line_seq,now,now+valid_for,evidence=evidence,

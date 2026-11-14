@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.23** · rotation preview **0.39.13** · crossing preview **0.39.19** · approach preview **0.39.18**.
+Source **0.42.24** · rotation preview **0.39.13** · crossing preview **0.39.19** · approach preview **0.39.18**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -44,6 +44,12 @@ terrain support, Slave Mines/Throne Room have multiple terrain levels, and
 Trainer Hill/North Wall have distant overhead Boundary sheets. These are not
 accepted camp destinations. This source update sends no game input and does not
 change the 0.39.19 crossing or 0.39.13 assist controls. G0 remains passed.
+Source 0.42.24 can explicitly propose a single Diffuse floor beneath distant
+Boundary sheets, then apply the complete movement-area checks. Stacked floors,
+unknown materials and surfaces touching the body still refuse. Fresh height
+readings can use the exact checked initial floor and stop if that plan changes.
+The copied Crushbone entrance now reaches the separate region-tree refusal;
+this is not yet a traversable camp route. No new owner test is requested.
 
 ## Travel into Crushbone on Alienware: 0.39.19
 

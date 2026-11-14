@@ -296,7 +296,8 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                         bounds=p['bounds'],half_width=.3,vertical_window=3.,
                         maximum_source_z_difference=2.,owner_binding=p['lease'].owner_binding,
                         binding_reader=lambda:self._trial_binding(p),released_at=collector.released_at,
-                        record_id=p['trial_id']+'-start',clock=clock,local_wall_clock=local_wall_clock)
+                        record_id=p['trial_id']+'-start',clock=clock,local_wall_clock=local_wall_clock,
+                        allow_overhead_boundary=planner.zone=='crushbone')
                     destination=p['continuation']['destination']
                     if destination is None:
                         p['plan']=planner.plan(p['lease'].reader,collector.first,collector.second,length=2.,**options)
@@ -321,11 +322,17 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             scope=p['continuation']['scope']
             seconds,steps,distance,hold=scope_limits(scope)
             if scope=='local_trial':distance=3.
+            def height_binding():
+                value=self._trial_binding(p)
+                if p['plan'] is not plan or p['collector'] is not pair:
+                    raise ValueError('Active route plan or height collector changed')
+                return value
             cal=measure_current_height(plan.observer,p['lease'].reader,pair.first,pair.second,
                 route=plan.route,segment_index=0,owner_binding=p['lease'].owner_binding,
-                binding_reader=lambda:self._trial_binding(p),clock=clock,
+                binding_reader=height_binding,clock=clock,
                 record_id=p['trial_id']+'-height',released_at=pair.released_at,
-                local_wall_clock=local_wall_clock,valid_for=seconds+60. if scope!='local_trial' else 300.)
+                local_wall_clock=local_wall_clock,valid_for=seconds+60. if scope!='local_trial' else 300.,
+                floor_plan=plan)
             fit=p['motion_fit']
             motion=steer.Motion(run_speed=fit['run_speed'],turn_rate=fit['turn_rate'],
                 right_sign=fit['right_sign'],turn_latency=fit['turn_latency'],back_speed=0.)

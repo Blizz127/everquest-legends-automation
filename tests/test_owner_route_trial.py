@@ -110,6 +110,30 @@ def test_actual_same_action_motion_startup_route_and_release(h):
                for s in record['route']['steps'])
 
 
+def test_active_plan_replacement_during_height_binding_stops(h, monkeypatch):
+    import eql_automation.owner_route_trial as module
+    measure = module.measure_current_height
+    binding = h.engine._trial_binding
+    armed = []; fired = []
+    def during_height(*args, **kwargs):
+        armed.append(True)
+        try: return measure(*args, **kwargs)
+        finally: armed.clear()
+    def changed_plan(p):
+        value = binding(p)
+        if armed and not fired:
+            p['plan'] = replace(p['plan'])
+            fired.append(True)
+        return value
+    monkeypatch.setattr(module, 'measure_current_height', during_height)
+    monkeypatch.setattr(h.engine, '_trial_binding', changed_plan)
+    h.start_trial(); h.due_trial(); record = finish(h)
+    assert fired and record['outcome'] == 'stopped', h.notices
+    assert 'Active route plan' in record['reason']
+    assert not h.sender.held and h.observer_closed and h.engine.cancelled
+    assert h.engine.route_session_driver is None and h.engine.live_zone_tracker.lease is None
+
+
 def test_route_countdown_payload_uses_observed_zone(h):
     h.engine.zone='historical-zone'
     h.start_trial()
