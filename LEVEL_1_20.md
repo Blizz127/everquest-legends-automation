@@ -219,3 +219,16 @@ Historical G0 fixes show raw-to-source height offset changes by only 0.000788,
 while raw-to-baked offset changes by 0.01939. The next runtime binding must
 carry physical source ground and baked mesh projection separately, with fresh
 live calibration; a constant raw-to-baked correction is unsuitable.
+
+Source 0.41.55 implements the separate source-floor/baked-projection contract.
+The controller retains 0.25 endpoint checks and independently checks raw
+height against source calibration. The new copied-terrain replay samples all
+source layers at every stopped XY, without selecting the nearest Z. The 0.6
+default now refuses at segment 5, step 42, on a 0.759658 bake/source difference;
+0.9 refuses at step 63 on 0.925760. A separately labelled 2.0 sensitivity gets
+to the same segment-38 overlap, with 459 source observations ranging from
+0.121987 to 0.925760 above source. These bounds remain diagnostic, not regional
+proofs or live tolerances. No playable 1–20 leg, G2/F11 acceptance or automated
+XP follows from these results. Next: derive a source-supported regional height
+bound and reconcile the identified reciprocal overlap, then complete the
+remaining route, scene/calibration and sender checks.

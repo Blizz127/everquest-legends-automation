@@ -1,6 +1,5 @@
 """Focused real retained-class integration; no input devices or game access."""
 from dataclasses import replace
-from datetime import datetime
 from hashlib import sha256
 import json
 import math
@@ -10,8 +9,7 @@ import tempfile
 import unittest
 
 from eql_automation.fixed_route_follower import FixedRoute, FixedRouteFollower, FixedSegment, RouteHalt
-from eql_automation.g2_start_gate import AlignedWldFix
-from eql_automation.location_log import RawLocationFix
+import ground_binding_fixture as ground
 
 
 MESH = "a" * 64
@@ -46,16 +44,23 @@ class FixedRouteTests(unittest.TestCase):
     def runner(self, **changes):
         options = dict(legacy=self.legacy, motion=self.motion, heading=0.,
                        calibration_record_id=CALIBRATION, generation=7,
+                       height_calibration=ground.HEIGHT, geometry_evidence=ground.GEOMETRY,
                        generation_reader=lambda: self.generation, mode_reader=lambda: self.mode)
         options.update(changes)
         return FixedRouteFollower(self.route, **options)
 
     def fix(self, point, at):
         self.seq += 1
-        wld = (point[1], point[0], point[2])
-        raw = RawLocationFix(54, "Greater Faydark", wld, datetime(2026, 11, 14),
-                             at, 1, self.seq, 1)
-        return AlignedWldFix(raw, wld, "gfaydark", MESH, CALIBRATION, True)
+        def distance(segment):
+            ax, ay = segment.start[:2]
+            dx, dy = segment.end[0] - ax, segment.end[1] - ay
+            t = min(1., max(0., ((point[0]-ax)*dx + (point[1]-ay)*dy) / segment.length**2))
+            return math.hypot(point[0]-ax-t*dx, point[1]-ay-t*dy)
+        index = min(range(len(self.route.segments)), key=lambda i: distance(self.route.segments[i]))
+        neighbors = tuple(self.route.segments[i].polygon for i in (index-1, index+1)
+                          if 0 <= i < len(self.route.segments))
+        return ground.aligned(point, at=at, seq=self.seq,
+                              polygon=self.route.segments[index].polygon, neighbors=neighbors)
 
     def pair(self, point, release):
         return self.fix(point, release + .13), self.fix(point, release + .53)
@@ -171,7 +176,7 @@ class FixedRouteTests(unittest.TestCase):
                     second = replace(second, raw_fix=replace(second.raw_fix, **change))
                 else:
                     change = ({"calibration_record_id": "different"} if kind == "calibration"
-                              else {"mesh_sha256": "c" * 64} if kind == "mesh"
+                              else {"mesh_projection": replace(second.mesh_projection, mesh_sha256="c" * 64)} if kind == "mesh"
                               else {"live_alignment_verified": False})
                     second = replace(second, **change)
                 with self.assertRaises(RouteHalt):
@@ -284,3 +289,47 @@ class FixedRouteTests(unittest.TestCase):
             path.write_text(json.dumps({**data, "frame": "wrong"}))
             with self.assertRaises(ValueError): FixedRoute.load(path, expected_sha256=pin, mesh_sha256=MESH)
             with self.assertRaises(ValueError): FixedRoute.load(path, expected_sha256=sha256(path.read_bytes()).hexdigest(), mesh_sha256=MESH)
+
+    def test_neighbor_projection_only_within_shared_endpoint_disk(self):
+        for y, accepted in ((.6, True), (.3, False)):
+            with self.subTest(y=y):
+                runner = self.runner()
+                self.start(runner)
+                proposal = runner.propose(100.54)
+                runner.record_release(proposal, started_at=100.55, released_at=100.61)
+                pair = [ground.aligned((0., y, 0.), at=at, seq=self.seq+i+1,
+                                       polygon=2, neighbors=(1,))
+                        for i, at in enumerate((100.74, 101.14))]
+                if accepted:
+                    runner.observe_stopped(*pair, released_at=100.61, now=101.14)
+                    self.assertEqual(runner.index, 1)
+                else:
+                    with self.assertRaises(RouteHalt):
+                        runner.observe_stopped(*pair, released_at=100.61, now=101.14)
+
+    def test_raw_and_source_motion_cannot_be_hidden_by_stationary_baked_pair(self):
+        runner = self.runner()
+        first = ground.aligned(at=100.13, seq=1, source_z=-.3)
+        second = ground.aligned(at=100.53, seq=2, source_z=-.6)
+        # Both raw heights fit calibration and the same baked point; the
+        # independent raw/source changes still disqualify a stopped pair.
+        with self.assertRaisesRegex(RouteHalt, 'stationary pair'):
+            runner.observe_stopped(first, second, released_at=100., now=100.53)
+
+    def test_component_cannot_change_between_stopped_pairs(self):
+        runner = self.runner()
+        self.start(runner)
+        proposal = runner.propose(100.54)
+        runner.record_release(proposal, started_at=100.55, released_at=100.61)
+        pair = [ground.aligned((0., .6, 0.), at=at, seq=self.seq+i+1, component=3)
+                for i, at in enumerate((100.74, 101.14))]
+        with self.assertRaisesRegex(RouteHalt, 'component'):
+            runner.observe_stopped(*pair, released_at=100.61, now=101.14)
+
+    def test_source_bake_delta_does_not_widen_endpoint_height_tolerance(self):
+        runner = self.runner()
+        self.start(runner)
+        # Consistent raw/source calibration with baked endpoint Z off by .26.
+        self.step(runner, (0., .6, .26), .06)
+        self.assertEqual(runner.index, 0)
+        self.assertEqual(runner.height_tolerance, .25)

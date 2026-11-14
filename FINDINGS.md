@@ -1,5 +1,64 @@
 # FINDINGS
 
+## Separate ground observation binding — 2026-11-14 02:03 UTC
+
+**VERIFIED implementation:** Source 0.41.55 replaces the ambiguous aligned
+ground point with independent `SourceFloorObservation`, `MeshProjection` and
+`HeightCalibration`. Both observations bind the exact same raw fix object.
+Raw/source XY agree exactly and mesh XY is the helper-frame swap; source and
+mesh Z remain distinct. The separately supplied expected calibration pins the
+source archive/WLD, zone identity, log epoch/generation, newer log sequence
+and monotonic lifetime. Raw minus source Z must match calibrated character
+height. Motion/frame calibration remains a separate record.
+
+`GroundGeometryEvidence` is supplied independently of observations and pins
+the source/mesh identities, same-floor proof hash, regional height-difference
+bound and reciprocal portal pairs. A self-reported huge bound or substituted
+proof cannot pass. These records are evidence containers; the trusted live
+verifier that computes their evidence still does not exist. Tests/replay use
+explicitly synthetic verification flags, not reusable live permissions.
+
+G2 uses the baked package point directly, requires the selected start polygon,
+and preserves the 0.0005 snap test. The retained-class follower preserves
+0.25 endpoint XY/Z tolerances and adds independent stationary checks for raw
+Z and source Z. It accepts support from only the selected polygon or the
+immediate selected neighbor within the shared endpoint disk, with independent
+reciprocal adjacency evidence. Component changes, stale/session-switched fixes
+and source height inconsistencies refuse. No production input path calls it.
+
+**VERIFIED focused checks:** 33 pure binding/G2/radial tests pass; 24 retained
+steering/follower and real watchdog-child pipe tests pass; five analytic source
+lookup tests pass. They cover raw jumps hidden by a fixed mesh height, source
+layers, wrong XY/frame, calibration identity/expiry, independent proof/limit,
+neighbor support away from endpoints, changed components, unchanged endpoint
+Z tolerance and assist/cancel refusal. The pipe tests open no input device.
+
+**VERIFIED copied-data replay:** `PortalPrecisionView.source_floor_at()` now
+queries all copied source layers at every stopped XY, allowing shared source
+edges only at the same height and refusing missing/unsupported/layered ground.
+The raw character Z is then *synthetically* source Z + 2.564, not baked Z.
+Reciprocal selected-route adjacency is read from the pinned copied mesh. The
+same-floor fixture hash is explicitly simulation-only; point samples and a
+chosen bound do not prove an entire regional source/bake relationship.
+
+- Default 0.6 bound: segment 5, step 42, refuses bake/source delta 0.75965824
+  at source fragment 698 face 20. Artifact
+  `~/.local/share/eql-automation/nav-candidates/gfay-separated-ground-replay-0.41.55.json`,
+  SHA `4f86ffad6395f22532b1dd90ff0874fe3363b3c6e9257e81bd5be17d9fd83099`.
+- Separate 0.9 sensitivity: segment 5, step 63, refuses delta 0.92576014 at
+  source fragment 698 face 21. Artifact `gfay-separated-ground-z09-replay-0.41.55.json`,
+  SHA `6dcdc4c3867b129e7fb12867748968a4a98709da04a43be7acf86430edbb8c7a`.
+- Separate 2.0 sensitivity: segment 38, step 458, refuses
+  `overlapping_ground_faces`. Across 459 observations, baked minus source Z
+  ranges 0.12198656–0.92576014. Artifact `gfay-separated-ground-z2-replay-0.41.55.json`,
+  SHA `12ebd718d386ed8f7a8df7fdf43054a047b162a74ba73408eb50549e4ccd99a8`.
+
+Default 0.6 remains unchanged. These new checks expose a limitation masked by
+the previous replay, which generated raw Z directly from baked ground. No
+entire route, fresh live calibration, G2/F11 movement or XP gain is accepted.
+The next unblocked work is a source-supported regional bound and the exact
+reciprocal overlap diagnostic. Assist 0.39.6/G0 candidate 0.39.7 are unchanged.
+
 ## Private 0.41.54 staging — 2026-11-14 01:51 UTC
 
 **VERIFIED:** Commit `96f472c` archive SHA

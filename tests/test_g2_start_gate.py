@@ -1,9 +1,7 @@
 from dataclasses import replace
-from datetime import datetime
-
 from eql_automation.g2_pulse_budget import G2Scene
-from eql_automation.g2_start_gate import AlignedWldFix, check_g2_start
-from eql_automation.location_log import RawLocationFix
+from eql_automation.g2_start_gate import check_g2_start
+import ground_binding_fixture as ground
 
 
 HASH = "a" * 64
@@ -34,17 +32,16 @@ class Mesh:
 
 
 def evidence():
-    fix = RawLocationFix(54, "Greater Faydark", (1.0, 2.0, 3.0),
-                         datetime(2026, 11, 13, 14, 20), 100.0, 1, 7, 3)
-    scene = G2Scene(100.1, "gfaydark", fix.raw_coordinates, 1, 7, 3,
+    aligned = ground.aligned((2., 1., 1.2), source_z=.5, seq=7, polygon=0)
+    fix = aligned.raw_fix
+    scene = G2Scene(100.1, "gfaydark", fix.raw_coordinates, 1, 7, 1,
                     True, True, True, True, True, True, True)
-    aligned = AlignedWldFix(fix, (10.0, 20.0, 30.0), "gfaydark", HASH,
-                            "synthetic-only-calibration", True)
     return scene, fix, aligned
 
 
 def check(mesh, scene, fix, aligned, **changes):
     options = dict(aligned_fix=aligned, mesh_sha256=HASH,
+                   height_calibration=ground.HEIGHT, geometry_evidence=ground.GEOMETRY,
                    expected_zone_id=54, expected_zone_display_name="Greater Faydark",
                    speed_upper_bound=60)
     options.update(changes)
@@ -56,13 +53,15 @@ def test_unaligned_raw_location_never_queries_mesh():
     mesh = Mesh()
     assert not check(mesh, scene, fix, None).candidate
     assert not check(mesh, scene, fix, replace(aligned, live_alignment_verified=False)).candidate
+    assert not check(mesh, scene, fix, replace(aligned, mesh_projection=None)).candidate
     assert mesh.calls == 0
 
 
 def test_identity_hash_and_stale_scene_refuse_before_geometry():
     scene, fix, aligned = evidence()
     mesh = Mesh()
-    assert not check(mesh, scene, fix, replace(aligned, mesh_sha256="b" * 64)).candidate
+    assert not check(mesh, scene, fix, replace(aligned,
+        mesh_projection=replace(aligned.mesh_projection, mesh_sha256="b" * 64))).candidate
     assert not check(mesh, replace(scene, fix_seq=8), fix, aligned).candidate
     assert not check(mesh, replace(scene, at=100.6), fix, aligned).candidate
     assert not check(mesh, scene, replace(fix), aligned).candidate
@@ -89,8 +88,21 @@ def test_synthetic_18_unit_disk_is_sampled_only_and_large_snap_refuses():
     result = check(mesh, scene, fix, aligned)
     assert result.candidate and result.sampled_radius == 18
     assert result.samples == 36 * 19
-    assert mesh.first_located == (20.0, 10.0, 30.0)  # raw WLD XY → helper mesh XY
+    assert mesh.first_located == (2., 1., 1.2)  # Already package XYZ, not source Z .5.
     assert not result.real_client_accepted and not result.budget_authorized
     assert check(Mesh(snap=0.25), scene, fix, aligned).reason == "start_snapped_away_from_verified_point"
     assert check(Mesh(snap=0.0002), scene, fix, aligned,
                  speed_upper_bound=90).reason == "radius_cannot_cover_worst_case_pulse"
+
+
+def test_height_geometry_context_and_polygon_checked_without_widening_snap():
+    scene, fix, aligned = evidence()
+    mesh = Mesh()
+    assert not check(mesh, scene, fix, aligned,
+                     height_calibration=replace(ground.HEIGHT)).candidate
+    assert not check(mesh, scene, fix, aligned,
+                     geometry_evidence=replace(ground.GEOMETRY, same_floor_evidence_sha256='f'*64)).candidate
+    assert mesh.calls == 0
+    changed = replace(aligned, mesh_projection=replace(aligned.mesh_projection, polygon=1))
+    assert check(mesh, scene, fix, changed).reason == 'start_polygon_changed'
+    assert mesh.calls == 1

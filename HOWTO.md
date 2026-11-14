@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.54 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.55 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,9 +19,21 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.54 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.54/source`; the runnable
+Source tools 0.41.55 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.55/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.55 separates source terrain, baked navigation height and raw
+character height in the G2/follower observations. It requires independently
+supplied height calibration and geometry evidence; an observation cannot set
+its own height tolerance or portal adjacency. Endpoint tolerance remains
+0.25 and G2 mesh snap remains 0.0005. Sixty-two focused checks pass, including
+the retained steering classes and actual watchdog child writing to a pipe.
+The copied-data replay now samples source terrain at every stopped position.
+This exposes bake offsets up to 0.925760 before segment 38; the default 0.6
+diagnostic bound stops earlier. A separate 2.0-bound diagnostic reaches the
+known segment-38 overlap. Neither is route acceptance or live calibration.
+Assist 0.39.6 and G0 0.39.7 are unchanged; no new owner command is required.
 
 Source 0.41.54 adds source-supported precision checks for reciprocal tile
 edges. Twenty-six focused tests pass, including competing floors, source
@@ -542,7 +554,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.54/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.55/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -772,7 +784,18 @@ does not run in preview 0.39.4, send input, prove a log-to-mesh coordinate
 transform or authorize G2 movement. No new owner launch step is available.
 
 The offline `check_g2_start()` gate also requires a separately verified
-ground-position transform bound to the same new log fix and mesh hash. Its
+ground-position transform bound to the same new log fix and mesh hash.
+`AlignedWldFix` now contains a `SourceFloorObservation`, `MeshProjection` and
+the exact current `HeightCalibration` object. Callers separately supply that
+calibration and `GroundGeometryEvidence`. Source XY must equal raw XY; mesh
+XY must be the exact helper-frame swap. Raw height is checked against the
+source floor, while G2 snap and route endpoints use baked height. Calibration
+is bound to zone, log generation, newer sequence numbers and a validity window.
+The fixed-route controller also checks raw/source/baked Z stability separately
+and permits only the selected polygon or its verified immediate neighbor at
+the shared endpoint disk. These are evidence consistency checks: a trusted
+live producer of these records is still required. Synthetic test/replay flags
+are not a live permit. Its
 default 18-unit radial check needs 684 samples at 36 directions and 1-unit
 spacing; a smaller radius or sample budget can fail before any geometry query.
 The reported radius is reduced by any tiny mesh-start snap and rejects larger

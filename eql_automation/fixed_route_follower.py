@@ -14,8 +14,7 @@ import json
 import math
 from pathlib import Path
 
-from .g2_start_gate import AlignedWldFix
-from .location_log import RawLocationFix
+from .ground_binding import GroundGeometryEvidence, HeightCalibration, validate_ground_binding
 
 
 class RouteHalt(RuntimeError):
@@ -93,15 +92,21 @@ class FixedRouteFollower:
     swept geometry, timeouts during a held key, and cancellation release.
     """
     def __init__(self, route, *, legacy, motion, heading, calibration_record_id,
+                 height_calibration, geometry_evidence,
                  generation, generation_reader, mode_reader, endpoint_radius=.25,
                  height_tolerance=.25, max_step_seconds=.2, max_steps=20000):
         if (not isinstance(route, FixedRoute) or not route.zone or not route.segments
                 or len(route.segments) > 10000
                 or not finite(route.half_width) or route.half_width <= 0
-                or not finite(endpoint_radius) or not 0 < endpoint_radius < route.half_width
-                or not finite(height_tolerance) or height_tolerance <= 0
+                or not finite(endpoint_radius) or not 0 < endpoint_radius <= .25
+                or endpoint_radius >= route.half_width
+                or not finite(height_tolerance) or not 0 < height_tolerance <= .25
                 or not finite(heading) or not 0 <= heading < 360
                 or not calibration_record_id or not isinstance(calibration_record_id, str)
+                or not isinstance(height_calibration, HeightCalibration)
+                or height_calibration.live_verified is not True
+                or not isinstance(geometry_evidence, GroundGeometryEvidence)
+                or geometry_evidence.geometry_verified is not True
                 or not finite(max_step_seconds) or not 0 < max_step_seconds <= .2
                 or not isinstance(max_steps, int) or isinstance(max_steps, bool) or max_steps < 1
                 or not isinstance(generation, int) or isinstance(generation, bool) or generation < 0
@@ -124,6 +129,8 @@ class FixedRouteFollower:
             raise ValueError("Explicit measured motion is invalid")
         self.route, self.legacy, self.motion = route, legacy, motion
         self.calibration = calibration_record_id
+        self.height_calibration = height_calibration
+        self.geometry_evidence = geometry_evidence
         self.generation, self.generation_reader, self.mode_reader = generation, generation_reader, mode_reader
         self.radius, self.height_tolerance = endpoint_radius, height_tolerance
         self.max_step_seconds, self.max_steps = max_step_seconds, max_steps
@@ -132,6 +139,7 @@ class FixedRouteFollower:
         self.index, self.serial, self.steps = 0, 0, 0
         self.phase, self.reason, self.pending = "need_start", "", None
         self.binding = None
+        self.component = None
         self.last_seq, self.last_at, self.released_at = 0, None, None
         self.last_fix_at = None
         self.step_started_at = None
@@ -157,23 +165,40 @@ class FixedRouteFollower:
             self.halt("Route observation clock is invalid")
 
     def _point(self, aligned, now):
-        if (not isinstance(aligned, AlignedWldFix) or aligned.live_alignment_verified is not True
-                or aligned.zone_short_name != self.route.zone
-                or aligned.mesh_sha256 != self.route.mesh_sha256
-                or aligned.calibration_record_id != self.calibration
-                or not xyz(aligned.ground_wld_xyz)):
-            self.halt("Current raw-fix alignment does not match the fixed route")
+        check = validate_ground_binding(aligned, height_calibration=self.height_calibration,
+            geometry_evidence=self.geometry_evidence,
+            mesh_sha256=self.route.mesh_sha256, zone_short_name=self.route.zone,
+            now=now, motion_calibration_record_id=self.calibration)
+        if not check.candidate:
+            self.halt("Current raw-fix ground binding refused: " + check.reason)
         raw = aligned.raw_fix
-        if not isinstance(raw, RawLocationFix):
-            self.halt("Missing structured raw location fix")
         binding = (raw.zone_id, raw.zone_display_name, raw.log_epoch, raw.zone_generation)
         if (not finite(raw.received_monotonic) or not 0 <= now - raw.received_monotonic <= 2.5
                 or not isinstance(raw.log_line_seq, int) or isinstance(raw.log_line_seq, bool)
                 or raw.log_line_seq <= self.last_seq
                 or (self.binding is not None and binding != self.binding)):
             self.halt("Raw route fix is stale, repeated or from another zone/log generation")
-        point = aligned.ground_wld_xyz
-        return (point[1], point[0], point[2]), binding
+        projection = aligned.mesh_projection
+        point = projection.package_xyz
+        if self.component is not None and projection.component != self.component:
+            self.halt("Ground projection changed route component")
+        segment = self.route.segments[self.index]
+        if projection.polygon != segment.polygon:
+            # A stopped pulse can cross an audited shared portal by less than
+            # the endpoint radius. Only the adjacent selected route polygon
+            # may supply ground there; this cannot authorize a segment skip.
+            supported = False
+            for other, portal in ((self.index - 1, segment.start),
+                                  (self.index + 1, segment.end)):
+                if (0 <= other < len(self.route.segments)
+                        and projection.polygon == self.route.segments[other].polygon
+                        and segment.polygon in projection.verified_neighbor_polygons
+                        and math.dist(point[:2], portal[:2]) <= self.radius
+                        and abs(point[2] - portal[2]) <= self.radius + self.height_tolerance):
+                    supported = True
+            if not supported:
+                self.halt("Ground projection left the selected polygon or adjacent portal disk")
+        return point, binding
 
     def observe_stopped(self, first, second, *, released_at, now):
         """Accept two new aligned raw fixes requested after key release/settle.
@@ -191,7 +216,10 @@ class FixedRouteFollower:
                 or (self.released_at is not None and released_at != self.released_at)
                 or b1 != b2 or second.raw_fix.log_line_seq <= first.raw_fix.log_line_seq
                 or not .4 - 1e-9 <= t2 - t1 <= 2.5 or now - t2 > .5
-                or math.dist(p1[:2], p2[:2]) > .25 or abs(p1[2] - p2[2]) > .25):
+                or math.dist(p1[:2], p2[:2]) > .25 or abs(p1[2] - p2[2]) > .25
+                or abs(first.raw_fix.raw_coordinates[2] - second.raw_fix.raw_coordinates[2]) > .25
+                or abs(first.source_floor.ground_wld_xyz[2] - second.source_floor.ground_wld_xyz[2]) > .25
+                or first.mesh_projection.component != second.mesh_projection.component):
             self.halt("Route requires a fresh stationary pair after confirmed key release")
         segment = self.route.segments[self.index]
         target = segment.start if self.phase == "need_start" else segment.end
@@ -210,6 +238,7 @@ class FixedRouteFollower:
             self.index += 1
             self.best_remaining, self.no_progress_steps = None, 0
         self.binding, self.last_seq, self.last_at = b2, second.raw_fix.log_line_seq, now
+        self.component = second.mesh_projection.component
         self.last_fix_at = t2
         self.released_at = None
         if self.index == len(self.route.segments):

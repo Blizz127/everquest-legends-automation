@@ -6,6 +6,7 @@ import numpy as np
 
 from .ground_sweep import GroundFace
 from .material_audit import mesh_face_materials
+from .map_alignment import _triangle_height
 from .mesh_geometry import read_meshes
 from .pfs_archive import PFSArchive
 from .portal_precision import PortalLink, PrecisionCheck, SourceFace, collect_seams, retry_precision_gap
@@ -46,6 +47,31 @@ class PortalPrecisionView:
         # Convert only at this explicit boundary: helper X=raw WLD Y.
         coordinates = np.asarray([f.vertices_wld for f in self.sources],dtype=np.float64)[:,:,[1,0,2]]
         self.source_minimum,self.source_maximum = coordinates.min(axis=1),coordinates.max(axis=1)
+
+    def source_floor_at(self, package_xy):
+        """Sample all copied terrain layers at exact XY; never choose nearest Z.
+
+        This is an offline terrain point observation, not a body/obstacle
+        check. Shared source edges may have multiple faces at the same Z.
+        """
+        x,y = package_xy
+        if not np.isfinite((x,y)).all():
+            raise ValueError('Invalid source-floor point')
+        local = np.flatnonzero((self.source_minimum[:,0] <= x) & (self.source_maximum[:,0] >= x)
+                              & (self.source_minimum[:,1] <= y) & (self.source_maximum[:,1] >= y))
+        if len(local)>128:
+            raise ValueError('Source-floor candidate budget exceeded')
+        hits = []
+        for index in local:
+            face = self.sources[index]
+            height = _triangle_height(y,x,face.vertices_wld)
+            if height is not None:
+                if face.flag != 0 or face.material_class != 'Diffuse':
+                    raise ValueError('Source floor has unsupported collision/material')
+                hits.append((height, f'wld:{face.fragment}:face:{face.face}'))
+        if not hits or max(h[0] for h in hits)-min(h[0] for h in hits)>1e-7:
+            raise ValueError('Copied source floor missing or layered at exact XY')
+        return hits[0][0], tuple(h[1] for h in hits)
 
     def retry(self,original,footprint,detail_ids,*,reference,component,vertical_window,
               maximum_source_z_difference):

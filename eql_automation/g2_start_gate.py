@@ -13,29 +13,12 @@ from .g2_probe_geometry import check_radial_area
 from .g2_pulse_budget import (G2Scene, MAX_ACTUAL_HOLD, MAX_DISPLACEMENT,
                               MIN_SPEED_UPPER_BOUND)
 from .g2_scene_observer import MAX_FIX_AGE
+from .ground_binding import (AlignedWldFix, GroundGeometryEvidence,
+                              HeightCalibration, validate_ground_binding)
 from .location_log import RawLocationFix
 
 
 MAX_G2_GEOMETRY_SAMPLES = 4096
-
-
-@dataclass(frozen=True)
-class AlignedWldFix:
-    """A live-calibrated ground point bound to one exact raw log fix.
-
-    A future independent verifier must create this after checking the
-    transform against the real client. Merely scoring historical terrain or
-    finding a nearby mesh polygon does not satisfy ``live_alignment_verified``.
-    ``ground_wld_xyz`` uses raw client WLD axes, while the retained helper
-    navmesh uses (WLD Y, WLD X, Z).
-    """
-
-    raw_fix: RawLocationFix
-    ground_wld_xyz: tuple[float, float, float]
-    zone_short_name: str
-    mesh_sha256: str
-    calibration_record_id: str
-    live_alignment_verified: bool = False
 
 
 @dataclass(frozen=True)
@@ -50,6 +33,8 @@ class G2StartCheck:
 
 def check_g2_start(mesh, scene: G2Scene, fix: RawLocationFix, *,
                    aligned_fix: AlignedWldFix | None, mesh_sha256: str,
+                   height_calibration: HeightCalibration,
+                   geometry_evidence: GroundGeometryEvidence,
                    expected_zone_id: int, expected_zone_display_name: str,
                    speed_upper_bound: float, radius: float = 18.0,
                    directions: int = 36, sample_spacing: float = 1.0,
@@ -63,7 +48,6 @@ def check_g2_start(mesh, scene: G2Scene, fix: RawLocationFix, *,
             not aligned_fix.calibration_record_id or
             not isinstance(mesh_sha256, str) or
             re.fullmatch(r"[0-9a-f]{64}", mesh_sha256) is None or
-            aligned_fix.mesh_sha256 != mesh_sha256 or
             not isinstance(expected_zone_id, int) or
             isinstance(expected_zone_id, bool) or expected_zone_id < 0 or
             not isinstance(expected_zone_display_name, str) or
@@ -78,21 +62,22 @@ def check_g2_start(mesh, scene: G2Scene, fix: RawLocationFix, *,
             scene.raw_location != fix.raw_coordinates or
             not isinstance(scene.at, (int, float)) or isinstance(scene.at, bool) or
             not math.isfinite(scene.at) or
+            not isinstance(fix.received_monotonic, (int, float)) or
+            isinstance(fix.received_monotonic, bool) or not math.isfinite(fix.received_monotonic) or
             not 0 <= scene.at - fix.received_monotonic <= MAX_FIX_AGE or
             not all(value is True for value in
                     (scene.focused, scene.owner_keys_clear, scene.chat_clear,
                      scene.target_absent, scene.combat_clear,
                      scene.no_transition, scene.no_incoming_attack))):
         return G2StartCheck(False, "missing_live_alignment_or_fresh_scene")
-    raw_wld_point = aligned_fix.ground_wld_xyz
-    if (not isinstance(raw_wld_point, tuple) or len(raw_wld_point) != 3 or
-            any(not isinstance(value, (int, float)) or isinstance(value, bool) or
-                    not math.isfinite(value) for value in raw_wld_point)):
-        return G2StartCheck(False, "invalid_aligned_ground_point")
-    # The owner's retained eqnav helper builds navmeshes with reversed XY
-    # relative to the client's raw WLD. Keep this conversion at the boundary
-    # so the radial check and its snap-distance comparison use one frame.
-    mesh_point = (raw_wld_point[1], raw_wld_point[0], raw_wld_point[2])
+    binding = validate_ground_binding(aligned_fix, height_calibration=height_calibration,
+        geometry_evidence=geometry_evidence,
+        mesh_sha256=mesh_sha256, zone_short_name=scene.zone, now=scene.at)
+    if not binding.candidate:
+        return G2StartCheck(False, binding.reason)
+    # Physical source floor and baked ground differ. Compare locate() only
+    # to the independently verified baked projection at the same raw XY.
+    mesh_point = aligned_fix.mesh_projection.package_xyz
     if (not isinstance(speed_upper_bound, (int, float)) or
             isinstance(speed_upper_bound, bool) or
             not math.isfinite(speed_upper_bound) or
@@ -115,7 +100,8 @@ def check_g2_start(mesh, scene: G2Scene, fix: RawLocationFix, *,
         radial = check_radial_area(mesh, mesh_point, radius=radius,
                                    directions=directions,
                                    sample_spacing=sample_spacing,
-                                   max_samples=max_samples)
+                                   max_samples=max_samples,
+                                   expected_start_polygon=aligned_fix.mesh_projection.polygon)
     except Exception:
         return G2StartCheck(False, "mesh_geometry_unavailable")
     if not radial.candidate:

@@ -72,27 +72,32 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     from eql_automation.fixed_route_follower import FixedRoute, FixedRouteFollower, RouteHalt
     from eql_automation.bsp_detail_view import BspDetailMeshView
     from eql_automation.portal_surface_audit import _supported_detail_height
-    from eql_automation.g2_start_gate import AlignedWldFix
+    from eql_automation.ground_binding import (AlignedWldFix, GroundGeometryEvidence,
+        HeightCalibration, MeshProjection, SourceFloorObservation)
+    from eql_automation.ground_sweep_view import GroundSweepView
+    from eql_automation.portal_precision_view import PortalPrecisionView
     from eql_automation.location_log import RawLocationFix
+    import numpy as np
     from eqnav import steer
     pins = dict(PINS)
     pins[plan] = plan_sha256
     for path in (Path(__file__), PROJECT / "eql_automation/fixed_route_follower.py",
                  PROJECT / "eql_automation/bsp_detail_view.py",
-                 PROJECT / "eql_automation/portal_surface_audit.py"):
+                 PROJECT / "eql_automation/portal_surface_audit.py",
+                 PROJECT / "eql_automation/ground_binding.py"):
         pins[path] = sha256(path.read_bytes()).hexdigest()
     if ground_sweep:
         for path in (PROJECT / 'eql_automation/ground_sweep.py', PROJECT / 'eql_automation/ground_sweep_view.py'):
             pins[path] = sha256(path.read_bytes()).hexdigest()
     source_archive = STORE/'client-data/retail-full/assets/gfaydark.s3d'
+    pins[source_archive] = 'ea95f51a2d4645410223d24cc7da9eb0e7095310c6e9f8756e8c51d67df13d9f'
+    for module in ('portal_precision','portal_precision_view','pfs_archive','wld_inventory',
+                   'mesh_geometry','material_audit','map_alignment','ground_sweep_view'):
+        path = PROJECT/'eql_automation'/(module+'.py')
+        pins[path] = sha256(path.read_bytes()).hexdigest()
     if precision_portals:
         if local_seam_experiment or not ground_sweep:
             raise ValueError('Precision retry requires ground checks and excludes the older seam experiment')
-        pins[source_archive] = 'ea95f51a2d4645410223d24cc7da9eb0e7095310c6e9f8756e8c51d67df13d9f'
-        for module in ('portal_precision','portal_precision_view','pfs_archive','wld_inventory',
-                       'mesh_geometry','material_audit'):
-            path = PROJECT/'eql_automation'/(module+'.py')
-            pins[path] = sha256(path.read_bytes()).hexdigest()
     seam_evidence = None
     if local_seam_experiment:
         pins[SEAM_EXPERIMENT] = SEAM_EXPERIMENT_SHA
@@ -110,22 +115,44 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     verify()
     route = FixedRoute.load(plan, expected_sha256=plan_sha256, mesh_sha256=MESH_SHA)
     mesh = BspDetailMeshView.load(MESH, zone=route.zone)
-    sweep_view = None
-    precision_view = None
+    ground_view = GroundSweepView.load(MESH, zone=route.zone)
+    source_view = PortalPrecisionView(ground_view,MESH,source_archive,zone=route.zone)
+    # Check all selected route adjacencies against actual reciprocal links,
+    # area and component arrays, independently of each synthetic observation.
+    with np.load(MESH, allow_pickle=False) as data:
+        links = set(zip(map(int,data['link_a'].reshape(-1)), map(int,data['link_b'].reshape(-1))))
+    portal_pairs = set()
+    for first,second in zip(route.segments,route.segments[1:]):
+        a,b = first.polygon,second.polygon
+        if ((a,b) not in links or (b,a) not in links or
+                int(ground_view.areas[a]) != 63 or int(ground_view.areas[b]) != 63 or
+                ground_view.components[a] != ground_view.components[b]):
+            raise ValueError('Fixed replay route lacks a reciprocal dry same-component portal')
+        portal_pairs.add(tuple(sorted((a,b))))
+    sweep_view = ground_view if ground_sweep else None
+    precision_view = source_view if precision_portals else None
     if ground_sweep:
         from eql_automation.ground_sweep import motion_footprint
-        from eql_automation.ground_sweep_view import GroundSweepView
-        sweep_view = GroundSweepView.load(MESH, zone=route.zone)
-        if precision_portals:
-            from eql_automation.portal_precision_view import PortalPrecisionView
-            precision_view = PortalPrecisionView(sweep_view,MESH,source_archive,zone=route.zone)
     start = route.segments[0].start
     heading = steer.bearing(*start[:2], *route.segments[0].end[:2])
     calibration = "synthetic-replay-not-live-alignment"
+    # Verification flags below are isolated test fixtures, NOT a live verifier.
+    # Actual source Z is sampled independently; character height is an explicit
+    # synthetic assumption. No historical G0 record becomes a live calibration.
+    height_calibration = HeightCalibration('synthetic-source-height-not-live', route.zone,
+        54, 'Greater Faydark', 1, 1, source_view.archive_sha256, source_view.wld_sha256,
+        2.564, .05, 0, 0., 1e6, live_verified=True)
+    proof = {'simulation_only':True, 'mesh':MESH_SHA, 'plan':plan_sha256,
+        'source_archive':source_view.archive_sha256, 'source_wld':source_view.wld_sha256,
+        'source_z_limit':source_z_limit, 'portal_pairs':sorted(portal_pairs)}
+    proof_sha = sha256(json.dumps(proof,sort_keys=True).encode()).hexdigest()
+    geometry = GroundGeometryEvidence(route.zone, MESH_SHA, source_view.archive_sha256,
+        source_view.wld_sha256, proof_sha, source_z_limit, tuple(sorted(portal_pairs)), True)
     motion = steer.Motion(run_speed=speed, turn_rate=170., right_sign=-1,
                           turn_latency=.03, back_speed=speed / 2)
     runner = FixedRouteFollower(route, legacy=steer, motion=motion, heading=heading,
                                calibration_record_id=calibration, generation=1,
+                               height_calibration=height_calibration, geometry_evidence=geometry,
                                generation_reader=lambda: 1, mode_reader=lambda: "measurement")
     position, seq, clock = list(start), 0, 100.
     history, recent, portal_samples = [], [], []
@@ -133,20 +160,59 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     local_seam_retries = []
     ground_shortening_trials = []
     precision_retries = []
+    ground_observations = {'count':0, 'minimum_baked_minus_source_z':None,
+                          'maximum_baked_minus_source_z':None, 'last':None}
     def stopped_pair(release):
         nonlocal seq, clock
+        segment = route.segments[runner.index]
+        support = None
+        for other,portal in ((runner.index, None), (runner.index-1, segment.start),
+                              (runner.index+1, segment.end)):
+            if not 0 <= other < len(route.segments):
+                continue
+            if portal is not None and math.dist(position[:2], portal[:2]) > runner.radius:
+                continue
+            poly = route.segments[other].polygon
+            z = _supported_detail_height(mesh, poly, *position[:2])
+            if (z is not None and (portal is None or abs(z-portal[2]) <= runner.radius+runner.height_tolerance)):
+                support = poly,z
+                break
+        if support is None:
+            raise RouteHalt('No current/adjacent selected polygon supports stopped point')
+        poly,z = support
+        position[2] = z
+        try:
+            source_z,source_ids = source_view.source_floor_at(position[:2])
+        except ValueError as exception:
+            raise RouteHalt('Source ground observation: ' + str(exception)) from exception
+        delta = z-source_z
+        ground_observations['count'] += 1
+        ground_observations['minimum_baked_minus_source_z'] = min(delta,
+            delta if ground_observations['minimum_baked_minus_source_z'] is None else ground_observations['minimum_baked_minus_source_z'])
+        ground_observations['maximum_baked_minus_source_z'] = max(delta,
+            delta if ground_observations['maximum_baked_minus_source_z'] is None else ground_observations['maximum_baked_minus_source_z'])
+        ground_observations['last'] = {'package_xyz':list(position), 'source_z':source_z,
+                                     'source_surface_ids':source_ids,'polygon':poly}
+        neighbors = tuple(sorted(b if a==poly else a for a,b in portal_pairs if poly in (a,b)))
         aligned = []
         for offset in (.13, .53):
             seq += 1
             clock = release + offset
-            ground_wld = (position[1], position[0], position[2])
-            raw = RawLocationFix(54, "Greater Faydark", ground_wld, datetime(2026, 11, 14),
+            ground_wld = (position[1], position[0], source_z)
+            raw_wld = (*ground_wld[:2], source_z + height_calibration.raw_z_minus_source_z)
+            raw = RawLocationFix(54, "Greater Faydark", raw_wld, datetime(2026, 11, 14),
                                  clock, 1, seq, 1)
-            aligned.append(AlignedWldFix(raw, ground_wld, route.zone, MESH_SHA, calibration, True))
+            source = SourceFloorObservation(raw,ground_wld,source_view.archive_sha256,
+                source_view.wld_sha256,source_ids,1,True)
+            projection = MeshProjection(raw,tuple(position),MESH_SHA,poly,int(ground_view.areas[poly]),
+                int(ground_view.components[poly]),source_view.archive_sha256,source_view.wld_sha256,
+                source_ids,proof_sha,source_z_limit,neighbors,True,True)
+            aligned.append(AlignedWldFix(raw, source, projection, height_calibration,
+                                        route.zone, calibration, True))
         runner.observe_stopped(*aligned, released_at=release, now=clock)
-    stopped_pair(clock)
     error = None
     try:
+        stopped_pair(clock)
         for step in range(10000):
             if runner.phase == "arrived":
                 break
@@ -254,6 +320,9 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
               "game_input_sent": False, "real_client_accepted": False, "route_accepted": False,
               "speed": speed, "minimum_hold_seconds": min_hold,
               "assumptions": ["ideal_timed_motion", "synthetic_alignment_and_fixes", "no_dynamic_obstacles",
+                              "source_ground_sampled_independently_from_copied_terrain",
+                              "synthetic_character_height_above_source_2.564",
+                              "mesh_detail_edge_projection_up_to_0.0005",
                               ("continuous_detail_ground_only_no_wall_BSP_dynamic_guard" if ground_sweep else
                                "endpoint_detail_sample_only_not_swept_guard")],
               "ground_sweep_assumptions": ({"speed_upper": speed * 1.2, "release_overrun_seconds": .02,
@@ -264,6 +333,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
               "total_segments": len(route.segments), "steps": runner.steps,
               "simulated_seconds": clock - 100., "wall_seconds": time.monotonic() - began,
               "position": position, "history": history, "recent": recent,
+              "ground_observations":ground_observations,
+              "ground_binding_fixture":proof,
               "adjacent_portal_samples": portal_samples,
               "continuous_ground_sweep": ground_sweep, "sweep_checks": sweep_checks,
               "sweep_failure": sweep_failure,

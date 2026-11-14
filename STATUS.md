@@ -1,7 +1,24 @@
 # STATUS
 
-Updated 2026-11-14 01:51 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 02:03 UTC for coordinator task `829a00229b29`.
 
+- Source **0.41.55** separates physical source floor, baked projection and
+  calibrated character height. G2/follower now require independent expected
+  geometry evidence and current height calibration; endpoint 0.25 and G2 snap
+  0.0005 are unchanged. **VERIFIED:** 33 pure checks, 24 retained follower/pipe
+  integrations and five source-lookup checks pass. No input devices or game.
+- **VERIFIED copied-data diagnostics:** Sampling source at every stop exposes
+  0.759658 and 0.925760 bake differences at segment 5, refusing the default
+  0.6 and separate 0.9 limits respectively. A separate 2.0 sensitivity reaches
+  segment 38/step 458, then refuses the existing detail overlap. It samples
+  459 stopped positions; source/bake differences range 0.121987–0.925760.
+  Default limits are unchanged. Historical/fixture data does not grant input.
+- Current level, XP, XP/hour, deaths and camp remain unknown beyond Legira 7
+  in GFay. Owner-confirmed G0 visible stop passed; no accepted 1–20 route or
+  automated XP. Next: source-supported regional height bounds and the exact
+  reciprocal overlap correction. Fresh live scene/calibration, remaining
+  route/hazard checks and sender integration still gate real movement.
+  Owner assist 0.39.6 and separate G0 candidate 0.39.7 remain unchanged.
 - Private source **0.41.54**, commit `96f472c`, is staged at Alienware
   `~/.local/share/eql-automation/owner-tools/0.41.54/source`. Archive SHA
   `018a488f50db896a9f1fe93587f7f91d20a1d208ebd2f0f022b2ba409b3fcf65`

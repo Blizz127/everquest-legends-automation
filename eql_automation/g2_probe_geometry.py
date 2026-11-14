@@ -26,7 +26,8 @@ def check_radial_area(mesh, start: tuple[float, float, float], *,
                       minimum_clearance: float = 3.0,
                       maximum_z_change: float = 2.0,
                       maximum_slope: float = 45.0,
-                      max_samples: int = 512) -> RadialAreaCheck:
+                      max_samples: int = 512,
+                      expected_start_polygon: int | None = None) -> RadialAreaCheck:
     """Reject a point unless every short dry direction has conservative clearance."""
     if (len(start) != 3 or any(not isinstance(v, (int, float)) or not math.isfinite(v) for v in start)
             or any(not math.isfinite(v) or v <= 0 for v in
@@ -41,6 +42,8 @@ def check_radial_area(mesh, start: tuple[float, float, float], *,
     if origin is None:
         return RadialAreaCheck(False, "start_off_mesh")
     poly, center = origin
+    if expected_start_polygon is not None and poly != expected_start_polygon:
+        return RadialAreaCheck(False, "start_polygon_changed")
     center = tuple(float(v) for v in center)
     if (int(mesh.area[poly]) != 63 or float(mesh.slope[poly]) > maximum_slope
             or math.hypot(center[0] - start[0], center[1] - start[1]) > 1
