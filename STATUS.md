@@ -1,26 +1,30 @@
 # STATUS
 
-Updated 2026-11-14 16:01 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 16:07 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.36 / preview 0.39.25 candidate:** same-process supervised
-  Crushbone travel can hand a fresh stopped arrival to the repeated camp using
-  the same sender. Navigation is admitted only by the explicit travel/setup
-  request; assist cannot acquire it. Reader release precedes camp startup;
-  original receipt freshness, generation and owner-input checks remain. F8
-  cancels travel and enters assist after release. A dedicated native F11 release
-  hook prevents a late release from restarting after an observed stop. GUI Stop
-  does not consume that release. First F11 after navigation/setup is OFF.
-  **VERIFIED:** 75 existing camp/assist checks pass, seven new focused checks pass
-  locally, and the Alienware synthetic/pipe pipeline reaches the destination,
-  starts camp/preparation and stops at four tested cancellation boundaries.
-  Final package/cancellation checks are in progress; this entry does not claim
-  publication or real gameplay acceptance. No game input or owner-session change.
-  Current level/XP/hour/deaths/camp unknown. Next: finish package checks, publish
-  the owner-run preview, then extend the level-dependent route/camp sequence.
+- **Source 0.42.36 / published preview 0.39.25:** supervised Crushbone travel
+  hands a fresh stopped arrival to the repeated automatic-preparation camp in
+  the same retained helper/sender. Navigation only opens for explicit setup or
+  travel. F8 switches to assist after movement cleanup; F9 cancels continuation.
+  The native F11 release hook prevents late restart after observer/GUI stops;
+  first F11 after travel/setup is OFF. Assist retains manual movement/targeting.
+  **VERIFIED:** 89 distinct focused checks pass on Alienware across the initial
+  88-pass run and the corrected packaged-native F11 check. Initial final-case
+  failure was a missing `patch` test utility; the check now uses the exact pinned
+  packaged engine. No utility installed. Original failed validation/source are
+  retained separately. Package/source matching, executable/spell pins, enabled
+  travel/camp GUI and obsolete measurement-flag refusal pass. GUI inspected.
+  Startup SHA `644c6b75fd535f1e10c36f76cfd7e790eb416096178aaef56cfb2b3d819cd5f9`.
+  Source revision `f7bed78`; runtime implementation `9d4dd29`. Published paths:
+  Alienware `owner-assist/0.39.25`, `owner-tools/0.42.36/source`.
+  No worker/device/game input, prefix modification, settings write or owner
+  session interruption during staging. Actual level/XP/hour/deaths/camp remain
+  unknown. Next: owner-run travel/camp acceptance and source routes to Trainer
+  Hill, then later camps; full 1–20/1–50 and fresh-target discovery unfinished.
 - **Source 0.42.35 / published preview 0.39.24:** repeated camp automatically
   prepares learned spells at startup and between fights after level-ups. It
   uses the retained catalog/rotation/sender, fresh export evidence, helper-slot

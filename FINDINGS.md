@@ -1,5 +1,53 @@
 # FINDINGS
 
+## 2026-11-14 16:07 UTC — 0.39.25 published and next camp evidence
+
+VERIFIED: source 0.42.36 (`f7bed78`, runtime `9d4dd29`) and preview 0.39.25 are
+staged on Alienware. **89 distinct checks pass**: the first package run had
+88 passes and a test-only missing-`patch` failure; the corrected final check
+executes the SHA-pinned packaged native input loop directly and passes. No
+utility or access change. Initial validation source/output are retained under
+`owner-tools/0.42.36/source-initial-validation-missing-patch` and `checks.txt`;
+corrected source is `owner-tools/0.42.36/source`, final check output is
+`checks-native-final.txt`. The runtime package is unchanged by that test fix.
+
+- Initial checks SHA: `ac73dc14c90c9a97ca53c8467c1b483c623e03783e324a4380463ec90fc76f06`.
+- Final native check SHA: `8138a95fdc8975284122efb252275a3cc37b1549033d7e435d5691f419b53f45`.
+- GUI SHA: `64ef2866989f98c905a0100c1896735a5fdd5a1a6b779d5f62b746616998c2fc`.
+- Startup SHA: `644c6b75fd535f1e10c36f76cfd7e790eb416096178aaef56cfb2b3d819cd5f9`.
+- Packaged native engine SHA: `d4925d8250e69d6e631f64b4c7eea115b34473aef90d86c9838c045ad355309e`.
+
+Manifest/source equality, installed executable/spell pins, GUI controls and
+measurement-flag refusal pass. No worker/device/game input, settings write,
+protected-prefix modification or owner-session interruption. These checks do
+not establish actual movement, spell preparation, safe camps or leveling.
+Current actual level/XP/hour/deaths/camp remain unknown; G0 remains passed.
+
+OBSERVED next routes: copied map annotations place Trainer Hill (10–13) at
+package XY `(119,-212)`, North Wall/Castle (13–17) at `(-95,-78)`, Throne Room
+(17–22) at `(106,154)`. No retained complete source guide for these destinations
+was found in the approved artifact inventory. Trainer has a unique diffuse
+point proposal at Z80.1933236/face(460,1), North at Z0/face(2141,0); Throne is
+layered. These are point proposals, not traversable routes or suitable camps.
+Root rehashed the approved artifacts:
+
+- `nav-candidates/crushbone-floor-seeds-0.42.24.json`: `14c561a20ca70de087008c8dad27a11560dec831c8362a4401123f903a8b458d`.
+- `nav-candidates/crushbone-camp-annotations-0.42.23.json`: `7b43a48bd1b6a8307e71bc97fb3e2956086f23e98d8e7484ceeb60f8409e27bc`.
+- `owner-route-data/crushbone-camps-20261114/crushbone_3.txt`: `4b1c009838988b13507797afd1ccbce8ba23e1ca99adbafd1065956cfd71bda0`.
+- Sole retained source guide, `crushbone-source-guide-v1.json` in that directory:
+  `88aecac52585363add569d3f66ed9ba19921725e81e3a1626e96c50cfdc847e7`.
+
+The copied owner log **does exist**, superseding earlier no-copy notes:
+`owner-traces/eqlog-Legira-20261113.txt`, rehashed
+`d622b3c12567f903d411860d3de1a0be28e4e8b38be7bbdc2bebfdd62c60f04e`.
+The bounded candidate parser finds five GFay names (observed levels1,2,10),
+four Crushbone names (levels1–8,10,12,13), no Butcherblock names. This can seed
+future fresh-character discovery; it does not authorize a current target or
+prove current level. No chat contents were returned. A nearest-NPC action is
+present in client strings, but its actual physical binding remains unverified;
+no F8/Tab default or new slash syntax is assumed. No new route search or live
+client acceptance was performed during this evidence inventory.
+
 ## 2026-11-14 16:01 UTC — combined travel and camp candidate
 
 Source 0.42.36 joins the retained movement and stationary-camp engine in one
