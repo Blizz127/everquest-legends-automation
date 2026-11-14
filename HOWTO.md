@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.49 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.50 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,9 +19,18 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.49 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.49/source`; the runnable
+Source tools 0.41.50 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.50/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.50 adds child timing receipts and selection after watchdog
+readiness for one forward or turn key. The existing G0 duration API remains
+compatible. Fifty-eight focused watchdog/G0/G2 checks and two fixed-route
+integration checks passed using pipes, not input devices. Timing brackets
+descriptor writes; it does not prove when the game moved. The source APIs
+are not connected to owner-preview travel yet. Existing assist and G0
+packages are unchanged, F11 remains unavailable, and no new owner command
+is needed for this source release.
 
 Source 0.41.49 adds a fixed-route controller using the existing bot's steering
 classes. It proposes one segment at a time, integrates actual completed holds,

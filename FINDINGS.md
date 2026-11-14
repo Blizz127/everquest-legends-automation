@@ -1,5 +1,49 @@
 # FINDINGS
 
+## Timestamped watchdog receipts and post-READY selection — 2026-11-14 01:15 UTC
+
+**VERIFIED implementation:** `timed_key_pulse_receipt` returns four child
+monotonic timestamps bracketing complete DOWN/UP writes, key code, requested
+duration and completion reason. These bound descriptor writes, not game
+consumption. Maximum possible write exposure is UP-complete minus DOWN-start;
+the old float API retains DOWN-complete to UP-complete duration semantics.
+Parent acknowledgment/return time is never substituted for a key timestamp.
+Watchdog source SHA-256: `3ccaf83ca95183ffe918f6fdc9a62a22e1b43c2bf9f5bacd0e0c265620fdef39`.
+
+`selected_key_pulse_receipt` arms the child first, then invokes one selector
+inside the shared stop/GO lock. That callback chooses the key, duration and
+expiry from fresh proposal/scene/geometry evidence. The child validates the
+selection and expiry. A None selection sends no key events. Only one key can
+be selected, so forward and turning cannot be combined through this API.
+The DOWN-ack wait remains unpumped while holding the lock; READY/UP waits
+still process cancellation. The selected key is used for cleanup. STOP,
+partial/malformed/mismatched receipts, stale deadlines, and cancellation
+before GO or after UP raise rather than reporting successful progress.
+
+**VERIFIED focused execution:** 58 watchdog/G0/G2 tests passed using pipes.
+They include parent stall/kill, post-UP cancellation, independent release,
+invalid selections, actual child STOP reason, stale post-READY deadlines and
+slow child writes. Two additional tests combine the actual retained follower
+with the separate watchdog child. One sends a bounded event sequence to a
+pipe, applies the child's conservative write-time bounds to the controller,
+then advances only after two new synthetic stopped fixes. The second changes
+to assist after selection and emits no DOWN event. All character alignment
+and location inputs in these integrations are synthetic. No device was
+opened and no real client input occurred.
+
+The first compatibility run had55 passing checks and one error-message
+assertion: the new cancellation message said "after key release", while G0
+expected "after release". The wording was corrected, then all58 focused
+checks passed, including two added child-process cases. This was an assertion
+compatibility failure, not a key-release failure.
+
+**Remaining integration:** A real owner-preview bridge must supply current
+scene/calibration and a complete swept-motion check, derive expiry from
+proposal time rather than refreshing it after slow checks, and release/halt
+on any sender failure or mode change. This source release supplies the timing
+APIs and pipe integration, not that live caller. Existing owner assist0.39.6
+and G0 candidate0.39.7 remain unchanged; no F11 or live route acceptance.
+
 ## Source 0.41.49 private publication — 2026-11-14 01:11 UTC
 
 **VERIFIED:** Commit `f80c069` is staged on Alienware at

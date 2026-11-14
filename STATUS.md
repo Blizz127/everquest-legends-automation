@@ -1,7 +1,21 @@
 # STATUS
 
-Updated 2026-11-14 01:11 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:15 UTC for coordinator task `829a00229b29`.
 
+- Source **0.41.50** adds child DOWN/UP timestamp receipts and late key/
+  duration selection after READY under the existing stop/GO lock. The old
+  G0 float API is preserved. Interrupted, stale, mismatched or cancelled
+  receipts cannot report success; zero-key selection emits no events.
+- **VERIFIED pipe checks:** 58 focused watchdog/G0/G2 cases passed, plus two
+  fixed-route/actual-child integrations. The controller used child write
+  bounds and waited for new synthetic stopped fixes before advancing.
+  Assist switched after selection emitted no DOWN. No input device or game
+  was used. Existing owner packages remain unchanged.
+- Current level/XP/XP-hour/deaths/camp still unobserved beyond Legira7 GFay;
+  old G0 stop passed, no accepted 1–20 leg or automated level gain. Next:
+  swept-motion check and owner-preview bridge using fresh scene/calibration;
+  pending owner-ready map/UI capture remains open. Assist stays0.39.6,
+  separate G0 candidate0.39.7; no extra owner command requested.
 - Private source **0.41.49**, commit `f80c069`, is staged at Alienware
   `~/.local/share/eql-automation/owner-tools/0.41.49/source`. Archive SHA
   `fa7b46a73a717903c134b0e322d3681531dd8c6797bc9f61a7dca939d289c056`
