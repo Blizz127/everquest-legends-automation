@@ -1,5 +1,83 @@
 # FINDINGS
 
+## Native region callback and actor samples — 2026-11-14 10:10 UTC
+
+**VERIFIED static chain:** retained
+`client-data/runtime-20261114T0503Z/eqgame.exe`, SHA
+`fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36`,
+registers callback `0x1401c3170` at `0x1401b2056–0x1401b206a` through
+Scene-interface global `0x140fe74b8`, vtable slot `+0x60`. The retained
+graphics DLL's actual Scene vtable `0x1803713f0` maps that slot to
+`0x1800f8e50–0x1800f8e79`, which passes Scene+8 to `0x1802ba360` and stores
+the callback at Scene+0x18. This resolves the previously unidentified caller
+callback without executing native code.
+
+Callback `0x1401c3170–0x1401c34a2`, source-span SHA
+`4cafdcf861ab108da9438404e807dc38d733dffdb6fca3933aa8bf7d842fc1ca`,
+uses case-sensitive comparisons and requires at least four bytes before NUL.
+Null/short labels preserve the initial DWORD. Prefixes replace only its low
+byte: DR=0, WT/AWT=5, SL=6, LA/ALV=7, VW/AVW=8, W2=9, W3=10.
+APK/ATP/ASL set bits 30/31/28. A-prefix branches return immediately. Non-A
+labels, including unknown prefixes, also test byte 2 for P, bytes 3–4 for TP,
+and (when length>32) bytes 31–33 for M/S/P/F. Thus an unknown non-A prefix
+need not leave flags unchanged. ATP and TP paths also write a transition
+name; the callback is not universally pure. ATP uses the retained format
+`DRNTP00255%05d000000000000000` and numeric input beginning at byte 4.
+
+**VERIFIED actor sample provenance:** `0x140277980–0x140277b86` copies actor
+fields `+0x74/+0x78/+0x7c` into point components, passes the point through
+movement processing, then calls `0x140277e50`. That routine modifies the
+third component by `+0.25 - d` before a Scene predicate and slot+0x50 query.
+The constant is float32 0.25 at `0x140910d70`. For fields H=`+0x158` and
+J=`+0x164`, its instruction branches give d=0 for byte `+0x281==0x6f`,
+d=2H for the successful `693ce0/693ad0` branch, otherwise d=J-H when J>0,
+else d=H. The field names and their live values remain unverified: this is
+**not** permission to replace a source floor with floor+0.25 universally.
+
+The update also queries the current stored point into actor `+0xac`, and
+the point shifted vertically by `actor[+0x6dc]-actor[+0x158]` into `+0xa8`.
+Both use wrapper `0x1401b0ba0–0x1401b0bd2`, which supplies fallback 0; its
+optional status reports a signed-negative classification, not missing BSP.
+Other callers sample different offsets (including third component minus 1
+and a separate derived coordinate plus 0.01). No universal feet/head height
+or live actor dimensions follows from these static fields.
+
+The lower query's low byte reaches `0x140336d30`, which stores state at
+actor `+0xb5` and conditionally selects audio IDs 99/100. The bounded downstream
+chain reaches Miles audio playback. **INFERRED:** region transition sounds.
+Sound assets and numeric enum names remain unverified; this is not a dry-ground
+or walkability predicate. The first unwind range is not the complete function.
+
+**VERIFIED implementation:** source 0.42.4 adds `client_region_labels.py` with
+the raw flag model and recorded transition-write intent; it performs no global
+write or transition. ATP numeric conversion/formatting is explicitly outside
+the model. Its copied WLD map preserves later-record precedence, distinguishes
+valid untyped regions from missing tree children, and requires contiguous
+native 0x29 record indices. Existing structural/empty-label restrictions and
+conservative route policy remain unchanged. Fifty-five focused cases pass
+across label/map decoding, native-style point lookup and the existing region
+audit, including an additional noncontiguous-index refusal check.
+
+**VERIFIED retained evidence:** `tools/audit_client_region_labels.py` reproduces
+ten native spans and the three copied flag inventories. Output:
+`client-data/native-region-flags-20261114T100825Z/probe.json`, SHA
+`4d39a3febb5878b1df2c378ea0f21530a720483fac5ad4c603341d42287add36`.
+The flags below start with initial DWORD 0; untyped counts are separate and
+do not establish dryness.
+
+| Copied zone | Regions | Flag 0x5 | Flag 0x80000000 | Untyped |
+| --- | ---: | ---: | ---: | ---: |
+| Butcherblock | 3,653 | 163 | 5 | 3,485 |
+| Crushbone | 2,695 | 263 | 3 | 2,429 |
+| Greater Faydark | 2,905 | 0 | 9 | 2,896 |
+
+All three have contiguous type records. Client assets, labels, maps and native
+disassembly remain outside git. **Next:** bind the actor's physical vertical
+offsets to its actual query/collision path, and use pending owner motion/current
+scene for the first supervised GFay leg. G0 stays passed; assist 0.39.13 and
+measurement 0.39.12 remain unchanged. No live route, XP gain or fresh-character
+run is accepted; current level, XP/hour, deaths and camp remain unknown.
+
 ## Installed-client BSP lookup resolved — 2026-11-14 10:02 UTC
 
 **VERIFIED static evidence, not native execution:** the retained

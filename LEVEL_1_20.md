@@ -1,9 +1,17 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 10:02 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 10:10 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.42.4 binds the installed executable's region-label callback and maps
+its exact flags onto copied GFay, Butcherblock and Crushbone regions. Later
+record precedence and untyped regions remain explicit. Fifty-five focused
+cases pass. Actor callers use several height formulas, including a 0.25-offset
+branch with unbound actor fields; this does not establish a universal floor
+clearance. Next: bind physical offsets/collision and the pending owner motion
+and current scene. No route enabled, no new owner test, and no G0 repeat.
 
 Source 0.42.3 resolves the installed graphics DLL's tree-query behavior:
 missing children return -1, and callers propagate no label/defaults rather
