@@ -1,5 +1,18 @@
 # FINDINGS
 
+## Private 0.41.60 staging — 2026-11-14 03:21 UTC
+
+**VERIFIED:** Commit `d8f8f41`, archive SHA
+`6e04dd724a7d79f142e4da55a4c386bfd659072081dafbbf5c5d115eb7c0f948`, matched at Alienware
+`~/.local/share/eql-automation/owner-tools/0.41.60/source`. Nine lightweight
+startup/guard checks and eight synthetic static-adapter tests passed remotely.
+They covered seed reuse/refusal, exact reference-gap repair, wrong-height
+refusal, cell-bound static occupancy, a blocking static wall and three CLI
+startup paths. No client assets, input devices or game were opened. Remote
+`../smoke.json` records the scope. Assist 0.39.6 and G0 candidate 0.39.7 remain
+unchanged; F11 is disabled. The separate private staging record is
+`releases/eql-automation-0.41.60-staging.json` under the data store.
+
 ## Completed conditional GFay terrain follower — 2026-11-14 03:20 UTC
 
 **VERIFIED source 0.41.60:** The eastern/southern repaired plan completes all

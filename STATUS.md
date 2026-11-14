@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 03:20 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 03:21 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No real-client 1–20 route, automated level gain
   or fresh-character hands-off 1–50 run is accepted.
@@ -11,7 +11,12 @@ Updated 2026-11-14 03:20 UTC for coordinator task `829a00229b29`.
   **0.39.6**, reusing the existing rotation bot: F8 rotation, F9 stop, F10 heal.
   Movement/target/loot/vendor/camp and native melee remain manual. F11/F12
   are disabled. Live HP and target/chat identity remain unverified.
-- Source **0.41.60** is being privately packaged. **VERIFIED:** repaired GFay
+- Source **0.41.60** is privately staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.60/source`, commit
+  `d8f8f41`. Archive SHA
+  `6e04dd724a7d79f142e4da55a4c386bfd659072081dafbbf5c5d115eb7c0f948`
+  matched; nine startup/guard checks plus eight synthetic static tests passed
+  remotely without client/input access. **VERIFIED:** repaired GFay
   terrain replay arrives through all 155 segments in 2,191 steps, with no
   geometry refusal or budget exhaustion. It took 356.25 wall/86.31 CPU seconds.
   Artifact SHA `87457cb38f7474c54afccdcda186266153d2f10179cc50f39dc3c3d35669da84`.
