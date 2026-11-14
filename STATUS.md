@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 09:42 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 09:50 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -18,6 +18,19 @@ Updated 2026-11-14 09:42 UTC for coordinator task `829a00229b29`.
   HOWTO has the new launch command; measurement 0.39.12 is unchanged. Current
   level, XP/hour, deaths and camp remain unknown. Automatic source-step
   discovery is under copied-data validation; no real route is enabled.
+- **Source 0.42.2:** exact closed BSP clipping and step-phase audit are
+  implemented. The full copied path replays all 1,046 terrain/static cells
+  and seven step hashes, then checks body wedges and every lift/settle/transfer
+  phase. It still refuses 926 ordinary cells and all seven steps because of
+  absent BSP children; clipping does not clear the route. Fifty-seven focused
+  checks pass, including interior water and degenerate closed contacts.
+  **Next:** establish the installed client's region-query/null-child semantics
+  from bounded static evidence, and consume the pending owner motion/current
+  scene result for the first GFay leg. First reported null volumes lie at most
+  0.007665 units above their source floor; this is diagnostic, not a tolerance
+  waiver or complete classification of later branches. Assist 0.39.13 and
+  measurement 0.39.12 are unchanged; no new owner test or G0 repeat. Current
+  level, XP/hour, deaths and camp remain unknown; no real route/XP accepted.
 - **Source 0.42.1:** automatic projected-boundary discovery and distance-ranked
   crossing proposals now finish the copied Crushbone source suffix. The run
   replays 1,006 existing terrain/static cells and both prior step certificates,

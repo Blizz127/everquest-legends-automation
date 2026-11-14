@@ -1,9 +1,18 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 09:42 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 09:50 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.42.2 replays the complete terrain/static candidate and checks exact
+closed BSP intersections: 1,046 ordinary cells plus all phases of seven steps.
+The complete audit still refuses 926 cells and all seven steps because a BSP
+child is absent. The first reported null portions are thin and touch source
+floors, but neither a tolerance nor a default-dry rule has been introduced.
+The next investigation is the installed client's actual region lookup/null
+behavior. Fifty-seven focused checks pass; no live acceptance follows from
+those checks. Assist 0.39.13 and measurement 0.39.12 remain the owner builds.
 
 Source 0.42.1 finishes the remaining copied-source Crushbone corridor with
 five automatically discovered step crossings. It replays 1,006 accepted cells

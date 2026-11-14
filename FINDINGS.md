@@ -1,5 +1,69 @@
 # FINDINGS
 
+## Clipped BSP audit of complete source path — 2026-11-14 09:50 UTC
+
+**VERIFIED implementation:** source 0.42.2 adds exact rational clipping of a
+closed floor/body polyhedron at every BSP branch. Face, edge and point contacts
+remain present, including zero-plane branches. The cap polygon is rebuilt
+exactly; missing children, empty regions, labels, cycles and budget exhaustion
+remain refusals. The original unclipped API remains available for comparison.
+Source body checks can request clipping without changing terrain certificates.
+
+A separate source-step BSP checker verifies the accepted transition digest,
+full terrain/static sweep identity, each endpoint's geometry, WLD identity and
+recorded phase heights. Lift/settle classify separate support wedges using the
+conservative raised height; transfer classifies the exact full stored band,
+including its lower collision margins. Every phase is inspected even after
+another phase's BSP refusal. Results remain separate from the existing step
+and landing hashes; endpoint below-floor BSP is explicitly unclassified.
+
+**VERIFIED focused checks:** 57 pass across clipped volumes, original BSP
+volumes, floor binding and step phases. Coverage includes an ancestor-impossible
+missing branch, water hidden from corners/centerline, thin unknown layers,
+closed point contact after successive clips, sloped floor wedges, exact large
+coordinates, cycles/budgets, transfer-only hazards, source/zone/endpoint changes,
+and downsteps. Clipping removes the synthetic impossible branch while retaining
+all actual hazard/contact refusals. Read-only implementation review found no
+concrete face clipping defect.
+
+**VERIFIED copied-client complete audit:**
+`nav-candidates/crushbone-clipped-bsp-all-phases-0.42.2.json`, SHA
+`23e220cf97d72d75c2db39171222941453ecfb1b80ab8903750b1251c082a224`.
+All 1,046 terrain/static cells and seven step transition hashes replay exactly
+to the prior final proof. Both unclipped and clipped body checks refuse **926**
+ordinary cells with `missing_bsp_child`; **120** pass this BSP-only check. Every
+step remains refused: the first failing phase is lift for five and settle for
+two. All lift/settle/transfer pieces are retained. Runtime 66.61 seconds.
+`completed=true` means the audit ran; `current_path_bsp_candidate=false`,
+`route_accepted=false` and `real_client_accepted=false` remain explicit.
+Historical 866 counts covered an earlier prefix, not this full current path.
+
+The earlier complete-cell/first-failed-step-phase run is retained as
+`nav-candidates/crushbone-clipped-bsp-path-v2-0.42.2.json`, SHA
+`9974b633fb9937d1c641f4885423fe2fc9c9bc08d301bd66a0b9963005dd3b8c`.
+It produced the same cell/first-step refusal counts, but later step phases
+were not visited after a failure. The initial partial `...bsp-path-0.42.2.json`
+was deliberately interrupted at 400 saved cells to fix the replay's landing
+seed: generated steps must use their original seed, not the first selected
+floor ID. It is not complete evidence and no input process was affected.
+
+**VERIFIED first-refusal height diagnostic:**
+`nav-candidates/crushbone-bsp-null-heights-0.42.2.json`, SHA
+`0f871071b7a6ff71dd4ea3c3da57e1d4bc4c9674563b3ed01d32fbc3d32a9001`.
+All 926 first-reported cell null volumes touch the selected source floor. Their
+maximum height above it is **0.0076641723357943475** units; 66 exceed .001 and
+none exceeds .01. The entrance witness is exactly between floor Z=0 and
+`3298535/549755813888` (~0.000006000000212) above it. These are first-refusal
+witnesses, not exhaustive classifications of all later branches or support
+patches. No unknown region was removed and no tolerance was inferred.
+
+**Next:** determine the installed client's actual position/region query and
+absent-child handling. Static analysis follows the reverse-engineer-anything
+skill using retained authorized copies; no native execution or client access.
+A fresh read-only check still found zero saved owner hotbutton/motion results.
+G0 remains passed, owner builds 0.39.13/0.39.12 stay unchanged, and current level,
+XP/hour, deaths and camp remain unknown. No new owner test was requested.
+
 ## Automatic source-step continuation — 2026-11-14 09:42 UTC
 
 **VERIFIED implementation:** source 0.42.1 indexes full source boundary edges,
