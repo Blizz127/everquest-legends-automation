@@ -1,11 +1,21 @@
 # STATUS
 
-Updated 2026-11-14 21:14 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 21:25 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.65 built locally; publication next.** VERIFIED 12 focused
+  checks pass. A separate pinned thin-contact model retains ordinary collision
+  refusals and checks every other face plus BSP/native metadata over the enlarged
+  body. Exit-only diagnostic finds two conditional envelopes to the exact Throne
+  marker; this is not verified contact semantics, entry/exit motion or a route.
+  Full composed devbox replay timed out during stairs (183.21s wall / 10.51s CPU).
+  A low-priority copied-data replay on the available Alienware is next after
+  source staging. Then implement the distinct stair controller with provisional
+  intermediate observations and final-landing-only floor commit. Owner preview
+  stays 0.39.32; G0 passed. No game input. Real level/XP/XP-hour/deaths/camp unknown.
 - **Source tools 0.42.64 privately published; owner preview stays 0.39.32.** VERIFIED 45 focused
   checks pass. All 524 pinned files match Alienware `owner-tools/0.42.64/source`;
   imports and three auditor startups pass. Bundle SHA

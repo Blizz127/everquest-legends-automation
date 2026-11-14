@@ -27,6 +27,7 @@ from tools.audit_crushbone_camp_transit import replay_parent
 from tools.source_stair_flight import stair_body_footprint
 from tools.source_stair_plan import plan_stair_flight
 from tools.source_walk_shortcuts import shortcut_walks
+from tools.source_contact_envelope import declare_contact_hypothesis,audit_contact_walks
 
 
 def main():
@@ -36,7 +37,9 @@ def main():
     parser.add_argument('--first-step',type=int,required=True)
     parser.add_argument('--last-step',type=int,required=True)
     parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--exit-detour-range',nargs=2,type=int,metavar=('FIRST','LAST'))
+    exit_policy=parser.add_mutually_exclusive_group()
+    exit_policy.add_argument('--exit-detour-range',nargs=2,type=int,metavar=('FIRST','LAST'))
+    exit_policy.add_argument('--exit-contact-face',nargs=2,type=int,action='append',metavar=('FRAGMENT','FACE'))
     args=parser.parse_args()
     if (args.output.exists() or args.output.is_symlink()
             or args.output.with_suffix('.json.tmp').exists()
@@ -49,7 +52,7 @@ def main():
     signal.signal(signal.SIGALRM,timeout);signal.signal(signal.SIGXCPU,timeout);signal.alarm(180)
     code=[Path(__file__).resolve(),*(PROJECT/'tools'/name for name in (
         'audit_crushbone_camp_transit.py','source_stair_topology.py','source_stair_flight.py',
-        'source_stair_plan.py','source_walk_shortcuts.py')),*sorted((PROJECT/'eql_automation').glob('*.py'))]
+        'source_stair_plan.py','source_walk_shortcuts.py','source_contact_envelope.py')),*sorted((PROJECT/'eql_automation').glob('*.py'))]
     pins={str(p.relative_to(PROJECT)):sha256(p.read_bytes()).hexdigest() for p in code}
     record=dict(format='eql-offline-composed-stair-route-v1',code_sha256=pins,data_sha256=DATA_PINS,
         prior_sha256=args.prior_sha256,completed=False,stage='loading',source_candidate=False,
@@ -118,18 +121,31 @@ def main():
         record.update(stair_plan=flight.record(),stair_sha256=flight.sha256,
             planned_landing_proof_sha256=after.previous.proof_sha256)
         suffix=replace(guide,operations=suffix_ops)
-        stage('shortcutting_stair_exit')
-        def progress(value):record['exit_shortcuts']=value;save()
-        suffix,evidence=shortcut_walks(after,suffix,p.source,p.static,check_context=check,progress=progress,
-            detour_rejoin=tuple(args.exit_detour_range) if args.exit_detour_range else None)
-        suffix=compact_source_guide(suffix)
-        record.update(exit_guide=suffix.record(),exit_shortcuts=evidence)
-        stage('checking_complete_exit')
-        last_plan=plan_source_itinerary(after,flight_end,suffix,p.source,p.static,p.bsp,p.region_policy,
-            check_context=check,max_seconds=90.)
-        record.update(exit_plan=last_plan.record(),exit_sha256=last_plan.sha256,
-            goal=guide.goal,goal_floor_height=last_plan.record()['goal_floor_height'],
-            goal_source_ids=last_plan.record()['goal_source_ids'],source_candidate=True,stage='finished')
+        if args.exit_contact_face:
+            stage('checking_conditional_contact_exit')
+            hypothesis=declare_contact_hypothesis(p.static,tuple(tuple(k) for k in args.exit_contact_face))
+            def progress(value):record['contact_exit']=value;save()
+            contact=audit_contact_walks(after,suffix.operations,guide.goal,p.source,p.static,p.bsp,
+                p.region_policy,hypothesis,radius=guide.radius,check_context=check,progress=progress)
+            record.update(contact_exit=contact,contact_hypothesis=hypothesis.record(),
+                combined_conditional_envelopes_clear=contact['exit_envelopes_clear'],
+                goal=guide.goal,stage='finished_conditional_contact_envelopes',
+                contact_semantics_verified=False,transition_kinematics_verified=False)
+            # Deliberately leave source_candidate false: an envelope under a
+            # contact assumption is not an accepted walking/step itinerary.
+        else:
+            stage('shortcutting_stair_exit')
+            def progress(value):record['exit_shortcuts']=value;save()
+            suffix,evidence=shortcut_walks(after,suffix,p.source,p.static,check_context=check,progress=progress,
+                detour_rejoin=tuple(args.exit_detour_range) if args.exit_detour_range else None)
+            suffix=compact_source_guide(suffix)
+            record.update(exit_guide=suffix.record(),exit_shortcuts=evidence)
+            stage('checking_complete_exit')
+            last_plan=plan_source_itinerary(after,flight_end,suffix,p.source,p.static,p.bsp,p.region_policy,
+                check_context=check,max_seconds=90.)
+            record.update(exit_plan=last_plan.record(),exit_sha256=last_plan.sha256,
+                goal=guide.goal,goal_floor_height=last_plan.record()['goal_floor_height'],
+                goal_source_ids=last_plan.record()['goal_source_ids'],source_candidate=True,stage='finished')
     except (ValueError,TimeoutError) as error:
         record['refusal']=str(error)
     signal.alarm(0)
@@ -138,7 +154,8 @@ def main():
     checked_bytes(args.prior,args.prior_sha256)
     record['completed']=True;save()
     print(json.dumps(dict(output=str(args.output),sha256=sha256(args.output.read_bytes()).hexdigest(),
-        candidate=record['source_candidate'],stage=record['stage'],reason=record.get('refusal'),
+        candidate=record['source_candidate'],conditional_envelopes=record.get('combined_conditional_envelopes_clear',False),
+        stage=record['stage'],reason=record.get('refusal'),
         seconds=record['seconds'],cpu_seconds=record['cpu_seconds'])),flush=True)
 
 

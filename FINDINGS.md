@@ -1,5 +1,64 @@
 # FINDINGS
 
+## 2026-11-14 21:25 UTC — source 0.42.65: distinct thin-contact envelope diagnostics
+
+VERIFIED `tools/source_contact_envelope.py` checks an explicit pinned thin-sheet
+hypothesis without changing ordinary terrain/static checks. It retains the full
+terrain support and placement/model/transform/raw-face provenance, enforces the
+128-face limit before separating hypothesized contacts, and independently checks
+static query membership against its complete source list. Contact faces must
+be flat, nondegenerate and strictly above the entire flat reference terrain by
+at most the declared 0.125 units. No material is rewritten or globally exempted.
+Every other face keeps the original lower/numeric margins and an enlarged body
+height; complete BSP/native volumes include the added rise. The original static
+refusal remains in the result. Terrain query completeness is supplied by the
+caller's pinned source view, not independently established by this helper.
+
+This result is deliberately **not** a step/route permit: contact semantics,
+transition kinematics, input and real-client acceptance all remain false. The
+model proves only that other geometry clears a bounded envelope **if** the exact
+sheets can be foot contact or noncolliding. It does not prove entry/exit motion.
+No fake riser, nearest-height choice or ordinary floor adoption was introduced.
+`audit_contact_walks` keeps its caller's floor unchanged and returns no future
+floor object. It rejects step hints, discontinuities and an endpoint different
+from the exact destination; the normal guide's optional final connector cannot
+be silently omitted.
+
+VERIFIED **12 focused checks pass** in 1.98s. They cover retained contact
+hypotheses, height bounds, walls/ceilings, incomplete source queries, changed
+placement, total source budget before partition, invalid geometry/seals,
+BSP/native hazards, original-floor preservation and exact walk-only endpoints.
+Private JUnit `releases/eql-0.42.65-contact-final.xml`, SHA
+`68c7f9efc3663515f0da3749e4f81c3509bc53b8b5ae4015a466892b0fa35fea`.
+
+The initial exit-only copied-data diagnostic found two conditional envelopes:
+(103.96875,100.96875) → (115.84375,134.01041666666666) → (106,154).
+All other terrain/static and BSP/native checks pass under the explicit contact
+hypothesis for the four retained rug faces. Artifact
+`nav-candidates/crushbone-throne-contact-exit-0.42.65.json`, SHA
+`978d64a0a5be740109af19069264ac6e094beac7c560d641b48c71525c9e6e84`,
+11.56s wall / 2.94s CPU. It uses a labelled synthetic diagnostic landing/exit
+prefix and does not replay the entire approach or flight. The exact endpoint
+was independently checked; the extracted helper now requires that equality.
+
+The full composed devbox replay is **incomplete**. It finished the approach,
+then exhausted its 180-second wall budget during the staircase: 183.21s total /
+10.51s CPU. Artifact `nav-candidates/crushbone-throne-composed-contact-0.42.65.json`,
+SHA `4c9947b06b40a4b84ac5c78f1ca17d7e1284e18326d33c948eb961e61de83e23`.
+Its terminal handle is closed; it is not a route or full-envelope success.
+Read-only Alienware availability: load 3.78 over 24 CPUs, approximately 13.4GiB
+available memory, required copied data present. A single bounded low-priority
+offline replay is planned there after this private source build is staged;
+no lead game input, login or character mutation is involved.
+
+Next runtime slice: distinct stair operation/boundary/controller in the existing
+receipt sender and stopped-pair loop. Preserve the ordinary floor until a fresh
+final landing; retain all compatible XY tread/phase candidates when straddling
+risers, and recheck each actual maximum-hold envelope rather than reusing the
+nominal offline corridor. Live stair/contact movement is still unimplemented.
+Owner preview/runtime stay 0.39.32/0.42.61. G0 is passed; no repeat. Current level,
+XP, XP/hour, deaths and camp remain unknown; full 1–20/1–50 are not accepted.
+
 ## 2026-11-14 21:14 UTC — source tools 0.42.64 privately published
 
 VERIFIED installed `~/.local/share/eql-automation/owner-tools/0.42.64/source`
