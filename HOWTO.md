@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.29** · rotation preview **0.39.13** · movement preview **0.39.20** · crossing preview **0.39.19** · approach preview **0.39.18**.
+Source **0.42.30** · rotation preview **0.39.13** · movement preview **0.39.20** · crossing preview **0.39.19** · approach preview **0.39.18**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -23,6 +23,19 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** Assist still uses the existing rotation bot. Preview 0.39.20 is a
 separate finite movement test; it cannot switch into assist or full auto.
 The requested seamless assist/full-auto switch is still unfinished.
+
+Source 0.42.30 rebuilds a height-step approach from the actual stopped floor,
+including the full possible movement area and an exit beyond the landing.
+If a direct transfer cannot cover the approach, it checks a compound approach
+first. A second riser, missing terrain, obstacle, region hazard or uncovered
+corner stops preparation. Point-support queries preserve multiple heights at
+riser edges; they do not label an uncertain or partial step as grounded.
+
+The copied Slave Mines guide is now a pinned private data file on Alienware,
+so the future owner runtime will not need Devbox's old recipe files. This is
+still a source-development build: transfer input, settling/landing handling and
+the owner launcher connection remain unfinished. No new owner test is needed;
+G0 remains passed and the launch controls below are unchanged.
 
 Source 0.42.29 adds a source-floor movement core for the Slave Mines itinerary.
 Every ordinary move retains the old floor and position until two fresh stopped

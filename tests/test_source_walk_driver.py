@@ -7,6 +7,7 @@ import pytest
 from eql_automation.source_walk_driver import (
     SourceWalkDriver,SourceWalkCommand,SourceStepBoundary,SourceWalkFinished)
 from eql_automation.uinput_watchdog import PulseReceipt
+from eql_automation.source_step_approach import source_step_supports
 from test_source_motion import f,legacy,proposed_receipt
 
 
@@ -69,3 +70,48 @@ def test_early_step_handoff_preserves_actual_cap_and_unconsumed_approach(f):
     # The original ordinary maximum-hold sweep really does touch the riser.
     with pytest.raises(ValueError,match='terrain'):f.ledger.prepare('forward')
     assert f.ledger.chain is chain and f.sender.release_calls==0
+
+
+@pytest.mark.parametrize('f',['step'],indirect=True)
+def test_actual_stopped_handoff_prepares_full_step_envelope_without_publishing_floor(f):
+    ticket,receipt=proposed_receipt(f);seal=f.ledger.seal_release(ticket,receipt)
+    f.ledger.acknowledge_stopped(seal,*f.replies(seal))
+    driver=SourceWalkDriver(f.ledger);boundary=driver.next_action();chain=f.ledger.chain
+    prepared=driver.prepare_step_approach(boundary);data=prepared.record()
+    assert data['start']==[4.,2.2] and data['initial_proof_sha256']==chain.previous.proof_sha256
+    assert data['checked_radius']>f.ledger.bounds.body_radius
+    assert data['full_motion_envelope_covered'] and not data['input_authorized']
+    assert f.ledger.chain is chain and f.ledger.phase=='ready' and f.ledger.steps==1
+    supports=source_step_supports(prepared,(4.,2.4),f.ledger.terrain,f.ledger.static,check_context=lambda:None)
+    assert len(supports)==1 and not supports[0].observed_grounded
+    assert f.sender.release_calls==0
+
+
+@pytest.mark.parametrize('f',['step'],indirect=True)
+def test_stop_during_step_preparation_keeps_old_cap_and_no_sender_input(f,monkeypatch):
+    import eql_automation.source_walk_driver as module
+    ticket,receipt=proposed_receipt(f);seal=f.ledger.seal_release(ticket,receipt)
+    f.ledger.acknowledge_stopped(seal,*f.replies(seal))
+    driver=SourceWalkDriver(f.ledger);boundary=driver.next_action();chain=f.ledger.chain
+    original=module.plan_source_step_approach
+    def prepare(*args,**options):
+        import threading
+        stopped=threading.Event()
+        def stop():f.ledger.cancel('owner OFF during step preparation');stopped.set()
+        worker=threading.Thread(target=stop);worker.start()
+        assert stopped.wait(.5);worker.join()
+        return original(*args,**options)
+    monkeypatch.setattr(module,'plan_source_step_approach',prepare)
+    with pytest.raises(RuntimeError):driver.prepare_step_approach(boundary)
+    assert f.ledger.chain is chain and f.ledger.phase=='stopped' and f.sender.release_calls==0
+
+
+@pytest.mark.parametrize('f',['step'],indirect=True)
+def test_boundary_cannot_adopt_a_replaced_hint_map(f):
+    from dataclasses import replace
+    driver=SourceWalkDriver(f.ledger);boundary=driver.next_action()
+    with pytest.raises(TypeError):driver._steps[boundary.cell_index]=driver._steps[boundary.cell_index]
+    driver._steps=dict(driver._steps)
+    driver._steps[boundary.cell_index]=replace(driver._steps[boundary.cell_index],end=(4.,3.7))
+    with pytest.raises(RuntimeError,match='handoff'):driver.prepare_step_approach(boundary)
+    assert f.ledger.steps==0 and f.sender.release_calls==0

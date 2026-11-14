@@ -1,11 +1,14 @@
 """Follow source walk legs; an explicit step boundary cannot be auto-consumed."""
 from dataclasses import dataclass,field
 import math
+from types import MappingProxyType
 
 from .fixed_route_follower import RouteHalt
 from .ground_binding import finite
 from .ground_sweep import motion_footprint
 from .source_motion import SourceReceiptLedger
+from .source_itinerary import SourceStepHint
+from .source_step_approach import plan_source_step_approach
 from .source_step_sender import run_checked_source_step
 
 
@@ -59,6 +62,8 @@ class SourceWalkDriver:
         self.ledger=ledger;self.plan=ledger.observer.itinerary
         cells=self.plan.record()['cells'];self.index=0
         self._payload=self.plan.payload
+        self._boundary=None
+        self._steps={}
         targets=[]
         for row in cells:
             if (row['kind'] not in ('walk','step')
@@ -68,7 +73,14 @@ class SourceWalkDriver:
             targets.append(_Target(row['kind'],(*row['start'],row['start_floor_height']),
                 (*row['end'],row['end_floor_height']),
                 row['transfer']['transition_sha256'] if row['kind']=='step' else None))
+            if row['kind']=='step':
+                e=row['transfer']['evidence']
+                self._steps[len(targets)-1]=SourceStepHint(tuple(row['start']),tuple(row['end']),
+                    tuple(tuple(k) for k in e['landing_endpoint']['selected_ids']),
+                    e['max_step_height'],e['max_lift'],e['lift_clearance'])
         self.targets=self._targets=tuple(targets)
+        self._steps=MappingProxyType(self._steps)
+        self._step_hints=self._steps
 
     def _step_boundary(self,position):
         """Hand off before an ordinary maximum-hold envelope reaches a riser.
@@ -108,15 +120,17 @@ class SourceWalkDriver:
                 l.observer.validate(l.reference,l.chain,maximum_age=.5)
                 p=l.reference.package_xyz
                 boundary=self._step_boundary(p)
-                if boundary is not None:return boundary
+                if boundary is not None:
+                    self._boundary=boundary;return boundary
                 while self.index<len(self.targets):
                     row=self.targets[self.index]
                     if row.kind=='step':
                         start=row.start
                         if math.dist(p[:2],start[:2])>.25 or abs(p[2]-start[2])>.25:
                             raise RouteHalt('Source step departure is not the observed stopped endpoint')
-                        return SourceStepBoundary(self.index,p,start,row.end,row.transition,
+                        self._boundary=SourceStepBoundary(self.index,p,start,row.end,row.transition,
                             l.reference,l.chain.previous.proof_sha256,())
+                        return self._boundary
                     target=row.end
                     remaining=math.dist(p[:2],target[:2])
                     if remaining<=.25:
@@ -150,6 +164,58 @@ class SourceWalkDriver:
                     return SourceWalkCommand(kind,seconds,self.index,target,l.reference)
                 return SourceWalkFinished(self.plan.sha256,l.reference)
             except BaseException as error:l.cancel(str(error));raise
+
+    def prepare_step_approach(self,boundary):
+        """Rebuild the handed-off step outside the stop lock; grants no input."""
+        l=self.ledger
+        try:
+            with l.lock:
+                l._check();l.model.check_policy(l.observer.policy)
+                if (type(boundary) is not SourceStepBoundary or boundary is not self._boundary
+                        or boundary.reference is not l.reference or l.phase!='ready' or l._busy is not None
+                        or self.plan is not l.observer.itinerary or self.plan.payload is not self._payload
+                        or self._steps is not self._step_hints or self.targets is not self._targets
+                        or boundary.start!=l.reference.package_xyz
+                        or boundary.floor_proof_sha256!=l.chain.previous.proof_sha256):
+                    raise RouteHalt('No exact current source step handoff')
+                l.observer.validate(l.reference,l.chain,maximum_age=.5)
+                hint=self._steps[boundary.cell_index]
+                target=self.targets[boundary.cell_index]
+                if (hint.start!=boundary.planned_start[:2] or hint.end!=boundary.end[:2]
+                        or target.start!=boundary.planned_start or target.end!=boundary.end
+                        or target.transition!=boundary.transition_sha256):
+                    raise RouteHalt('Source step hint no longer matches its issued boundary')
+                hint_state=tuple(vars(hint).items())
+                state=l._state();index=self.index;b=l.bounds;start=boundary.start[:2]
+                reach=b.forward_speed_upper_bound*b.maximum_actual_hold
+                footprint=motion_footprint(start,l.pose.heading,reach,position_error=b.position_error,
+                    heading_error_degrees=b.heading_error_degrees,post_release_drift=b.post_release_drift,
+                    extra_radius=b.body_radius)
+                angle=math.radians(l.pose.heading)
+                end=(start[0]+reach*math.sin(angle),start[1]+reach*math.cos(angle))
+                # Same circumscribed uncertainty radius as motion_footprint.
+                radius=(b.body_radius+b.position_error+b.post_release_drift
+                    +2*reach*math.sin(math.radians(b.heading_error_degrees)/2))/math.cos(math.pi/16)
+                l.phase='preparing_step';l._busy=object();busy=l._busy
+            def current():
+                with l.lock:
+                    l._check();l.model.check_policy(l.observer.policy)
+                    if (l.phase!='preparing_step' or l._busy is not busy or l._state()!=state
+                            or self.index!=index or self._boundary is not boundary
+                            or self._steps is not self._step_hints or self.targets is not self._targets
+                            or self._steps.get(boundary.cell_index) is not hint
+                            or tuple(vars(hint).items())!=hint_state):
+                        raise RouteHalt('Source step handoff changed or cancelled during preparation')
+            result=plan_source_step_approach(l.chain,start,hint,l.terrain,l.static,l.bsp,l.observer.policy,
+                footprint=footprint,nominal_end=end,body_radius=b.body_radius,checked_radius=radius,
+                check_context=current,clock=l.clock)
+            with l.lock:
+                current();l.observer.validate(l.reference,l.chain,maximum_age=.5)
+                if l.phase!='preparing_step' or l._busy is not busy or l._state()!=state:
+                    raise RouteHalt('Source step preparation cancelled before publication')
+                l.phase='ready';l._busy=None
+                return result
+        except BaseException as error:l.cancel(str(error));raise
 
     def drive_one(self,sender,*,policy,command_state_clear,pump):
         action=self.next_action()

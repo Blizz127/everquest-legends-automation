@@ -1,5 +1,73 @@
 # FINDINGS
 
+## Full-envelope source step approach — 2026-11-14 14:43 UTC
+
+**VERIFIED implementation:** source 0.42.30 connects the ordinary driver's
+actual stopped step handoff to a separately sealed approach plan. It checks an
+expanded actual cap, tries a direct transfer, and falls back to a checked
+continuous approach plus explicit step when endpoint-selected faces cannot
+cover the direct transfer. It checks the exit for the full supplied motion
+reach. Exact rational polygon subtraction proves the union covers the complete
+movement footprint; overlapping cells cannot conceal a gap. Every added cell
+retains terrain/static, original BSP and full native-zero checks. It refuses an
+unsupported following riser instead of shortening the maximum actual hold.
+
+The driver prepares geometry outside the stop lock and rechecks its reference,
+committed floor, hint, owner scope and freshness before returning. The immutable
+hint map is bound to the issued boundary. Square-cap widening accounts for
+diagonal projected width; original proposals are independently rechecked.
+These two improvements followed concrete review findings, with regression
+checks. No returned plan commits a floor, authorizes a key or claims actual
+Forward auto-step capability.
+
+Point-support queries use only the sealed plan's selected source patches and
+revalidate their geometry. Selection uses XY geometry before any raw-Z check.
+At a shared riser edge both possible heights remain; even two heights fitting
+the same residual are not reduced to a nearest-height guess. A point support
+is explicitly not a complete body cap or an observed grounded state.
+
+**VERIFIED focused checks:** all 25 changed-feature cases pass across final
+focused runs: compound fallback, full-envelope exit/corner/hazard rejection,
+small coverage gaps, ambiguous risers, changed support geometry, diagonal cap
+widening, immutable hint binding and OFF during preparation. An initial combined
+run had 72 passes and three early timing refusals in existing OS-pipe cases.
+Those three pass in the focused retry. A simultaneous Devbox sample showed
+load ~115 on 48 CPUs and 0.7% idle. No freshness, DOWN, hold or release limit was
+relaxed. Fixture issues (out-of-bounds synthetic caps, duplicate keyword options
+and a nonintersecting synthetic seed) were corrected before passing checks.
+
+**VERIFIED copied-data probe:** all seven retained steps were tried from
+synthetic positions 0.25 and 1 unit before their planned departures, with
+explicit unmeasured reach/uncertainty hypotheses. Twelve of fourteen cases pass
+full approach/transfer/exit coverage; guide operation 1023 at setback 1 requires
+the compound fallback. Both operation 1027 starts refuse the independent
+unique-floor proposal because the point is missing/layered; no nearest layer
+was substituted. A real continuation must retain its actual preceding floor.
+Final repeat pinned all package and probe code; 5.06s, report
+`nav-candidates/crushbone-step-approaches-0.42.30-final.json`, SHA
+`3e072e934f9ad4acf8e0698cd7db892dd4acb5ceb209478dfeb092060109c731`.
+Initial pre-diagonal-fix report SHA
+`556f899c9220b499ce8278a27efcb98e5647f5df9af7b37d1f8e29dcedac1aca`.
+Neither report represents a live position, movement, landing or accepted camp.
+
+**VERIFIED runtime data dependency:** exported the 1,053-operation/seven-step
+Slave Mines guide from the retained hash-pinned recipe and copied annotation.
+The private canonical file is 116,296 bytes, SHA
+`88aecac52585363add569d3f66ed9ba19921725e81e3a1626e96c50cfdc847e7`, at
+`owner-route-data/crushbone-camps-20261114/crushbone-source-guide-v1.json` under
+the approved local/Alienware store. It contains copied data and stays out of git.
+A source loader checks its digest, client-data pins, guide hash and bounded
+operations without requiring Devbox recipe files. Read-only SSH verification
+matches the staged file; no prefix write, worker or game input occurred.
+
+**Remaining:** typed fresh transition observations, continued pulses while
+astride a riser, bounded settling and actual landing-cap acknowledgment, then
+the owner runtime using its existing sender, input observer and log lease.
+The new source plan is not executable by the current owner launcher. Owner
+movement 0.39.20/assist 0.39.13 and passed G0 are unchanged; no new owner test.
+Current metrics unknown; no accepted real 1–20 route, automated XP or fresh
+hands-off 1–50 run.
+
 ## Source-only walking and stopped acknowledgment — 2026-11-14 14:33 UTC
 
 **VERIFIED implementation:** source 0.42.29 uses a distinct source-floor observer,

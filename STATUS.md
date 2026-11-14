@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 14:34 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 14:43 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,25 @@ Updated 2026-11-14 14:34 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.30:** actual source-step handoff can prepare a direct or compound
+  approach, explicit transfer and maximum-hold exit while keeping the committed
+  floor unchanged. Exact union coverage includes uncertainty/drift; unsupported
+  next steps and hazards refuse. Riser point-support queries preserve ambiguity.
+  Diagonal cap widening and issued-hint binding are corrected. All 25 changed
+  feature checks pass across final focused runs. An initial combined run had
+  72 passes and three early pipe timing refusals; all three pass on focused
+  retry. Devbox sample: load ~115 on 48 CPUs, 0.7% idle; no timing limit changed.
+  Final implementation-pinned copied probe: **12/14 candidates** in 5.06s;
+  the two remaining synthetic starts have layered terrain and are not guessed.
+  One accepted case needs the compound fallback. Report SHA
+  `3e072e934f9ad4acf8e0698cd7db892dd4acb5ceb209478dfeb092060109c731`.
+  The private 1,053-operation guide is staged on Alienware, SHA
+  `88aecac52585363add569d3f66ed9ba19921725e81e3a1626e96c50cfdc847e7`.
+  **Next:** typed transition observations and pulse/settling/landing controller,
+  then owner-runtime integration with the existing sender/reader/stop lock.
+  Source publication pending. No new owner build or game input; movement
+  0.39.20/assist 0.39.13 unchanged. G0 passed; current level/XP/hour/deaths/camp
+  unknown. No accepted 1–20 route or fresh-character 1–50 run.
 - **Source 0.42.29:** source-only observation, receipt/landing acknowledgment,
   supervised sender and ordinary walk driver are implemented. Actual OS-pipe
   DOWN/UP checks preserve floor/pose until fresh stopped replies pass; geometry
