@@ -1,5 +1,50 @@
 # FINDINGS
 
+## 2026-11-14 21:56 UTC — source 0.42.67 published; copied grounded-contact replay verified
+
+VERIFIED Alienware `owner-tools/0.42.67/source` contains commit
+`24dfc165a7b1e1b48e2897fde63b00e1df33a1d9`. All **536** source/test/tool pins match,
+77 focused checks and their JUnit hash are retained, and imports plus three
+CLI startup smokes pass. Bundle SHA
+`fbccdedf773de70b41aaf3ed476e0afa1c7c12332003bb37a483d912a4ba3833`; startup SHA
+`4997b18d5bbaf319ac5c6f50da4688daa6b4c33181f38f2132c0fd994c0d612c`. Owner launcher/runtime remain
+0.39.32/0.42.61; launcher hash unchanged; no helper restart or game input.
+
+VERIFIED one bounded copied-data replay completed with **16 approach cells,
+53 grounded stair contact cells, eight exit envelopes and 17 pulse probes**.
+It used explicit stair checked radius 1.28 and retained body hypothesis 1.2,
+height 6. Each probe used recorded SYNTHETIC speed/error/hold bounds, not current
+character calibration. All source/tool pins match this published revision.
+The contact-exit parent proof equals the planned stair landing proof. The exact
+Throne marker remains (106,154). Artifact:
+`nav-candidates/crushbone-throne-grounded-contact-0.42.67-alienware.json`, SHA
+`87caed49fe7b8e6f991b7e2a57a2f6746b40e22fd34d731426c69f8d1bbadb6e` (3,039,625 bytes).
+Runtime **5.670s wall / 5.614s CPU**; Alienware
+load was 4.83 on 24 CPUs with about 12.8GiB memory available.
+The audit used one BLAS thread, nice 19, a 3GiB address-space limit and existing
+40/45s CPU / 180s wall bounds. No install/prefix or character change occurred.
+
+The audit itself completed successfully once. Its initial uncompressed evidence
+transfer timed out; compressed retrieval then produced the exact recorded hash.
+No audit was restarted. Reconciliation receipt:
+`releases/eql-0.42.67-contact-reconciliation.json`; remote audit receipt:
+`releases/eql-0.42.67-remote-composed.json`. Source-candidate, executable-itinerary,
+input, contact/step verification and real-client acceptance flags remain false.
+The exit's thin-rug contact hypothesis remains separate and unverified.
+
+Next is the actual provisional stair controller through the existing watchdog
+sender. It must consume the exact preflight/start under the same stop lock,
+retain original source/bounds/calibration/scope, keep intermediate candidate
+sets provisional, and graft only the actual observed final cap onto the original
+seed lineage. The checked corridor must extend far enough beyond the arrival
+target for the full maximum-hold envelope; audit that extension, never just
+change metadata or shorten the bound. No unique-grounded wait is required at
+intermediate treads. The final landing must not require a hypothetical nominal
+position to have been visited. A distinct issued stair itinerary boundary and
+fresh no-seal position collection are still needed for automatic handoff.
+G0 already passed; current real level, XP, XP/hour, deaths and camp unknown;
+full 1–20 and fresh hands-off 1–50 remain unfinished.
+
 ## 2026-11-14 21:53 UTC — source 0.42.67: grounded stair contacts and complete pulse enclosures
 
 VERIFIED **77 focused checks** pass in 40.55 seconds. JUnit SHA

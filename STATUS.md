@@ -1,21 +1,28 @@
 # STATUS
 
-Updated 2026-11-14 21:53 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 21:56 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.67 checked; private publication pending.** VERIFIED 77 focused
-  checks. Separate contact geometry covers grounded intermediate treads and
+- **Source 0.42.67 privately published; owner preview remains 0.39.32.** VERIFIED 77 focused
+  checks; all 536 installed file pins, imports and three auditor startups pass.
+  Bundle SHA `fbccdedf773de70b41aaf3ed476e0afa1c7c12332003bb37a483d912a4ba3833`;
+  startup SHA `4997b18d5bbaf319ac5c6f50da4688daa6b4c33181f38f2132c0fd994c0d612c`.
+  Copied-data replay passes 16 approach cells, 53 grounded contact cells,
+  eight exits and 17 synthetic-bound pulse probes in 5.67s wall / 5.61s CPU.
+  Artifact SHA `87caed49fe7b8e6f991b7e2a57a2f6746b40e22fd34d731426c69f8d1bbadb6e`.
+  This remains conditional geometry, not live acceptance or a route executor.
+  Separate contact geometry covers grounded intermediate treads and
   bounded adjacent risers; unrelated/static surfaces and tall wall extensions
   remain obstructions. A cached index retains every compatible ground/transition
   state, including overlapping transitions without an intermediate grounded
   center. Whole maximum-hold motion must fit each reachable state's coupled XY,
   body and height enclosure. The exact index is bound into stair preflight.
-  No stair sender/controller or owner control is enabled. Copied-data contact
-  replay is next, then receipt-issued stair observations, final observed landing
-  and driver integration. Real client contact behavior is unverified. G0 passed;
+  No stair sender/controller or owner control is enabled. Next: checked endpoint
+  lookahead, receipt-issued stair observations, actual final landing and driver
+  integration. Real client contact behavior is unverified. G0 passed;
   owner preview/runtime stay 0.39.32/0.42.61; current real level, XP, XP/hour,
   deaths and camp unknown. Full 1–20/1–50 unmet.
 - **Source 0.42.66 privately published; owner preview remains 0.39.32.** VERIFIED 49 stair
