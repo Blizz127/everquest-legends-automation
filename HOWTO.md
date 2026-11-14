@@ -1,14 +1,16 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.60** · travel/camp test **0.39.31** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.61** · travel/camp test **0.39.32** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-Preview 0.39.31 adds optional camp relocation after observed level-ups and fresh
-combat preparation after stopped arrival. The full continuation passed a
+Preview 0.39.32 lets a released focus click settle before the location-hotbutton
+test, within its original deadline, and explains input-monitoring failures. It
+keeps optional camp relocation after observed level-ups and fresh combat
+preparation after stopped arrival. The full continuation passed a
 synthetic-game/watchdog-pipe check on Alienware. Real-client travel and leveling
 still need owner-run acceptance. This guide describes this release; publication
 receipts and the latest installed version are recorded in STATUS.md.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.31 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.32 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -31,9 +33,9 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
 Preview 0.39.24 switches between assist and the repeated stationary camp test without a
-restart. Preview 0.39.31 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
+restart. Preview 0.39.32 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
 
-## Optional next-camp continuation — 0.39.31
+## Optional next-camp continuation — 0.39.32
 
 This release keeps the existing rotation and adds an unchecked
 **After level-ups, travel to the next supported camp** option beside the travel
@@ -51,12 +53,12 @@ to 120 seconds. A fresh stopped arrival now starts a new camp session, prepares
 learned spells again and requires new target checks before combat. F8/F9 can
 cancel the handoff. This is supervised testing, not the full 1–20 path.
 
-## Choose a travel/camp destination — preview 0.39.31
+## Choose a travel/camp destination — preview 0.39.32
 
 Close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.31/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.32/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
@@ -71,7 +73,13 @@ In **Travel and camp test**, select the destination:
   levels 13–17; this does not establish live camp suitability.
 
 Start inside Clan Crushbone. Open the map and run **Test /location hotbutton…**
-using your configured `/location` key. Then close map/chat, clear your target,
+using your configured `/location` key. After focusing the game, release all keys,
+mouse buttons and touchpad contacts. **Waiting for still controls** means the
+helper is allowing a focus click or key release to settle; the original eight-second
+setup deadline still applies. Incomplete monitoring, unsupported devices and stale
+observations produce their own explanation. If setup stops, no location key was
+sent; use the test button again when ready. This does not repeat G0.
+Then close map/chat, clear your target,
 turn native melee off and stand on clear, flat ground. Click **Travel to selected
 camp…**, confirm the open starting area and focus EverQuest during the countdown.
 The helper measures motion, checks a route from your current floor and travels
@@ -689,7 +697,7 @@ They do not establish actual client movement, level gain or camp suitability.
 
 The optional camp plan can now supply `route_plan_factory`, returning
 an explicit `CampSourcePlan` with current motion/heading, tightened route bounds,
-lateral tolerance and a source movement policy factory. The 0.39.31 launcher supplies this plan only for the selected continuation
+lateral tolerance and a source movement policy factory. The 0.39.32 launcher supplies this plan only for the selected continuation
 option. The retained engine adopts the prepared route, collects a new
 startup pair, and uses the existing source walk/step loop. Every movement needs
 new stopped observations before the next step. The original probe scope,

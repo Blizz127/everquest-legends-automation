@@ -1,11 +1,25 @@
 # STATUS
 
-Updated 2026-11-14 20:09 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 20:21 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.61 / preview 0.39.32 candidate1 checked locally; publication next.**
+  Location-hotbutton setup can wait for a released focus click or active controls
+  to settle within its original eight-second deadline. Coverage/clock failures
+  stay immediate; aggregate observations distinguish the reason. VERIFIED 19
+  focused checks pass in 4.21s, including F8/F9, deadline crossing and no input
+  during the wait. JUnit SHA
+  `2c4403c73afce2700ec16fedae23ce922b557b2b83793d89306479d74ac9105b`.
+  GUI/manifest pass without worker, input or settings writes. Latest owner trace
+  ended 19:31 after a refused location setup; its generic message cannot prove
+  held input. No route/camp acceptance. North Wall synthetic start cap passes
+  copied-data checks; the Throne proposal fails at uncovered walk 8, and local
+  repair exhausted its bounded search. No Throne guide added. Next: publish the
+  hotbutton fix, then inspect/refine that narrow route crossing. G0 passed;
+  current real level/XP/hour/deaths/camp unknown; full 1–20/1–50 not met.
 - **Source 0.42.60 / preview 0.39.31 privately published.** Alienware
   is reachable again. VERIFIED complete production-provider path: seven probes,
   sealed fresh fit, source travel, stopped arrival and fresh new-camp startup.

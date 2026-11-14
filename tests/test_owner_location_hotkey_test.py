@@ -28,7 +28,8 @@ def h(tmp_path, retained):
     log = game/'Logs/eqlog_Probe_private.txt'
     log.write_text('old data must not become a result\n')
     h = SimpleNamespace(focused=True, events=[], traces=[], notices=[], observer_closed=False,
-                        sample_hook=lambda: None, init_hook=lambda: None, pump_hook=lambda: None)
+                        sample_hook=lambda: None, sample_transform=lambda sample: sample,
+                        init_hook=lambda: None, pump_hook=lambda: None)
     window = SimpleNamespace(id=42)
     h.gate = SimpleNamespace(windows=lambda: [window], focused_window=lambda: window if h.focused else None,
         game_session=lambda: {'pid': 10, 'start_ticks': '100'}, focused=lambda: h.focused,
@@ -39,7 +40,7 @@ def h(tmp_path, retained):
         def sample(self):
             h.sample_hook()
             now = time.monotonic()
-            return OwnerInputObservation(now, now, 1, True, 1, 0, False, 0, 'synthetic input')
+            return h.sample_transform(OwnerInputObservation(now, now, 1, True, 1, 0, False, 0, 'synthetic input'))
         def close(self):
             h.observer_closed = True
     e = make_owner_nov12_engine(Engine, observer_factory=Observer, output=tmp_path/'reports')(
@@ -155,6 +156,110 @@ def test_countdown_changes_refuse_without_key(h, change):
     elif change == 'old_reply': h.append()
     h.due(); h.drain()
     assert h.engine.hotkey_test is None and not h.events
+
+
+@pytest.mark.parametrize('change', [dict(activity=True), dict(held_key_count=1),
+                                    dict(active_contact_count=1)])
+def test_countdown_input_settles_within_original_deadline(h, monkeypatch, change):
+    after_down(monkeypatch, h.append)
+    h.start()
+    expires = h.engine.hotkey_test['expires']
+    h.sample_transform = lambda sample: replace(sample, **change)
+    h.due(); h.drain()
+    pending = h.engine.hotkey_test
+    assert pending is not None and not pending['fired'] and not h.events
+    assert pending['expires'] == expires
+    h.sample_transform = lambda sample: sample
+    h.tick()
+    result = finish(h)
+    assert result['outcome'] == 'observed_location'
+    assert result['countdown_input_wait']['observation'][next(iter(change))] == next(iter(change.values()))
+    assert [code for kind, code, value in h.events if kind == 1 and value == 1] == [62]
+
+
+@pytest.mark.parametrize('change, reason', [
+    (dict(coverage_complete=False, reason='input_scan_too_slow'), 'input_scan_too_slow'),
+    (dict(unsupported_motion_devices=1), 'Unsupported motion devices'),
+    (dict(device_count=0), 'No physical input devices'),
+    (dict(started_at=0., finished_at=0.), 'stale or inconsistent'),
+])
+def test_invalid_input_coverage_is_not_treated_as_held_controls(h, change, reason):
+    h.start()
+    h.sample_transform = lambda sample: replace(sample, **change)
+    h.due(); h.drain()
+    result = h.engine.last_hotkey_test
+    assert result['outcome'] == 'refused' and reason in result['reason']
+    assert not result['game_key_attempted'] and not h.events
+    assert result['last_owner_input']['observation']['held_key_count'] == 0
+
+
+def test_countdown_input_wait_does_not_extend_expiry(h):
+    h.start()
+    h.sample_transform = lambda sample: replace(sample, activity=True)
+    h.due()
+    h.engine.hotkey_test['expires'] = time.monotonic()-.001
+    h.tick(); h.drain()
+    result = h.engine.last_hotkey_test
+    assert result['outcome'] == 'refused' and 'idle before' in result['reason']
+    assert not result['game_key_attempted'] and not h.events
+
+
+def test_input_scan_crossing_setup_deadline_never_sends(h):
+    h.start()
+    def expired_during_scan():
+        h.engine.hotkey_test['expires'] = time.monotonic()-.001
+    h.sample_hook = expired_during_scan
+    h.due(); h.drain()
+    assert not h.engine.last_hotkey_test['game_key_attempted'] and not h.events
+
+
+def test_reply_during_countdown_input_wait_is_not_attributable(h):
+    h.start()
+    h.sample_transform = lambda sample: replace(sample, activity=True)
+    h.due()
+    h.append()
+    h.sample_transform = lambda sample: sample
+    h.tick(); h.drain()
+    assert 'not attributable' in h.engine.last_hotkey_test['reason']
+    assert not h.engine.last_hotkey_test['game_key_attempted'] and not h.events
+
+
+def test_f9_inside_clear_scan_cannot_resume_waiting_test(h):
+    h.start()
+    h.sample_transform = lambda sample: replace(sample, activity=True)
+    h.due()
+    h.sample_transform = lambda sample: sample
+    h.sample_hook = lambda: h.engine.stop_action('F9')
+    h.tick(); h.drain()
+    assert h.engine.last_hotkey_test['outcome'] == 'refused' and not h.events
+    assert h.engine.cancelled and not h.sender.held
+
+
+@pytest.mark.parametrize('change', ['f9', 'f11', 'post', 'focus', 'source'])
+def test_owner_changes_during_input_settle_refuse_without_key(h, change):
+    h.start()
+    h.sample_transform = lambda sample: replace(sample, activity=True)
+    h.due()
+    assert h.engine.hotkey_test is not None
+    h.sample_transform = lambda sample: sample
+    if change == 'f9': h.engine.stop_action('F9')
+    elif change == 'f11': h.engine.stop_autopilot('F11')
+    elif change == 'post': h.engine.post('settings', h.engine.settings)
+    elif change == 'focus': h.focused = False
+    elif change == 'source': (h.game/'eqclient.ini').write_text('changed')
+    h.tick(); h.drain()
+    assert h.engine.last_hotkey_test['outcome'] == 'refused' and not h.events
+
+
+def test_owner_activity_after_hotbutton_release_still_refuses(h):
+    h.start(); h.due()
+    assert h.engine.hotkey_test['stage'] == 'reply'
+    h.sample_transform = lambda sample: replace(sample, activity=True)
+    h.tick(); h.drain()
+    result = h.engine.last_hotkey_test
+    assert result['outcome'] == 'refused' and 'waiting for the location reply' in result['reason']
+    assert [code for kind, code, value in h.events if kind == 1 and value == 1] == [62]
+    assert (1, 62, 0) in h.events and not h.sender.held
 
 
 @pytest.mark.parametrize('reply', ['missing', 'duplicate', 'transition'])

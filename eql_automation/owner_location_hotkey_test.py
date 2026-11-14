@@ -1,7 +1,8 @@
 """Owner-started stationary hotbutton test in the existing measurement helper."""
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from datetime import datetime, timezone
 import json
+import math
 from pathlib import Path
 import time
 from uuid import uuid4
@@ -16,6 +17,29 @@ from .unbound_location_log import UnboundLocationReader
 
 HOTKEY_TEST_JOB = 'test_location_hotkey'
 DEFAULT_OUTPUT = Path.home()/'.local/share/eql-automation/location-hotkey-tests'
+
+
+def input_problem(sample, now):
+    """Describe failed coverage separately from still-active owner controls."""
+    if not sample.coverage_complete:
+        return 'Input monitoring incomplete: '+sample.reason
+    if sample.device_count <= 0:
+        return 'No physical input devices were observed'
+    if sample.unsupported_motion_devices:
+        return 'Unsupported motion devices: '+str(sample.unsupported_motion_devices)
+    if not replace(sample, held_key_count=0, active_contact_count=0, activity=False).clear_at(now):
+        return 'Input observation is stale or inconsistent; test stopped'
+    return ('Waiting for still controls: '+str(sample.held_key_count)+' held keys/buttons, '
+            +str(sample.active_contact_count)+' touch contacts, recent activity='
+            +str(sample.activity))
+
+
+def input_record(sample, now, phase):
+    # Counts only: do not retain typed keys, device identities or event values.
+    values = asdict(sample)
+    values = {k: None if isinstance(v, float) and not math.isfinite(v) else v
+              for k, v in values.items()}
+    return dict(phase=phase, observation=values, clear=sample.clear_at(now))
 
 
 def configuration_paths(game, character, server):
@@ -106,6 +130,9 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                 request_correlation_verified=False)
             if pending.get('current_zone_observation') is not None:
                 record['current_zone_observation'] = pending['current_zone_observation']
+            for field in ('last_owner_input', 'countdown_input_wait'):
+                if field in pending:
+                    record[field] = pending[field]
             self.last_hotkey_test, self.last_hotkey_test_path = record, None
             note = ''
             try:
@@ -191,6 +218,8 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                 self._hotkey_current(pending, focused=focused)
                 pending['binding'].check()
                 if clock() > pending['expires']:
+                    if pending['stage'] == 'countdown':
+                        raise ValueError('Controls did not become idle before the hotbutton test deadline')
                     raise ValueError('No single fresh location reply before the test timeout')
                 replies = pending['reader'].poll(now=clock())
                 if pending['reader'].tail.partial:
@@ -199,15 +228,31 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                     if replies:
                         raise ValueError('Location arrived before the test key; not attributable')
                     sample = pending['observer'].sample()  # Focus changes are allowed before due.
-                    if clock() < pending['due']:
+                    now = clock()
+                    pending['last_owner_input'] = input_record(sample, now, 'countdown')
+                    self._hotkey_current(pending, focused=now >= pending['due'])
+                    if now < pending['due']:
                         return
-                    if not sample.clear_at(clock()):
-                        raise ValueError('Release keys and mouse before the test countdown ends')
+                    if now > pending['expires']:
+                        raise ValueError('Controls did not become idle before the hotbutton test deadline')
+                    if not sample.clear_at(now):
+                        # A focus click can have been released but still appear
+                        # in this scan's event queue. Wait for a later fully
+                        # clear sample, inside the ORIGINAL fixed deadline.
+                        # Coverage/clock failures are never treated as activity.
+                        problem = input_problem(sample, now)
+                        if not replace(sample, held_key_count=0, active_contact_count=0,
+                                       activity=False).clear_at(now):
+                            raise ValueError(problem)
+                        if 'countdown_input_wait' not in pending:
+                            pending['countdown_input_wait'] = pending['last_owner_input']
+                            self.emit(problem+'. Release controls; F9/F11 cancel.')
+                        return
                     pending['stage'], pending['busy'], pending['fired'] = 'sending', True, True
                     try:
                         receipt = send_location_hotkey(pending['sender'], binding=pending['binding'],
                             owner_input=pending['observer'], lock=self.g0_stop_lock, clock=clock,
-                            expires_at=clock()+2.5,
+                            expires_at=min(pending['expires'], clock()+2.5),
                             ensure_current=lambda: self._hotkey_current(pending, focused=True),
                             cancel=self._cancel_hotkey_test, pump=self.pump,
                             record_event=pending['events'].append)
@@ -218,8 +263,10 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                     self.emit('Location key released; waiting for one fresh position reply. F9/F11 cancel.')
                     return
                 sample = pending['observer'].sample()
-                if not sample.clear_at(clock()):
-                    raise ValueError('Owner activity while waiting for the location reply')
+                now = clock()
+                pending['last_owner_input'] = input_record(sample, now, 'reply')
+                if not sample.clear_at(now):
+                    raise ValueError('Input changed while waiting for the location reply: '+input_problem(sample, now))
                 self._hotkey_current(pending, focused=True)
                 if replies:
                     if len(replies) != 1 or pending['fix'] is not None:

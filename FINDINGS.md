@@ -1,5 +1,59 @@
 # FINDINGS
 
+## 2026-11-14 20:21 UTC — hotbutton input settling and bounded Throne investigation
+
+Source **0.42.61**, owner preview **0.39.32 candidate1** built locally. The
+location-hotbutton setup now waits for a later fully clear input scan when a
+focus click/release, held key or touch contact remains in the sampled input.
+The original eight-second setup deadline is fixed; it is checked after sampling
+and also caps sender admission. Coverage, unsupported motion devices and clock
+failures still refuse immediately with distinct explanations. Send/reply checks
+remain strict. Saved evidence retains aggregate first-wait/last observations,
+not key identities. F8 waits for cleanup before assist, and F9 defeats that switch.
+
+VERIFIED **19 focused checks passed in 4.21 seconds**, 42 unrelated cases
+not selected. JUnit `releases/eql-0.42.61-hotbutton-final.xml`, SHA
+`2c4403c73afce2700ec16fedae23ce922b557b2b83793d89306479d74ac9105b`.
+These use the retained engine and real OS-pipe/watchdog writes with synthetic
+input/game observations. Offscreen GUI startup and manifest pass; worker,
+input, settings-write and continuation-checkbox flags are false. This is not
+real-client acceptance. Publication is recorded separately after staging.
+
+OBSERVED read-only owner trace: `owner-observations/journey-20261114T2020Z.jsonl`,
+SHA `cfdc097c67bf84a582a266cf1c95d8defd594eb750ef264f4cab95c1d055e9ba`.
+Its last modified time is 19:31:12 UTC. A 19:21 location-hotbutton attempt refused
+before any game key and the helper later exited. No camp/route or level gain is
+recorded. The old release-keys message conflated held input, drained activity,
+coverage, unsupported devices and freshness. **The old trace does not establish
+which of these caused that refusal**; the earlier shorthand that controls were
+held was too specific. New diagnostics resolve that ambiguity on the next run.
+
+VERIFIED copied-data audit `tools/audit_crushbone_throne_transit.py` can start
+from an independently labeled synthetic North Wall floor. It does not replay
+the Mines prefix or claim a current character position. The complete initial
+radius-1.2/body-height-6 cap passes terrain, static, BSP and region checks.
+A 16-step, 310-operation proposal retains all three Throne floor layers, but the
+full itinerary checker rejects walk 8 for uncovered floor. First artifact
+`nav-candidates/crushbone-throne-transit-0.42.61-first.json`, SHA
+`5706d6741c33c812f1338e5c2fe840b5f864a5478b30d237e486b1789dbcd336`,
+20.22s wall / 5.04s CPU. It has no accepted route or selected final Throne layer.
+
+The tool can replace an explicitly chosen walk-only range by a bounded local
+proposal. It fully checks and replays the prefix rather than reseeding the fault,
+preserves every step, and requires the entire repaired itinerary to pass again.
+Two walk 8–12 attempts expired; the second explored 58 states / 519 edges within
+89.30s wall / 11.96s CPU. Artifact
+`nav-candidates/crushbone-throne-transit-0.42.61-repair2.json`, SHA
+`613dddf2e5da8fb07f5a6d1a41d0009ab45f9f41a6961064d6c2e67591ee6929`.
+Timeout is not a geometry disconnection or permission to exclude a component.
+CPU/wall process limits bound this single low-priority audit. No bake, game input,
+owner-session restart, install change or new destination publication occurred.
+Next route work: inspect the narrow rejected crossing and use a suitable bounded
+proposal resolution; preserve all goal layers and full geometry checks.
+
+G0 remains passed. Current real level, XP, XP/hour, deaths and camp are unknown.
+Full 1–20 and fresh hands-off 1–50 remain unfinished.
+
 ## 2026-11-14 20:09 UTC — source0.42.60 / owner preview0.39.31 privately published
 
 VERIFIED install on Alienware outside the protected game prefix:

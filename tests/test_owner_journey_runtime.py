@@ -196,6 +196,25 @@ def test_same_helper_runs_hotbutton_setup_without_enabling_assist_movement(h,mon
     assert not any(kind==1 and code in {103,105,106} and value==1 for kind,code,value in h.events)
 
 
+@pytest.mark.parametrize('stop_after_f8', [False, True])
+def test_f8_during_hotbutton_input_wait_releases_before_assist(h, stop_after_f8):
+    e = h.engine
+    e.prepared = True; e.prepared_level = 7
+    h.start()
+    h.sample_transform = lambda sample: replace(sample, activity=True)
+    h.due()
+    assert e.hotkey_test is not None and not e.hotkey_test['fired']
+    e.handle_job('arm', e.cancel_generation)
+    assert e._journey_assist is not None and not e.active
+    if stop_after_f8:
+        e.stop_action('F9 after F8 during input wait')
+    h.sample_transform = lambda sample: sample
+    h.tick(); h.drain()
+    assert e.hotkey_test is None and h.observer_closed
+    assert e._journey_assist is None and e.active is (not stop_after_f8)
+    assert not h.events and not h.commands and not h.sender.held
+
+
 def test_death_during_countdown_stops_without_camp_or_native_autopilot(h,monkeypatch):
     configure(h,monkeypatch);e=h.engine
     start(h);h.append('You have been slain by orc fixture!');e.read_log()
