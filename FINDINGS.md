@@ -1,5 +1,49 @@
 # FINDINGS
 
+## 2026-11-14 21:27 UTC — source 0.42.65 published; full conditional replay completed offline
+
+VERIFIED installed `~/.local/share/eql-automation/owner-tools/0.42.65/source`
+on Alienware from `5af14c0c0c1a198d7796154ecb0c49856d345f31`. All **527** pinned
+source/test files match the locally tested snapshot. All **12** focused tests
+and their JUnit hash are retained; imports and three auditor command-line
+startups pass remotely. Bundle SHA
+`accfe3dd3d8288f5a162265df2331b13238cc8c1200e4ad8fa3e79d290c2fb9b`;
+startup receipt SHA
+`e0e6bf49a00b662e44c374d20a9f85dd71db0a95c83e6a6e56c1f7ccb6b4655d`.
+Private staging receipt: `releases/eql-source-tools-0.42.65-staging.json`.
+Owner preview/runtime remain **0.39.32 / 0.42.61** with unchanged launcher hash.
+
+VERIFIED one low-priority offline replay on the copied Alienware data completed:
+**16 approach cells, 33 stair phases and eight exit envelopes**, ending at the
+exact package marker (106,154). The contact-exit parent proof equals the checked
+stair landing proof. The returned artifact's code pins all match the local
+validated source. Five exit cells pass ordinary static clearance; three require
+the explicit thin-contact hypothesis and retain their ordinary refusals.
+This is complete conditional copied-geometry coverage, **not an executable
+walking route, verified contact/step behavior or real-client acceptance**.
+`source_candidate`, `executable_itinerary`, contact/transition verification and
+all input/live-acceptance flags remain false. No Throne guide was published.
+
+Artifact `nav-candidates/crushbone-throne-composed-contact-0.42.65-alienware.json`,
+SHA `c96ada65c53b0d81ab23e183080462ce78d5d93ddc15b047d97b313a0a99b5c3`.
+Runtime **3.883s wall / 3.719s CPU**. Remote availability before the run was
+load 4.34 over 24 CPUs and approximately 11.5GiB memory available. The job used
+one BLAS thread, nice 19, a 3GiB address-space cap and the existing 40/45s CPU
+and 180s wall limits. No game input, helper restart, install change or character
+mutation occurred. Local retained remote receipt SHA `7ab3876fcc0c711d63343790c1f1e6bff4208256af8e6fc3b5a0859e3e45fef3`;
+remote receipt/logs are under `owner-tools/0.42.65/offline-check/`. The preceding
+devbox timeout remains an incomplete artifact, not superseded into success.
+
+The next implementation is the explicit stair runtime action: checked whole-
+motion envelopes, provisional observations through multiple treads, unchanged
+receipt/focus/cancel behavior, and a fresh final outer landing before floor
+commit. The offline flight's hypothetical vertical phases cannot be issued as
+commands or treated as observed movement. Contact entry/exit semantics also
+remain unverified. Owner-run position/motion/travel and level-gain acceptance
+remain outstanding; G0 is already passed and must not repeat. Current level,
+XP, XP/hour, deaths and camp are unknown. Full 1–20 and fresh hands-off 1–50
+remain unfinished.
+
 ## 2026-11-14 21:25 UTC — source 0.42.65: distinct thin-contact envelope diagnostics
 
 VERIFIED `tools/source_contact_envelope.py` checks an explicit pinned thin-sheet

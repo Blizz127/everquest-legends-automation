@@ -1,21 +1,26 @@
 # STATUS
 
-Updated 2026-11-14 21:25 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 21:27 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.65 built locally; publication next.** VERIFIED 12 focused
-  checks pass. A separate pinned thin-contact model retains ordinary collision
-  refusals and checks every other face plus BSP/native metadata over the enlarged
-  body. Exit-only diagnostic finds two conditional envelopes to the exact Throne
-  marker; this is not verified contact semantics, entry/exit motion or a route.
-  Full composed devbox replay timed out during stairs (183.21s wall / 10.51s CPU).
-  A low-priority copied-data replay on the available Alienware is next after
-  source staging. Then implement the distinct stair controller with provisional
-  intermediate observations and final-landing-only floor commit. Owner preview
-  stays 0.39.32; G0 passed. No game input. Real level/XP/XP-hour/deaths/camp unknown.
+- **Source tools 0.42.65 privately published; owner preview stays 0.39.32.**
+  VERIFIED 12 focused tests; all 527 installed source/test pins, imports and
+  three auditor startups pass. Bundle SHA
+  `accfe3dd3d8288f5a162265df2331b13238cc8c1200e4ad8fa3e79d290c2fb9b`;
+  startup SHA `e0e6bf49a00b662e44c374d20a9f85dd71db0a95c83e6a6e56c1f7ccb6b4655d`.
+  Full copied-data replay completed on Alienware in 3.883s wall / 3.719s CPU:
+  16 approach cells, 33 stair phases, eight exit envelopes to the exact Throne
+  marker. Artifact SHA `c96ada65c53b0d81ab23e183080462ce78d5d93ddc15b047d97b313a0a99b5c3`.
+  Three exit cells still require the explicit contact hypothesis; ordinary
+  refusals are retained. This is conditional geometry, not verified movement or
+  an executable route. Devbox timeout remains incomplete. Next: explicit stair
+  runtime controller, whole-motion bounds and provisional intermediate fixes;
+  only a fresh final landing may commit the ordinary floor. Contact transitions
+  remain unverified. Owner launcher unchanged, no game input/helper restart.
+  G0 passed; current real level/XP/XP-hour/deaths/camp unknown. Full 1–20/1–50 unmet.
 - **Source tools 0.42.64 privately published; owner preview stays 0.39.32.** VERIFIED 45 focused
   checks pass. All 524 pinned files match Alienware `owner-tools/0.42.64/source`;
   imports and three auditor startups pass. Bundle SHA
