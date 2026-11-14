@@ -1,5 +1,60 @@
 # FINDINGS
 
+## Complete GFay replay with copied BSP volumes — 2026-11-14 03:45 UTC
+
+**VERIFIED source 0.41.62:** All 155 segments and 2,191 simulated steps arrive
+with terrain, all-flag static occupancy and full-prism copied BSP checks enabled.
+Every one of the 2,191 BSP checks passes: 28,837 total node visits, at most 27
+per prism, 35 distinct regions across the run, and at most three regions per
+prism. No labelled/unknown region, geometry refusal or budget exhaustion occurs.
+Both the terrain and static trial sequences exactly match 0.41.61. All 44
+code/data pins rechecked. Elapsed 440.80 wall/117.85 CPU seconds; the faster
+wall time than the preceding run is not claimed as a computational speedup.
+
+Artifact `nav-candidates/gfay-bsp-volume-replay-0.41.62.json`, SHA
+`ff21dfa92e8dbd391002512ed7d5950280655ac066b3967b0e0d8b9ee4af6319`.
+Code baseline `5afeb82`; BSP inventory SHA
+`43958a80b7a7c2d7d8768658ba6a909a78030b2ec77b000406815dad5c5c5a9b`;
+source WLD SHA `3f9a479ea46a3fb8f826ccfb608d0f69a5876e1cab5fa38ea86712e8fdabe138`.
+The existing copied frame control still resolves the swapped helper trigger
+to region 2859, a Felwithe zone-line hint. It does not prove a live transition.
+
+**Implemented and fixture-verified:** The exact accepted cell digest binds
+selected floor patches to the new volume. Its XY expansion matches the terrain
+occupancy check; exact rational clipping yields local floor-height bounds.
+The prism extends from the lowest floor minus 0.1 below-clearance and 0.01
+numeric margin to the highest floor plus hypothetical body height 8 and 0.01.
+Exact plane arithmetic retains small offsets; report floats round outward and
+do not drive traversal. Both children are visited on contact/straddling. Any
+label, missing child/region, cycle, or visit/depth exhaustion refuses before
+simulated movement or proposed-floor commit. Keeping the whole prism during
+traversal may conservatively visit extra leaves; refusals are not asserted to
+be exact intersection witnesses. The initial seed remains terrain-only, with
+all actual motion footprints checked anew.
+
+Fifty focused tests pass, including an interior water pocket missed by corners
+and centerline, upper-body/side/below-floor hazards, exact plane contact,
+rounding-sensitive arithmetic, malformed trees and budgets, clipped sloped
+floors, coordinate swapping and refused-state preservation. Eleven local
+no-input startup/guard checks pass. This checks copied labels and hypothetical
+geometry; it does not establish live dryness, body dimensions, dynamics,
+current alignment/speed or real route following.
+
+**OBSERVED remaining live implementation gap:** Current production code has
+no caller constructing G2SafetyProvider/G2ReadOnlySceneObserver or producing
+live AlignedWldFix/HeightCalibration/MeshProjection; those constructions remain
+in the synthetic replay. The owner preview restricts movement to G0. The
+current location reader also needs a new zone-entry event; the stationary
+collector deliberately cannot bypass that with an unverified map label.
+A read-only listing of the latest private capture directories at 03:37 UTC
+found no paired location/UI record; no capture/input was performed.
+
+**Next:** owner-controlled fresh scene/position evidence, live zone and ground
+providers, calibrated UI/input observations, speed/drift measurement and
+checked owner-helper integration. The previously staged collector command
+at 0.41.61 is unchanged. G0 remains passed with no repeat. No live 1–20 route,
+automated XP gain, fresh-character run or level 50 completion is accepted.
+
 ## Private 0.41.61 staging — 2026-11-14 03:33 UTC
 
 **VERIFIED:** Source commit `b5cd4a50eabe2e8d9c719505b283c6e4153c00bc` and

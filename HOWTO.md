@@ -31,8 +31,9 @@ both sides; any labelled region, missing data or exhausted traversal budget
 refuses. The enclosing volume can conservatively include extra regions.
 This checks copied BSP labels, not live dryness, dynamic objects or movement.
 
-The preceding 0.41.61 terrain/static replay completed all 155 GFay segments
-in 2,191 steps. Current body dimensions, scene/position/speed and live route
+The full replay now completes all 155 GFay segments in 2,191 steps with
+terrain, static objects and BSP volumes checked. All 2,191 volume checks pass;
+the terrain/static sequences match 0.41.61. Current body dimensions, scene/position/speed and live route
 following remain unverified; F11 stays unavailable and no 1–20 leveling run
 is accepted. Fifty focused fixture/geometry checks pass for the new changes.
 

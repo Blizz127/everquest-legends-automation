@@ -1,21 +1,21 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 03:32 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 03:45 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
-Source 0.41.61 completes the revised same-zone GFay replay with both terrain
-and static-object occupancy: all 155 segments, 2,191 steps and 2,191 passing
-combined checks. 1,014 queries contain static faces; all source flags and
-heights are retained. The terrain sequence matches the previous terrain-only
-run exactly. Body, speed and drift remain hypotheses; this does not establish
-whole-volume BSP hazard clearance, dynamic objects or current live calibration.
-No live route/F11 or automated XP is accepted. Your G0 stop remains passed.
-A new read-only owner-run collector pairs a manual fresh `/location` with the
-current map view without a movement pulse; see [HOWTO.md](HOWTO.md). It has
-fixture/startup verification only and cannot authorize navigation. Detailed
-hashes are in [FINDINGS.md](FINDINGS.md).
+Source 0.41.62 completes the revised same-zone GFay replay with terrain,
+static-object occupancy and whole-prism copied BSP checks: all 155 segments,
+2,191 steps and 2,191 passing BSP checks. The terrain/static sequences match
+the prior run exactly. Exact arithmetic checks the complete expanded footprint
+and a conservative floor-to-head band, including both sides of contacted BSP
+planes. No known copied hazard label or unknown region is encountered.
+Body, speed and drift remain hypotheses; live dryness, dynamics, current scene
+and alignment are unverified. Production live UI/zone/ground providers and
+helper wiring are still missing. No live route/F11 or automated XP is accepted.
+G0 remains passed. The pending 0.41.61 read-only location/map command in
+[HOWTO.md](HOWTO.md) is unchanged. Detailed hashes are in [FINDINGS.md](FINDINGS.md).
 
 | Levels | Planned camp | Route needed | Current evidence |
 | --- | --- | --- | --- |
