@@ -7,6 +7,11 @@ Updated 2026-11-14 01:11 UTC for coordinator task `829a00229b29`.
   `fa7b46a73a717903c134b0e322d3681531dd8c6797bc9f61a7dca939d289c056`
   matched; remote API/CLI startup and offline navigation smoke passed.
   No device access or game input. F11 remains unavailable.
+- Next unblocked sender work: add child key-down/up timestamp receipts to
+  the existing watchdog, preserving G0's float API. Its current duration-only
+  API cannot satisfy the route controller's timing contract; subprocess
+  startup also needs a freshly bound proposal after readiness. No route
+  sender is connected yet, and assist movement remains refused.
 - Source **0.41.49** adds the fixed-route controller using the retained
   rotation bot's steering classes. Eighteen focused checks passed: actual
   completed holds only, fresh stopped raw endpoint pairs, no short-segment

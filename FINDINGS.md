@@ -12,6 +12,24 @@ copied-data replay ran on the devbox. `smoke.json` and startup outputs remain
 beside the private archive. No input device, character or game-prefix action
 was taken. Assist remains0.39.6; this source release does not enable F11.
 
+## Timed-sender integration dependency — 2026-11-14 01:11 UTC
+
+**VERIFIED read-only source inspection:** The retained KeySender already
+exposes its existing device descriptor, UP/LEFT/RIGHT codes, focus/input/chat
+check, held-key bookkeeping and redundant release. A separate measurement/
+full-auto bridge can reuse these; the G0 `Engine.hold` admission remains
+forward-only and must not become an assist movement path. Zero-key proposals
+need observations only, never a device pulse.
+
+The current project `timed_key_pulse` returns a rounded duration, whereas the
+new controller needs actual start/release timestamps and rejects a start more
+than50ms after proposal. The subprocess starts after the proposal, so merely
+wiring these APIs would reject delayed startup or invent timestamps. Next:
+add a timestamped child receipt while preserving the old float-return API,
+and bind/revalidate the proposal after watchdog readiness. Parent return time
+must not substitute for key timing. Fresh scene and full swept-motion checks
+remain required; no route sender is connected in0.41.49.
+
 ## Fixed-route controller and complete copied GFay replay — 2026-11-14 01:09 UTC
 
 **VERIFIED implementation:** `fixed_route_follower.py` loads an explicitly
