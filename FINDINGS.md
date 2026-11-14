@@ -1,5 +1,34 @@
 # FINDINGS
 
+## Private source 0.41.73 staging and Alienware timing — 2026-11-14 05:25 UTC
+
+**VERIFIED:** Commit `01bc41e4a7a0609f37729c7452025d4b6d3fc510`, archive SHA
+`9a384402c17987579306844da88b529eb900e5ed9f44dbfae8796e7f85aa90a2`,
+is staged at `~/.local/share/eql-automation/owner-tools/0.41.73/source` on Alienware.
+Six remote synthetic/no-input startup checks pass: version, batched ranking/tie
+order without permission, every shifted scalar/integer residual, immutable
+bound caching, analyzer CLI and location-collector CLI. Remote `../smoke.json`
+and local `releases/eql-automation-0.41.73-staging.json` retain the result.
+These startup checks opened no client assets, capture, input devices or login.
+
+**VERIFIED separate owner-machine synthetic timing:** at nice=10, using copied
+client sprite bytes sent in memory and synthetic backgrounds/placements, the
+Alienware (Pillow 12.3.0) measured one cold search at 22.663 ms wall / 22.574 ms
+CPU. Twenty warm searches had median 12.688 ms wall / 12.637 ms CPU and maximum
+14.035 ms wall / 13.195 ms CPU. Every case had the corresponding source sprite
+as unique best with zero residual. The staged matcher file SHA was verified
+against the devbox source before running. No installed game files, display,
+input devices or login were opened. This is copied-source rendering and search
+timing on the owner machine, not timing or classification of a real UI capture.
+The complete capture/input/log/scene budget remains unverified.
+
+Remote record: `owner-tools/0.41.73/synthetic-icon-timing.json`.
+Local evidence: `evidence/combat-ui-alienware-speed-0.41.73.json`, SHA
+`f38be656935f6bfee467e753d56e32bc0e0c4cfb3f42ae193a0657557d4deb1e`.
+The previously slow source search is now practical for a calibrated observer
+on this machine, but the pending owner capture, live calibration and route
+acceptance remain missing. No G0 repeat or new owner test is requested.
+
 ## Exact combat-template search optimization — 2026-11-14 05:24 UTC
 
 **VERIFIED source 0.41.73:** combat ranking now packs RGB channels into a signed

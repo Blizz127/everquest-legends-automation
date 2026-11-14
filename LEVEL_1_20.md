@@ -10,7 +10,9 @@ checks; 0.41.72 connects pinned client icons to saved observation crops;
 0.41.73 accelerates those comparisons without changing scores. These are
 components for the pending current-scene reader. They do not accept any route
 or remove the need for the stationary owner capture and current motion/scene
-calibration. G0 remains passed and needs no repeat.
+calibration. The Alienware source search is now 12.7 ms warm median in the
+synthetic check; complete live observation timing remains unverified. G0
+remains passed and needs no repeat.
 
 Source 0.41.70 supplies 11 exact client combat/attack templates for the pending
 scene reader. Thirteen focused checks pass. Seven current navigation archives

@@ -28,7 +28,9 @@ image operations and cached immutable template bounds. Thirty-one focused
 checks pass. Complete results match 0.41.72 in ten actual-source synthetic
 cases; devbox median search falls from 1.22 seconds to 86 milliseconds, with
 some observations still over 100 ms. This does not establish the complete live
-scene budget. It adds no movement control or new owner test.
+scene budget. The separate Alienware synthetic check measures 22.7 ms cold,
+12.7 ms warm median and 14.0 ms warm maximum across 20 cases. Capture/input/log
+checks are not included. It adds no movement control or new owner test.
 
 Source 0.41.72 can analyze the existing stationary capture's combat-icon crop.
 It uses the pinned client decal size and saved UI scale, checks XML provenance

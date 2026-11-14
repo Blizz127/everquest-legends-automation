@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 05:24 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:25 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -15,7 +15,10 @@ Updated 2026-11-14 05:24 UTC for coordinator task `829a00229b29`.
   0.41.72 output in ten source-icon synthetic cases. Thirty-one focused tests
   pass. Devbox median search is 86 ms versus 1.22 seconds; maximum is 283 ms,
   so the full live scene budget remains unverified. No new owner test or input.
-  Private staging and a synthetic Alienware timing check follow the commit.
+  Source `01bc41e` is privately staged at `owner-tools/0.41.73/source`; six
+  startup checks pass. Alienware synthetic search: 22.7 ms cold, 12.7 ms warm
+  median, 14.0 ms warm maximum across 20 cases. No live capture/scene acceptance.
+  Archive SHA `9a384402c17987579306844da88b529eb900e5ed9f44dbfae8796e7f85aa90a2`.
 - **Source 0.41.72:** saved combat-icon analysis now connects the client atlas
   to the existing observation format. Twenty-three focused tests pass; 10/10
   synthetic renderings of actual source icons rank correctly. Crops and source
