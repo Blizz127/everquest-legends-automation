@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:17 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:26 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,20 @@ Updated 2026-11-14 07:17 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.87:** copied-source font geometry now separates integer
+  advances, fractional rectangles, UI-space metrics/centering and the caret's
+  independent rounding. Fifty-seven focused geometry/parser checks pass.
+  Eighteen copied-font/saved-layout cases pass; `/l` and `/locatio` place the
+  caret one pixel beyond simple concatenation. Evidence SHA
+  `2155dec6b579789458ed3b22b97aec03311546f1692305661dbb595022278064`.
+  The factory-interface mapping is resolved; the source default filter is
+  linear min/mag, point mip. Final GPU projection remains separate: the copied
+  shader text and native constant upload declare different buffer layouts, so
+  their combination is not assumed. No game runtime/capture/input occurred.
+  Owner controls remain unchanged. At 07:26 UTC no stationary observation
+  pair was saved. Next: resolve the selected shader path and use the pending
+  owner observation for actual scene/position binding; motion/height/envelope
+  evidence is still required before route execution. G0 needs no repeat.
 - **Source 0.41.86:** traced the input's initial font slot 3 independently of
   output chat style, the GDI per-glyph raster path, and 4-bit alpha conversion.
   An offscreen native helper ran in a new devbox-only Wine prefix using the

@@ -1,5 +1,65 @@
 # FINDINGS
 
+## Source font geometry 0.41.87 — 2026-11-14 07:26 UTC
+
+**VERIFIED static linkage:** `CreateGraphicsEngine` constructs the interface
+with vtable `0x18036faf8` and places it at returned structure +8, loaded by
+eqgame into `0x140fe74a8`. Slots +0x158/+0x160 therefore reach the inspected
+face/scale setters. An intermediate concern about vtable `0x18036fae0` was
+resolved: that constructor belongs to embedded objects, not this interface.
+The saved scale enum's 1.25 multiplication is correctly linked to the font
+height/compensation path. Static blocks are retained in
+`evidence/font-geometry-native-0.41.87.json`, SHA
+`2262716d592d28f2615933bf8144c3dc01db1ed852eaf400ad2a6eb182cd202f`.
+
+**VERIFIED implementation:** `font_geometry.py` models the bounded fitting,
+left-aligned single-line path with explicit binary pins and source hypotheses.
+Requested LOGFONTA height must equal `ceil(baseHeight * scale)`. Each glyph
+advances by `ceil(GDIcx * compensation)`, while its rectangle keeps the
+fractional width/height and pre-projection -0.5 shift. Texture extents use
+the glyph's cx/cy, not the maximum-width backing bitmap. Single-precision
+operation boundaries are preserved. Clipping, wrapping and selection are
+outside this model; overflowing hypotheses refuse.
+
+The caret is drawn separately after converting the measured text width back
+to UI units with ceil and the resulting origin to graphics units with floor.
+Height similarly uses `1 + ceil(ceil(tmHeight * compensation) / scale)`;
+single-line vertical centering truncates its half difference. The importer
+can now record all 18 prefix/caret geometry cases beside its unchanged raw
+GDI PNGs. It never labels those PNGs as transformed GPU output.
+
+**VERIFIED checks:** 57 focused geometry/parser checks pass; the updated
+37-case geometry subset also passes after adding a float32 multiply-boundary
+case. CLI startup and incomplete-argument refusal pass. All 18 cases with
+the copied height-19 probe and retained logical client rectangle resolve;
+text origin is (150,1510), font height 17 UI units, compensation
+0.9868420958518982. `/l` and `/locatio` place the caret one pixel beyond direct
+graphics-space concatenation. These are source-derived model results, not
+observed screen coordinates. Manifest SHA
+`0da2313f5365b07f4d107f4661935f5ba87e7e01efbfcd96e091c03eaf3877e1`;
+validation `evidence/font-geometry-0.41.87.json` SHA
+`2155dec6b579789458ed3b22b97aec03311546f1692305661dbb595022278064`.
+
+**VERIFIED static filter; unresolved shader binding:** font state defaults
+reach D3D11 `MIN_MAG_LINEAR_MIP_POINT` (0x14). The viewport wrapper adds +0.5
+to the actual API viewport origin. A new read-only copy of installed
+`RenderEffects/General/State.hlsl` contains the position-conversion function,
+but its b7/viewport-offset-0xc0 declaration differs from the inspected native
+upload's b0/offset-0x100 layout. The selected shader/include must be reconciled
+before combining those facts into a final pixel model. No raster equivalence
+or current filter/viewport/font binding is claimed.
+
+Copied shader sources stay outside git at
+`client-data/font-shaders-20261114T0723Z` under the private store:
+State.hlsl SHA `e4059a3a8ecdea33e28948ff01fd8ba01ffd2404e2f87a30c8c796a26724e171`,
+InputLayoutsTable.json SHA `a8fb376bf6c7d2609a4280576e9c134a4f4804fed2d874b3394c797b63941d18`,
+TextureStagesTable.json SHA `3e7afbdf1596d073396c1fb8d6bc5cc13477248eaf8a53e2822243226af0cb6c`.
+No game executable/DLL was run, no live capture/input occurred, and protected
+files were read only. The 07:26 UTC listing found zero stationary observation
+pairs. Assist 0.39.6 and observation 0.39.10 remain unchanged; G0 is passed.
+Current level, XP/hour, deaths and camp remain unknown. No live route or
+automated level gain is accepted.
+
 ## Private source 0.41.86 staged — 2026-11-14 07:17 UTC
 
 **VERIFIED:** source `780ba2c83a62471aa0a7c2fd39a1f157ea1ed2a7`, archive SHA

@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.86** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.87** · rotation preview **0.39.6** · observation candidate **0.39.10**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -108,16 +108,24 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.86/source
+~/.local/share/eql-automation/owner-tools/0.41.87/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.86 adds an offscreen GDI font probe and a pinned importer for
+above. Source 0.41.87 models the input font's separate integer advances,
+fractional glyph rectangles, vertical centering and independently rounded caret.
+The font importer accepts optional `--base-height`, `--ui-scale` and
+`--client-box-ui LEFT TOP RIGHT BOTTOM` together to record those geometry
+hypotheses. Its PNGs remain the raw GDI model; geometry is a separate manifest
+diagnostic, with GPU projection/sampling and live equivalence explicitly false.
+Only fitting, left-aligned single-line prefixes are supported. This adds no
+owner check or game control. Source 0.41.86 adds an offscreen GDI font probe and a pinned importer for
 its glyph data. The probe belongs in a separate development Wine prefix; it
 must not run in the owner's protected game prefix. The importer verifies the
 actual selected font bytes and reproduces the inspected 4-bit alpha conversion.
-Copied-font rendering hypotheses are available, but current font overrides,
-texture sampling and scale compensation still need resolution and live checks.
+Copied-font rendering hypotheses are available. Source scale compensation is
+now modelled; current font overrides, the selected shader/constant layout,
+final texture sampling and live equivalence still need resolution and checks.
 These tools add no owner test or game controls. Source 0.41.85 can compare the exact submitted command prefix with the
 same frame's chat input pixels, using an explicitly supplied rendering bank.
 It scores the entire field, including extra text, under a declared constant-
