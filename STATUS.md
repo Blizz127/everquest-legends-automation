@@ -19,6 +19,9 @@ Updated 2026-11-14 12:11 UTC for coordinator task `829a00229b29`.
   Alienware private OCR, GUI, source-manifest and installed-data startup pass
   without a worker, device, game input or install change. Owner preview startup
   SHA `412c2b8b5a2d181db8293a16c81be4ea7e9c0110e0596d9005b8b57fe9f9c7a0`.
+  Source `50bd000` is staged at `owner-tools/0.42.15/source`; all 139 package
+  files match preview 0.39.18. No-input composition/loader startup SHA
+  `f2398c0f8c9cd944414cc41584aca7ab206477bae7be5d41d78eadfaa0858b41`.
   **Next:** owner map recognition/travel evidence, then real zone transition and
   camp execution. Actual live OCR/label refresh, route traversal and leveling
   remain unverified. Current level, XP/hour, deaths and camp unknown. G0 stays

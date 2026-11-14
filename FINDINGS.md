@@ -53,6 +53,13 @@ manifest SHA `1a12779535242e14bc6883b36dcd1da4e72d1bd7f7ab26ee4034dbb2c8eea462`;
 startup SHA `d4a673c23c9a4b0a547ebcdd417e357463ff002102899bbd9fd4eef268673c5c`.
 All binaries/model data remain outside git.
 
+Source commit `50bd0003090a5fc06010ad893ff96b10c2572a36` is staged at
+Alienware `owner-tools/0.42.15/source`. All 139 package files match preview
+0.39.18. Imports, engine composition with map recognition, private OCR presence
+and destination loading pass without worker/device/input. Source archive SHA
+`1397789a473b215f8812cbce41573fb066b7b5b7da1b9ab067a10b1f6f6cf751`;
+source startup SHA `f2398c0f8c9cd944414cc41584aca7ab206477bae7be5d41d78eadfaa0858b41`.
+
 **Remaining real-client gate:** owner runs the existing stationary hotbutton
 test with the map visible, then supervises travel. Live crop placement, OCR
 accuracy and label refresh are not verified. Starting already in GFay now has
