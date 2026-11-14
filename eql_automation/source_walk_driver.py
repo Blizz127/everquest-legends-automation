@@ -149,7 +149,7 @@ class SourceWalkDriver:
                     if length:
                         along=sum((p[k]-a[k])*(b[k]-a[k]) for k in (0,1))/length**2
                         closest=tuple(a[k]+min(1.,max(0.,along))*(b[k]-a[k]) for k in (0,1))
-                        if (math.dist(p[:2],closest)>l.observer.initial.route.half_width
+                        if (math.dist(p[:2],closest)>l.observer.walk_half_width
                                 or along>1.+.25/length):
                             raise RouteHalt('Observed source movement left its planned walk leg')
                     heading=l.legacy.bearing(*p[:2],*target[:2])

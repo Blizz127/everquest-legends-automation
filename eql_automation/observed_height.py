@@ -48,6 +48,9 @@ class ObservedHeightCalibration(HeightCalibration):
 
 def height_record(calibration):
     """JSON-compatible run evidence; saved records do not restore live scope."""
+    from .camp_source_height import CampSourceHeight
+    if type(calibration) is CampSourceHeight:
+        return calibration.record()
     result = asdict(calibration)
     if isinstance(calibration,ObservedHeightCalibration):
         result['evidence']['observed_local_time']=result['evidence']['observed_local_time'].isoformat()

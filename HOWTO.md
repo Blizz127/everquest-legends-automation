@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.52** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.53** · travel/camp test **0.39.30** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.30 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -640,14 +640,27 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-Source 0.42.52 is privately published on Alienware at:
+Source 0.42.53 passed focused validation; private publication is pending at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.52/source
+~/.local/share/eql-automation/owner-tools/0.42.53/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.42.52 can retain the completed probe scope for onward route
+above. Source 0.42.53 adds an explicit camp-start observer that the existing
+source movement ledger and walk driver can consume. It uses a new height
+correspondence from the actual camp-route start, then requires another genuinely
+new pair for movement startup. The original reader, stop lock and bounded scope
+remain required. A caller must explicitly tighten the probe's requested-hold
+limit to at most 0.1 seconds for ordinary route movement; other bounds stay
+unchanged. Returned movement observations and later arrival checkpoints retain
+that distinct camp provenance.
+
+The owner camp loop does not yet launch this observer/driver or supply an
+unattended movement policy. Preview **0.39.30** and its controls stay unchanged.
+No new owner test or G0 repeat is needed.
+
+Source 0.42.52 can retain the completed probe scope for onward route
 planning when its explicit `CampProbePlan` supplies `route_guide`. It collects
 a new stopped pair, rebuilds the guide from the exact reached floor, then
 collects a further matching pair after geometry checks. The same reader,

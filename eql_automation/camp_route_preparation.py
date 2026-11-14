@@ -60,6 +60,7 @@ class CampRoutePreparation:
         self.itinerary = self.payload = self.sha256 = self.start = None
         self._itinerary_state = self._record_state = self._start_state = None
         self._prefix = self._prefix_state = None
+        self._consume_pending = False
         _check_height_record(height, checkpoint, owner_binding)
         self.check(fresh=height)
 
@@ -175,6 +176,24 @@ class CampRoutePreparation:
         if self.phase != 'ready' or self.start is not start:
             raise ValueError('Camp route start changed during validation')
         return self.itinerary
+
+    def consume_start(self, start):
+        """Transfer this fresh start once; the original lease/deadline still apply.
+
+        The caller holds the original stop lock. Only the reached prefix is
+        returned; no future itinerary branch or movement permission is supplied.
+        """
+        if self._consume_pending:
+            raise ValueError('Camp route start transfer already pending')
+        self._consume_pending = True
+        try:
+            self.check_start(start)
+            prefix = self._prefix.fork()
+            self.check_start(start)
+            self.phase = 'observing'
+            return prefix
+        finally:
+            self._consume_pending = False
 
     def snapshot(self, *, include_evidence=False):
         result = dict(phase=self.phase, reason=self.reason, sha256=self.sha256,

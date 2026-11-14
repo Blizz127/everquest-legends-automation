@@ -1,5 +1,40 @@
 # FINDINGS
 
+## 2026-11-14 18:39 UTC — source 0.42.53, explicit camp observer and existing movement driver
+
+Implemented `CampSourceObserver`, which consumes an exact `CampRouteStart`
+once and uses a distinct `CampSourceHeight` correspondence from its newly
+measured pair. It does not manufacture an initial travel plan or renew the old
+travel calibration. The original reader/owner scope and stop lock remain
+required, with explicit deadline and path-deviation tolerance. Construction
+checks time after provider callbacks; an expired start cannot be adopted. New
+startup replies must follow the measured pair's sequence baseline.
+
+The existing source ledger now accepts this explicit second observer type via
+shared floor/bounds/terrain properties. Its original lock is pinned throughout
+stage/release/acknowledgment. The walk driver uses an explicit lateral tolerance.
+Probe requests of .15s cannot silently enter the ordinary <=.1s route path:
+callers supply tighter requested-hold bounds, with all body, speed, error and
+actual-hold bounds unchanged. A dedicated height serializer supports subsequent
+arrival checkpoint capture without recursive checkpoint objects or unencoded
+datetimes. Step-transfer consumers retain the existing `SourceStoppedFix` type.
+
+VERIFIED initial local 14 checks passed in 19.00 seconds. First Alienware
+candidate: 82 passed, one wrong test exception expectation (`RouteHalt` is the
+correct refusal). The actual watchdog/OS-pipe camp-observer movement/observed
+acknowledgment passed. VERIFIED final candidate
+`owner-tools/0.42.53-validation-2`: **83 checks passed in 13.62 seconds**, output
+SHA `c07fa7ab5d669365f15e3960d0a5dbe0c01c57daa10fa62e94b75dd2e91ada65`.
+The checks cover camp observer adoption/height/lock/hold bounds, delayed-provider
+refusal, existing source movement/walk/step-transfer behavior, pipe execution
+and next arrival capture. Private source publication pending.
+All game positions, focus and scene admission are synthetic. No game input,
+character action, protected-prefix changes or new owner controls. The owner
+camp runtime still needs explicit driver/policy wiring; preview stays 0.39.30.
+Current independent scene/supported motion producers remain missing for
+unattended input. G0 passed, no new test. Actual level/XP/hour/deaths/camp unknown;
+real 1–20 and fresh hands-off 1–50 remain unaccepted.
+
 ## 2026-11-14 18:33 UTC — source 0.42.52 privately published
 
 VERIFIED Alienware `owner-tools/0.42.52/source`, revision

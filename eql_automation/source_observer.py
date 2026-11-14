@@ -9,6 +9,7 @@ from .location_log import LocationLogReader, RawLocationFix
 from .observed_height import ObservedHeightCalibration, current_height_allowed, _bound_initial_floor
 from .route_floor_commit import _chain_snapshot
 from .native_region_policy import encoded
+from .camp_source_height import CampSourceHeight
 
 
 @dataclass(frozen=True)
@@ -19,7 +20,7 @@ class SourceStoppedFix:
     floor_proof_sha256: str
     initial_plan_sha256: str
     itinerary_sha256: str
-    height_calibration: ObservedHeightCalibration
+    height_calibration: ObservedHeightCalibration | CampSourceHeight
     observed_at: float
     input_authorized: bool = field(default=False, init=False)
     real_client_accepted: bool = field(default=False, init=False)
@@ -90,6 +91,21 @@ class SourceItineraryObserver:
             p.plan_bytes,p.evidence_bytes,id(p.planning_bounds),p.planning_bounds,
             id(p.precision_policy),id(p.region_policy),id(n),n.payload,n.sha256,
             _chain_snapshot(p.floor_chain))
+
+    @property
+    def initial_floor_chain(self):return self.initial.floor_chain
+
+    @property
+    def planning_bounds(self):return self.initial.planning_bounds
+
+    @property
+    def terrain(self):return self.initial.observer.source
+
+    @property
+    def walk_half_width(self):return self.initial.route.half_width
+
+    @property
+    def initial_plan_sha256(self):return self.initial.route.artifact_sha256
 
     @staticmethod
     def _observation_snapshot(observation):
@@ -168,7 +184,7 @@ class SourceItineraryObserver:
         source = SourceFloorObservation(raw,(*raw.raw_coordinates[:2],z),
             c.source_archive_sha256,c.source_wld_sha256,ids,1,True)
         return SourceStoppedFix(raw,source,(*xy,z),chain.previous.proof_sha256,
-            self.initial.route.artifact_sha256,self.itinerary.sha256,c,observed_at),state
+            self.initial_plan_sha256,self.itinerary.sha256,c,observed_at),state
 
     def observe(self, raw, *, checked_chain):
         now = self.check()

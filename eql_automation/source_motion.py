@@ -76,7 +76,8 @@ class SourceMotionAck:
 class SourceReceiptLedger:
     def __init__(self, observer, *, terrain, static, bsp, bounds, installed_model,
                  legacy, motion, heading, stop_lock):
-        if (type(observer) is not SourceItineraryObserver or type(bounds) is not RouteMotionBounds
+        from .camp_source_observer import CampSourceObserver
+        if (type(observer) not in (SourceItineraryObserver,CampSourceObserver) or type(bounds) is not RouteMotionBounds
                 or type(installed_model) is not InstalledRegionModel
                 or not isinstance(stop_lock,type(threading.RLock()))
                 or not isinstance(motion,legacy.Motion)
@@ -86,15 +87,20 @@ class SourceReceiptLedger:
                 or not finite(motion.turn_latency) or not 0<=motion.turn_latency<=.2
                 or type(motion.right_sign) is not int or motion.right_sign not in (-1,1)):
             raise ValueError('Source ledger needs current observations, measured motion and shared stop lock')
+        if type(observer) is CampSourceObserver and (stop_lock is not observer.lock
+                or static is not observer.preparation.checkpoint._static
+                or bsp is not observer.preparation.checkpoint._bsp
+                or installed_model is not observer.preparation.checkpoint._model):
+            raise ValueError('Camp source ledger must retain its exact geometry and stop lock')
         self.observer,self.terrain,self.static,self.bsp=observer,terrain,static,bsp
         self.bounds,self.model,self.legacy,self.motion=bounds,installed_model,legacy,motion
         self.lock,self.clock=stop_lock,observer.clock
-        self.chain=observer.initial.floor_chain
+        self.chain=observer.initial_floor_chain
         self.pose=legacy.PoseEstimator(motion);self.pose.heading=heading;self.pose.sign_verified=True
         self.phase,self.reason='need_start',''
         self.reference=None;self.serial=self.steps=0
         self._prepared=self._pending=self._sealed=None;self._busy=None
-        self._context_objects=(observer,terrain,static,bsp,bounds,installed_model,legacy,motion,self.clock)
+        self._context_objects=(observer,terrain,static,bsp,bounds,installed_model,legacy,motion,self.clock,stop_lock)
         self._motion=deepcopy(vars(motion));self._bounds=asdict(bounds)
         self._source_storage=self._source_snapshot()
         self._check()
@@ -122,15 +128,15 @@ class SourceReceiptLedger:
         if self.phase=='stopped':raise RouteHalt(self.reason)
         now=self.observer.check()
         p=self.observer.policy
-        self.bounds.validate_values(calibration_record_id=self.observer.initial.planning_bounds.calibration_record_id,
+        self.bounds.validate_values(calibration_record_id=self.observer.planning_bounds.calibration_record_id,
                                     maximum_step_seconds=.2)
         p.check_context(zone='crushbone',pins=(p.mesh_sha256,self.terrain.archive_sha256,
             self.terrain.wld_sha256,self.static.inventory_sha256),bsp=self.bsp)
         if (any(a is not b for a,b in zip(self._context_objects,
                 (self.observer,self.terrain,self.static,self.bsp,self.bounds,self.model,
-                 self.legacy,self.motion,self.clock)))
-                or self.observer.initial.observer.source is not self.terrain
-                or self.bounds is not self.observer.initial.planning_bounds
+                 self.legacy,self.motion,self.clock,self.lock)))
+                or self.observer.terrain is not self.terrain
+                or self.bounds is not self.observer.planning_bounds
                 or vars(self.motion)!=self._motion or vars(self.bounds)!=self._bounds
                 or self._source_snapshot()!=self._source_storage
                 or self.bounds.body_height!=self.chain.body_height
