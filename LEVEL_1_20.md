@@ -1,9 +1,16 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 06:57 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 07:04 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.85 connects those command snapshots to a bounded fixed-prefix pixel
+comparison within the existing single-frame pass. Seventy-six focused checks
+pass, covering extra/missing/wrong suffixes, ambiguous fields, clipping, source
+mutation, snapshot timing and complete observation timing. All glyph tests are
+synthetic. Actual input-font selection/rendering and current scene evidence
+remain missing; no default font bank, chat permission or route control is added.
 
 Source 0.41.84 binds each command observation to an immutable journal of the
 exact attempted writes and fully submitted prefix. Failed writes and release

@@ -1,5 +1,57 @@
 # FINDINGS
 
+## Same-frame submitted-prefix comparison 0.41.85 — 2026-11-14 07:04 UTC
+
+**VERIFIED implementation:** `CommandTextMatcher` consumes an exact submitted
+prefix snapshot and the current `ChatInputFrame` before its images are discarded.
+`PreparedUiFrameReader` accepts a new snapshot/phase per invocation; no previous
+command is retained. The matcher requires a complete non-uncertain drafting
+prefix, a capture after its completed writes and a fully fitting rendering bank.
+Start/end/blank fields never establish closed chat.
+
+The immutable caller-supplied bank covers all nine prefixes, with at most 32
+variants, 25 shared origins, six million template-channel comparisons and a
+2048×64 input crop. It has an explicit provenance digest, pixel tolerance and
+no default font. One per-channel median background hypothesis is shared by
+every candidate. Whole-field residuals include extra suffixes and transparent
+glyph padding; caret pixels need an explicit variant. A column suffix table
+avoids rescanning the field per candidate. Scores, mismatch counts, expected/
+alternate candidates, ambiguity and unexplained-ink counts are diagnostic only.
+Uniqueness considers every variant within tolerance, independently of which
+has the lowest squared error. No visual result supplies `MeasurementInputEvidence`,
+G2 flags, focus, ownership, delivery, healing or movement permission.
+
+**VERIFIED checks:** 76 focused matcher/chat/frame checks passed using the
+private interpreter (the initial system run skipped 36 dependency-bound cases;
+those skips are not counted). This includes independent full-canvas residual
+calculations, all nine prefixes, wrong/extra/missing/caret text, all-white
+ambiguity, nonzero-tolerance variants, clipping, immutable banks, old captures,
+source/frame changes, one-frame integration and full timing accounting.
+Fourteen local synthetic glyph cases are retained in
+`evidence/command-text-0.41.85-final.json`, SHA
+`b3624150b4644234c2446089f916457889012eca1c65814601bb0b95e42d0e40`;
+rendering manifest SHA `b5bf82884336d0c19ee1f36b5e88f729bab485be671e0281b002a227d5028a87`.
+Maximum local comparison time was 16 ms for these small synthetic crops;
+this is not a live observation-budget result. Earlier diagnostic artifacts
+remain retained with their earlier scope.
+
+**OBSERVED source limit:** copied `eqclient.ini` has `ChatFontSize=3`; saved
+Legira `[ChatManager]` has `ChatWindow0_FontStyle=3` and
+`ChatWindow1_FontStyle=3`, both in container 0. Neither selected/default
+ChatWindow nor ChatContainer XML declares a font face/index. Config hashes:
+`a10560ba3301c411f1b9eb05b5ad2627b4577222b430a7acf59687341356c7fc` and
+`5876a4136283b692263bc2826ffc2b12cd7328f4faa320c5f4071f2092fbc76b`;
+copy manifest `ed4383e03ca937798a5607b62ae3d606966c6523774d589d4ffb77e802488888`.
+A light read-only Alienware listing found 20 font files under the prefix's
+`drive_c/windows/Fonts`, but no mapping to the active input field was established.
+No font was selected by guess, copied for rendering, or treated as live evidence.
+The actual `CW_ChatInput` font selection, fallback, rasterization and background
+remain unverified. Synthetic renderings are test data, not client-derived glyphs.
+
+Current assist 0.39.6 and observation 0.39.10 are unchanged. G0 is passed; no
+repeat. Stationary owner evidence and current scene/position/motion/height/
+envelope binding remain required. No real route or automated gain is accepted.
+
 ## Private source 0.41.84 staged — 2026-11-14 06:57 UTC
 
 **VERIFIED:** source `355e938cfa6203fdffdeef78c97e00b58a33a5bb`, archive SHA

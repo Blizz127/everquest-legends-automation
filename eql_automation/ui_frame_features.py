@@ -26,7 +26,7 @@ class PreparedUiFrameReader:
     Preparation is neither a previous scene nor a latency/authorization claim.
     """
     def __init__(self, *, gate, layout_loader, game, character, server, atlas,
-                 gauge_reader, saved_scale, chat_runtime_sha256=None,
+                 gauge_reader, saved_scale, chat_runtime_sha256=None, command_text_matcher=None,
                  still_current=lambda:None, clock=time.monotonic):
         if (not isinstance(atlas,CombatUiAtlas) or not callable(layout_loader)
                 or not callable(gauge_reader) or not callable(clock) or not callable(still_current)):
@@ -65,12 +65,13 @@ class PreparedUiFrameReader:
             return layout
         self.arguments=dict(gate=gate,layout_loader=bound_layout,game=game,character=character,
             server=server,atlas=atlas,gauge_reader=gauge_reader,chat_runtime_sha256=chat_runtime_sha256,
-            still_current=still_current,clock=clock)
+            command_text_matcher=command_text_matcher,still_current=still_current,clock=clock)
 
-    def __call__(self):
+    def __call__(self, *, command_submission=None, command_phase=None):
         if decal_sizes(self.atlas,self.scale)!=self.sizes:
             raise ValueError('Template dimensions changed after reader preparation')
-        result=read_focused_ui_features(**self.arguments)
+        result=read_focused_ui_features(**self.arguments,command_submission=command_submission,
+                                       command_phase=command_phase)
         if result['sample_started_at']<self.preparation['finished_at']:
             raise ValueError('Frame observation predates reader preparation')
         result['reader_preparation']=dict(self.preparation)
@@ -86,7 +87,8 @@ def _crop(sample, name):
     return sample.image.crop(box)
 
 
-def analyze_ui_frame(sample, *, atlas, gauge_reader, chat_runtime_sha256=None, still_current=lambda:None,
+def analyze_ui_frame(sample, *, atlas, gauge_reader, chat_runtime_sha256=None,
+                     command_text_matcher=None, command_submission=None, command_phase=None, still_current=lambda:None,
                      clock=time.monotonic):
     """Use the retained gauge reader and source sprites, without PNG round trips.
 
@@ -135,8 +137,14 @@ def analyze_ui_frame(sample, *, atlas, gauge_reader, chat_runtime_sha256=None, s
     if chat_runtime_sha256 is not None:
         still_current()
         try:
-            chat_input=chat_regions_from_sample(sample,
-                copied_binary_sha256=chat_runtime_sha256).summary()
+            chat_frame=chat_regions_from_sample(sample,copied_binary_sha256=chat_runtime_sha256)
+            chat_input=chat_frame.summary()
+            if command_text_matcher is not None:
+                from .command_text_match import CommandTextMatcher
+                if not isinstance(command_text_matcher,CommandTextMatcher):
+                    raise ValueError('Prepared fixed-prefix pixel matcher required')
+                chat_input['command_text']=command_text_matcher(chat_frame,command_submission,
+                    phase=command_phase,capture_started_at=captured)
         except ChatLayoutUnavailable as error:
             chat_input=dict(status='unavailable',reason=str(error),focus='unknown',draft='unknown')
     sample.check_sources()
@@ -166,6 +174,7 @@ def analyze_ui_frame(sample, *, atlas, gauge_reader, chat_runtime_sha256=None, s
 
 def read_focused_ui_features(*, gate, layout_loader, game, character, server,
                              atlas, gauge_reader, chat_runtime_sha256=None,
+                             command_text_matcher=None,command_submission=None,command_phase=None,
                              still_current=lambda:None,clock=time.monotonic):
     """Borrow an existing gate for one read-only sample and feature pass.
 
@@ -175,7 +184,9 @@ def read_focused_ui_features(*, gate, layout_loader, game, character, server,
     sample=sample_focused_ui(gate=gate,layout_loader=layout_loader,game=game,
         character=character,server=server,include_chat=False,still_current=still_current,clock=clock)
     result=analyze_ui_frame(sample,atlas=atlas,gauge_reader=gauge_reader,
-        chat_runtime_sha256=chat_runtime_sha256,still_current=still_current,clock=clock)
+        chat_runtime_sha256=chat_runtime_sha256,command_text_matcher=command_text_matcher,
+        command_submission=command_submission,command_phase=command_phase,
+        still_current=still_current,clock=clock)
     still_current()
     focused=gate.focused_window()
     if (focused is None or focused.id!=result['focused_window_id']

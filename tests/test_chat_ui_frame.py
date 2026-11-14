@@ -90,6 +90,42 @@ def test_prepared_reader_passes_explicit_copied_runtime_context(combined):
     assert result['reader_preparation']['contains_scene_observation'] is False
 
 
+def test_prepared_reader_matches_snapshot_against_same_frame(combined):
+    from test_command_text_match import matcher,rendering,snapshot
+    h=combined
+    geometry=h.chat_read()['chat_input']['regions']['client']['box']
+    template=rendering('/loc')
+    layer=Image.frombytes('RGBA',(template.width,template.height),template.rgba)
+    h.frame.paste((12,18,30),geometry)
+    h.frame.paste(layer,(geometry[0]+2,geometry[1]+2),layer.getchannel('A'))
+    reader=PreparedUiFrameReader(**h.args,atlas=h.a,gauge_reader=h.reader,
+        saved_scale=1.25,chat_runtime_sha256=COPIED_RUNTIME_SHA256,command_text_matcher=matcher())
+    h.captures=0
+    s=snapshot('/loc')
+    result=reader(command_submission=s,command_phase='command_key')
+    match=result['chat_input']['command_text']
+    assert h.captures==1 and match['operation_id']==s.operation_id and match['submission_revision']==s.revision
+    assert match['frame_rgb_sha256']==result['frame_rgb_sha256']
+    assert match['exact_prefix_unique_under_declared_model']
+    assert result['chat_state']=='unknown' and not result['g2_safety_flags_provided']
+    # A later frame gets a new snapshot; no earlier command is retained by the reader.
+    next_result=reader()
+    assert next_result['chat_input']['command_text']['reason']=='missing_command_snapshot'
+
+
+def test_command_matching_time_counts_in_frame_budget(combined,monkeypatch):
+    from test_command_text_match import matcher,snapshot
+    from eql_automation.command_text_match import CommandTextMatcher
+    h=combined;original=CommandTextMatcher.__call__
+    def slow(self,*args,**kwargs):
+        h.now+=.2
+        return original(self,*args,**kwargs)
+    monkeypatch.setattr(CommandTextMatcher,'__call__',slow)
+    result=h.read(chat_runtime_sha256=COPIED_RUNTIME_SHA256,command_text_matcher=matcher(),
+        command_submission=snapshot('/loc'),command_phase='command_key')
+    assert result['total_seconds']==pytest.approx(.2) and not result['within_100ms_sample_budget']
+
+
 def test_default_reader_does_not_request_chat_geometry(h,monkeypatch):
     monkeypatch.setattr(features,'chat_regions_from_sample',lambda *a,**k:pytest.fail('Unrequested chat read'))
     result=h.read()

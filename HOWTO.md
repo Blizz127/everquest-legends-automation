@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.84** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.85** · rotation preview **0.39.6** · observation candidate **0.39.10**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -108,11 +108,17 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.84/source
+~/.local/share/eql-automation/owner-tools/0.41.85/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.84 records each attempted command write and binds observation
+above. Source 0.41.85 can compare the exact submitted command prefix with the
+same frame's chat input pixels, using an explicitly supplied rendering bank.
+It scores the entire field, including extra text, under a declared constant-
+background model. No default font bank is supplied: saved chat font style 3
+does not identify the current input rendering. Pixel candidates never prove
+focus, draft ownership or closure. No new owner action or route input is enabled.
+Source 0.41.84 records each attempted command write and binds observation
 checks to its exact immutable submitted-prefix snapshot. A failed write stays
 uncertain after cleanup; completed writes do not prove client delivery, draft
 ownership or closed chat. This supports the pending independent scene observer;

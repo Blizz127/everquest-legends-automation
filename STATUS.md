@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:57 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:04 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,15 @@ Updated 2026-11-14 06:57 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.85:** submitted command snapshots now reach the same frame's
+  chat pixels. The optional matcher compares every fixed prefix and the whole
+  field under an explicit constant-background model, retaining unexplained
+  suffix pixels. Seventy-six focused checks pass with the private interpreter.
+  Fourteen synthetic glyph cases distinguish all prefixes and invalid drafts;
+  evidence SHA `b3624150b4644234c2446089f916457889012eca1c65814601bb0b95e42d0e40`.
+  Saved font style 3 is known, but actual input font/rendering is not. There is
+  no default rendering bank or live chat approval. Current scene/position and
+  motion/height/envelope evidence remain required; owner controls are unchanged.
 - **Source 0.41.84:** measurement commands now retain immutable records of all
   attempted writes and expose the exact completed prefix to each observation
   check. Identity/revision checks reject stale evidence; failed/short writes
