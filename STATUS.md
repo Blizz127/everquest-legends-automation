@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 14:05 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 14:15 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,20 @@ Updated 2026-11-14 14:05 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.28:** mixed source-floor itinerary builder now joins a supplied
+  starting floor to retained XY/step hints, rebuilds every walking cell/transfer,
+  and checks the exact Slave Mines annotation connector. The current-log wrapper
+  binds the existing initial plan and aborts on owner/log/zone changes. No future
+  floor is committed, no baked portals are invented, and step capability remains
+  hypothetical. **54 focused checks pass.** Initial copied-data run from shifted
+  synthetic XY `(274,-424)` rebuilt 1,058 walks plus 7 steps to `(426,74)`, source
+  floor Z -17, in 138.15s. Full metadata flags are zero; original BSP results remain.
+  Final implementation-pinned repeat passes in 84.25s; report SHA
+  `09c4cf3d6e69245249f8df9ef66a8f1914c7fc5038bb3dd8b5b1c01dee98bb28`.
+  Private source startup is next.
+  **Next:** source-only stopped observations and receipt/landing acknowledgment,
+  then the mixed-route movement driver. No real route, XP or leveling acceptance.
+  Assist 0.39.13 and owner movement 0.39.20 remain unchanged; G0 remains passed.
 - **Source 0.42.27 / owner preview 0.39.20:** native-zero evidence now follows
   every forward/pivot footprint through cache, exact ticket and supervised
   authorization. The owner local trial supports Crushbone with read-only

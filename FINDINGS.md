@@ -1,5 +1,54 @@
 # FINDINGS
 
+## Mixed source-floor camp itinerary — 2026-11-14 14:14 UTC
+
+**VERIFIED implementation:** source 0.42.28 represents walking and height steps
+separately. Retained routes supply only XY/step hints; their old floor seeds,
+proofs and acceptance flags do not become current state. Planning forks the
+supplied floor, checks a bounded nearby guide connector, rebuilds terrain/static
+and native-zero body evidence on every cell, and retains the original BSP
+results. Every step rechecks the departure cap, riser, landing and all three
+body phases. Conditional landings stay on the planning branch. The final
+connector reaches the exact copied annotation, choosing its layer through
+continuity rather than map-label Z. Results are sealed bytes and require fresh
+observations and per-move checks before any future execution.
+
+`plan_current_source_itinerary` connects this builder to the existing fresh-log
+current-start producer, retains its initial source prefix and validates the
+owner/log/zone and copied views during planning. Its distinct result type has
+`source_execution_wired=False`; the baked route sender cannot consume it.
+No assist, movement controls, game installation or character state changed.
+
+**VERIFIED focused checks:** 54 pass, including walk/up-step/walk/down-step/exact
+destination composition, a shifted start, same-XY wrong-floor refusal, transfer
+hazards, cancellation, expiry, changed live prefix, exact-goal refusal and the
+actual log-reader planning wrapper. A code review identified that native refusal
+on the first connector discarded other nearby entries. A reproduced test now
+passes after typed geometry refusal discards that candidate's cells and tries
+the next entry; cancellation/context errors still abort. Two test-fixture errors
+(duplicate keyword and wrong synthetic seed triangle) were corrected before the
+passing final run. These checks are simulated; no device or game input is used.
+
+**VERIFIED initial copied-data run:** retained 1,053 operations (1,046 ordinary
+cells and 7 steps) were extracted with exact footprint comparisons. From the
+explicitly synthetic shifted start `(274,-424)`, rebuilding plus connectors
+produced 1,058 walking cells and 7 step transfers to exact annotation `(426,74)`
+on source floor Z -17. The supplied initial floor stayed unchanged. Runtime
+138.15s; report `nav-candidates/crushbone-source-itinerary-0.42.28.json`, SHA
+`85d968a2ca9469999130b8e467872247718de86361e5cb55d19687dae83aaa99`.
+This initial run preceded the alternative-connector fix and guide-snapshot
+optimization. **VERIFIED final repeat:** the same shifted start, 1,058 walking
+cells, 7 steps and exact goal pass in 84.25s. All package implementation hashes
+and the probe code were pinned before and after the run. Final report
+`nav-candidates/crushbone-source-itinerary-0.42.28-final.json`, SHA
+`09c4cf3d6e69245249f8df9ef66a8f1914c7fc5038bb3dd8b5b1c01dee98bb28`.
+
+**Remaining:** source-only stopped observations, receipt acknowledgment and
+conditional step landing must be connected to the owner movement runtime.
+Seven source transfers are not verified client auto-steps. Current level,
+XP/hour, deaths and camp are unknown; no accepted 1–20/1–50 run or automated XP.
+Owner preview 0.39.20 and assist 0.39.13 stay current. G0 passed; no repeat needed.
+
 ## Native region evidence through supervised movement — 2026-11-14 14:03 UTC
 
 **VERIFIED implementation:** source 0.42.27 carries the explicit Crushbone
