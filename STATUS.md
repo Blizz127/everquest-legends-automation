@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:45 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:46 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -15,8 +15,13 @@ Updated 2026-11-14 06:45 UTC for coordinator task `829a00229b29`.
   complete content, source identity, overlay/directory and INI-selection checks
   still bracket each frame. Thirty-one focused checks pass, including no
   reparsing and rejection of same-content symlink replacement. This targets
-  the measured snapshot overhead; Alienware timing is next. No live input or
-  owner helper changes.
+  the measured snapshot overhead. Source `029d39f` is staged; five remote
+  no-input checks pass and all deterministic reports match 0.41.82. Installed-
+  layout synthetic observations take 59.3 ms first, 50.9 ms median and 60.1 ms
+  maximum (10/10 under 100 ms). XML/numerical setup: 120.5/26.9 ms. Real capture,
+  input and log timing remain excluded. Artifact SHA
+  `a7566484ca03569445894b621cc65d6be539ad940539924db24512099f9d7bb3`.
+  No live input or owner helper changes.
 - **Source 0.41.82:** optional chat regions now come from the same frame as
   gauge/combat features, with crop/source identity and unknown focus retained.
   Actual Alienware layout loading measured 150 ms alone; a prepared layout now
@@ -169,8 +174,8 @@ Updated 2026-11-14 06:45 UTC for coordinator task `829a00229b29`.
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
   turn (2026-11-14 06:35 UTC) found zero paired records. No lead capture was initiated.
-- **Next / real-client gate:** reduce the measured source-snapshot cost;
-  integrate current focus evidence and immutable submitted-command prefixes (caret is a positive-focus candidate
+- **Next / real-client gate:** integrate immutable submitted-command prefixes
+  and current focus evidence with the checked executors (caret is a positive-focus candidate
   only; its absence cannot establish closed chat); validate the new selected-skin chat geometry and source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported
   initial travel envelope and current scene, then supply the checked sender

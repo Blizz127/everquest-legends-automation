@@ -7,8 +7,11 @@ use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
 Source 0.41.83 compiles the unchanged layout selection plan while retaining
 complete source-content/identity and candidate checks around each frame.
-Thirty-one focused checks pass. It addresses the measured overhead of repeated
-INI/manifest parsing and path checks; live capture/input timing remains unverified.
+Thirty-one focused checks and five remote startup checks pass. Source `029d39f`
+is privately staged; complete deterministic reports match 0.41.82. Installed-
+layout synthetic frames take 59.3 ms first, 50.9 ms median and 60.1 ms maximum
+(10/10 under 100 ms). Real capture/input/log timing and route execution remain
+unverified.
 
 Source 0.41.82 connects optional chat-input geometry/crops to the same frame
 as HP/mana/combat features, retaining unknown focus and no saved chat pixels.

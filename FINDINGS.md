@@ -1,5 +1,34 @@
 # FINDINGS
 
+## Private source 0.41.83 staged — 2026-11-14 06:46 UTC
+
+**VERIFIED:** `029d39fcc29372da5e1b3299733da85b13550841`, archive SHA
+`a1d8550f10e0b132f72e9764fe76a8b0106f05e5c8bb2d96ccb04e0c0ce50c73`,
+is staged at Alienware `owner-tools/0.41.83/source`. Five focused no-input
+remote startup checks pass. All deterministic frame-report fields match
+published 0.41.82, excluding observation/preparation timing metadata. This
+includes source/crop/frame hashes, gauge values, icon scores/ranking, dynamic
+chat geometry and unknown-state flags. The actual installed full layout uses
+172 checked source files; no source fingerprint dependency was discarded.
+
+**OBSERVED synthetic timing:** first observation 59.3 ms, warm median 50.9 ms,
+maximum 60.1 ms; all ten meet 100 ms. This is about 2.3× faster at the median
+than the measured 0.41.82 full-layout pipeline. Layout/numerical preparation
+are recorded separately at 120.5/26.9 ms. Real game capture and input/log scans
+remain excluded, so this is not proof of the entire live observation budget.
+Remote `../synthetic-full-layout-frames.json` SHA
+`a7566484ca03569445894b621cc65d6be539ad940539924db24512099f9d7bb3`;
+local `releases/eql-automation-0.41.83-staging.json` retains the smoke summary.
+No game capture, input, devices, login, protected writes or character changes
+occurred. Assist 0.39.6 and stationary observation 0.39.10 remain unchanged.
+
+**Next:** integrate immutable helper-command prefix/write receipts with the
+current-scene observer; validate current layout/player/target/chat evidence and
+bind motion/height/envelope observations before checked route execution. The
+owner stationary capture remains pending (zero pairs at the 06:35 UTC check).
+G0 passed and must not be repeated. Current level, XP/hour, deaths and camp
+remain unknown; no automated leveling or real 1–20/1–50 acceptance is claimed.
+
 ## Compiled layout dependency checks 0.41.83 — 2026-11-14 06:45 UTC
 
 **VERIFIED implementation:** the prepared layout now compiles the exact file/
