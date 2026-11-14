@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Source 0.41.49 private publication — 2026-11-14 01:11 UTC
+
+**VERIFIED:** Commit `f80c069` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.41.49/source`. Local/remote archive
+SHA-256 matched
+`fa7b46a73a717903c134b0e322d3681531dd8c6797bc9f61a7dca939d289c056`.
+Remote fixed-route API import, replay CLI startup, and offline navigation
+demo passed. The demo is explicitly simulated; the separate 155-segment
+copied-data replay ran on the devbox. `smoke.json` and startup outputs remain
+beside the private archive. No input device, character or game-prefix action
+was taken. Assist remains0.39.6; this source release does not enable F11.
+
 ## Fixed-route controller and complete copied GFay replay — 2026-11-14 01:09 UTC
 
 **VERIFIED implementation:** `fixed_route_follower.py` loads an explicitly
