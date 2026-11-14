@@ -9,6 +9,7 @@ this helper's current settings and game process; it cannot survive a restart.
 from pathlib import Path
 import time
 
+from .navigation_phase import navigation_active
 from .location_log import LocationLogReader
 from .motion_collection import immutable_binding
 from .owner_navigation_preflight import window_identity
@@ -244,7 +245,7 @@ def make_zone_tracking_engine(base_engine, *, clock=time.monotonic, zone_observe
         def lease_current_zone(self):
             request = (self.cancel_generation, self.route_session_epoch)
             def check():
-                if (self.measurement_only is not True or not self._route_idle()
+                if (not navigation_active(self) or not self._route_idle()
                         or self.cancelled or not self.jobs.empty()
                         or self.route_session_driver is not None
                         or request != (self.cancel_generation, self.route_session_epoch)):

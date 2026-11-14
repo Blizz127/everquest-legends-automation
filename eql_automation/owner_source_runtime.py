@@ -30,6 +30,7 @@ class OwnerSourceRuntime:
         self.fd, self.fd_identity = self.ui.fileno(), _fd_identity(self.ui.fileno())
         self.zone = self._zone()
         self.phase, self.reason = 'ready', ''
+        self.completed_arrival = None
         self.transfer = self.seal = self.collector = None
         self.observations, self.events, self.pairs = [], [], []
         if (self.ledger.observer.reader is not self.reader or self.ledger.clock is not clock
@@ -95,6 +96,7 @@ class OwnerSourceRuntime:
     def cancel(self, reason):
         with self.ledger.lock:
             self.phase, self.reason = 'stopped', str(reason)
+            self.completed_arrival = None
             if self.collector is not None:
                 self.collector.cancel(reason)
             if self.transfer is not None:
@@ -193,6 +195,7 @@ class OwnerSourceRuntime:
                 self.policy.bind_transfer(self.transfer)
                 action = self.transfer.next_command()
             elif isinstance(action, SourceWalkFinished):
+                self.completed_arrival = action
                 self.phase = 'complete'
                 return
 

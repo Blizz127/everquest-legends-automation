@@ -1,8 +1,8 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.35** · assist/camp test **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.36** · travel/camp test **0.39.25** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-**The 1–20 autopilot is not ready. In 0.39.24, F11 prepares learned spells and repeats stationary fights with recovery; F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.25 joins supervised Crushbone travel and repeated camp combat in one helper. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -25,7 +25,48 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
 Preview 0.39.24 switches between assist and the repeated stationary camp test without a
-restart. Switching between movement and the complete full-auto mode is unfinished.
+restart. Preview 0.39.25 adds same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
+
+## Travel to Slave Mines, then camp — preview 0.39.25
+
+Close your old helper yourself; run only one. On Alienware:
+
+```bash
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.25/launch.sh
+```
+
+The existing rotation is included: **F8 assist**, **F9 stop**, **F10 heal**.
+Assist never moves or chooses targets. **F11** starts the stationary camp
+when idle, or stops it. The first F11 after navigation/setup is always OFF,
+including if its key press caused movement to stop before its release.
+
+For travel, start **inside Clan Crushbone**. In **Travel and camp test**:
+
+1. Open the game map and use **Test /location hotbutton…** with your already
+   configured, manually checked `/location` hotbutton. This obtains a current
+   zone/position observation in this helper; it does not repeat G0.
+2. Close the map/chat, turn native melee off, clear your target and stand on
+   clear flat ground. Select **Travel to Slave Mines, then camp…**. Confirm
+   the starting area and return focus to EverQuest during the four-second countdown.
+3. Stay present. The helper measures motion with seven short presses, plans
+   from your current position and follows the source route. After a fresh
+   stopped arrival, it releases navigation, prepares learned spells in gems
+   **1–8**, and begins the repeated stationary camp described below.
+
+**F8 cancels travel and switches to assist after movement releases; F9 stops
+all helper input.** No restart or re-login is needed between these activities.
+The screen/log shows travel or camp state. Saved arrival reports cannot start
+camp; F9 during arrival or preparation defeats the continuation.
+
+This increment covers one Crushbone destination. The copied client map labels
+Slave Mines **7–10**, an unverified suitability hint. It does not provide the
+whole level 1–20 route, automatic GFay entry or later camp relocation. Fresh
+NPC/consider/kill evidence in your own Crushbone log is required for candidate
+names; no candidates means no trip. The camp then rechecks every target live.
+Real traversal, camp safety, movement-to-combat handoff and spell preparation
+still need owner acceptance. Death, hazards or changed input/zone stop the
+trip; there is no automatic death recovery. Standalone movement 0.39.21 and
+stationary camp 0.39.24 remain available.
 
 ## Assist and repeated stationary fights — preview 0.39.24
 

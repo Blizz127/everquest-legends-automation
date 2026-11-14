@@ -3,6 +3,7 @@ from dataclasses import asdict
 import time
 from uuid import uuid4
 
+from .navigation_phase import navigation_active
 from .location_hotkey import OwnerLocationHotkey
 from .motion_collection import MotionExperimentSession, MotionExperimentDriver
 from .owner_input_observer import OwnerInputObserver
@@ -156,7 +157,7 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
             session = MotionExperimentSession(reader, zone_id=None, zone_display_name=None,
                 zone_short_name=None, relative=True, generation=self.cancel_generation,
                 generation_reader=lambda: self.cancel_generation,
-                mode_reader=lambda: 'measurement' if self.measurement_only else 'off',
+                mode_reader=lambda: 'measurement' if navigation_active(self) else 'off',
                 binding_reader=lambda: (*settings_identity(self.settings),
                                        *window_identity(self.gate, require_focus=False)),
                 record_id='owner-relative-motion-'+uuid4().hex, horizontal_error=.01,

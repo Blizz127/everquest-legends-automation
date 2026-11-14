@@ -10,6 +10,7 @@ from pathlib import Path
 import time
 from uuid import uuid4
 
+from .navigation_phase import navigation_active
 from .current_route_start import CurrentStartPlanner
 from .destination_route import plan_destination
 from .fixed_route_follower import FixedRouteFollower
@@ -100,7 +101,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 label=motion['continuation']['label'] if trial else 'Motion measurement'
                 data.update(state='running',phase=(label+' · ')
                     +motion['stage'],trial_stage=motion['stage'] if trial else None)
-            elif self.last_route_trial_result is not None:
+            elif self.last_route_trial_result is not None and self.autopilot is None:
                 # Let the GUI show the latest emitted status, including a
                 # subsequent hotbutton/setup refusal, instead of stale prose.
                 data.update(state='halted',trial_stage='stopped')
@@ -412,7 +413,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                     raise ValueError('Active source itinerary changed')
                 return value
             observer=SourceItineraryObserver(source_plan,p['lease'].reader,height_calibration=cal,
-                binding_reader=source_binding,mode_reader=lambda:'measurement' if self.measurement_only else 'off',
+                binding_reader=source_binding,mode_reader=lambda:'measurement' if navigation_active(self) else 'off',
                 generation_reader=lambda:self.cancel_generation,generation=p['generation'],clock=clock)
             ledger=SourceReceiptLedger(observer,terrain=planner.source,static=planner.static,bsp=planner.bsp,
                 bounds=p['bounds'],installed_model=p['continuation']['region_model'],
@@ -460,7 +461,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 heading=fit['final_heading'],calibration_record_id=p['session'].record_id,
                 height_calibration=cal,geometry_evidence=plan.observer.geometry,
                 generation=p['generation'],generation_reader=lambda:self.cancel_generation,
-                mode_reader=lambda:'measurement' if self.measurement_only else 'off',max_steps=steps)
+                mode_reader=lambda:'measurement' if navigation_active(self) else 'off',max_steps=steps)
             if scope=='zone_crossing_corridor':
                 from .provisional_floor_commit import ProvisionalRouteFloorCommit
                 def source_context():
@@ -537,6 +538,12 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                     return
             return super().zone_changed(body,now)
 
+        def _capture_trial_continuation(self, pending):
+            return None
+
+        def _continue_finished_trial(self, pending, arrival):
+            return None
+
         def _finish_trial(self,reason):
             p=self.route_trial
             if p is None:return
@@ -544,11 +551,24 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             if p['busy'] or (driver is not None and driver.busy):return
             runtime=p.get('corridor_runtime')
             source_runtime=p.get('source_runtime')
+            arrival=None; continuation=None
+            try:arrival=self._capture_trial_continuation(p)
+            except Exception as error:reason=str(reason)+'; continuation refused: '+str(error)
             self.route_trial=None
-            if p.get('lease') is not None:p['lease'].release()
-            try:p['observer'].close()
-            except Exception as error:reason=str(reason)+'; input observer cleanup: '+str(error)
             self.cancelled=True
+            try:
+                if p.get('lease') is not None:p['lease'].release()
+                # Consume the live arrival before serializing a potentially large
+                # route report. The input observer remains open through handoff.
+                if arrival is not None:continuation=self._continue_finished_trial(p,arrival)
+            except Exception as error:
+                reason=str(reason)+'; continuation stopped: '+str(error)
+                if not self.cancelled:self.stop_action(str(error))
+            finally:
+                try:p['observer'].close()
+                except Exception as error:
+                    reason=str(reason)+'; input observer cleanup: '+str(error)
+                    self.stop_action(str(error))
             plan=p.get('plan')
             initial=None if plan is None else plan.initial if p['job']==SOURCE_JOB else plan
             record=dict(format=('eql-owner-source-travel-v1' if p['job']==SOURCE_JOB else
@@ -571,7 +591,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 geometry=None if initial is None else json.loads(initial.evidence_bytes),
                 installed_region_model=(None if p['continuation']['region_model'] is None
                     else p['continuation']['region_model'].record()),
-                owner_supervised=True,real_client_accepted=False)
+                owner_supervised=True,real_client_accepted=False,continuation=continuation)
             self.last_route_trial_result=record;self.last_route_trial_path=None
             try:
                 root=output_root.expanduser().resolve()
@@ -586,7 +606,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 reason=str(reason)+'; save unavailable: '+str(error)
             self.trace('owner_route_trial_finished',record=record,
                 saved_path=None if self.last_route_trial_path is None else str(self.last_route_trial_path))
-            self.emit('Route trial '+record['outcome']+' · stopped · '+str(reason))
+            self.emit('Route trial '+record['outcome']+' · movement stopped · '+str(reason))
 
         def autopilot_tick(self,now):
             p=self.route_trial

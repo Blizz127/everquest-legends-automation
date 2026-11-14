@@ -6,6 +6,7 @@ from pathlib import Path
 import time
 from uuid import uuid4
 
+from .navigation_phase import navigation_active
 from .location_hotkey import HOTKEY_CODES, OwnerLocationHotkey, send_location_hotkey
 from .owner_input_observer import OwnerInputObserver
 from .owner_navigation_preflight import settings_identity, window_identity
@@ -43,7 +44,7 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
             return super().post(name, value)
 
         def _hotkey_idle(self):
-            return (self.measurement_only is True and not self.active and not self.preparing
+            return (navigation_active(self) and not self.active and not self.preparing
                 and not self.stopping and not self.command_recovery_pending
                 and not any(getattr(self, name, None) is not None for name in
                     ('autopilot', 'deferred', 'loc_request', 'loc_wanted', 'recorder', 'pointer',

@@ -1,5 +1,34 @@
 # FINDINGS
 
+## 2026-11-14 16:01 UTC — combined travel and camp candidate
+
+Source 0.42.36 joins the retained movement and stationary-camp engine in one
+owner-started helper. Only explicit hotbutton setup/source-travel requests admit
+navigation. Same-generation, same-reader source completion retains its actual
+stopped receipt; the original raw-receipt 0.5-second deadline is preserved
+through reader release and camp admission. Saved reports cannot continue a run.
+The input observer remains open through handoff. Camp preparation and rotation
+reuse the existing sender and cancel generation. F8 defers assist until movement
+cleanup; F9 destroys the continuation. The packaged native F11-release hook
+preserves key bookkeeping/debounce and consumes the navigation OFF latch even
+if a separate observer or GUI Stop already cancelled the trip. First F11 after
+setup/travel is intentionally OFF, documented in HOWTO and the GUI.
+
+VERIFIED so far: 75 retained camp/assist checks and seven new local focused
+checks pass. An Alienware synthetic/OS-pipe run reaches the source destination,
+releases navigation and starts camp preparation/export. Movement, position-read,
+lease-release and gauge-read cancellation cases pass there. Initial expected
+export-filename and prefixed-notice test assertions were corrected; final
+package checks are pending. Local GUI startup cannot use system Python without
+NumPy or the navigation environment without PySide6; Alienware has the retained
+runtime for the final smoke. No install/prefix, game input or character action.
+
+Actual movement-to-combat acceptance, route/camp safety, current level/XP/hour,
+spell preparation acceptance and a complete 1–20/1–50 run remain unverified.
+The only combined destination is Slave Mines; later camps and GFay entry are
+not silently enabled by this work. Retained movement 0.39.21 and camp 0.39.24
+remain available. G0 passed and is not repeated.
+
 ## Automatic learned-spell preparation — 2026-11-14 15:42 UTC
 
 **VERIFIED implementation, source 0.42.35 / preview 0.39.24:** an

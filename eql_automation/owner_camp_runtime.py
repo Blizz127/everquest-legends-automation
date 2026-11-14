@@ -96,8 +96,23 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 value = expected
             return super().handle_job(name, value)
 
-        def start_stationary_camp(self):
+        def _camp_start_stop(self, reason):
+            return self.stop_action(reason)
+
+        def _load_camp_candidates(self, zone=None):
+            if candidates_loader is not None:
+                return candidates_loader(self)
+            guide = client.default_guide()
+            zone = self.zone if zone is None else zone
+            if zone is None:
+                raise ValueError('No historical zone hint for candidate names')
+            excluded = [t.name for c in guide.camps for t in c.targets if t.avoid]
+            return observed_candidates(self.log_path(), guide.zone_long(zone),
+                consider=client.consider_target, safe=client.safe_leveling_target, excluded=excluded)
+
+        def start_stationary_camp(self, *, arrival_check=None):
             entry_generation = self.cancel_generation
+            if arrival_check is not None: arrival_check()
             if (self.measurement_only or self.preparing or self.stopping or self.recorder is not None
                     or self.autopilot_running() or self.pointer is not None):
                 self.emit('Camp did not start: stop the other activity first'); return False
@@ -114,19 +129,14 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             if self.cancel_generation != entry_generation:
                 return False
             generation = entry_generation+1
-            self.stop_action('Camp starting · spell-only · '+('repeat to level 20' if repeat else 'one kill')+' · F9 stops')
+            self._camp_start_stop('Camp starting · spell-only · '+('repeat to level 20' if repeat else 'one kill')+' · F9 stops')
             self.read_log()  # Drain existing replies before creating this scope.
             if generation != self.cancel_generation:
                 return False
-            if candidates_loader is None:
-                guide = client.default_guide()
-                if self.zone is None:
-                    self.emit('No historical zone hint for candidate names'); return False
-                excluded = [t.name for c in guide.camps for t in c.targets if t.avoid]
-                candidates = observed_candidates(self.log_path(), guide.zone_long(self.zone),
-                    consider=client.consider_target, safe=client.safe_leveling_target, excluded=excluded)
-            else:
-                candidates = candidates_loader(self)
+            try:
+                candidates = self._load_camp_candidates()
+            except (OSError, ValueError) as error:
+                self.emit('Camp did not start: '+str(error)); return False
             if generation != self.cancel_generation or not self.gate.controls_ready():
                 return False
             candidates = tuple(c for c in candidates if client.valid_target_name(c.name))[:8]
@@ -150,6 +160,7 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             binding = (sender, self.gate, self.tail, self.tail.tail.epoch,
                 self.settings.character, self.settings.server, self.settings.level, self.zone,self.settings.game_dir)
             focused = self.gate.controls_ready(); blocked = self.blocked_keys()
+            if arrival_check is not None: arrival_check()
             if (not focused or blocked or generation != self.cancel_generation or
                     self.camp_session is not None or self.active or self.stopping or self.preparing):
                 return False

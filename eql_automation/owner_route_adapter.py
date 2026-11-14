@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 from uuid import uuid4
 
+from .navigation_phase import navigation_active
 from .fixed_route_follower import RouteHalt
 from .route_session import RouteSessionDriver
 from .owner_zone_tracker import make_zone_tracking_engine
@@ -25,7 +26,7 @@ def make_route_session_engine(base_engine, *, output_root=None, zone_observer=No
             super().__init__(*args,**kwargs)
 
         def _route_idle(self):
-            return (self.measurement_only is True and not self.active and not self.preparing
+            return (navigation_active(self) and not self.active and not self.preparing
                 and not self.stopping and not self.command_recovery_pending
                 and not any(getattr(self,name,None) is not None for name in
                     ('autopilot','deferred','loc_request','loc_wanted','recorder','pointer',

@@ -1,11 +1,26 @@
 # STATUS
 
-Updated 2026-11-14 15:44 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 16:01 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.36 / preview 0.39.25 candidate:** same-process supervised
+  Crushbone travel can hand a fresh stopped arrival to the repeated camp using
+  the same sender. Navigation is admitted only by the explicit travel/setup
+  request; assist cannot acquire it. Reader release precedes camp startup;
+  original receipt freshness, generation and owner-input checks remain. F8
+  cancels travel and enters assist after release. A dedicated native F11 release
+  hook prevents a late release from restarting after an observed stop. GUI Stop
+  does not consume that release. First F11 after navigation/setup is OFF.
+  **VERIFIED:** 75 existing camp/assist checks pass, seven new focused checks pass
+  locally, and the Alienware synthetic/pipe pipeline reaches the destination,
+  starts camp/preparation and stops at four tested cancellation boundaries.
+  Final package/cancellation checks are in progress; this entry does not claim
+  publication or real gameplay acceptance. No game input or owner-session change.
+  Current level/XP/hour/deaths/camp unknown. Next: finish package checks, publish
+  the owner-run preview, then extend the level-dependent route/camp sequence.
 - **Source 0.42.35 / published preview 0.39.24:** repeated camp automatically
   prepares learned spells at startup and between fights after level-ups. It
   uses the retained catalog/rotation/sender, fresh export evidence, helper-slot

@@ -4,6 +4,7 @@ This attachment has no default executors. The optional owner_supervised_motion
 wrapper constructs a finite relative experiment only after an explicit owner
 job. Assist mode and unrelated observation helpers retain their restrictions.
 """
+from .navigation_phase import navigation_active
 from .motion_collection import MotionExperimentDriver, CollectionStopped
 import json
 from pathlib import Path
@@ -36,7 +37,7 @@ def make_motion_collection_engine(base_engine, *, output_root=None):
                 raise ValueError('helper job raced measurement attachment')
 
         def _motion_idle(self):
-            return (self.measurement_only is True and not self.active and not self.preparing
+            return (navigation_active(self) and not self.active and not self.preparing
                     and not self.stopping and not self.command_recovery_pending
                     and not any(getattr(self, field, None) is not None for field in
                                 ('autopilot', 'deferred', 'loc_request', 'loc_wanted', 'recorder',
@@ -108,7 +109,7 @@ def make_motion_collection_engine(base_engine, *, output_root=None):
                 driver.tick()
                 return result
             try:
-                if self.measurement_only is not True or self.active or self.preparing or self.stopping:
+                if not navigation_active(self) or self.active or self.preparing or self.stopping:
                     driver.session.cancel('measurement helper is no longer idle')
                 driver.tick()
             except Exception as error:
