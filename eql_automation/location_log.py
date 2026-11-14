@@ -172,6 +172,16 @@ class RawLocationFix:
     coordinates_aligned_to_wld: bool = False
 
 
+@dataclass(frozen=True)
+class ZoneBoundary:
+    kind: str
+    zone_id: int | None
+    zone_name: str | None
+    log_local_time: datetime | None
+    received_monotonic: float
+    zone_generation: int
+
+
 class LocationLogReader:
     """Bind new /loc lines to an entered zone in one expected character log."""
 
@@ -189,6 +199,7 @@ class LocationLogReader:
         self.last_received_monotonic: float | None = None
         self.log_line_seq = 0
         self.zone_generation = 0
+        self.boundaries: tuple[ZoneBoundary, ...] = ()
         self.tail.poll()  # Existing bytes are history; never bootstrap a zone.
 
     def _clear_zone(self) -> None:
@@ -199,6 +210,10 @@ class LocationLogReader:
 
     def poll(self, *, now: float | None = None) -> list[RawLocationFix]:
         received_at = time.monotonic() if now is None else now
+        self.boundaries = ()
+        def boundary(kind, log_time=None):
+            self.boundaries += (ZoneBoundary(kind, self.zone_id, self.zone_display_name,
+                log_time, received_at, self.zone_generation),)
         if (not isinstance(received_at, (int, float)) or
                 isinstance(received_at, bool) or not isfinite(received_at)):
             self._clear_zone()
@@ -217,6 +232,7 @@ class LocationLogReader:
         if reset:
             self._clear_zone()
             self.last_log_local_time = None
+            boundary('reset')
         fixes: list[RawLocationFix] = []
         for line in lines:
             parsed = parse_client_log_line(line)
@@ -225,17 +241,20 @@ class LocationLogReader:
                        ("LOADING, PLEASE WAIT", "You have entered ", "Logging to '")):
                     self._clear_zone()
                     fixes.clear()
+                    boundary('invalid')
                 continue
             log_time, body = parsed
             if self.last_log_local_time is not None and log_time < self.last_log_local_time:
                 self._clear_zone()
                 self.last_log_local_time = None
                 fixes.clear()
+                boundary('invalid', log_time)
                 continue
             self.last_log_local_time = log_time
             if body.startswith("LOADING, PLEASE WAIT") or is_logging_boundary(body):
                 self._clear_zone()
                 fixes.clear()
+                boundary('loading' if body == 'LOADING, PLEASE WAIT...' else 'invalid', log_time)
                 continue
             entered = _ENTERED.fullmatch(body)
             if entered is not None:
@@ -246,17 +265,23 @@ class LocationLogReader:
                 if zone_id is not None:
                     self.zone_id = zone_id
                     self.zone_display_name = name
+                boundary('entered', log_time)
                 continue
             if body.startswith("You have entered "):
                 self._clear_zone()
                 fixes.clear()
+                boundary('invalid', log_time)
                 continue
             raw = parse_raw_location(body)
             if raw is None and body.startswith("Your Location is "):
                 self.latest = None
                 fixes.clear()
+                boundary('invalid_position', log_time)
                 continue
-            if raw is None or self.zone_id is None or self.zone_display_name is None:
+            if raw is None:
+                continue
+            if self.zone_id is None or self.zone_display_name is None:
+                boundary('unbound_position', log_time)
                 continue
             self.log_line_seq += 1
             fix = RawLocationFix(self.zone_id, self.zone_display_name, raw,

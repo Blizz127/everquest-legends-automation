@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 12:11 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 12:17 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,14 @@ Updated 2026-11-14 12:11 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.16:** expected-zone arrival now releases on loading, requires
+  exact entry/current readiness, then obtains two fresh stopped destination
+  positions on the same exclusive reader. Logging-reset pairing and reentrant
+  loading-event loss are fixed. 91 focused checks pass with synthetic callbacks
+  and positions. No crossing move is enabled yet. **Next:** connect the checked
+  zone-line approach/loading handoff, then destination geometry/camp planning;
+  consume pending owner 0.39.18 live map/travel evidence. Current level,
+  XP/hour, deaths and camp unknown; G0 remains passed and assist 0.39.13 stays.
 - **Source 0.42.15 / owner 0.39.18:** the stationary hotbutton test now
   recognizes the visible map zone, cross-checking all three coordinates against
   its fresh log reply. Starting already in GFay no longer requires a new zone

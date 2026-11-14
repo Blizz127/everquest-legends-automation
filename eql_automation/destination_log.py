@@ -14,7 +14,7 @@ import re
 import time
 
 from .location_log import (NonReplayingLogTail, parse_client_log_line,
-                           parse_raw_location, unique_client_zone_ids)
+                           parse_raw_location, unique_client_zone_ids, is_logging_boundary)
 
 
 _ENTERED = re.compile(r"^You have entered (.+)\.$")
@@ -71,6 +71,7 @@ class DestinationTracker:
         self.epoch: int | None = None
         self.seq = 0
         self.last_log_time: datetime | None = None
+        self.last_received_monotonic: float | None = None
         self.loading_time: datetime | None = None
         self.loading_seq: int | None = None
         self.entered_time: datetime | None = None
@@ -100,10 +101,16 @@ class DestinationTracker:
         if self.epoch != log_epoch:
             self.invalidate()
             self.epoch = log_epoch
+        if (self.last_received_monotonic is not None and
+                received_monotonic < self.last_received_monotonic):
+            self.invalidate()
+            self.last_received_monotonic = received_monotonic
+            return None
+        self.last_received_monotonic = received_monotonic
         self.seq += 1
         parsed = parse_client_log_line(line)
         if parsed is None:
-            if any(token in line for token in (_LOADING, "You have entered ",
+            if any(token in line for token in (_LOADING, "You have entered ", "Logging to '",
                                               "Your Location is ")):
                 self.invalidate()
             return None
@@ -112,6 +119,9 @@ class DestinationTracker:
             self.invalidate()
             return None
         self.last_log_time = at
+        if is_logging_boundary(body):
+            self.invalidate()
+            return None
         if body == _LOADING:
             previous = self.latest_unzoned_location
             self.preloading_location = (

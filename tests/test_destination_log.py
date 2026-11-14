@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import json
 from pathlib import Path
+import pytest
 
 from eql_automation.destination_log import DestinationLogReader, DestinationTracker
 from eql_automation import watch_destination
@@ -28,6 +29,26 @@ def reader(log, zones):
     return DestinationLogReader(log, zones, expected_character="Legira",
                                 expected_server="freeport",
                                 destination="Clan Crushbone")
+
+
+@pytest.mark.parametrize('notice', ["Logging to 'eqlog.txt' is now *OFF*.",
+                                    "Logging to 'eqlog.txt' is now *ON*."])
+@pytest.mark.parametrize('malformed', [False, True])
+def test_logging_boundary_cannot_bridge_destination_entry(notice, malformed):
+    tracker = DestinationTracker('Clan Crushbone', 58)
+    rows = [line(0, 'LOADING, PLEASE WAIT...'), line(1, 'You have entered Clan Crushbone.'),
+            '[bad timestamp] '+notice if malformed else line(2, notice),
+            line(3, 'Your Location is 1, 2, 3')]
+    assert all(tracker.consume(row, received_monotonic=100+i, log_epoch=0) is None
+               for i, row in enumerate(rows))
+
+
+def test_direct_tracker_refuses_reversed_receipt_clock():
+    tracker = DestinationTracker('Clan Crushbone', 58)
+    tracker.consume(line(0, 'LOADING, PLEASE WAIT...'), received_monotonic=10, log_epoch=0)
+    tracker.consume(line(1, 'You have entered Clan Crushbone.'), received_monotonic=9, log_epoch=0)
+    assert tracker.consume(line(2, 'Your Location is 1, 2, 3'),
+                           received_monotonic=11, log_epoch=0) is None
 
 
 def test_existing_source_zone_history_is_skipped_but_fresh_destination_is_captured(tmp_path):

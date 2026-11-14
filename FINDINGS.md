@@ -1,5 +1,55 @@
 # FINDINGS
 
+## Expected zone-arrival handoff — 2026-11-14 12:17 UTC
+
+**VERIFIED implementation:** source 0.42.16 adds `ZoneArrivalHandoff` over the
+existing exclusive `ZoneReaderLease`. It observes only new loading/entry
+boundaries, calls the supplied control-release operation on loading, requires
+the exact expected destination and a separate current ready observation, then
+uses the existing `StoppedLocationPair` to request two fresh positions. It
+never creates a device or crossing movement, carries no source heading/height/
+floor chain, and does not treat the first position as an exact spawn. The
+caller must still connect a checked crossing move and readiness provider.
+
+The location reader now exposes immutable per-poll boundary records while
+preserving its existing non-replay and zone invalidation behavior. A reentrant
+empty poll initially erased a loading event before the handoff could release;
+review reproduced it. Capturing the owned boundary/cursor result before callback
+checks fixes that loss; a changed cursor refuses and releases. Destination
+watching also now invalidates loading/entry pairing on logging ON/OFF and on a
+reversed receipt clock. Previously, a logging reset could be bridged into a
+false arrival. No old zone, position or heading was enabled as a shortcut.
+
+**VERIFIED focused validation:** 91 checks pass across arrival, destination,
+location, transition, stopped-pair and owner-zone tracking. New cases cover
+release before any location request, no requests while loading/not ready,
+expected fresh stopped destination positions, changed owner/log/cursor,
+unexpected/missing/duplicate/stale entries, logging reset, malformed/partial
+messages, movement during the destination pair, cancellation inside release/
+ready/current callbacks, and reentrant empty/mutating polls. The first run's
+five failures came from a fixture appending entry before a two-second clock
+advance; the corrected fixture records entry after waiting. Freshness was not
+relaxed. All handoff positions, time and release callbacks are synthetic; this
+is not live input, a zone crossing or character progress.
+
+**VERIFIED retained transition data:** copied GFay manifest
+`navmesh/nov12-7e3cd28-store/gfaydark.json`, SHA
+`ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82`,
+has area 4 / `DRNTP00255000004_ZONE`, zone-point 4. Package bounds are
+`(-92.651199,2614.455322,0.000075)` to
+`(-9.39732,2623.375278,89.199112)`. Current approach goal Y=2585.165 stops
+29.290322 units before the minimum region Y. Its `to_zone=crushbone` mapping
+is explicitly a guide hint; destination ID, spawn target and heading are null.
+No exact server destination or spawn was invented from this record.
+
+**Still required:** connect the final checked trigger movement and loading
+release to the owner runtime, then load Crushbone geometry and plan from its
+fresh positions. Existing ground-only destination routes still reject zone-line
+areas. The owner preview stays **0.39.18**, assist **0.39.13**; its pending live
+map/travel test is unchanged. No new owner action or G0 repeat. Live map refresh,
+actual traversal, crossing, camps and 1–20/1–50 remain unverified/unfinished.
+Current level, XP/hour, deaths and camp remain unknown.
+
 ## Current-zone recognition at stationary startup — 2026-11-14 12:11 UTC
 
 **VERIFIED implementation:** source 0.42.15 / destination preview 0.39.18
