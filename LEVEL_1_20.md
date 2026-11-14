@@ -1,9 +1,17 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 08:14 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 08:20 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.93 supplies phase-aware evidence composition for the route's
+checked `/location` calls. Independent input/focus/log checks bracket each
+UI classification; an open exact draft is required only during typing, and
+closed chat before/after. The route reader remains exclusive. Ninety-eight
+provider/safety checks and five actual retained-sender pipe cases passed.
+The calibrated live pixel classifier itself is still missing; current feature
+candidates remain unknown. No live input, route acceptance or hotkey change.
 
 Source 0.41.92 joins the route sender to concrete terrain, static-object and
 BSP volume preparation. The exact stopped position, committed floor and

@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.92** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.93** · rotation preview **0.39.6** · observation candidate **0.39.10**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -108,11 +108,18 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.92/source
+~/.local/share/eql-automation/owner-tools/0.41.93/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.92 connects terrain, static-object and BSP volume checks to
+above. Source 0.41.93 adds the checked `/location` observation provider. It
+brackets each independent UI classification with owner-input, focus and log
+checks. Start/end require observed closed chat; intermediate keys require
+the exact complete focused draft, with the insertion point at its end and
+no selection. The calibrated pixel classifier is still missing: raw frame
+candidates cannot authorize typing. No owner command or hotkey changes.
+
+Source 0.41.92 connects terrain, static-object and BSP volume checks to
 the checked route sender. It prepares both possible control footprints while
 stopped, then binds the selected result to the exact fresh proposal and receipt.
 Body size, speed, pivot drift and timing bounds must be supplied independently;

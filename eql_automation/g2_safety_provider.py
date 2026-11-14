@@ -138,9 +138,17 @@ class G2SafetyProvider:
                 or focused_game_identity(self.gate) != self.window):
             raise G2ObservationUnavailable("G2 session or cancellation generation changed")
 
-    def __call__(self):
+    def observe_ui(self, ui_observer):
+        """Collect a new calibrated frame with input/log/focus bracketing.
+
+        Chat semantics are deliberately left to the caller: a movement check
+        requires closed chat, whereas a command key must verify its exact open
+        draft. This returns evidence, never a movement or command permit.
+        """
         self.last_ui = None
         self.last_log_veto = None
+        if not callable(ui_observer):
+            raise ValueError('A current independent UI observer is required')
         try:
             began = self.clock()
             if not _finite(began):
@@ -153,7 +161,7 @@ class G2SafetyProvider:
             if (not isinstance(before, OwnerInputObservation) or not _finite(input_at)
                     or before.started_at < began or not before.clear_at(input_at)):
                 raise G2ObservationUnavailable("Owner input coverage is incomplete or active")
-            visual = self.ui_observer(self.window)
+            visual = ui_observer(self.window)
             after = self.input_observer.sample()
             self._binding()
             self._check_log(began)
@@ -170,16 +178,22 @@ class G2SafetyProvider:
                     or not before.finished_at <= visual.started_at <= visual.finished_at <= after.started_at
                     or visual.window != self.window or not _sha(visual.frame_sha256)
                     or visual.calibration_sha256 != self.calibration
-                    or not all(v is True for v in (visual.chat_clear, visual.target_absent,
+                    or not all(v is True for v in (visual.target_absent,
                                                    visual.combat_clear, visual.no_transition,
                                                    visual.no_incoming_attack))):
                 raise G2ObservationUnavailable("Current independently calibrated UI evidence is missing")
-            self.last_ui = visual
-            # The oldest observation time is retained, never refreshed to now.
-            return G2SafetyObservation(began, focused=True, owner_keys_clear=True,
-                                       chat_clear=True, target_absent=True, combat_clear=True,
-                                       no_transition=True, no_incoming_attack=True)
+            return began, visual
         except G2ObservationUnavailable:
             raise
         except Exception as error:
             raise G2ObservationUnavailable("Independent safety observation failed") from error
+
+    def __call__(self):
+        began, visual = self.observe_ui(self.ui_observer)
+        if visual.chat_clear is not True:
+            raise G2ObservationUnavailable('Current independently calibrated closed chat is missing')
+        self.last_ui = visual
+        # The oldest observation time is retained, never refreshed to now.
+        return G2SafetyObservation(began, focused=True, owner_keys_clear=True,
+                                   chat_clear=True, target_absent=True, combat_clear=True,
+                                   no_transition=True, no_incoming_attack=True)

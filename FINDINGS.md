@@ -1,5 +1,50 @@
 # FINDINGS
 
+## Phase-aware command observation 0.41.93 — 2026-11-14 08:20 UTC
+
+**VERIFIED implementation:** `CommandInputProvider` supplies the concrete
+`check_input(request, phase, submission)` composition for both checked location
+executors. It validates the fixed `/location` write history and exact snapshot
+identity; observes current focus/process, owner input and a separate non-replaying
+log veto around a new independently classified frame; and preserves the oldest
+observation timestamp with a maximum 100 ms lifetime. It never polls the route's
+exclusive location reader. The existing movement provider still requires closed
+chat; only the command provider accepts an independently verified open draft.
+
+Start, first key and end require observed closed chat and an absent draft.
+Intermediate keys require the exact complete visible prefix, focus, insertion
+point at the end and no selection. Default/unknown fields, ordinary frame
+candidate dictionaries, copied snapshots, arbitrary commands, stale captures,
+owner activity, changed focus/process/generation and positive log vetoes reject.
+The command classifier remains an explicit missing dependency; this code does
+not infer it from engine flags, font hypotheses or blank pixels.
+
+**VERIFIED checks:** 98 focused provider and existing safety tests passed;
+five cases passed through the actual retained command sender and route executor
+on a pipe. A final two-test check covered the shared collection entry and clearing
+old evidence on a missing classifier. Two retained evidence cases were then
+saved: the complete ten-key command emitted 40 events and left no draft or held
+keys; a new native-melee-on log event after three keys stopped after 12 events,
+without Enter, with all keys released and the draft explicitly uncertain.
+
+Artifact `evidence/command-input-provider-0.41.93.json` under the private store,
+SHA `63643b05d98bcd7c9ef7dfdeebffcd2084fdc5025333c4932cae6bf0d56ec5af`,
+retains actual command journals, pipe events, fixture log-veto results and source/
+retained-helper hashes. UI/physical-input observations and the scene were
+synthetic. No game input, capture, login, character/prefix mutation or owner
+helper replacement occurred. This verifies composition and refusal behavior,
+not real-client text/focus recognition or acceptance.
+
+The previous turn made concrete progress with receipt-bound source geometry.
+This turn replaces the remaining synthetic-only command evidence composition
+with its concrete provider. The next implementation gap is calibrated frame
+classification for chat focus/closure, target absence and combat state, using
+current owner pixels; motion/body and zone/height bindings are also unverified.
+The existing stationary observation remains pending. G0 is passed, assist stays
+0.39.6 and observation stays 0.39.10. Current level, XP, XP/hour, deaths and camp
+remain unknown. Neither the playable 1–20 nor fresh 1–50 objective is met.
+
+
 ## Private source 0.41.92 staged — 2026-11-14 08:15 UTC
 
 **VERIFIED:** source `b9914381b5d233d47dc98cdc806e2b3964cbaf58`, archive SHA

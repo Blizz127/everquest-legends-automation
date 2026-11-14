@@ -180,3 +180,51 @@ def test_complete_route_uses_retained_commands_and_watchdog_without_game_input(h
     assert downs.count(53)==len(record['command_requests'])
     assert len(h.events)==40*len(record['command_requests'])+8*len(record['steps'])
     assert not h.sender.held and not h.sender.unfinished and not record['real_client_accepted']
+
+
+@pytest.mark.parametrize('fault', [None, 'draft', 'attack', 'owner', 'unknown'])
+def test_retained_command_uses_phase_provider_with_independent_veto_tail(h, fault):
+    from eql_automation.command_input_provider import CommandInputProvider, CommandUiObservation
+    from eql_automation.g2_safety_provider import G2SafetyProvider
+    from eql_automation.g2_scene_observer import G2ObservationUnavailable
+    from eql_automation.owner_input_observer import OwnerInputObservation
+    from eql_automation.scene_log_veto import SceneLogVeto
+    from test_g2_safety_provider import Gate, WINDOW
+    active = [False]; observed = []
+    def sample():
+        started = h.clock()
+        return OwnerInputObservation(started, h.clock(), 1, True, 2, 0, active[0], 0, 'synthetic-pipe')
+    def ui(window, request, phase, submission):
+        began = h.clock(); h.drain()
+        observed.append((phase, submission.submitted_prefix))
+        if phase == 'command_key' and submission.submitted_key_count == 3:
+            if fault == 'draft': h.draft = '/say'
+            if fault == 'attack': h.append('Auto attack is on.')
+            if fault == 'owner': active[0] = True
+            if fault == 'unknown': return {'status': 'pixel_candidates_only'}
+        return CommandUiObservation(began, h.clock(), window, 'f'*64, 'c'*64,
+            chat_clear=not h.chat, target_absent=True, combat_clear=True,
+            no_transition=True, no_incoming_attack=True, request=request, phase=phase,
+            submission=submission, input_focused=h.chat, draft_absent=not h.chat,
+            visible_prefix=h.draft if h.chat else None, text_complete=h.chat,
+            caret_at_end=h.chat, selection_absent=h.chat)
+    veto = SceneLogVeto(h.log, expected_character='Probe', expected_server='private',
+                       cancel_generation=1, clock=h.clock)
+    safety = G2SafetyProvider(gate=Gate(), input_observer=SimpleNamespace(sample=sample),
+        ui_observer=lambda _: None, log_veto=veto, expected_log_path=h.log, expected_window=WINDOW,
+        calibration_sha256='c'*64, cancel_generation=1, generation_reader=lambda:1,
+        mode_reader=lambda:'measurement', clock=h.clock)
+    provider = CommandInputProvider(safety, ui_observer=ui)
+    h.executor.check_input = provider
+    if fault is None:
+        h.first_command()
+        assert observed == [('command_start',''),('command_first_key',''),
+            *[('command_key','/location'[:n]) for n in range(1,10)],
+            ('command_end','/location')]
+        assert [code for kind,code,value in h.events if kind==1 and value==1] == list(LOCATION_KEYS)
+        assert not h.sender.unfinished and provider.last_observation.phase == 'command_end'
+    else:
+        with pytest.raises(G2ObservationUnavailable): h.first_command()
+        assert (1,28,1) not in h.events
+        assert h.sender.unfinished and provider.last_observation is None
+    assert not h.sender.held and not h.session.executor_events[-1]['pending_releases']

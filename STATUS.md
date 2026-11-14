@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 08:14 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 08:20 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,20 @@ Updated 2026-11-14 08:14 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.93:** the checked location executor now has a concrete
+  phase-aware input provider. It reuses the independent input/focus/log scope,
+  requires exact draft/caret/selection evidence while typing, and closed chat
+  before/after the command. It does not consume the route location reader.
+  Ninety-eight provider/safety checks and five retained-sender integration
+  cases passed. Saved pipe evidence shows a full 40-event command, and a
+  native-melee-on veto after 12 events with no Enter, no held keys and an
+  explicitly uncertain unfinished draft. Evidence SHA
+  `63643b05d98bcd7c9ef7dfdeebffcd2084fdc5025333c4932cae6bf0d56ec5af`.
+  UI and physical input observations were synthetic; veto tails and retained
+  command code were real fixture/pipe implementations. The calibrated live
+  pixel classifier is still missing, as are current zone/height/motion/body
+  bindings. This closes provider composition, not the remaining classifier.
+  No owner launcher change or new test request; G0 remains passed.
 - **Source 0.41.92:** the route sender now has concrete terrain/static/BSP
   geometry preparation with explicit external motion/body bounds. It computes
   forward and pivot candidates before arming, then consumes one exact reference/
