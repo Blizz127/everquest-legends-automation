@@ -26,6 +26,10 @@ Updated 2026-11-14 08:28 UTC for coordinator task `829a00229b29`.
   selection and active font/blend/background binding remain unresolved.
   This implements a needed pixel stage, not the complete live classifier.
   G0 remains passed; assist 0.39.6, observation 0.39.10 and F11-off unchanged.
+  Source `672d8eb` is privately staged at `owner-tools/0.41.94/source`;
+  remote import/missing-source/invalid-mask checks pass without game/native
+  execution. Startup artifact SHA
+  `0e227c99ea0aa1327bc9a85b52c03f11abf10c011e291606480f70682b0c5825`.
 - **Source 0.41.93:** the checked location executor now has a concrete
   phase-aware input provider. It reuses the independent input/focus/log scope,
   requires exact draft/caret/selection evidence while typing, and closed chat

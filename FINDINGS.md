@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Private source 0.41.94 staged — 2026-11-14 08:29 UTC
+
+**VERIFIED:** source `672d8ebfdee81e8aee5f5665840b872666c8cd80`, archive SHA
+`984dadad8d5ea9d32f1b039fe4f76e2f9aabe63c7531ac653753a62cecdb7e8d`,
+is staged at Alienware `owner-tools/0.41.94/source`. Startup imports and
+missing-source/invalid-mask refusal checks pass. No engine, input device,
+game capture or native process was started. Remote startup artifact SHA
+`0e227c99ea0aa1327bc9a85b52c03f11abf10c011e291606480f70682b0c5825`.
+Local staging record: `releases/eql-automation-0.41.94-staging.json` under the
+private store. Client assets/derived pixels were not placed in git or this
+source archive; owner launcher versions remain unchanged.
+
 ## Geometry-to-pixel font sampling 0.41.94 — 2026-11-14 08:28 UTC
 
 **OBSERVED existing source gap:** the geometry module computed compensated

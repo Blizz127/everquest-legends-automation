@@ -14,6 +14,8 @@ with live-equivalence flags still false. The 130 focused tests and 22 reader
 checks passed using the appropriate existing interpreters. Closed chat,
 selection and calibrated live scene classification are still missing; this
 pixel-stage improvement enables no route control or live leg.
+Source `672d8eb` is privately staged at `owner-tools/0.41.94/source` on
+Alienware; no-input module/refusal checks passed there.
 
 Source 0.41.93 supplies phase-aware evidence composition for the route's
 checked `/location` calls. Independent input/focus/log checks bracket each
