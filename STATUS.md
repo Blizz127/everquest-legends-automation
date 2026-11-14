@@ -6,7 +6,7 @@ Updated 2026-11-14 18:12 UTC for coordinator task `829a00229b29`.
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.49 validated; private publication pending.** Finite camp
+- **Source 0.42.49 privately published; preview stays 0.39.30.** Finite camp
   runtime now joins preparation, selected movement, configured location-key
   collection, endpoint checks and continued probes. Missing/refusing movement
   policy sends no movement; there is no permissive default. Completed collectors
@@ -17,6 +17,9 @@ Updated 2026-11-14 18:12 UTC for coordinator task `829a00229b29`.
   Policy/game feedback is synthetic; no game input or native owner-control
   integration. Output SHA
   `f285d8ba47dd44c3438d0bbbd00224bae4b1679ef0481c6f16b3d0b4c700df72`.
+  Published on Alienware at `owner-tools/0.42.49/source`, revision `c2dabe5`.
+  Runtime/tests/tools match the checked candidate; imports/CLI/copied-data pins
+  pass. Startup SHA `ddfc2af8bc8e89abacf3e37ab5aacebd24849850fd681ef4fc11a98f37d25b67`.
   Next: camp-position scope handoff plus retained-engine F8/F9 integration and
   explicit current movement policy. Preview stays 0.39.30; G0 passed. Current
   level/XP/hour/deaths/camp unknown; no real 1–20/1–50 acceptance.

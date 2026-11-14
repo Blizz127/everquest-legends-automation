@@ -1,5 +1,23 @@
 # FINDINGS
 
+## 2026-11-14 18:12 UTC — source 0.42.49 privately published
+
+VERIFIED Alienware `owner-tools/0.42.49/source`, revision
+`c2dabe5616535304910524cd7ceb61d099802830`. Runtime/tests/tools match the
+11-pass actual-watchdog/OS-pipe candidate. Imports, diagnostic CLI startup and
+copied-data pins pass. Archive SHA
+`93b75833874860446c0284a573412cd83d3ed2b04d7f69295f3ed6d7c22a4e34`;
+startup SHA `ddfc2af8bc8e89abacf3e37ab5aacebd24849850fd681ef4fc11a98f37d25b67`.
+Publication record: `releases/eql-automation-0.42.49-staging.json`.
+
+The runtime uses synthetic admission and game feedback in validation. No game
+input, helper engine launch, device creation, login, character action or prefix
+edit. Owner preview remains 0.39.30. Next: actual camp-position handoff and
+retained-engine F8/F9 controls with an explicit current movement policy.
+Independent scene/supported motion bounds remain needed for unattended input.
+G0 passed; no repeat/new owner test. Current level, XP, XP/hour, deaths and camp
+remain unknown. No real 1–20 route or fresh hands-off 1–50 acceptance.
+
 ## 2026-11-14 18:12 UTC — source 0.42.49, finite runtime and actual pipe sender
 
 VERIFIED `CampProbeRuntime` now sequences actual source preparation, fresh
