@@ -1,5 +1,70 @@
 # FINDINGS
 
+## Source font and isolated GDI glyph model 0.41.86 — 2026-11-14 07:16 UTC
+
+**VERIFIED static input selection:** `CW_ChatInput` omits `Font`; SIDL's
+ScreenPiece default and native constructor set 3. Parser/template/runtime
+creation carry that index into widget font field +0x160. Saved
+`ChatWindow*_FontStyle` changes output child +0x338 only, not input +0x330.
+Evidence `input-font-native-0.41.86.json` SHA
+`63d37434fba401a5c30ca5eb4909f77028dfce6c4d349b443f90349767fba710`.
+New read-only copied `SIDL.xml` SHA
+`ca7d43baa5121c26283fed4a886aa984bd8855a5f83a754418099e8b1ebf1f21`.
+
+**VERIFIED static graphics path:** copied `EQGraphics.dll` SHA
+`4f5f18ee9821b3e15ff25980dda7def1b2cfcdfd72a5d359ac02d0b546163168`
+initializes physical slot 3 with Arial, positive height 15, weight 100 and
+charset 1. Other LOGFONTA bytes initially zero. Requested font indices pass
+through a mutable remap row, initially row 0/identity; later face and scale
+overrides exist. Startup reads `[Fonts] Font.us.0` with a graphics-supplied
+default face; retained `eqclient.ini` has no `[Fonts]` section. Saved `UIScale=1`
+is an enum selecting **1.25×**. Scaling uses `ceil(baseHeight*scale)` and retains
+fractional compensation. Thus height 19 is a source-supported initial scaled
+hypothesis, not a current live binding. Config evidence SHA
+`6cdb4ca1e88c28d5b94e13a68cf5489288a4b8a5111387e27d189892e48fea5f`.
+
+The native raster path uses a memory DC, the unchanged 60-byte LOGFONTA,
+TRANSPARENT background mode, black background, white text and alignment 0.
+It creates a top-down 32-bit DIB sized `tmMaxCharWidth × tmHeight`; each UTF-16
+unit is measured and rendered separately with `ExtTextOutW` options 2. Texture
+copy converts `(pixel & 255) >> 4` to 4-bit alpha with white RGB. This is why
+whole-string FreeType or raw 8-bit GDI output was not adopted as equivalent.
+Evidence `font-raster-native-0.41.86.json` SHA
+`4673a71f6608932402f9f4a1fde2409cd3388b051abcb0b5994775fd83552ff0`.
+All binary observations are static; no copied game executable/DLL was run.
+
+**VERIFIED own-tool execution:** `tools/probe_font_gdi.c` compiled with Zig
+0.13.0 for Windows, with one low-priority CPU due measured devbox pressure.
+The helper ran offscreen under Wine 10.0 in new private devbox prefix
+`validation/font-gdi-0.41.86/wine-prefix`, never the Alienware game prefix.
+GDI's selected font bytes exactly match the copied owner Arial Regular file,
+SHA `83b14d85ab64222f676eba6bcd7187057e4ad9bd46eaa696ae4d545fe3459c7a`.
+Native helper source/executable SHAs are retained in `build-v2.json`; executable
+SHA `3aeb80090bc8b2f7326fab34d3bead2c90a7f3bee9a796eb047679743c94f4dd`.
+An existing output path refused and preserved the original file/hash.
+
+`font_gdi_probe.py` checks complete probe structure, selected-font and descriptor
+pins; it reproduces alpha4 coverage and composes individual glyph advances.
+`tools/analyze_font_gdi.py` writes only a new private font-model directory.
+Sixty focused parser/matcher checks pass. Thirty-six model comparisons cover
+all nine prefixes with/without caret at heights 15 and 19. Artifact SHA
+`7cf6009a09e46fc9e84d348121b4c7a4bbeca17acd28d4a25b1a0883ff042145`;
+maximum local comparison was 41 ms for these model crops, not a live budget.
+Native probe SHAs: height 15
+`3c90c64b66e8f4dc975a5e599c3072e760ff5ba96fa63427254f42684d8c5415`,
+height 19 `5d8496c4e73d9271d1939118cd46fc3bfba4f93155489989415bf33567327c08`.
+Private font-model manifests under `font-probes/initial-arial-{15,19}-0.41.86`
+have SHAs `eb3458cbfaf7f1dbcbdc3363cffc7e691519a868b099373325ad92d525d09816`
+and `6accab2193a141c90650da2bc996803c62cbc874c7414a2691105aee266b9214`.
+
+**Remaining limits:** these glyphs come from an isolated Wine renderer, not game
+screenshots. Current remap/face overrides, final texture filtering, fractional
+scale compensation, current scene/position and motion/height/envelope checks
+remain unresolved. No default live bank or game control is enabled. Assist
+0.39.6 and observation 0.39.10 are unchanged; G0 remains passed. The 07:05 UTC
+read-only listing found no stationary observation. Current level/XP/hour,
+deaths and camp remain unknown; no route or automated gain is accepted.
+
 ## Private source 0.41.85 staged — 2026-11-14 07:05 UTC
 
 **VERIFIED:** `cc3c2ca22979ddd86c97b1cfad3010d53bbf4d23`, archive SHA

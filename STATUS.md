@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:05 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:16 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,18 @@ Updated 2026-11-14 07:05 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.86:** traced the input's initial font slot 3 independently of
+  output chat style, the GDI per-glyph raster path, and 4-bit alpha conversion.
+  An offscreen native helper ran in a new devbox-only Wine prefix using the
+  exact copied Arial file; selected-font bytes match its SHA. Sixty focused
+  Python checks pass, native compilation/startup pass, and existing output is
+  preserved. Thirty-six copied-font model comparisons pass at heights 15/19
+  with/without caret; artifact SHA
+  `7cf6009a09e46fc9e84d348121b4c7a4bbeca17acd28d4a25b1a0883ff042145`.
+  Saved UIScale enum 1 maps to 1.25; height 19 is the ceil-scaled source
+  hypothesis. Current remap/face overrides, final filtering/compensation and
+  live glyph equivalence remain unverified. No game was launched or controlled.
+  Owner assist/observation controls remain unchanged; G0 needs no repeat.
 - **Source 0.41.85:** submitted command snapshots now reach the same frame's
   chat pixels. The optional matcher compares every fixed prefix and the whole
   field under an explicit constant-background model, retaining unexplained

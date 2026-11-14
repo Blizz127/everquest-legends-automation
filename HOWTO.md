@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.85** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.86** · rotation preview **0.39.6** · observation candidate **0.39.10**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -108,15 +108,21 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.85/source
+~/.local/share/eql-automation/owner-tools/0.41.86/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.85 can compare the exact submitted command prefix with the
+above. Source 0.41.86 adds an offscreen GDI font probe and a pinned importer for
+its glyph data. The probe belongs in a separate development Wine prefix; it
+must not run in the owner's protected game prefix. The importer verifies the
+actual selected font bytes and reproduces the inspected 4-bit alpha conversion.
+Copied-font rendering hypotheses are available, but current font overrides,
+texture sampling and scale compensation still need resolution and live checks.
+These tools add no owner test or game controls. Source 0.41.85 can compare the exact submitted command prefix with the
 same frame's chat input pixels, using an explicitly supplied rendering bank.
 It scores the entire field, including extra text, under a declared constant-
-background model. No default font bank is supplied: saved chat font style 3
-does not identify the current input rendering. Pixel candidates never prove
+background model. No default live font bank is supplied: the input's initial
+font slot is now traced separately from saved chat-output style. Pixel candidates never prove
 focus, draft ownership or closure. No new owner action or route input is enabled.
 Source 0.41.84 records each attempted command write and binds observation
 checks to its exact immutable submitted-prefix snapshot. A failed write stays
