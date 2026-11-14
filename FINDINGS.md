@@ -56,6 +56,17 @@ No live login, character input/mutation, client/prefix write or new owner test
 occurred. Current level, XP/hour, deaths and camp unknown; no real crossing,
 accepted 1–20 route, automated XP or completed fresh 1–50 run.
 
+**VERIFIED private publication:** commit
+`d8437e2fb2d1ed4a5bca3dd7fb2c3ba7be07e386` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.42.21/source`. All five selected
+startup checks pass there without skips: two source moves then loading/arrival,
+loading during a source pair, malformed-position refusal and both late callback
+cases. Movement receipts use OS pipes; game feedback is synthetic. No helper
+worker/device, game input or install modification occurred.
+Archive SHA `479a4aeb7da59b3388ecc38787ef8d0d3a4fd2c12140881e6a4c534537bdc9bb`;
+startup SHA `c4ba83663c78fded82bc578ca0f5c112eace463837223a9c0e7b9d3db777b31b`;
+test-output SHA `41e9941d3911d35eb871f829825bc035598bef3109fbbc11ae008878e1ca0b7c`.
+
 ## Provisional source-floor receipt transaction — 2026-11-14 12:54 UTC
 
 **VERIFIED implementation:** source 0.42.20 adds `ProvisionalRouteFloorCommit`

@@ -26,7 +26,10 @@ Updated 2026-11-14 13:10 UTC for coordinator task `829a00229b29`.
   stop lock and reader; add fresh Crushbone geometry/camps. Owner travel 0.39.18
   and assist 0.39.13 remain unchanged; no new owner test or repeated G0. Current
   level, XP/hour, deaths and camp unknown. No accepted real route/crossing,
-  automated XP or completed 1–20/1–50 run. Private source staging pending.
+  automated XP or completed 1–20/1–50 run. Commit `d8437e2` is staged at
+  Alienware `owner-tools/0.42.21/source`; all five selected startup checks pass
+  there using OS pipes and synthetic feedback, with no device/game input.
+  Startup SHA `c4ba83663c78fded82bc578ca0f5c112eace463837223a9c0e7b9d3db777b31b`.
 - **Source 0.42.20:** provisional floor transactions seal actual elapsed
   receipts within the existing 0.3-second limit without advancing floor/pose.
   A fresh stopped source pair on the exact checked footprint/fork is required
