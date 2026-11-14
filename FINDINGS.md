@@ -1,5 +1,71 @@
 # FINDINGS
 
+## Continuous ground footprints and GFay portal discrepancy — 2026-11-14 01:25 UTC
+
+**VERIFIED source semantics:** The existing half_width1.2 is a lateral sample
+offset, not a measured character radius or proof of a filled corridor.
+Ground/grade/BSP checks are discrete, and portal turn checks sample rings.
+Copied-wall clearance margins do not turn those samples into continuous
+terrain support. The old 155-segment idealized replay sampled endpoint
+height; it did not establish complete swept ground coverage.
+
+**VERIFIED implementation and23 focused checks:** `ground_sweep.py` forms a
+circumscribed convex footprint from a nominal forward ray plus bounds for
+position error, heading deviation, release drift and an explicit extra
+radius. Its angular deviation bound is2*reach*sin(theta/2); a zero-reach pivot
+still has a position/drift footprint. These supplied bounds are not live
+calibration. Detail triangles are clipped against the entire footprint.
+Their disjoint coverage, planar grade, component/area, reference height and
+shared-edge heights are checked. Pair-overlap areas are accumulated and
+subtracted from the coverage lower bound, so many individually tiny overlaps
+cannot hide a missing patch. Tests cover an interior hole, duplicate/stacked
+floors, discontinuous seams, bad slope/areas and invalid work/motion bounds.
+
+`GroundSweepView` selects every XY-overlapping detail-face bounding box from
+the copied arrays, refusing excess candidates instead of truncating them.
+The check uses a bounded vertical window and explicitly does not validate
+headroom, collision walls, continuous BSP hazards, dynamic obstacles, body
+dimensions or real client motion. Results retain input_authorized=false and
+real_client_accepted=false. Source hashes:
+`ground_sweep.py` `d82e43920235eb7af0f982357d0f5eace8d997c66de41a9e2409098b116d45b6`;
+`ground_sweep_view.py` `a0e6b18f40eb54ef1d8e1ee79a58af79c6dce209681c5aae2fd634d13e3b0860`.
+
+**VERIFIED copied-data checks:** Six forward/pivot footprints at segment
+starts0,26,113 pass under explicitly hypothetical speed/timing/error bounds.
+The full guarded replay then stops after3 segments and18 completed simulated
+steps, at its19th footprint check. Its footprint area3.4741615286 has only
+3.4740508670 covered square units: deficit0.00011066155, above1e-7 tolerance.
+The check is retained rather than widened to make the old replay pass.
+
+**VERIFIED local detail/portal evidence:** Polygon31668's boundary is at
+helper X1761.2440185546875; polygon32479's is at X1761.244140625. Difference:
+0.0001220703125 unit. Their reciprocal graph portals have identical Y/Z
+endpoints and the same X discrepancy; local detail edges show it too.
+**INFERRED:** this is consistent with float quantization of a shared portal.
+Original client terrain beneath the gap has not yet been checked, so this
+is not evidence of a real client hole and no virtual stitching is adopted.
+The next bounded source probe uses the approved copied gfaydark.s3d archive.
+
+Private evidence under `nav-candidates/`:
+
+| Artifact | SHA-256 | Scope |
+| --- | --- | --- |
+| `gfay-continuous-ground-sweeps-0.41.51-v2.json` | `f96f5e70da52251436218901816d2a02046aa8ad056e2f015e29828140fb8462` | Six conditional ground candidates; no movement permission |
+| `gfay-full-ground-sweep-replay-0.41.51-v2.json` | `77b97911957c32a6d1c0ef8a3b1fec365ce61934ed0755cfc61b71f96eeb0d8a` | Full replay halts at segment3; hypothetical motion |
+| `gfay-detail-seam-gap-0.41.51.json` | `d938fc7956194d8bf20450fa02699c1c2ee90da03a150acbe439f480e8b25fa6` | Exact local faces and reciprocal portal coordinates |
+
+The earlier six-footprint artifact predates cumulative-overlap accounting;
+v2 is the current result. The first full-sweep artifact used an outdated
+endpoint-only assumptions label; v2 records its conditional full-ground
+scope explicitly. Both earlier files remain private history.
+
+**OBSERVED read-only Alienware capture:** The guessed original helper .venv
+path was absent, so no capture ran through it. Using the documented system
+python3 with fresh GUI environment then reached the capture gate and refused
+without a unique focused game window/process. No focus changed, screenshot
+was taken or game input sent. The owner-ready Current Zone observation is
+still pending. No new live level/XP/death/camp evidence or accepted route.
+
 ## Source 0.41.50 private publication — 2026-11-14 01:17 UTC
 
 **VERIFIED:** Source commit `4b34c6a` is staged on Alienware at

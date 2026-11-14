@@ -1,7 +1,23 @@
 # STATUS
 
-Updated 2026-11-14 01:17 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:25 UTC for coordinator task `829a00229b29`.
 
+- Source **0.41.51** adds continuous detail-ground footprint checks with
+  explicit numerical tolerances. Twenty-three focused tests passed, including
+  holes hidden from endpoint/rail samples, overlapping floors, cumulative
+  tiny overlaps, height steps and uncertain forward/pivot footprints.
+- Six hypothetical copied-GFay footprint checks pass. The guarded full replay
+  stops after three segments (19th check): a 0.0001220703125-unit discrepancy
+  between reciprocal32479↔31668 portal edges leaves0.00011066 square units
+  uncovered. This is observed in the copied navmesh, not proof of a client
+  terrain hole. No automatic stitching or tolerance widening was applied.
+  Final replay SHA `77b97911957c32a6d1c0ef8a3b1fec365ce61934ed0755cfc61b71f96eeb0d8a`.
+- One read-only UI capture attempt refused without exactly one focused game
+  window/process; no focus change, screenshot or game input followed.
+  Next: compare original copied terrain at the seam, then combine ground,
+  wall/headroom/BSP and scene checks for the timed route bridge. Current live
+  level/XP-hour/deaths/camp remain unknown beyond Legira7 GFay; G0 stop passed,
+  no accepted1–20 leg or automated XP. Assist0.39.6/G0candidate0.39.7 unchanged.
 - Private source **0.41.50**, commit `4b34c6a`, is staged at Alienware
   `~/.local/share/eql-automation/owner-tools/0.41.50/source`. Archive SHA
   `2ff19d67457aa4632704ffe68c99d68c114d24f8b38241dd2e68ead9a5c9b09e`

@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 01:15 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 01:25 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -86,6 +86,16 @@ checks and two controller integrations passed; the latter used synthetic
 alignment/positions and actual child write receipts. No game movement or
 live alignment is established by a pipe test. The scene/geometry-checked
 owner-preview connection remains to implement.
+Source 0.41.51 checks complete convex step footprints against copied detail
+triangles within explicit numerical tolerances. The 1.2-unit strip samples
+and portal rings alone do not prove a filled walking area. Six hypothetical
+footprints pass, but applying the check throughout the replay halts after
+three segments: reciprocal portal edges32479↔31668 have a 0.0001220703125-unit
+XY mismatch, leaving 0.00011066 square units uncovered in that footprint.
+The guard does not bridge it automatically. Compare original copied client
+terrain before deciding whether/how to repair the derived navigation view.
+No live route acceptance changes; source-wall/headroom/BSP/dynamic checks
+and current motion/UI observations remain outstanding.
 The Crushbone alternatives let the planner compare same-zone options before
 committing to the unresolved Cauldron→Unrest crossing; they do not authorize
 F11 or a pull. The helper's protected-target rules must still exclude

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.50 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.51 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,9 +19,19 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.50 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.50/source`; the runnable
+Source tools 0.41.51 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.51/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.51 checks ground coverage across a possible step footprint,
+including gaps, overlapping floors, steep detail faces and height seams.
+Twenty-three focused checks passed. Six copied-GFay footprints pass under
+hypothetical motion bounds, but the complete guarded replay stops at a
+0.000122-unit mismatch between two reciprocal navmesh portal edges. The
+client terrain under that seam must be reconciled before any repair is used.
+The earlier 155-segment motion replay did not include this ground check.
+These checks still omit source-wall/headroom, continuous BSP hazards, dynamic
+objects and live calibration. They do not authorize movement or enable F11.
 
 Source 0.41.50 adds child timing receipts and selection after watchdog
 readiness for one forward or turn key. The existing G0 duration API remains
@@ -502,7 +512,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.47/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.51/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 

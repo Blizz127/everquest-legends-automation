@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import argparse
 from datetime import datetime
+from dataclasses import asdict
 from hashlib import sha256
 import json
 import math
@@ -31,7 +32,7 @@ PINS = {
 }
 
 
-def run(output, *, speed, min_hold):
+def run(output, *, speed, min_hold, ground_sweep=False):
     began = time.monotonic()
     sys.path[:0] = [str(PROJECT), str(HELPER)]
     from eql_automation.fixed_route_follower import FixedRoute, FixedRouteFollower, RouteHalt
@@ -45,12 +46,20 @@ def run(output, *, speed, min_hold):
                  PROJECT / "eql_automation/bsp_detail_view.py",
                  PROJECT / "eql_automation/portal_surface_audit.py"):
         pins[path] = sha256(path.read_bytes()).hexdigest()
+    if ground_sweep:
+        for path in (PROJECT / 'eql_automation/ground_sweep.py', PROJECT / 'eql_automation/ground_sweep_view.py'):
+            pins[path] = sha256(path.read_bytes()).hexdigest()
     def verify():
         if any(p.is_symlink() or sha256(p.read_bytes()).hexdigest() != h for p, h in pins.items()):
             raise ValueError("Replay source changed")
     verify()
     route = FixedRoute.load(PLAN, expected_sha256=PLAN_SHA, mesh_sha256=MESH_SHA)
     mesh = BspDetailMeshView.load(MESH, zone=route.zone)
+    sweep_view = None
+    if ground_sweep:
+        from eql_automation.ground_sweep import motion_footprint
+        from eql_automation.ground_sweep_view import GroundSweepView
+        sweep_view = GroundSweepView.load(MESH, zone=route.zone)
     start = route.segments[0].start
     heading = steer.bearing(*start[:2], *route.segments[0].end[:2])
     calibration = "synthetic-replay-not-live-alignment"
@@ -61,6 +70,7 @@ def run(output, *, speed, min_hold):
                                generation_reader=lambda: 1, mode_reader=lambda: "measurement")
     position, seq, clock = list(start), 0, 100.
     history, recent, portal_samples = [], [], []
+    sweep_checks, sweep_failure = 0, None
     def stopped_pair(release):
         nonlocal seq, clock
         aligned = []
@@ -85,6 +95,21 @@ def run(output, *, speed, min_hold):
             proposal = runner.propose(clock + .01)
             seconds = runner.suggest_hold(proposal, minimum_seconds=min_hold,
                                           maximum_seconds=.15 if proposal.turn else .1)
+            if sweep_view is not None:
+                # Deliberately hypothetical: these are NOT current client
+                # speed, heading, latency, body-size or drift measurements.
+                reach = (speed * 1.2 * (seconds + .02)) if proposal.forward else 0.
+                footprint = motion_footprint(tuple(position[:2]), heading, reach,
+                    position_error=.05, heading_error_degrees=2., post_release_drift=.05, extra_radius=.2)
+                window = max(math.dist(position[:2], p) for p in footprint) + .05
+                check, detail_ids = sweep_view.check(footprint, reference=tuple(position),
+                    component=int(sweep_view.components[segment.polygon]), vertical_window=window)
+                sweep_checks += 1
+                if not check.candidate:
+                    sweep_failure = {'step': step, 'segment': index, 'proposal': asdict(proposal),
+                        'reach': reach, 'footprint': footprint, 'reference': list(position),
+                        'detail_ids': detail_ids, 'result': asdict(check)}
+                    raise RouteHalt('Ground sweep: ' + check.reason)
             # Independent idealized actuation. No actual sender or swept-volume
             # guard is exercised. Reject leaving the selected polygon's detail.
             if proposal.turn:
@@ -138,12 +163,18 @@ def run(output, *, speed, min_hold):
               "game_input_sent": False, "real_client_accepted": False, "route_accepted": False,
               "speed": speed, "minimum_hold_seconds": min_hold,
               "assumptions": ["ideal_timed_motion", "synthetic_alignment_and_fixes", "no_dynamic_obstacles",
-                              "endpoint_detail_sample_only_not_swept_guard"],
+                              ("continuous_detail_ground_only_no_wall_BSP_dynamic_guard" if ground_sweep else
+                               "endpoint_detail_sample_only_not_swept_guard")],
+              "ground_sweep_assumptions": ({"speed_upper": speed * 1.2, "release_overrun_seconds": .02,
+                    "heading_error_degrees": 2., "position_error": .05, "post_release_drift": .05,
+                    "extra_radius": .2, "verified_live_calibration": False} if ground_sweep else None),
               "phase": runner.phase, "error": error, "segments_reached": runner.index,
               "total_segments": len(route.segments), "steps": runner.steps,
               "simulated_seconds": clock - 100., "wall_seconds": time.monotonic() - began,
               "position": position, "history": history, "recent": recent,
               "adjacent_portal_samples": portal_samples,
+              "continuous_ground_sweep": ground_sweep, "sweep_checks": sweep_checks,
+              "sweep_failure": sweep_failure,
               "pins": {str(p): h for p, h in pins.items()}}
     with output.open("x") as out:
         json.dump(report, out, indent=2); out.write("\n")
@@ -158,6 +189,8 @@ def main():
                         help="Explicit idealized speed; default is historical G0, not current calibration")
     parser.add_argument("--min-hold", type=float, default=.02,
                         help="Hypothetical pulse granularity; not a live timing guarantee")
+    parser.add_argument('--ground-sweep', action='store_true',
+                        help='Check full detail-ground footprints with hypothetical uncertainty bounds')
     args = parser.parse_args()
     output = args.output.expanduser()
     if (output.parent.resolve() != (STORE / "nav-candidates").resolve() or output.exists()
@@ -167,7 +200,7 @@ def main():
         parser.error("use a new private nav-candidates JSON and finite bounded motion parameters")
     os.umask(0o077)
     os.nice(15)
-    run(output, speed=args.speed, min_hold=args.min_hold)
+    run(output, speed=args.speed, min_hold=args.min_hold, ground_sweep=args.ground_sweep)
 
 
 if __name__ == "__main__":
