@@ -26,6 +26,11 @@ Updated 2026-11-14 07:58 UTC for coordinator task `829a00229b29`.
   zone/ground/motion evidence and assemble the guarded route command executor;
   owner hotkey wiring remains disabled. The pending stationary observation
   and both owner helper versions are unchanged; G0 needs no repeat.
+  Source `4057d76` is staged at `owner-tools/0.41.90/source`. Remote module
+  startup and composition with the hash-matching retained engine pass without
+  constructing it or opening devices. Artifact SHA
+  `6105af00fc910548e470ad194668e789651396796c9ecf047833f53f01c9fe01`.
+  The read-only 07:58 UTC listing still found zero owner position pairs.
 - **Source 0.41.89:** the saved-position reader now checks the existing
   observation format, file hashes, timing records and parent/child crop pixels,
   and can summarize the pinned GFay route with its actual named zone mesh.

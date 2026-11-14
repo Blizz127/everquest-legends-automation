@@ -1,5 +1,20 @@
 # FINDINGS
 
+## Private source 0.41.90 staged — 2026-11-14 07:58 UTC
+
+**VERIFIED:** source `4057d766b9e2854fd47a2bf29d10ca2faf006c62`, archive SHA
+`716182f30c5fbcb40fcfbf244a011d9b9fda86cdd0529f3d3fa576b06aaed893`,
+is staged at Alienware `owner-tools/0.41.90/source`. Route modules import
+successfully, and the new adapter composes with the hash-matching retained
+0.39.10 engine class. The engine was not instantiated, and no display,
+input device, game capture or game input was used for the remote startup check.
+Remote artifact SHA
+`6105af00fc910548e470ad194668e789651396796c9ecf047833f53f01c9fe01`;
+local record `releases/eql-automation-0.41.90-staging.json`.
+The owner helper files were unchanged. A read-only listing at 07:58:51 UTC
+found zero saved position pairs. No live route acceptance or level gain is
+claimed; the existing stationary observation remains pending.
+
 ## Consecutive checked route steps 0.41.90 — 2026-11-14 07:58 UTC
 
 **VERIFIED implementation:** `RouteSession` now owns the route's exclusive

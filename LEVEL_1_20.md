@@ -14,6 +14,9 @@ Twenty-seven focused checks pass; a retained-engine pipe run completed two
 synthetic segments with nine steps, ten stopped pairs and 20 simulated
 location commands. Real scene, zone/height/motion bindings, a guarded command
 executor and owner control wiring remain missing. No live 1–20 leg is accepted.
+Source `4057d76` is privately staged on Alienware. Module startup and adapter
+composition with the retained engine pass without constructing it; no game
+input/capture occurred. The owner position-pair store remains empty at 07:58 UTC.
 
 Source 0.41.89 adds the read-only saved-position consumer. It checks the
 existing pair/crop format and summarizes the pinned GFay route, requiring
