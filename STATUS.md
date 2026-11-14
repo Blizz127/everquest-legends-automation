@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 11:52 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 11:57 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -29,6 +29,10 @@ Updated 2026-11-14 11:52 UTC for coordinator task `829a00229b29`.
   traversal; no real route or leveling accepted. Next consume travel evidence
   and implement zone/camp execution/current-zone startup. Assist 0.39.13 remains
   separate. G0 passed; current level, XP/hour, deaths and camp unknown.
+  One read-only Alienware process/log check at 11:56 UTC found no process
+  named `eqgame.exe`; no current-process zone bootstrap could be verified.
+  The newest retained zone line is historical and was not used as current
+  evidence. No game launch or input was performed; no polling loop.
 - **Source 0.42.12:** explicit pinned tile/overlap policy now follows fresh
   plans into per-movement terrain/static/BSP preparation. Copied five- and
   forty-ULP GFay seams pass all three checks and refuse without overlap

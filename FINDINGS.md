@@ -79,6 +79,16 @@ deaths and camp remain unknown; saved UI level 7 is not a current observation.
 G0 is passed; no repeat requested. Next consume actual owner travel evidence,
 continue zone/camp execution and improve current-zone startup independently.
 
+**OBSERVED, 11:56 UTC:** one read-only Alienware `/proc/*/comm` and expected
+character-log metadata check found no process named `eqgame.exe`. The selected
+Legira/freeport log's most recent complete timestamp was Nov 13 16:10:46 local;
+the latest retained zone entry was Nov 13 15:17:07 local. Neither is a current
+zone or character-progress observation. Current-process writer-FD ownership
+therefore remains unverified; the preview keeps its appended-entry behavior.
+Metadata-only evidence is retained privately in
+`releases/current-zone-process-probe-20261114-1157.json`. No game launch, input,
+protected-file change or repeated polling occurred.
+
 ## Pinned tile policy in route geometry — 2026-11-14 11:43 UTC
 
 **VERIFIED implementation:** source 0.42.12 carries an immutable, explicit
