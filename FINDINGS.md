@@ -1,5 +1,61 @@
 # FINDINGS
 
+## Repeated source moves and exclusive arrival corridor — 2026-11-14 13:10 UTC
+
+**VERIFIED implementation:** source 0.42.21 adds `CrossingCorridorHandoff` and
+`SupervisedCrossingCorridorPolicy`. One immutable declaration covers the dry
+approach, pivots and the exact expected zone-line footprint. Movement slots and
+maximum hold are reserved before DOWN, including the final loading pulse whose
+source floor never commits. The existing destination ceilings apply only to
+this explicit scope. Source and arrival deadlines are separate, bounded by one
+outer horizon; the arrival subdeadline remains at most 120 seconds. Ordinary
+route policies still refuse crossing scopes.
+
+`ZoneArrivalHandoff` owns the only location-reader poll for both source pairs
+and arrival boundaries. Its stopped-source collector borrows that poll, so a
+loading event retires the source pair before an old-zone postcheck can consume
+or hide it. Complete boundary batches remain ordered; loading followed by an
+invalid event refuses. Completed source results are checked again for queued
+loading before consumption. Reentry, competing polls, changes of owner/log/zone
+and callback cancellation refuse.
+
+The sender seals elapsed receipts after final UP within the original 0.3-second
+bound. Fresh replies are observed against that exact provisional floor as each
+arrives; a complete stopped pair resolves it before another pulse. Loading
+releases controls and cancels the pending source transaction. A footprint must
+overlap the exact pinned native line to correlate loading; dry-pivot loading
+refuses. Destination arrival uses new positions and does not reuse source pose,
+heading or floor. An unsupported or very late inter-pulse loading event can
+still stop the corridor rather than automatically continuing; recovery is not
+implemented by this primitive.
+
+**VERIFIED focused checks:** the final corridor/one-pulse batch passes 32 tests.
+These include real watchdog DOWN/UP writes to OS pipes, two repeated source
+resolutions followed by a third loading pulse and fresh destination positions,
+dry pivots, one shared budget, unresolved-receipt exclusion and cancellation.
+Game positions, log messages and scene observations are synthetic. The preceding
+combined batch had 220 passes and two interrupted pipe cases; both are included
+in the passing final focused run. A devbox sample showed load averages around
+165, 204 runnable processes and zero idle CPU. This supports scheduling pressure
+as a possible cause, not a measured diagnosis of each interruption. No deadlines
+or freshness checks were relaxed.
+
+Review found that loading followed by a malformed position could return a
+successful handoff even though arrival had stopped. A failing test reproduced
+it; both crossing wrappers now reject stopped arrival. A second reproduced
+failure delayed the final scope callback beyond receipt expiry. The final clock
+read now follows scope callbacks, then callback-free binding/cancellation checks
+precede phase publication.
+
+**Remaining real-client gate:** the owner travel runtime/GUI still uses ordinary
+approach routing. Connect this corridor to its existing stop lock, tested location
+key and single reader/input observer without running the old route driver in
+parallel. Then establish fresh Crushbone geometry and suitable camps. Owner
+travel 0.39.18 and assist 0.39.13 are unchanged. G0 is passed and needs no repeat.
+No live login, character input/mutation, client/prefix write or new owner test
+occurred. Current level, XP/hour, deaths and camp unknown; no real crossing,
+accepted 1–20 route, automated XP or completed fresh 1–50 run.
+
 ## Provisional source-floor receipt transaction — 2026-11-14 12:54 UTC
 
 **VERIFIED implementation:** source 0.42.20 adds `ProvisionalRouteFloorCommit`

@@ -14,8 +14,8 @@ from test_route_floor_commit import legacy, setup, receipt
 from test_ground_observer import GEOMETRY, rectangle
 
 
-def build(legacy, *, wall=False, water=False, bounds_changes=None, clock=None):
-    f = setup(legacy, clock=clock)
+def build(legacy, *, wall=False, water=False, bounds_changes=None, clock=None,ledger_factory=None):
+    f = setup(legacy, clock=clock,**({} if ledger_factory is None else dict(ledger_factory=ledger_factory)))
     ground = GroundSweepView(np.asarray(rectangle(0., 2.) + rectangle(2., 4.)),
         np.asarray((0, 0, 1, 1)), np.asarray((63, 63)), np.asarray((7, 7)))
     ground.mesh_sha256 = GEOMETRY.mesh_sha256

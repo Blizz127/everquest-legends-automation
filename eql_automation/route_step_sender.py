@@ -83,7 +83,7 @@ def run_checked_crossing_step(sender, crossing, *, policy, scene_provider, comma
                 still_authorized=policy.still_authorized,command_state_clear=command_state_clear,
                 pump=pump,supervised_policy=policy,crossing=crossing)
         except PulseInterrupted as error:
-            if crossing.arrival.loading is None:raise
+            if crossing.arrival.loading is None or crossing.arrival.phase=='stopped':raise
             receipt=error.receipt
         if sender.held or getattr(sender,'_eql_route_operation',None) is not None:
             raise RouteHalt('Crossing sender has not finished exclusive release cleanup')
@@ -92,9 +92,31 @@ def run_checked_crossing_step(sender, crossing, *, policy, scene_provider, comma
         crossing.cancel(str(error));raise
 
 
+def run_checked_corridor_step(sender,corridor,*,policy,scene_provider,command_state_clear,pump):
+    """One pulse in the same aggregate corridor; elapsed receipts stay sealed."""
+    from .crossing_corridor import CrossingCorridorHandoff
+    if type(corridor) is not CrossingCorridorHandoff:
+        raise ValueError('Explicit exclusive crossing corridor required')
+    try:
+        corridor.start(policy)
+        try:
+            receipt=_run_checked_step(sender,corridor.ledger,scene_provider=scene_provider,
+                prepare_step=corridor.geometry,authorize_step=policy.authorize,
+                still_authorized=policy.still_authorized,command_state_clear=command_state_clear,
+                pump=pump,supervised_policy=policy,corridor=corridor)
+        except PulseInterrupted as error:
+            if corridor.arrival.loading is None or corridor.arrival.phase=='stopped':raise
+            receipt=error.receipt
+        if sender.held or getattr(sender,'_eql_route_operation',None) is not None:
+            raise RouteHalt('Corridor sender has not finished exclusive release cleanup')
+        return corridor.released(receipt)
+    except BaseException as error:
+        corridor.cancel(str(error));raise
+
+
 def _run_checked_step(sender, ledger, *, scene_provider, prepare_step,
                       authorize_step, still_authorized, command_state_clear, pump,
-                      supervised_policy=None,crossing=None):
+                      supervised_policy=None,crossing=None,corridor=None):
     """Arm, observe, propose, check, send, release, then commit exactly once.
 
     ``prepare_step(proposal, scene)`` stages the complete geometry request on
@@ -117,6 +139,9 @@ def _run_checked_step(sender, ledger, *, scene_provider, prepare_step,
     movement rather than renewing timestamps. After success the follower still
     requires a new stopped-location pair. Assist/off always refuse movement.
     """
+    if corridor is not None:
+        if crossing is not None:raise ValueError('One exclusive transition controller required')
+        crossing=corridor
     if (not isinstance(ledger, RouteFloorCommit) or not all(callable(f) for f in
             (scene_provider, prepare_step, authorize_step, still_authorized,
              command_state_clear, pump))):
@@ -124,7 +149,10 @@ def _run_checked_step(sender, ledger, *, scene_provider, prepare_step,
     if supervised_policy is not None:
         from .supervised_route import SupervisedRoutePolicy
         policy_type=SupervisedRoutePolicy
-        if crossing is not None:
+        if corridor is not None:
+            from .supervised_corridor import SupervisedCrossingCorridorPolicy
+            policy_type=SupervisedCrossingCorridorPolicy
+        elif crossing is not None:
             from .supervised_crossing import SupervisedCrossingPolicy
             policy_type=SupervisedCrossingPolicy
         if (type(supervised_policy) is not policy_type
@@ -304,6 +332,9 @@ def _run_checked_step(sender, ledger, *, scene_provider, prepare_step,
                 raise RouteHalt('Route was cancelled before receipt commit')
             if sender.held:
                 raise RouteHalt('Sender acquired a held key after final release')
+            if corridor is not None:
+                corridor.seal_released(receipt)
+                return receipt
             if crossing is not None:
                 ledger.cancel('Final crossing pulse released; source floor is not committed')
                 return receipt

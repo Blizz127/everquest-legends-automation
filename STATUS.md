@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 12:54 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 13:10 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,22 @@ Updated 2026-11-14 12:54 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.21:** the crossing corridor core now repeats checked pulses,
+  resolves provisional source floors from fresh stopped pairs, then discards
+  source state on loading and collects expected destination positions through
+  the same exclusive reader. One aggregate step/hold/time budget includes the
+  final loading pulse. Actual OS-pipe movement receipts plus synthetic game
+  feedback exercise two source moves and a third loading move. Final focused
+  crossing checks: **32 passed**. Earlier combined check: 220 passed, two pipe
+  interruptions; those cases pass in the final focused run. The devbox showed
+  load average ~165 and zero idle CPU in a sampled interval; no timing bounds
+  were relaxed. Review reproduced/fixed stopped-arrival acceptance after a
+  malformed log position and final-callback receipt expiry. **Next:** connect
+  the owner travel action to this corridor while preserving one input observer,
+  stop lock and reader; add fresh Crushbone geometry/camps. Owner travel 0.39.18
+  and assist 0.39.13 remain unchanged; no new owner test or repeated G0. Current
+  level, XP/hour, deaths and camp unknown. No accepted real route/crossing,
+  automated XP or completed 1–20/1–50 run. Private source staging pending.
 - **Source 0.42.20:** provisional floor transactions seal actual elapsed
   receipts within the existing 0.3-second limit without advancing floor/pose.
   A fresh stopped source pair on the exact checked footprint/fork is required

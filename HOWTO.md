@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.20** · rotation preview **0.39.13** · destination preview **0.39.18** · short route trial **0.39.15**.
+Source **0.42.21** · rotation preview **0.39.13** · destination preview **0.39.18** · short route trial **0.39.15**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -26,15 +26,15 @@ The requested seamless assist/full-auto switch is still unfinished.
 Source 0.42.19 can plan from dry ground into the exact copied Crushbone zone-line
 region and retain its actual area in position observations. The copied-data
 probe produces 200 segments; this is not a traversed route. Ordinary routes
-still refuse zone-line geometry. The checked crossing pulse/arrival core exists,
-but the owner action still needs continuous source-floor handling and exclusive
-reader transfer before it can cross. Starting a new plan inside the zone-line
+still refuse zone-line geometry. Starting a new plan inside the zone-line
 region remains unsupported. Copied geometry and pipe tests are not live crossing
 acceptance.
-Source 0.42.20 adds provisional receipt handling: a completed movement stays
-uncommitted while loading is possible, and needs fresh source positions to
-continue. It retains the original receipt deadline. This core is not yet wired
-to the owner action; the existing travel preview still stops at the approach.
+Source 0.42.21 connects repeated checked moves, provisional movement receipts,
+fresh stopped source positions and expected-zone arrival through one log reader
+and one shared time/movement budget. Loading releases movement and discards the
+source transaction; only fresh destination positions can complete the handoff.
+This core is not yet wired to the owner action; the existing travel preview
+still stops at the approach. Destination geometry and camp execution also remain.
 Use the same 0.39.18 command below; this source update needs no new owner test.
 
 ## Travel toward Crushbone on Alienware: 0.39.18

@@ -57,7 +57,14 @@ class CrossingPulseHandoff:
         self.check_current()
         mode=self.runner.mode_reader()
         generation=self.runner.generation_reader()
+        self._bound_state(mode,generation)
+        return mode,generation
+
+    def _bound_state(self,mode,generation):
+        """Recheck cancellation/bindings without invoking external callbacks."""
         policy=self.policy
+        if getattr(getattr(self,'arrival',None),'phase',None)=='stopped':
+            raise ValueError('Crossing arrival failed or was cancelled')
         if policy is not None and (
                 policy._cancelled is not None or policy.declaration is not policy._declaration
                 or policy.geometry is not self.geometry or policy.ledger is not self.ledger
@@ -121,8 +128,9 @@ class CrossingPulseHandoff:
                 or now-receipt.up_completed_at>.3
                 or (receipt.completion=='interrupted' and self.arrival.loading is None)):
             raise ValueError('Crossing receipt differs, exceeds bounds or lacks expected loading')
+        mode,generation=self._current()
         finished=self.clock()
-        self._current()  # Clock and scope callbacks can synchronously cancel.
+        self._bound_state(mode,generation)
         if self.phase!='pulsing' or not finite(finished) or not now<=finished<=receipt.up_completed_at+.3:
             raise ValueError('Crossing changed or expired during release completion')
         self.receipt=receipt;self.finished_at=finished

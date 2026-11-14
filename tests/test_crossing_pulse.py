@@ -152,6 +152,14 @@ def test_ordinary_route_sender_rejects_crossing_policy(h):
             command_state_clear=lambda:True,pump=lambda:None,supervised_policy=h.policy)
 
 
+def test_invalid_position_after_loading_cannot_be_reported_as_arrival(h,monkeypatch):
+    def malformed():
+        h.append('LOADING, PLEASE WAIT...');h.append('Your Location is malformed')
+    after_down(monkeypatch,malformed)
+    with pytest.raises((ValueError,RuntimeError)):h.run()
+    assert h.crossing.phase=='stopped' and h.crossing.arrival.phase=='stopped'
+
+
 def test_cancel_in_final_receipt_clock_cannot_resurrect_arrival(h,monkeypatch):
     after_down(monkeypatch,lambda:h.append('LOADING, PLEASE WAIT...'))
     original=h.crossing.released

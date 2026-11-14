@@ -16,13 +16,18 @@ from .owner_zone_tracker import ZoneReaderLease
 
 class StoppedLocationPair:
     def __init__(self, lease, *, released_at, check_current, clock=time.monotonic,
-                 local_wall_clock=datetime.now):
+                 local_wall_clock=datetime.now, poll_reader=None):
         if (not isinstance(lease, ZoneReaderLease) or not finite(released_at)
                 or released_at < 0 or not all(callable(f) for f in
-                    (check_current, clock, local_wall_clock))):
+                    (check_current, clock, local_wall_clock))
+                or (poll_reader is not None and not callable(poll_reader))):
             raise ValueError('Exclusive zone lease and current release required')
         self.lease, self.reader = lease, lease.reader
         self.check_current, self.clock, self.wall = check_current, clock, local_wall_clock
+        # An enclosing arrival controller may own this same reader's poll,
+        # handling loading boundaries before our source-zone postcheck. It
+        # must return only that poll's actual fixes, or abort this collection.
+        self.poll_reader = self.reader.poll if poll_reader is None else poll_reader
         self.owner = lease.check()
         self.started = self.last_at = clock()
         if not finite(self.started) or released_at > self.started:
@@ -65,11 +70,12 @@ class StoppedLocationPair:
                 return None
             if self.reader.latest is not self.latest or self.reader.log_line_seq != self.seq:
                 raise ValueError('Startup reader was consumed elsewhere')
-            fixes = self.reader.poll(now=now)
+            fixes = self.poll_reader(now=now)
             now = self.check()
             if (self.reader.tail.partial or len(fixes)>1
                     or self.reader.log_line_seq != self.seq+len(fixes)
                     or (fixes and self.phase != 'await_location')
+                    or (fixes and self.reader.latest is not fixes[-1])
                     or (not fixes and self.reader.latest is not self.latest)):
                 raise ValueError('Startup received partial, invalid or unsolicited positions')
             if fixes:

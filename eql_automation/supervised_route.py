@@ -40,6 +40,8 @@ def scope_limits(scope):
         return (1500., 3000, 10000., 600.)
     if scope == 'zone_crossing':
         return (15., 1, 10., .2)
+    if scope == 'zone_crossing_corridor':
+        return (1500., 3000, 10000., 600.)
     raise ValueError('Unknown supervised route scope')
 
 
@@ -113,7 +115,8 @@ class SupervisedRoutePolicy:
         self._check()
 
     def _validate_geometry(self, geometry, declaration):
-        if geometry.expected_zone_line is not None:
+        if (geometry.expected_zone_line is not None
+                or declaration.scope not in ('local_trial','destination_travel')):
             raise ValueError('Ordinary route trials cannot authorize a zone crossing')
 
     def cancel(self, reason):
