@@ -11,6 +11,7 @@ import math
 import struct
 
 from .ground_sweep import GroundFace, GroundCoverage, area, check_ground_coverage, clip, cross, finite, hull
+from .tile_rounding import TileBoundary,TileGrid
 
 
 @dataclass(frozen=True)
@@ -29,6 +30,7 @@ class QuantizedSeam:
     target_coordinate: float
     span: tuple[float, float]
     maximum_ulp_steps: int = 1
+    tile_boundary: TileBoundary | None = None
 
     def __post_init__(self):
         if (self.axis not in (0,1) or isinstance(self.axis,bool)
@@ -36,7 +38,10 @@ class QuantizedSeam:
                 or self.source == self.target or len(self.span) != 2
                 or not all(finite(v) for v in self.span) or self.span[0] >= self.span[1]
                 or type(self.maximum_ulp_steps) is not int or self.maximum_ulp_steps not in (1,2)
-                or float32_steps(self.source_coordinate,self.target_coordinate) not in range(1,self.maximum_ulp_steps+1)):
+                or (self.tile_boundary is None and
+                    float32_steps(self.source_coordinate,self.target_coordinate) not in range(1,self.maximum_ulp_steps+1))
+                or (self.tile_boundary is not None and (not isinstance(self.tile_boundary,TileBoundary)
+                    or not self.tile_boundary.matches(self.axis,self.source_coordinate,self.target_coordinate)))):
             raise ValueError('Invalid explicitly bounded reciprocal seam')
 
     @property
@@ -112,9 +117,10 @@ def adjacent_float32(a, b):
     return float32_steps(a,b)==1
 
 
-def derive_seam(first, second, areas, components, *, maximum_ulp_steps=1):
+def derive_seam(first, second, areas, components, *, maximum_ulp_steps=1,tile_grid=None):
     if (not isinstance(first, PortalLink) or not isinstance(second, PortalLink)
             or type(maximum_ulp_steps) is not int or maximum_ulp_steps not in (1,2)
+            or (tile_grid is not None and not isinstance(tile_grid,TileGrid))
             or first.source != second.target or first.target != second.source
             or first.source == first.target):
         return None
@@ -131,15 +137,20 @@ def derive_seam(first, second, areas, components, *, maximum_ulp_steps=1):
         other = 1-axis
         ea, eb = sorted(first.edge, key=lambda p:p[other]), sorted(second.edge, key=lambda p:p[other])
         if (ea[0][axis] != ea[1][axis] or eb[0][axis] != eb[1][axis]
-                or float32_steps(ea[0][axis], eb[0][axis]) not in range(1,maximum_ulp_steps+1)
                 or ea[0][other] >= ea[1][other]
                 or any(pa[other] != pb[other] or pa[2] != pb[2] for pa,pb in zip(ea,eb))):
             continue
-        return QuantizedSeam(a,b,axis,ea[0][axis],eb[0][axis],(ea[0][other],ea[1][other]),maximum_ulp_steps)
+        boundary=None
+        if tile_grid is not None:
+            boundary=tile_grid.match(axis,ea[0][axis],eb[0][axis])
+            if boundary is None:continue
+        elif float32_steps(ea[0][axis],eb[0][axis]) not in range(1,maximum_ulp_steps+1):
+            continue
+        return QuantizedSeam(a,b,axis,ea[0][axis],eb[0][axis],(ea[0][other],ea[1][other]),maximum_ulp_steps,boundary)
     return None
 
 
-def collect_seams(links, areas, components, *, maximum_ulp_steps=1):
+def collect_seams(links, areas, components, *, maximum_ulp_steps=1,tile_grid=None):
     """Duplicate or nonreciprocal links never supply a correction."""
     directed = {}
     for link in links:
@@ -148,7 +159,8 @@ def collect_seams(links, areas, components, *, maximum_ulp_steps=1):
     for (a,b), forward in directed.items():
         reverse = directed.get((b,a),())
         if a < b and len(forward) == len(reverse) == 1:
-            seam = derive_seam(forward[0],reverse[0],areas,components,maximum_ulp_steps=maximum_ulp_steps)
+            seam = derive_seam(forward[0],reverse[0],areas,components,
+                              maximum_ulp_steps=maximum_ulp_steps,tile_grid=tile_grid)
             if seam is not None:
                 seams.append(seam)
     return tuple(seams)
@@ -313,6 +325,14 @@ def retry_precision_gap(original, footprint, faces, polygon_ids, seams, sources,
     if (not 1 <= len(seams) <= 8 or len(faces) != len(polygon_ids) or len(faces) > 96
             or any(not isinstance(s,QuantizedSeam) for s in seams)):
         return PrecisionCheck(False,'no_bounded_reciprocal_seam_set')
+    for seam in seams:
+        if seam.tile_boundary is None:continue
+        for polygon,coordinate in ((seam.source,seam.source_coordinate),(seam.target,seam.target_coordinate)):
+            side=-1 if coordinate==seam.tile_boundary.lower_tile_maximum else 1
+            offsets=[(p[seam.axis]-coordinate)*side for face,poly in zip(faces,polygon_ids)
+                     if poly==polygon for p in face.vertices]
+            if not offsets or min(offsets)<0 or max(offsets)<=0:
+                return PrecisionCheck(False,'detail_polygon_disagrees_with_predicted_tile_side')
     attribution = None
     if original.reason=='overlapping_ground_faces':
         repeated = check_ground_coverage(footprint,faces,reference=reference,

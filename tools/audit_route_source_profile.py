@@ -26,7 +26,7 @@ PINS={PLAN:'9207b689d3ca462f0eb0b6d45af87deb902662c237dd33f5172ab613021e12f6',
       SOURCE:'ea95f51a2d4645410223d24cc7da9eb0e7095310c6e9f8756e8c51d67df13d9f'}
 
 
-def run(output, *, seconds):
+def run(output, *, seconds,tile_rounding=False):
     sys.path.insert(0,str(PROJECT))
     from eql_automation.fixed_route_follower import FixedRoute
     from eql_automation.bsp_detail_view import BspDetailMeshView
@@ -39,9 +39,11 @@ def run(output, *, seconds):
     pins=dict(PINS)
     for name in ('fixed_route_follower','ground_binding','bsp_detail_view','ground_sweep','ground_sweep_view',
                  'portal_precision','portal_precision_view','portal_surface_audit','map_alignment',
-                 'mesh_geometry','material_audit','pfs_archive','wld_inventory'):
+                 'mesh_geometry','material_audit','pfs_archive','wld_inventory','tile_rounding'):
         p=PROJECT/'eql_automation'/(name+'.py');pins[p]=sha256(p.read_bytes()).hexdigest()
     pins[Path(__file__)]=sha256(Path(__file__).read_bytes()).hexdigest()
+    if tile_rounding:
+        pins[MESH.with_suffix('.json')]='ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82'
     def verify():
         if any(p.is_symlink() or sha256(p.read_bytes()).hexdigest()!=h for p,h in pins.items()):
             raise ValueError('Source profile input changed')
@@ -49,7 +51,8 @@ def run(output, *, seconds):
     route=FixedRoute.load(PLAN,expected_sha256=PINS[PLAN],mesh_sha256=PINS[MESH])
     mesh=BspDetailMeshView.load(MESH,zone=route.zone)
     ground=GroundSweepView.load(MESH,zone=route.zone)
-    view=PortalPrecisionView(ground,MESH,SOURCE,zone=route.zone,maximum_ulp_steps=2)
+    view=PortalPrecisionView(ground,MESH,SOURCE,zone=route.zone,
+        maximum_ulp_steps=1 if tile_rounding else 2,tile_rounding=tile_rounding)
     counts=[math.ceil(s.length/2.) for s in route.segments]
     total=sum(counts)
     if total>10000 or max(counts)>512:
@@ -111,6 +114,7 @@ def run(output, *, seconds):
     report={'format':'eql-copied-route-source-profile-v1','offline_only':True,
         'game_input_sent':False,'input_authorized':False,'real_client_accepted':False,'route_accepted':False,
         'source_or_mesh_modified':False,'zone':route.zone,'radius':route.half_width,'maximum_cell_length':2.,
+        'tile_rounding':None if view.tile_grid is None else asdict(view.tile_grid),
         'expected_cells':total,'checked_cells':len(rows),'complete_cell_scan':complete,
         'all_cells_candidate':all_pass,'failed_cells':failures,'budget_exhausted':timed_out,
         'measured_maximum_on_passing_cells':maximum,
@@ -128,11 +132,12 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',required=True,type=Path)
     parser.add_argument('--seconds',type=float,default=90.)
+    parser.add_argument('--tile-rounding',action='store_true',help='Use exact predicted tile-side diagnostic')
     args=parser.parse_args();output=args.output.expanduser()
     if (output.parent.resolve()!=(STORE/'nav-candidates').resolve() or output.exists()
             or output.is_symlink() or output.suffix!='.json' or not math.isfinite(args.seconds) or not 1<=args.seconds<=300):
         parser.error('Use a new private nav-candidates JSON and wall budget 1–300 seconds')
-    os.umask(0o077);os.nice(15);run(output,seconds=args.seconds)
+    os.umask(0o077);os.nice(15);run(output,seconds=args.seconds,tile_rounding=args.tile_rounding)
 
 
 if __name__=='__main__':main()

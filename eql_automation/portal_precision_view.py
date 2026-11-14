@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+from hashlib import sha256
+import json
 import numpy as np
 
 from .ground_sweep import GroundFace
@@ -11,15 +13,20 @@ from .mesh_geometry import read_meshes
 from .pfs_archive import PFSArchive
 from .portal_precision import PortalLink, PrecisionCheck, SourceFace, collect_seams, retry_precision_gap
 from .wld_inventory import WLDInventory
+from .tile_rounding import grid_from_metadata
 
 
 class PortalPrecisionView:
-    def __init__(self, ground_view, mesh_path: Path, archive_path: Path, *, zone, maximum_ulp_steps=1):
+    def __init__(self, ground_view, mesh_path: Path, archive_path: Path, *, zone, maximum_ulp_steps=1,
+                 tile_rounding=False):
         self.ground = ground_view
         with np.load(mesh_path,allow_pickle=False) as data:
             a = np.asarray(data['link_a'],dtype=np.int64).reshape(-1)
             b = np.asarray(data['link_b'],dtype=np.int64).reshape(-1)
             edges = np.asarray(data['link_pts'],dtype=np.float64).reshape(-1,2,3)
+            meta = json.loads(str(data['meta'])) if tile_rounding else None
+            rings = np.asarray(data['poly_verts'],dtype=np.float64) if tile_rounding else None
+            sizes = np.asarray(data['poly_nv'],dtype=np.int64) if tile_rounding else None
         count = len(ground_view.areas)
         if (not 1 <= len(a) <= 1000000 or len(a) != len(b) or len(a) != len(edges)
                 or min(a.min(),b.min()) < 0 or max(a.max(),b.max()) >= count or not np.isfinite(edges).all()):
@@ -28,8 +35,35 @@ class PortalPrecisionView:
                  for x,y,edge in zip(a,b,edges))
         if type(maximum_ulp_steps) is not int or maximum_ulp_steps not in (1,2):
             raise ValueError('Only explicit one- or two-ULP diagnostics are supported')
+        self.tile_grid=None
+        if tile_rounding:
+            if tile_rounding is not True or maximum_ulp_steps!=1:
+                raise ValueError('Use either the tile model or an explicit ULP classifier')
+            manifest_path=mesh_path.with_suffix('.json')
+            if mesh_path.is_symlink() or manifest_path.is_symlink():
+                raise ValueError('Pinned tile inputs must be regular files')
+            manifest_bytes=manifest_path.read_bytes()
+            self.tile_grid=grid_from_metadata(json.loads(manifest_bytes),meta,
+                manifest_sha256=sha256(manifest_bytes).hexdigest(),
+                mesh_sha256=sha256(mesh_path.read_bytes()).hexdigest(),zone=zone)
         self.seams = collect_seams(links,ground_view.areas,ground_view.components,
-                                  maximum_ulp_steps=maximum_ulp_steps)
+                                  maximum_ulp_steps=maximum_ulp_steps,tile_grid=self.tile_grid)
+        self.tile_orientation_refusals=0
+        if self.tile_grid is not None:
+            if (rings.ndim!=3 or rings.shape[0]!=count or rings.shape[2]!=3
+                    or sizes.shape!=(count,) or np.any(sizes<3) or np.any(sizes>rings.shape[1])
+                    or not np.isfinite(rings).all()):
+                raise ValueError('Invalid copied polygon rings')
+            accepted=[]
+            for seam in self.seams:
+                good=True
+                for poly,coordinate in ((seam.source,seam.source_coordinate),(seam.target,seam.target_coordinate)):
+                    side=-1 if coordinate==seam.tile_boundary.lower_tile_maximum else 1
+                    offsets=(rings[poly,:sizes[poly],seam.axis]-coordinate)*side
+                    if np.min(offsets)<0 or np.max(offsets)<=0:good=False
+                if good:accepted.append(seam)
+                else:self.tile_orientation_refusals+=1
+            self.seams=tuple(accepted)
         self.by_polygon = {}
         for index,seam in enumerate(self.seams):
             for poly in (seam.source,seam.target):
@@ -37,6 +71,8 @@ class PortalPrecisionView:
         archive = PFSArchive(archive_path)
         wld = WLDInventory(archive.read_member(zone+'.wld'))
         self.archive_sha256, self.wld_sha256 = archive.sha256,wld.sha256
+        if self.tile_grid is not None and self.tile_grid.source_archive_sha256!=self.archive_sha256:
+            raise ValueError('Source archive does not match tile manifest')
         fragments = {f.index:f for f in wld.fragments}
         self.sources = []
         for mesh in read_meshes(wld):

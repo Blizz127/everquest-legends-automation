@@ -66,7 +66,8 @@ def local_seam_diagnostic(view, footprint, reference, component, window, detail_
 
 def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=False,
         shorten_ground_step=False, plan=PLAN, plan_sha256=PLAN_SHA, precision_portals=False,
-        source_z_limit=.6, wall_budget=35., precision_overlaps=False, maximum_portal_ulp_steps=1):
+        source_z_limit=.6, wall_budget=35., precision_overlaps=False, maximum_portal_ulp_steps=1,
+        tile_rounding=False):
     began = time.monotonic()
     sys.path[:0] = [str(PROJECT), str(HELPER)]
     from eql_automation.fixed_route_follower import FixedRoute, FixedRouteFollower, RouteHalt
@@ -83,6 +84,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         raise ValueError('Overlap diagnostics require --precision-portals')
     if maximum_portal_ulp_steps not in (1,2) or (maximum_portal_ulp_steps!=1 and not precision_portals):
         raise ValueError('Two-ULP diagnostics require --precision-portals')
+    if tile_rounding and (not precision_portals or maximum_portal_ulp_steps!=1):
+        raise ValueError('Tile rounding requires precision portals and excludes ULP overrides')
     pins = dict(PINS)
     pins[plan] = plan_sha256
     for path in (Path(__file__), PROJECT / "eql_automation/fixed_route_follower.py",
@@ -96,7 +99,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     source_archive = STORE/'client-data/retail-full/assets/gfaydark.s3d'
     pins[source_archive] = 'ea95f51a2d4645410223d24cc7da9eb0e7095310c6e9f8756e8c51d67df13d9f'
     for module in ('portal_precision','portal_precision_view','pfs_archive','wld_inventory',
-                   'mesh_geometry','material_audit','map_alignment','ground_sweep_view'):
+                   'mesh_geometry','material_audit','map_alignment','ground_sweep_view','tile_rounding'):
         path = PROJECT/'eql_automation'/(module+'.py')
         pins[path] = sha256(path.read_bytes()).hexdigest()
     if precision_portals:
@@ -121,7 +124,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     mesh = BspDetailMeshView.load(MESH, zone=route.zone)
     ground_view = GroundSweepView.load(MESH, zone=route.zone)
     source_view = PortalPrecisionView(ground_view,MESH,source_archive,zone=route.zone,
-                                      maximum_ulp_steps=maximum_portal_ulp_steps)
+                                      maximum_ulp_steps=maximum_portal_ulp_steps,tile_rounding=tile_rounding)
     # Check all selected route adjacencies against actual reciprocal links,
     # area and component arrays, independently of each synthetic observation.
     with np.load(MESH, allow_pickle=False) as data:
@@ -352,6 +355,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
               "precision_portals":precision_portals,"precision_retries":precision_retries,
               "precision_overlaps":precision_overlaps,
               "maximum_portal_ulp_steps":maximum_portal_ulp_steps,
+              "tile_rounding":None if source_view.tile_grid is None else asdict(source_view.tile_grid),
               "precision_limits":({"maximum_source_baked_z_difference":source_z_limit,"source_boundary_margin":.002,
                     "vertical_bound_is_diagnostic_not_proven_bake_error":True,
                     "eligible_seams":len(precision_view.seams),"source_faces":len(precision_view.sources),
@@ -382,6 +386,8 @@ def main():
                         help='Offline only: also attribute and retry bounded reciprocal detail overlaps')
     parser.add_argument('--maximum-portal-ulp-steps', type=int, choices=(1,2), default=1,
                         help='Explicit copied-data diagnostic portal rounding bound (default one float32 step)')
+    parser.add_argument('--tile-rounding',action='store_true',
+                        help='Offline only: require exact predicted adjacent float32 tile-side coordinates')
     parser.add_argument('--source-z-limit',type=float,default=.6,
                         help='Diagnostic source/baked height-difference limit, not live calibration (default .6)')
     parser.add_argument('--wall-budget',type=float,default=35.,
@@ -406,6 +412,8 @@ def main():
         parser.error('--precision-overlaps requires --precision-portals')
     if args.maximum_portal_ulp_steps!=1 and not args.precision_portals:
         parser.error('--maximum-portal-ulp-steps 2 requires --precision-portals')
+    if args.tile_rounding and (not args.precision_portals or args.maximum_portal_ulp_steps!=1):
+        parser.error('--tile-rounding requires --precision-portals and excludes ULP overrides')
     output = args.output.expanduser()
     if (output.parent.resolve() != (STORE / "nav-candidates").resolve() or output.exists()
             or output.is_symlink() or output.suffix != ".json"
@@ -420,7 +428,8 @@ def main():
         local_seam_experiment=args.local_seam_experiment, shorten_ground_step=args.shorten_ground_step,
         plan=plan, plan_sha256=plan_sha256,precision_portals=args.precision_portals,
         source_z_limit=args.source_z_limit,wall_budget=args.wall_budget,
-        precision_overlaps=args.precision_overlaps,maximum_portal_ulp_steps=args.maximum_portal_ulp_steps)
+        precision_overlaps=args.precision_overlaps,maximum_portal_ulp_steps=args.maximum_portal_ulp_steps,
+        tile_rounding=args.tile_rounding)
 
 
 if __name__ == "__main__":
