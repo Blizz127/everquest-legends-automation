@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 17:44 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 17:45 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.45 validated; publication pending; preview remains 0.39.30:**
+- **Source 0.42.45 privately published; preview remains 0.39.30:**
   route-independent probe preparation now binds the actual camp-height record,
   exact floor/reader lease and explicit bounds to a checked all-heading source
   envelope. Slow planning never renews its starting observations. A new pair
@@ -14,6 +14,10 @@ Updated 2026-11-14 17:44 UTC for coordinator task `829a00229b29`.
   state authorizes input. **38 focused local checks passed**, and final
   **53 Alienware checks pass in 2.07 seconds**, output SHA
   `c5bb60d5caa65d8a9432a8df3ada6a0dbacbc2fb02d1360a330cf3def647710c`.
+  Published at Alienware `owner-tools/0.42.45/source`, revision `f9c40c3`;
+  runtime/tests/tools match the validated snapshot. Imports, diagnostic CLI and
+  copied-data pins pass. Startup SHA
+  `a2e18edb401088bb6558aeb171df59962fc3c5a6db71e3449098c69f19292d4a`.
   This source-only increment is not enabled in owner controls. A read-only
   Alienware check found no EverQuest client process and no journey trace.
   Next: current independent scene and supported motion-bound producers, plus

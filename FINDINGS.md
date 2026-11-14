@@ -1,5 +1,23 @@
 # FINDINGS
 
+## 2026-11-14 17:45 UTC — source 0.42.45 privately published
+
+VERIFIED Alienware publication at `owner-tools/0.42.45/source`, revision
+`f9c40c3ec96c0e899c41f9fdc047b6740afd19c0`. Runtime, tests and tools match the final
+53-pass snapshot byte for byte. Imports, diagnostic CLI startup and copied
+client-data pins pass. Owner preview remains 0.39.30 with no new controls or
+input behavior. Record: `releases/eql-automation-0.42.45-staging.json`.
+
+- Archive SHA: `eabafd96d24d405e17d1def00c0d0f9271b1f59ccb154b03026a921edbea078c`.
+- Startup SHA: `a2e18edb401088bb6558aeb171df59962fc3c5a6db71e3449098c69f19292d4a`.
+- Focused output SHA: `c5bb60d5caa65d8a9432a8df3ada6a0dbacbc2fb02d1360a330cf3def647710c`.
+
+No worker, device, game input, prefix edit, login or character action. No
+real-client route acceptance or current level/XP/hour/deaths/camp metrics.
+G0 remains passed. Current scene and supported motion-bound producers, the
+checked pulse/post-pair transaction and automatic relocation remain unfinished;
+no complete 1–20 or fresh hands-off 1–50 run is claimed.
+
 ## 2026-11-14 17:44 UTC — source 0.42.45, fresh source-probe preparation
 
 VERIFIED `CampProbePreparation` consumes an actual `CampStoppedHeight`, the
