@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 22:09 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 22:07 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.68 built; publication pending.** VERIFIED 55 focused stair,
+- **Source 0.42.68 privately published; owner preview stays 0.39.32.** VERIFIED 55 focused stair,
   preflight and landing checks plus 16 transport checks on Alienware. Synthetic
   feedback crosses three risers, including half-rise observations; only the
   actual final pair can update the original floor. Same watchdog pipe releases
@@ -20,6 +20,9 @@ Updated 2026-11-14 22:09 UTC for coordinator task `829a00229b29`.
   and actual-landing connector in the owner route loop. Owner preview/runtime
   remain 0.39.32/0.42.61; real level, XP, XP/hour, deaths and camp unknown.
   No accepted 1–20 or 1–50 run; G0 passed.
+  Installed 538 pins, imports and three auditor startup checks pass. Bundle SHA
+  `d47dcee3a6c7c76f626260102da437d47c8fe24b04058f2bc4634ebca5e4e544`; startup SHA
+  `61eb3e485a4b819cd1714414c5d317929287c6cef5deaffec8071d5f4eb854ba`. No owner launcher change.
 - **Source 0.42.67 privately published; owner preview remains 0.39.32.** VERIFIED 77 focused
   checks; all 536 installed file pins, imports and three auditor startups pass.
   Bundle SHA `fbccdedf773de70b41aaf3ed476e0afa1c7c12332003bb37a483d912a4ba3833`;

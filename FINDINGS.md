@@ -1,5 +1,16 @@
 # FINDINGS
 
+## 2026-11-14 22:07 UTC — source 0.42.68 privately published
+
+VERIFIED `owner-tools/0.42.68/source` contains commit
+`729f4e927198dfe41c4482ad1261098cb6128208`. All **538** installed pins, imports and three auditor
+CLI startup checks pass. The package includes the retained **71 focused checks**.
+Bundle SHA `d47dcee3a6c7c76f626260102da437d47c8fe24b04058f2bc4634ebca5e4e544`; startup SHA
+`61eb3e485a4b819cd1714414c5d317929287c6cef5deaffec8071d5f4eb854ba`. Owner launcher/runtime remain 0.39.32/0.42.61;
+no helper restart or game input. Actual stair movement and route acceptance
+remain unverified; the owner route-runner handoff is the next implementation.
+
+
 ## 2026-11-14 22:09 UTC — source 0.42.68: receipt-bound stair controller
 
 VERIFIED **55 focused checks** pass in 61.25s on devbox, JUnit SHA
