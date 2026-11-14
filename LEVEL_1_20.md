@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-13 18:24 CST. This is the prioritized route and acceptance
+Updated 2026-11-14 00:40 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -40,6 +40,14 @@ is rejected; no movement acceptance changed. Both bakes retain the same
 elevated coarse polygon corners, so the next attribution is in voxel/contour
 construction, before detail sampling. The owner assist 0.39.6 release fixes stopped-state
 recovery and queued preparation cancellation while this route work continues.
+The 0.41.46 source-span probe now reproduces the raised corner from merged
+floor/wall raster spans before detail sampling. A conservative step-height
+reduction (3.5→1.0) disconnects arrival from Slaver Caves; it is not adopted.
+The baseline control still finds 80 polygons and fails turn polygon 3244.
+A new read-only input observer passes 13 focused tests, but its live device
+coverage, axis/contact interpretation and integration remain unverified.
+Independent scene, current position, alignment and speed observations still
+precede the first short GFay leg. The old G0 visible stop remains recorded.
 The Crushbone alternatives let the planner compare same-zone options before
 committing to the unresolved Cauldron→Unrest crossing; they do not authorize
 F11 or a pull. The helper's protected-target rules must still exclude

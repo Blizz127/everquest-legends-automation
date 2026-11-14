@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.45 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.46 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,8 +19,8 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.45 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.45/source`; the runnable
+Source tools 0.41.46 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.46/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
 Preview 0.39.6 builds on the existing rotation bot and proposes its HP crop
@@ -53,6 +53,31 @@ The bounded Crushbone `--comparison detail` experiment has now run. It
 reproduced the baseline exactly, then changed only sample distance 6→3.
 The suspect outer-ring grade worsened and warnings rose from 21 to 439.
 That candidate is not adopted; no route gains movement acceptance.
+
+Project 0.41.46 adds a read-only owner-input observer for future movement
+checks. It opens event devices read-only, counts held keys/buttons and recent
+activity, and rejects incomplete device coverage, topology changes, event
+loss and slow observations. Absolute axes remain unknown until their contact
+or neutral state can be interpreted. Thirteen focused tests passed; the
+observer is not yet connected to G2 or F11 and has not observed live devices.
+It does not supply chat, target or combat checks. The recommended assist
+version remains 0.39.6, with no new owner test requested by this source release.
+
+The Crushbone source-span diagnostic reproduced the elevated coarse corner:
+wall and floor merge during rasterization before the later filters. Reducing
+bake step height from 3.5 to 1.0 disconnects arrival from Slaver Caves. The
+baseline still has an 80-polygon graph route but fails its turn footprint at
+polygon 3244. Neither result enables travel; GFay remains the first same-zone
+movement candidate. Source-only diagnostics use the retained NumPy environment:
+
+```bash
+~/.local/share/eql-automation/python-nav/bin/python tools/query_crushbone_comparison.py --help
+python3 tools/probe_crushbone_spans.py --help
+```
+
+These commands run on the devbox source checkout with its retained private
+data. The source archive on Alienware does not include client meshes or the
+Recast toolchain. No client assets are committed or shipped with this release.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
 separate-process same-device release timer tested only with a pipe. Version
@@ -422,7 +447,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.45/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.46/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -430,7 +455,7 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.45/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.46/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 

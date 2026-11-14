@@ -1,7 +1,26 @@
 # STATUS
 
-Updated 2026-11-13 18:24 CST for coordinator task `829a00229b29`.
+Updated 2026-11-14 00:40 UTC for coordinator task `829a00229b29`.
 
+- Project **0.41.46** adds a read-only owner-input observer, a production
+  dependency for future G2. Thirteen focused tests passed, covering startup
+  held keys/buttons, brief activity, unreadable devices, hotplug/path reuse,
+  overflow through SYN_REPORT, stale/slow clocks and read-only open cleanup.
+  No live device observation or movement wiring has run. Absolute axes remain
+  unsafe pending contact/neutral interpretation; independent chat, target,
+  combat, fresh zone, alignment and speed evidence are still missing.
+- Crushbone source-span probe reproduced the west coarse corner Z1.9625:
+  raw rasterization merges nearby wall into walkable floor; subsequent filters
+  leave it unchanged and connected corner selection inherits the height.
+  Source-only reproduction is not exact custom-baker equivalence. Lowering
+  permitted bake step height 3.5→1.0 disconnects the actual retained arrival
+  and Slaver guide points. Baseline still finds 80 polygons and rejects turn
+  3244 after 41 turn checks. Neither mesh is a playable route.
+- Real-client progress is unchanged: owner-confirmed old G0 stop passed;
+  no accepted 1–20 leg, automated XP or level gain. Current level/XP/hour,
+  deaths and camp remain unavailable beyond the earlier Legira level-7 GFay
+  report. Next: complete independent live observations for the same-zone GFay
+  route. Recommended assist stays 0.39.6; G0 candidate 0.39.7 is separate.
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
 - Separate **0.39.7 G0 watchdog candidate** is staged on Alienware. It
   connects the existing one-pulse G0 intent to the same-device independent

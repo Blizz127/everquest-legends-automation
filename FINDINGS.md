@@ -1,5 +1,90 @@
 # FINDINGS
 
+## Source span attribution and actual route comparison — 2026-11-14 00:40 UTC
+
+**VERIFIED offline:** `tools/probe_crushbone_spans.cpp` compiled with
+`-Wall -Wextra -Werror` against retained Recast commit
+`9f4ce64458dfae86e1239c525ddc219c4e9e06f1`. Its one-tile source diagnostic
+preserves the ordered EQTR, original vertical/grid bounds and baseline
+raster/filter parameters. It includes the pinned upstream contour routine to
+inspect corner selection; it does not bake a replacement mesh. All products
+are in the approved private data store, not git.
+
+At the west raised corner, source face 15419 creates floor span 616–617 with
+walkable area 63. Vertical face 15424, itself slope-marked area 0, merges into
+that raw span and raises its top to 622 while retaining area 63. Face 15427
+raises it to 623, world Z1.962509. The low-hanging, ledge and clearance filters
+leave it unchanged. Connected compact spans 617 and 623 make the contour
+corner inherit 623. The east sample likewise reproduces Z2.262512. This
+supports raster span merge and connected corner selection as the local cause,
+rather than detail sampling or later low-hanging promotion. The exact custom
+baker wrapper source is unavailable; full source/binary equivalence is **not
+established**. BSP labels are recorded separately, not applied to these spans.
+
+Final span report:
+`nav-candidates/crushbone-span-attribution-final-0.41.46/report.json`, SHA-256
+`02a9a785d61a47649846e64b3cd89a916201c97cd07d5d054e2fecac71ade1ef`.
+Ordered source EQTR remains
+`ad521d7df14c0d4a578923595316794cb06181672bb8f22b21f0925ec43e9da5`.
+The preceding detail-distance report (`b0e7307e…`) is a different experiment,
+not a revision of this span report. Both remain retained.
+
+**VERIFIED bounded bake and route query:** Changing only maximum climb from
+3.5 to 1.0 produced 5,124 polygons/9,920 links/35,200 detail triangles with 26
+warnings. Its old fixed ring cannot support one outer sample, so a separate
+query checked the actual retained arrival and Slaver guide endpoints. Both
+snap to ground with zero XY drift and at most 0.060 vertical drift, but are
+in disconnected components. No route exists between them in this candidate.
+The baseline control finds 80 polygons, then rejects polygon 3244 after 41
+turn checks and no strip checks, reproducing the previous footprint failure.
+No checks were waived, no candidate was installed and no game input was sent.
+
+Private artifacts under `~/.local/share/eql-automation/`:
+
+| Artifact | SHA-256 |
+| --- | --- |
+| `nav-candidates/crushbone-lower-climb-0.41.46/report.json` | `17e2b9fda8d2dc25aa10f78fc51ba5d201e69211fce6fe654f98ba21682ab32d` |
+| `nav-candidates/crushbone-lower-climb-0.41.46/lower_climb.eqnm` | `5f2e34f8bd7ad5277028910218ab816389b50c776ee9f419a232758b381062b0` |
+| `nav-candidates/crushbone-lower-climb-route-v3-0.41.46/report.json` | `ce38ee19f8c47628b6edab75221686ebe16246a77a9d0d3ae56d799e577f1623` |
+| `nav-candidates/crushbone-baseline-route-0.41.46/report.json` | `c457b927e472a87c1d9b209a3514728a5f6eece46660c705dcd0a097d693cd3b` |
+
+Each query retains its executed source and hash. Two initial query attempts
+used system Python without NumPy and failed before loading a mesh; their
+incomplete checkpoints remain retained. The successful runs used the existing
+`python-nav/bin/python`. The final CLI checks imports before creating a report
+directory and has a clear missing-runtime error. The endpoints use the helper
+Y,X,Z frame despite old artifact keys labelled WLD. They are historical guide
+positions, not a current player observation. **No real-client acceptance.**
+
+## Read-only owner-input dependency — 2026-11-14 00:40 UTC
+
+**VERIFIED source and 13 focused tests:** `owner_input_observer.py` inventories
+all visible event nodes, uses explicit O_RDONLY/nonblocking/no-follow opens,
+and checks descriptor identity and device topology before and after scanning.
+It samples active EV_KEY state on both sides of draining events, including
+mouse/controller buttons and devices lacking F8. Brief press/release activity
+is retained as an unsafe observation. Unreadable devices, replacement,
+read errors, empty coverage, slow/rolled-back clocks and stream loss prevent
+clear results. SYN_DROPPED remains latched until SYN_REPORT and a fresh key
+snapshot. Collection start determines freshness. Counts are returned without
+logging typed key codes. EV_ABS remains unsupported rather than assuming zero
+means neutral.
+
+Only the exact live helper uinput event node may be excluded: UI_GET_SYSNAME,
+sysfs parent/device links, major/minor and read-only node fstat must agree,
+and the identity is rechecked each sample. Same device names are irrelevant.
+Installed Alienware evdev read API signatures were inspected without opening
+input devices; they match this implementation. `InputDevice()` is deliberately
+not used because it attempts O_RDWR first. Installed source hashes:
+`device.py` = `f2c2871a6661dc3175949a6c232d2917547d2f9a86cdacc51ab7ad6b2b2ed4eb`;
+`uinput.py` = `bc96f91344e1a6d0e8e87781d2673be33157921dffa16edae5a9a7fa3856a3d5`.
+
+The observer is not wired into G2/assist and no real devices were observed.
+Its fake-device tests establish behavior under the tested failures, not live
+input completeness. Scene/UI indicators, current zone, alignment, fresh speed
+and a real follower remain missing. GFay is the first same-zone movement
+candidate; assist 0.39.6 and separate G0 candidate 0.39.7 remain unchanged.
+
 ## Actual G0 dispatch wired to independent release — 2026-11-13 18:24 CST
 
 **VERIFIED source, pipe tests and Alienware engine smoke; no game input:**

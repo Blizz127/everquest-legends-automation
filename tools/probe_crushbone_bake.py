@@ -3,7 +3,7 @@
 
 The full ordered triangle set preserves the original grid origin. A repeated
 baseline must reproduce the retained mesh's local heights before cell-size
-or detail-sampling sensitivity is attempted. Every product stays private.
+or detail-sampling/climb sensitivity is attempted. Every product stays private.
 """
 from __future__ import annotations
 
@@ -95,9 +95,10 @@ def run(output: Path, comparison: str = "cell") -> dict:
     variants = {
         "cell": (("baseline", {}), ("half_cell", {"cell_size": 0.3})),
         "detail": (("baseline", {}), ("half_detail_distance", {"detail_sample_dist": 3})),
+        "climb": (("baseline", {}), ("lower_climb", {"agent_max_climb": 1.0})),
     }
     if comparison not in variants:
-        raise ValueError("comparison must be cell or detail")
+        raise ValueError("comparison must be cell, detail or climb")
     check_sources()
     project = Path(__file__).resolve().parents[1]
     local_sources = {path: digest(path) for path in
@@ -213,8 +214,8 @@ def run(output: Path, comparison: str = "cell") -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", required=True, type=Path)
-    parser.add_argument("--comparison", choices=("cell", "detail"), default="cell",
-                        help="change only horizontal cell size or detail sample distance")
+    parser.add_argument("--comparison", choices=("cell", "detail", "climb"), default="cell",
+                        help="change only horizontal cell size, detail sample distance or allowed climb")
     args = parser.parse_args()
     output = args.output.expanduser()
     if (output.exists() or output.is_symlink() or
