@@ -29,18 +29,19 @@ def fixture(x=32.,steps=1):
              source(((x-4,-4.,0.),(x+4,4.,0.),(x-4,4.,0.)),1))
     reference=(mid-.25,0.,0.)
     original=check_ground_coverage(footprint,faces,reference=reference,component=2)
-    assert original.reason=='uncovered_ground_area'
+    assert original.reason==('uncovered_ground_area' if y>x else 'overlapping_ground_faces')
     return faces,links,footprint,sources,reference,original
 
 
-def retry(data,*,links=None,sources=None,original=None,areas=None,components=None,limit=.6):
+def retry(data,*,links=None,sources=None,original=None,areas=None,components=None,limit=.6,
+          allow_overlap=False,polygons=(1,1,2,2)):
     faces,default_links,footprint,default_sources,reference,default_original=data
     seams=collect_seams(default_links if links is None else links,
                         {1:63,2:63} if areas is None else areas,
                         {1:2,2:2} if components is None else components)
-    return retry_precision_gap(default_original if original is None else original,footprint,faces,(1,1,2,2),
+    return retry_precision_gap(default_original if original is None else original,footprint,faces,polygons,
         seams,default_sources if sources is None else sources,reference=reference,component=2,
-        vertical_window=3.,maximum_source_z_difference=limit)
+        vertical_window=3.,maximum_source_z_difference=limit,allow_overlap=allow_overlap)
 
 
 @pytest.mark.parametrize('x',(32.,1607.6439208984375,1761.2440185546875))
@@ -170,3 +171,77 @@ def test_portal_span_does_not_authorize_shifting_other_boundary_vertices():
            replace(b,edge=((neighbor(32.),.2,0.),(neighbor(32.),-.2,0.))))
     result=retry(data,links=links)
     assert not result.candidate and result.reason=='both_local_boundary_edges_required'
+
+
+@pytest.mark.parametrize('x,steps',((32.,-1),(1300.4439697265625,-1),(-32.,1)))
+def test_one_ulp_overlap_is_attributed_and_corrected_only_with_explicit_option(x,steps):
+    data=fixture(x,steps=steps);before=repr(data)
+    assert not retry(data).candidate
+    result=retry(data,allow_overlap=True)
+    assert result.candidate and result.overlap_attribution.candidate
+    assert result.overlap_attribution.pairs
+    assert result.coverage.overlap_area<=1e-7
+    assert result.source_support.candidate
+    assert not result.input_authorized and not result.real_client_accepted
+    assert repr(data)==before
+
+
+def test_reported_overlap_must_reproduce_in_original_geometry():
+    data=fixture()
+    result=retry(data,allow_overlap=True,original=GroundCoverage(False,'overlapping_ground_faces'))
+    assert result.reason=='original_overlap_failure_did_not_reproduce'
+
+
+def test_same_polygon_overlap_cannot_be_hidden_by_neighbor_correction():
+    data=list(fixture(steps=-1))
+    data[0]=(*data[0],data[0][0])
+    result=retry(data,allow_overlap=True,polygons=(1,1,2,2,1))
+    assert not result.candidate and result.reason=='overlap_pair_not_unique_reciprocal_seam'
+
+
+def test_unlinked_extra_overlap_refuses_even_when_primary_seam_is_valid():
+    data=list(fixture(steps=-1))
+    data[0]=(*data[0],data[0][0])
+    result=retry(data,allow_overlap=True,polygons=(1,1,2,2,3))
+    assert not result.candidate and result.reason=='overlap_pair_not_unique_reciprocal_seam'
+
+
+def test_wide_overlap_cannot_claim_one_ulp_link_coordinates():
+    data=list(fixture(steps=-1))
+    data[0]=tuple(replace(f,vertices=tuple((x-.01 if i>=2 else x,y,z) for x,y,z in f.vertices))
+                  for i,f in enumerate(data[0]))
+    result=retry(data,allow_overlap=True)
+    assert not result.candidate and result.reason=='overlap_outside_exact_portal_strip'
+
+
+def test_overlap_height_step_is_not_hidden_by_source_tolerance():
+    data=list(fixture(steps=-1))
+    data[0]=tuple(replace(f,vertices=tuple((x,y,z+.5 if i>=2 else z) for x,y,z in f.vertices))
+                  for i,f in enumerate(data[0]))
+    result=retry(data,allow_overlap=True)
+    assert not result.candidate and result.reason=='overlap_has_distinct_ground_heights'
+
+
+def test_overlap_correction_still_refuses_competing_source_layers():
+    data=fixture(steps=-1)
+    upper=replace(data[3][0],vertices_wld=tuple((x,y,z+20) for x,y,z in data[3][0].vertices_wld))
+    assert not retry(data,allow_overlap=True,sources=(*data[3],upper)).candidate
+
+
+def test_two_ulp_overlap_cannot_use_precision_retry():
+    assert not retry(fixture(steps=-2),allow_overlap=True).candidate
+
+
+def test_y_axis_overlap_uses_exact_portal_strip_after_frame_swap():
+    faces,links,footprint,sources,reference,original=fixture(steps=-1)
+    swap=lambda p:(p[1],p[0],p[2])
+    faces=tuple(replace(f,vertices=tuple(swap(p) for p in f.vertices)) for f in faces)
+    links=tuple(replace(link,edge=tuple(swap(p) for p in link.edge)) for link in links)
+    sources=tuple(replace(s,vertices_wld=tuple(swap(p) for p in s.vertices_wld)) for s in sources)
+    result=retry((faces,links,tuple((y,x) for x,y in footprint),sources,swap(reference),original),allow_overlap=True)
+    assert result.candidate and result.seams[0].axis==1
+
+
+def test_nonoverlap_failure_is_never_retried_even_with_overlap_option():
+    for reason in ('steep_detail_plane','discontinuous_ground_seam','forbidden_area_or_other_component'):
+        assert not retry(fixture(steps=-1),allow_overlap=True,original=GroundCoverage(False,reason)).candidate

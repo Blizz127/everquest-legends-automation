@@ -64,6 +64,23 @@ class SourceSupport:
 
 
 @dataclass(frozen=True)
+class SeamOverlap:
+    first_face: int
+    second_face: int
+    first_polygon: int
+    second_polygon: int
+    area: float
+    maximum_height_difference: float
+
+
+@dataclass(frozen=True)
+class OverlapAttribution:
+    candidate: bool
+    reason: str
+    pairs: tuple[SeamOverlap, ...] = ()
+
+
+@dataclass(frozen=True)
 class PrecisionCheck:
     candidate: bool
     reason: str
@@ -73,6 +90,7 @@ class PrecisionCheck:
     shifted_vertices: int = 0
     real_client_accepted: bool = False
     input_authorized: bool = False
+    overlap_attribution: OverlapAttribution | None = None
 
 
 def adjacent_float32(a, b):
@@ -213,13 +231,91 @@ def source_support(footprint, sources, baked_faces, *, maximum_z_difference, edg
         grade=source_check.max_grade,maximum_source_baked_z_difference=delta,source_faces=identifiers)
 
 
+def attribute_seam_overlaps(footprint, faces, polygon_ids, seams, *, reference, component, vertical_window):
+    """Attribute EVERY meaningful original overlap to a named one-ULP strip.
+
+    Both triangle interiors must lie on opposite sides of their own portal
+    boundary. The overlap must remain inside that exact strip and portal span,
+    with matching ground heights. Original invalid/steep/forbidden faces cannot
+    be hidden by a tiny XY correction. The caller subsequently checks the
+    entire corrected footprint and complete source terrain again.
+    """
+    boundary = hull(footprint)
+    patches, pairs = [], []
+    for index,(face,poly) in enumerate(zip(faces,polygon_ids)):
+        if (not isinstance(face,GroundFace) or not isinstance(face.vertices,tuple) or len(face.vertices)!=3
+                or any(not isinstance(p,tuple) or len(p)!=3 or not all(finite(n) for n in p) for p in face.vertices)):
+            return OverlapAttribution(False,'invalid_original_overlap_face')
+        triangle = hull(p[:2] for p in face.vertices)
+        patch = clip(triangle,boundary) if len(triangle)==3 else ()
+        if area(patch)<=1e-7:
+            continue
+        surface = plane(face.vertices)
+        if surface is None:
+            return OverlapAttribution(False,'original_overlap_plane_degenerate')
+        heights = [surface[2](p) for p in patch]
+        low,high = reference[2]-vertical_window,reference[2]+vertical_window
+        if max(heights)<low or min(heights)>high:
+            continue
+        if (min(heights)<low or max(heights)>high or face.area_id!=63 or face.component!=component
+                or math.hypot(*surface[:2])>1.):
+            return OverlapAttribution(False,'original_overlap_surface_not_safe_ground')
+        patches.append((index,poly,face,patch,surface))
+    for offset,(i,poly,face,patch,surface) in enumerate(patches):
+        for j,other_poly,other_face,other_patch,other_surface in patches[:offset]:
+            intersection = clip(patch,other_patch)
+            overlap = area(intersection)
+            # With at most 96 faces, ignored arithmetic dust totals <4.6e-9,
+            # below the unchanged full-coverage area tolerance of 1e-7.
+            if overlap<=1e-12:
+                continue
+            candidates = [s for s in seams if {s.source,s.target}=={poly,other_poly}]
+            if len(candidates)!=1:
+                return OverlapAttribution(False,'overlap_pair_not_unique_reciprocal_seam',tuple(pairs))
+            seam = candidates[0]
+            left,right = sorted((seam.source_coordinate,seam.target_coordinate))
+            if any(not left-1e-10 <= p[seam.axis] <= right+1e-10
+                   or not seam.span[0]-1e-10 <= p[1-seam.axis] <= seam.span[1]+1e-10
+                   for p in intersection):
+                return OverlapAttribution(False,'overlap_outside_exact_portal_strip',tuple(pairs))
+            signs = []
+            for polygon,triangle_face in ((poly,face),(other_poly,other_face)):
+                coordinate = seam.source_coordinate if polygon==seam.source else seam.target_coordinate
+                offsets = [p[seam.axis]-coordinate for p in triangle_face.vertices]
+                nonzero = [v for v in offsets if v!=0]
+                if not nonzero or any(v*nonzero[0]<=0 for v in nonzero) or 0 not in offsets:
+                    return OverlapAttribution(False,'overlap_face_not_on_one_portal_side',tuple(pairs))
+                signs.append(1 if nonzero[0]>0 else -1)
+            if signs[0]==signs[1]:
+                return OverlapAttribution(False,'overlap_faces_not_on_opposite_portal_sides',tuple(pairs))
+            delta = max(abs(surface[2](p)-other_surface[2](p)) for p in intersection)
+            if delta>.01:
+                return OverlapAttribution(False,'overlap_has_distinct_ground_heights',tuple(pairs))
+            pairs.append(SeamOverlap(i,j,poly,other_poly,overlap,delta))
+    if not pairs:
+        return OverlapAttribution(False,'no_original_seam_overlap')
+    return OverlapAttribution(True,'all_original_overlaps_attributed_to_reciprocal_ulps',tuple(pairs))
+
+
 def retry_precision_gap(original, footprint, faces, polygon_ids, seams, sources, *,
-                        reference, component, vertical_window, maximum_source_z_difference):
-    if not isinstance(original,GroundCoverage) or original.candidate or original.reason != 'uncovered_ground_area':
+                        reference, component, vertical_window, maximum_source_z_difference,
+                        allow_overlap=False):
+    allowed = ('uncovered_ground_area','overlapping_ground_faces') if allow_overlap is True else ('uncovered_ground_area',)
+    if not isinstance(original,GroundCoverage) or original.candidate or original.reason not in allowed:
         return PrecisionCheck(False,'original_failure_is_not_a_coverage_gap')
     if (not 1 <= len(seams) <= 8 or len(faces) != len(polygon_ids) or len(faces) > 96
             or any(not isinstance(s,QuantizedSeam) for s in seams)):
         return PrecisionCheck(False,'no_bounded_reciprocal_seam_set')
+    attribution = None
+    if original.reason=='overlapping_ground_faces':
+        repeated = check_ground_coverage(footprint,faces,reference=reference,
+            component=component,vertical_window=vertical_window)
+        if repeated.candidate or repeated.reason!=original.reason:
+            return PrecisionCheck(False,'original_overlap_failure_did_not_reproduce')
+        attribution = attribute_seam_overlaps(footprint,faces,polygon_ids,seams,
+            reference=reference,component=component,vertical_window=vertical_window)
+        if not attribution.candidate:
+            return PrecisionCheck(False,attribution.reason,overlap_attribution=attribution)
     corrected, shifted = [], 0
     touches = {(i,p):set() for i,s in enumerate(seams) for p in (s.source,s.target)}
     for face,poly in zip(faces,polygon_ids):
@@ -247,7 +343,8 @@ def retry_precision_gap(original, footprint, faces, polygon_ids, seams, sources,
     coverage = check_ground_coverage(footprint,corrected,reference=reference,
                                      component=component,vertical_window=vertical_window)
     if not coverage.candidate:
-        return PrecisionCheck(False,'corrected_footprint_'+coverage.reason,coverage,seams=seams,shifted_vertices=shifted)
+        return PrecisionCheck(False,'corrected_footprint_'+coverage.reason,coverage,seams=seams,
+                              shifted_vertices=shifted,overlap_attribution=attribution)
     support = source_support(footprint,sources,corrected,maximum_z_difference=maximum_source_z_difference)
     return PrecisionCheck(support.candidate,'local_precision_diagnostic_only' if support.candidate else support.reason,
-                          coverage,support,seams,shifted)
+                          coverage,support,seams,shifted,overlap_attribution=attribution)

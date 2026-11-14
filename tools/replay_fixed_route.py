@@ -66,7 +66,7 @@ def local_seam_diagnostic(view, footprint, reference, component, window, detail_
 
 def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=False,
         shorten_ground_step=False, plan=PLAN, plan_sha256=PLAN_SHA, precision_portals=False,
-        source_z_limit=.6, wall_budget=35.):
+        source_z_limit=.6, wall_budget=35., precision_overlaps=False):
     began = time.monotonic()
     sys.path[:0] = [str(PROJECT), str(HELPER)]
     from eql_automation.fixed_route_follower import FixedRoute, FixedRouteFollower, RouteHalt
@@ -237,10 +237,12 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                         component=int(sweep_view.components[segment.polygon]), vertical_window=window)
                     sweep_checks += 1
                     precision_last = None
-                    if check.reason == 'uncovered_ground_area' and precision_view is not None:
+                    if (check.reason == 'uncovered_ground_area' or
+                            (precision_overlaps and check.reason == 'overlapping_ground_faces')) and precision_view is not None:
                         precision_last = precision_view.retry(check,footprint,detail_ids,
                             reference=tuple(position),component=int(sweep_view.components[segment.polygon]),
-                            vertical_window=window,maximum_source_z_difference=source_z_limit)
+                            vertical_window=window,maximum_source_z_difference=source_z_limit,
+                            allow_overlap=precision_overlaps)
                         precision_retries.append({'step':step,'segment':index,'hold':seconds,
                             'original':asdict(check),'retry':asdict(precision_last)})
                         if precision_last.candidate:
@@ -343,6 +345,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
               "shorten_ground_step": shorten_ground_step,
               "ground_shortening_trials": ground_shortening_trials,
               "precision_portals":precision_portals,"precision_retries":precision_retries,
+              "precision_overlaps":precision_overlaps,
               "precision_limits":({"maximum_source_baked_z_difference":source_z_limit,"source_boundary_margin":.002,
                     "vertical_bound_is_diagnostic_not_proven_bake_error":True,
                     "eligible_seams":len(precision_view.seams),"source_faces":len(precision_view.sources),
@@ -369,6 +372,8 @@ def main():
                         help='Offline only: try one pinned source-supported XY seam correction')
     parser.add_argument('--precision-portals', action='store_true',
                         help='Offline only: retry one-ULP reciprocal gaps with full source-ground support')
+    parser.add_argument('--precision-overlaps', action='store_true',
+                        help='Offline only: also attribute and retry reciprocal one-ULP detail overlaps')
     parser.add_argument('--source-z-limit',type=float,default=.6,
                         help='Diagnostic source/baked height-difference limit, not live calibration (default .6)')
     parser.add_argument('--wall-budget',type=float,default=35.,
@@ -389,6 +394,8 @@ def main():
         parser.error('Ground experiments require --ground-sweep')
     if args.local_seam_experiment and args.precision_portals:
         parser.error('Use only one precision experiment')
+    if args.precision_overlaps and not args.precision_portals:
+        parser.error('--precision-overlaps requires --precision-portals')
     output = args.output.expanduser()
     if (output.parent.resolve() != (STORE / "nav-candidates").resolve() or output.exists()
             or output.is_symlink() or output.suffix != ".json"
@@ -402,7 +409,8 @@ def main():
     run(output, speed=args.speed, min_hold=args.min_hold, ground_sweep=args.ground_sweep,
         local_seam_experiment=args.local_seam_experiment, shorten_ground_step=args.shorten_ground_step,
         plan=plan, plan_sha256=plan_sha256,precision_portals=args.precision_portals,
-        source_z_limit=args.source_z_limit,wall_budget=args.wall_budget)
+        source_z_limit=args.source_z_limit,wall_budget=args.wall_budget,
+        precision_overlaps=args.precision_overlaps)
 
 
 if __name__ == "__main__":

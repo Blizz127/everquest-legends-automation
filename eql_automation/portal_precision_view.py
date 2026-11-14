@@ -74,8 +74,9 @@ class PortalPrecisionView:
         return hits[0][0], tuple(h[1] for h in hits)
 
     def retry(self,original,footprint,detail_ids,*,reference,component,vertical_window,
-              maximum_source_z_difference):
-        if original.candidate or original.reason != 'uncovered_ground_area':
+              maximum_source_z_difference,allow_overlap=False):
+        allowed = ('uncovered_ground_area','overlapping_ground_faces') if allow_overlap is True else ('uncovered_ground_area',)
+        if original.candidate or original.reason not in allowed:
             return PrecisionCheck(False,'original_failure_is_not_a_coverage_gap')
         polygons = tuple(int(self.ground.polys[i]) for i in detail_ids)
         present = set(polygons)
@@ -96,4 +97,4 @@ class PortalPrecisionView:
                       for i,poly in zip(detail_ids,polygons))
         return retry_precision_gap(original,footprint,faces,polygons,seams,sources,
             reference=reference,component=component,vertical_window=vertical_window,
-            maximum_source_z_difference=maximum_source_z_difference)
+            maximum_source_z_difference=maximum_source_z_difference,allow_overlap=allow_overlap)
