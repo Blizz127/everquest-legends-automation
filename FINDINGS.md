@@ -55,6 +55,14 @@ level, XP/hour, deaths and camp remain unknown. Continue step-aware source
 planning and consume the existing owner motion/current-scene test when present.
 
 
+**VERIFIED private source staging:** commit
+`36217ccabdfb9b8ea08c4f67e6006e50bcbe1b49` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.41.99/source`. Archive SHA
+`a456488f04b32faaa1161657e08df05e160837a257fd246d164490c5e1a16e16`.
+Imports, checked direct detour, exact-goal suffix continuation and failed-branch
+isolation pass there without creating an engine or sending game input.
+Startup SHA `2e4e5bd639166e42ee670f49b0597731dd8b957e8ca2989480fa69dc1c8b49b1`.
+
 ## Crushbone source corridor diagnostics — 2026-11-14 09:13 UTC
 
 **VERIFIED implementation/tests:** source 0.41.98 adds direct source-step

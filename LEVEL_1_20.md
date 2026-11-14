@@ -18,6 +18,9 @@ floor selection and exact rejoin/suffix continuation. BSP and live movement
 remain unaccepted; no F11 change or new owner test. Measurement 0.39.12 remains
 pending, with G0 passed and no repeat needed.
 
+Source `36217cc` is staged at Alienware `owner-tools/0.41.99/source`;
+no-input imports, rejoin/suffix and failed-branch isolation pass there.
+
 Source 0.41.98 separates source-floor occupancy from baked navigation heights.
 Four six-unit local crossings through Crushbone portal 658→623 pass terrain,
 static-object and conditional above-support BSP checks using radius 1.2 and

@@ -25,6 +25,9 @@ Updated 2026-11-14 09:19 UTC for coordinator task `829a00229b29`.
   step transition, while consuming the pending 0.39.12 owner motion results.
   A read-only Alienware check still found zero saved hotbutton/motion results.
   No game input or current character metrics; assist/helper versions unchanged.
+  Source `36217cc` is privately staged at `owner-tools/0.41.99/source`.
+  Remote no-input startup, exact rejoin/suffix and branch-isolation checks pass;
+  startup SHA `2e4e5bd639166e42ee670f49b0597731dd8b957e8ca2989480fa69dc1c8b49b1`.
 - **Source 0.41.98:** four local Crushbone source-floor crossings at the
   658→623 opening pass terrain/static clearance and the separately scoped
   above-support BSP check. The complete 174-polygon alternative is **not
