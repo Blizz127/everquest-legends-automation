@@ -13,7 +13,7 @@ from pathlib import Path
 import re
 import time
 
-from .location_log import NonReplayingLogTail, parse_client_log_line
+from .location_log import NonReplayingLogTail, parse_client_log_line, is_logging_boundary
 
 
 _HIT = re.compile(r".+ YOU for [0-9]+ points? of damage\.(?: \(Riposte\))?")
@@ -25,6 +25,8 @@ _DEATH = re.compile(r"You have been slain by .+!")
 
 def classify_log_veto(body: str) -> str | None:
     """Match complete system-message bodies, not keywords inside player chat."""
+    if is_logging_boundary(body):
+        return "logging_continuity_changed"
     if any(pattern.fullmatch(body) for pattern in (_HIT, _MISS, _DOT, _NON_MELEE)):
         return "incoming_attack"
     if body in {"You are stunned!", "YOU are drowning!", "YOU were injured by falling."}:

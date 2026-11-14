@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 11:57 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 12:01 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,17 @@ Updated 2026-11-14 11:57 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.14 / owner 0.39.17:** fixed old-zone retention across logging
+  resets and incomplete transition text. Travel now stops on logging changes;
+  transition pairing requires a new zone observation. 97 focused checks pass.
+  Alienware manifest/GUI/installed-data startup passes without game input;
+  startup SHA `057493d27526f5076b6ef0bd9d4ee10e0e1ae5846ff92fc03789a797814c6276`.
+  Static client inspection indicates buffered open/write/close logging, so
+  a persistent-writer-FD bootstrap was not enabled. **Next:** independent
+  actor-zone UI observation and simpler travel startup, followed by actual
+  route/transition/camp execution. Current-session zone/hotbutton setup and
+  real traversal remain required. Level, XP/hour, deaths and camp unknown;
+  no real route or automated XP accepted. Assist 0.39.13 and passed G0 unchanged.
 - **Source 0.42.13 / owner 0.39.16:** separate owner-started travel action
   now connects live-session motion and fresh positions to full GFay→Crushbone
   approach planning, tile geometry and checked movement. Installed map hash

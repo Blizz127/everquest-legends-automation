@@ -15,7 +15,7 @@ import time
 
 from .location_log import (
     NonReplayingLogTail, parse_client_log_line, parse_raw_location,
-    unique_client_zone_ids,
+    unique_client_zone_ids, is_logging_boundary,
 )
 
 
@@ -114,7 +114,7 @@ class TransitionTracker:
         self.line_seq += 1
         parsed = parse_client_log_line(line)
         if parsed is None:
-            if any(token in line for token in (_LOADING, "You have entered ",
+            if any(token in line for token in (_LOADING, "You have entered ", "Logging to '",
                                               "Your Location is ")):
                 self.invalidate()
             return None
@@ -123,6 +123,9 @@ class TransitionTracker:
             self.invalidate()
             return None
         self.last_log_time = at
+        if is_logging_boundary(body):
+            self.invalidate()
+            return None
         if body == _LOADING:
             source = self.latest_fix
             fresh = (source is not None and self.zone == source.zone and

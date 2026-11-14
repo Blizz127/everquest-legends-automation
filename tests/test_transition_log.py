@@ -83,6 +83,8 @@ def test_intervening_location_or_malformed_entry_breaks_pairing():
         line(10, 7, "Your Location is 9, 9, 9"),
         line(10, 7, "You have entered An Unknown Zone"),
         line(10, 7, "LOADING, PLEASE WAIT"),
+        line(10, 7, "Logging to 'eqlog.txt' is now *ON*."),
+        line(10, 7, "Logging to 'eqlog.txt' is now *OFF*."),
     ):
         tracker = TransitionTracker(ZONES)
         rows = base[:3] + [intrusion] + base[3:]

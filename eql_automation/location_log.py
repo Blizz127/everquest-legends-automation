@@ -24,6 +24,16 @@ _LOCATION = re.compile(
 _ENTERED = re.compile(r"^You have entered (.+)\.$")
 
 
+def is_logging_boundary(body: str) -> bool:
+    """Client eqstr 12096/13221/13222, including incomplete variants.
+
+    Restarting logging may hide a zone change. A new ON notice does not restore
+    continuity or identify the zone; wait for another entered-zone message.
+    Match the system-message prefix only, not text inside player chat.
+    """
+    return body.startswith("Logging to '")
+
+
 def parse_client_log_line(line: str) -> tuple[datetime, str] | None:
     """Return a local, timezone-free client timestamp and exact message body."""
     match = _TIMESTAMPED.fullmatch(line.strip())
@@ -211,7 +221,8 @@ class LocationLogReader:
         for line in lines:
             parsed = parse_client_log_line(line)
             if parsed is None:
-                if "LOADING, PLEASE WAIT" in line or "You have entered " in line:
+                if any(marker in line for marker in
+                       ("LOADING, PLEASE WAIT", "You have entered ", "Logging to '")):
                     self._clear_zone()
                     fixes.clear()
                 continue
@@ -222,7 +233,7 @@ class LocationLogReader:
                 fixes.clear()
                 continue
             self.last_log_local_time = log_time
-            if body == "LOADING, PLEASE WAIT...":
+            if body.startswith("LOADING, PLEASE WAIT") or is_logging_boundary(body):
                 self._clear_zone()
                 fixes.clear()
                 continue
@@ -235,6 +246,10 @@ class LocationLogReader:
                 if zone_id is not None:
                     self.zone_id = zone_id
                     self.zone_display_name = name
+                continue
+            if body.startswith("You have entered "):
+                self._clear_zone()
+                fixes.clear()
                 continue
             raw = parse_raw_location(body)
             if raw is None and body.startswith("Your Location is "):

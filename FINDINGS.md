@@ -1,5 +1,54 @@
 # FINDINGS
 
+## Logging continuity and current-zone startup — 2026-11-14 12:01 UTC
+
+**VERIFIED fix:** source 0.42.14 / destination preview 0.39.17 invalidates
+the retained zone and position when a client logging ON/OFF notice appears.
+The movement log monitor latches a stop, and transition pairing cannot span
+that boundary. Incomplete parsed loading/entered messages also clear the old
+zone. A subsequent exact zone entry restores observation; old coordinates
+are never replayed. Player chat containing the same words does not match.
+97 focused location/transition/veto/owner-tracker tests pass in 2.21 seconds.
+
+**VERIFIED source inspection, static only:** the copied `eqstr_us.txt`
+contains notices 12096, 13221 and 13222. The pinned executable's command
+function at `0x14023ede0` changes logging flag `0x140f43518` and selects the
+ON/OFF notice. The chat path tests that flag before calling the log-buffer
+routine. The flush span at `0x140120612` supplies mode `a`, calls three
+stream routines, then clears buffered data. **INFERRED:** this is an
+open/append-write/close cycle, not a persistent writable descriptor. Wine
+descriptor lifetime and full logging continuity have not been observed.
+Process birth plus an old zone line therefore was not enabled as a startup
+shortcut. This also avoids treating a zone retained before disabled logging
+as current after logging resumes.
+
+The executable remains SHA
+`fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36`;
+string catalog SHA
+`0dd0117a23092cb195d0e62d6b03a49bf1aaf8dbfb843dd629e38ca950732fde`.
+`tools/audit_client_logging.py` reproduces the focused spans and stores them
+outside git. Private artifact `client-data/logging-0.42.14/probe.json` SHA
+`9027bf69e91f11cab48009b982b8af8d5c9d00c9fb1e56d7c4e910825673b8da`.
+REA session inspection reported no available native engine (Ghidra lacks its
+required JDK). The instructions' read-only fallback was used: these are
+ordinary `objdump` observations, not REA decompiler or runtime evidence. No
+game was executed or attached, no input sent, and no install changed.
+
+**VERIFIED private publication:** 0.39.17 is staged on Alienware; source
+manifest, GUI startup and installed archives/catalog/map checks pass without
+starting an engine worker, creating a device or saving settings. The loader
+used a synthetic zone identity, not live zone acceptance. Archive SHA
+`eda64b469937c051a7f256f4f7dd723651de3c9ef37bc5495f995953b1da7d07`;
+startup SHA `057493d27526f5076b6ef0bd9d4ee10e0e1ae5846ff92fc03789a797814c6276`.
+The GUI image is byte-identical to 0.39.16's inspected image. HOWTO now uses
+0.39.17. Assist stays 0.39.13; prior previews remain intact.
+
+**Remaining:** current-zone recognition without a fresh appended entry needs
+an independent current-client observation. The actor-zone UI label remains
+the next source to integrate. Actual travel, zone crossing, camp/combat
+execution and hands-off 1–20/1–50 are unverified or unfinished. Current level,
+XP/hour, deaths and camp remain unknown. G0 is passed; no repeat requested.
+
 ## Owner destination travel and pulse steering — 2026-11-14 11:52 UTC
 
 **VERIFIED implementation:** source 0.42.13 / owner preview 0.39.16 adds the

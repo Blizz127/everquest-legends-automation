@@ -39,6 +39,8 @@ def monitor(path, **kwargs):
     ("LOADING, PLEASE WAIT", "unrecognized_safety_message"),
     ("You have entered Test Zone", "unrecognized_safety_message"),
     ("Auto attack is unknown.", "unrecognized_safety_message"),
+    ("Logging to 'eqlog.txt' is now *ON*.", "logging_continuity_changed"),
+    ("Logging to 'custom.txt' is now *OFF*.", "logging_continuity_changed"),
 ])
 def test_observed_message_shapes_latch_and_never_grant_permission(tmp_path, body, reason):
     path = tmp_path / "eqlog_Probe_private.txt"
@@ -59,6 +61,7 @@ def test_observed_message_shapes_latch_and_never_grant_permission(tmp_path, body
     "Player tells General:1, 'Auto attack is on.'",
     "Player says, 'Training dummy hits YOU for 2 points of damage.'",
     "Player tells you, 'You have been slain by a training dummy!'",
+    "Player says, 'Logging to 'eqlog.txt' is now *ON*.'",
 ])
 def test_whole_message_matching_does_not_read_keywords_inside_chat(body):
     assert classify_log_veto(body) is None

@@ -133,6 +133,40 @@ def test_malformed_position_or_transition_invalidates_pending_fix(tmp_path: Path
     assert reader.latest is None and reader.zone_id is None
 
 
+@pytest.mark.parametrize('body', [
+    "Logging to 'eqlog.txt' is now *ON*.",
+    "Logging to 'eqlog.txt' is now *OFF*.",
+    "Logging to 'custom.txt' is now *ON*.",
+    "Logging to 'eqlog.txt' is now",
+    "LOADING, PLEASE WAIT", "You have entered Example Two",
+])
+def test_logging_restart_or_incomplete_transition_discards_zone_and_same_batch_fix(tmp_path, body):
+    log, zones = fixture_paths(tmp_path); log.touch()
+    reader = reader_for(log, zones)
+    with log.open('a') as out:
+        out.write(stamped(1, 'You have entered Example One.') +
+                  stamped(2, 'Your Location is 1, 2, 3') + stamped(3, body) +
+                  stamped(4, 'Your Location is 4, 5, 6'))
+    assert reader.poll(now=1) == []
+    assert reader.zone_id is None and reader.latest is None
+    with log.open('a') as out:
+        out.write(stamped(5, 'You have entered Example Two.') +
+                  stamped(6, 'Your Location is 7, 8, 9'))
+    fix, = reader.poll(now=2)
+    assert fix.zone_id == 2 and fix.raw_coordinates == (7., 8., 9.)
+
+
+def test_logging_notice_inside_chat_does_not_change_zone(tmp_path):
+    log, zones = fixture_paths(tmp_path); log.touch()
+    reader = reader_for(log, zones)
+    with log.open('a') as out:
+        out.write(stamped(1, 'You have entered Example One.') +
+                  stamped(2, "Player says, 'Logging to 'eqlog.txt' is now *ON*.'") +
+                  stamped(3, 'Your Location is 1, 2, 3'))
+    fix, = reader.poll(now=1)
+    assert fix.zone_id == 1
+
+
 def test_unknown_or_ambiguous_zone_does_not_emit_fix(tmp_path: Path):
     log, zones = fixture_paths(tmp_path)
     zones.write_text("1^Example One^0^0\n2^Example One^0^0\n")

@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.13** · rotation preview **0.39.13** · destination preview **0.39.16** · short route trial **0.39.15**.
+Source **0.42.14** · rotation preview **0.39.13** · destination preview **0.39.17** · short route trial **0.39.15**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -15,7 +15,7 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Read-only position observation | One owner-triggered capture; no commands, keys or clicks sent. | **Observe current position**, F9/Stop to cancel. |
 | Stationary location-hotbutton test | Sends one explicitly configured key, then checks the log for one fresh position reply. No route movement or combat. | **Test /location hotbutton…**, F9/F11/Stop to cancel. |
 | Supervised motion measurement | Four short forward presses and three turns on owner-confirmed open ground; saves relative observations and stops. | **Supervised motion measurement…**, F9/F11/Stop to cancel. |
-| Supervised destination travel | In 0.39.16, measures motion, plans from current GFay coordinates toward Crushbone, checks each movement and stops. No zone crossing or leveling. | **Travel toward Crushbone…**, F9/F11/Stop to cancel. |
+| Supervised destination travel | In 0.39.17, measures motion, plans from current GFay coordinates toward Crushbone, checks each movement and stops. No zone crossing or leveling. | **Travel toward Crushbone…**, F9/F11/Stop to cancel. |
 | Supervised short route trial | In 0.39.15/0.39.16, measures motion, creates a two-unit GFay path from fresh current positions, checks terrain/objects/BSP, follows it if checks pass, then stops. No combat or leveling. | **Supervised short route trial…**, F9/F11/Stop to cancel. |
 
 Run only one helper at a time. **G0 passed; do not repeat the movement-stop
@@ -23,18 +23,20 @@ pulse.** Assist still uses the existing rotation bot. Preview 0.39.15 is a
 separate finite movement test; it cannot switch into assist or full auto.
 The requested seamless assist/full-auto switch is still unfinished.
 
-## Travel toward Crushbone on Alienware: 0.39.16
+## Travel toward Crushbone on Alienware: 0.39.17
 
 This new preview adds **Travel toward Crushbone…**. It uses the installed
 client's map label, the copied navmesh and your current position. It measures
 motion, plans a full Greater Faydark approach, follows individually checked
 moves and stops. It does not cross into Crushbone, fight, loot or level for you.
-Real-client traversal has not been verified. Preview 0.39.16 is staged on Alienware; its no-input GUI and installed-data
-startup checks pass. Simulated arrival and F9 release pass. Real-client
-arrival remains unverified.
+Real-client traversal has not been verified. This update stops travel and
+discards the old zone when client logging restarts or transition text is
+incomplete. Keep logging enabled; a logging reset requires a newly observed
+zone entry. Startup verification is recorded in FINDINGS.md. The preceding
+0.39.16 destination flow passed simulated arrival and F9 release checks.
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.16
+cd ~/.local/share/eql-automation/owner-assist/0.39.17
 EQL_ROTATION_TRACE="$HOME/eql-destination-trace.jsonl" ./launch.sh --measure-navigation
 ```
 

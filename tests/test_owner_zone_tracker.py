@@ -86,6 +86,8 @@ def test_revocation_pauses_cursor_until_borrower_cleanup(tmp_path, change):
 
 
 @pytest.mark.parametrize('body', ['LOADING, PLEASE WAIT...', 'You have entered Unknown.',
+                                "Logging to 'eqlog.txt' is now *ON*.",
+                                "Logging to 'eqlog.txt' is now *OFF*.",
                                 '[malformed] You have entered Example One.'])
 def test_transition_or_unknown_zone_prevents_handoff(tmp_path, body):
     h = fixture(tmp_path); t = h.create()
