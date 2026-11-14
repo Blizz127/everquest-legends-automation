@@ -1,5 +1,18 @@
 # FINDINGS
 
+## Private source 0.41.71 staging — 2026-11-14 05:15 UTC
+
+**VERIFIED:** Commit `a7976735dc7b8dcf5599e3388552c00bf33c6f51`, archive SHA
+`1942a0318cd706afe6de17247a70beae95a745f326ecd8bddcc7441531064212`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.71/source`.
+Six remote synthetic/no-input startup checks pass: version, history skip without
+permission, singular-damage latch surviving OFF, missing-file latch surviving
+creation, chat/malformed-transition classification, and required provider
+arguments plus location-collector CLI startup. Remote `../smoke.json` and local
+`releases/eql-automation-0.41.71-staging.json` retain the result. The smoke opened
+no client assets, captures, input devices or login. Owner assist remains 0.39.6;
+no real-client route acceptance is claimed.
+
 ## Latched movement log veto — 2026-11-14 05:14 UTC
 
 **VERIFIED source 0.41.71:** `scene_log_veto.py` baselines the expected character/

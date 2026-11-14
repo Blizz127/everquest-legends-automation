@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 05:14 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:15 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -16,7 +16,10 @@ Updated 2026-11-14 05:14 UTC for coordinator task `829a00229b29`.
   reader/provider checks and three actual-watchdog pipe cases pass. The retained
   log audit finds 4,350 incoming attacks, including 1,336 singular-damage lines
   missed in the initial audit and now covered. No owner input/capture occurred.
-  Private source staging follows the local commit; owner assist is unchanged.
+  Source `a797673` is privately staged at `owner-tools/0.41.71/source`; six
+  synthetic/no-input Alienware startup checks pass. Archive SHA
+  `1942a0318cd706afe6de17247a70beae95a745f326ecd8bddcc7441531064212` matched.
+  Owner assist is unchanged.
 - **Source 0.41.70:** **VERIFIED** client-derived combat/attack atlas: 11
   frames extracted from fresh default_light assets; 13 focused tests pass.
   The updated installed executable was copied read-only and its icon selector
