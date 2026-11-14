@@ -97,3 +97,28 @@ def test_lookup_mutation_cannot_remove_a_snapshotted_label():
                                 (((0., 0.), (1., 0.), (2., 0.)), (0., 1.))])
 def test_invalid_prism_refuses(xy, z):
     with pytest.raises(ValueError): view((leaf(1),)).check_prism(xy, z)
+
+
+def test_sloped_body_wedge_does_not_invent_space_below_its_floor():
+    # The supported floor is z=x. Below it is an actually missing BSP child.
+    tree=view(((-1.,0.,1.,.001,0,2,0),leaf(1)))
+    vertices=tuple((x,y,x+z) for x,y in SQUARE for z in (0.,6.))
+    assert tree.check_prism(SQUARE,(-1.,7.)).reason=='missing_bsp_child'
+    assert tree.check_convex_volume(vertices).candidate
+    bad=tuple((x,y,z-.01) for x,y,z in vertices)
+    assert tree.check_convex_volume(bad).reason=='missing_bsp_child'
+
+
+def test_convex_volume_still_detects_small_interior_water_and_contacts():
+    nodes,labels=water_pocket()
+    vertices=tuple((x,y,z) for x,y in SQUARE for z in (0.,3.))
+    assert not view(nodes,labels).check_convex_volume(vertices).candidate
+    tree=view(((0.,0.,1.,-3.,0,2,3),leaf(1),leaf(2)),{0:{'water'}})
+    assert not tree.check_convex_volume(vertices).candidate
+
+
+@pytest.mark.parametrize('vertices',[(),((0.,0.,0.),)*4,
+    ((0.,0.,0.),(1.,0.,0.),(0.,1.,0.),(1.,1.,0.)),
+    ((0.,0.,0.),(1.,0.,0.),(0.,1.,0.),(0.,0.,float('nan')))])
+def test_convex_body_requires_nonzero_finite_volume(vertices):
+    with pytest.raises(ValueError):view((leaf(1),)).check_convex_volume(vertices)

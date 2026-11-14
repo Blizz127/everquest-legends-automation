@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 08:59 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 09:13 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,19 @@ Updated 2026-11-14 08:59 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.98:** four local Crushbone source-floor crossings at the
+  658→623 opening pass terrain/static clearance and the separately scoped
+  above-support BSP check. The complete 174-polygon alternative is **not
+  accepted**: 519 terrain/static cells pass, then polygon 440 loses source
+  floor coverage; 515 earlier cells also have BSP refusals. The entrance has
+  a real ~0.000006-unit source-floor/BSP-plane discrepancy; no unknown space
+  or original clearance margin was waived. A verified guide repair clears the
+  polygon-440 corner; its full retry reaches 537 passing terrain/static cells
+  before another intersection at polygon 510. Forty-one focused geometry checks
+  pass. Evidence and exact scope are in FINDINGS; no client input was sent.
+  **Next:** resolve the full corridor's source coverage and BSP interpretation,
+  while consuming the already staged 0.39.12 owner hotbutton/motion result for
+  the first supervised GFay leg. Owner helper and pending test are unchanged.
 - **Source 0.41.97 / owner candidate 0.39.12:** the same existing helper now
   runs a finite relative motion measurement after its successful stationary
   hotbutton check. The owner explicitly starts it on declared open/flat/clear

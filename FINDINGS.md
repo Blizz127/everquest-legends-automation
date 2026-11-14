@@ -1,5 +1,75 @@
 # FINDINGS
 
+## Crushbone source corridor diagnostics — 2026-11-14 09:13 UTC
+
+**VERIFIED implementation/tests:** source 0.41.98 adds direct source-step
+terrain/static/BSP composition and exact convex-volume BSP traversal. Existing
+baked-floor entry points retain their full expanded-prism semantics. The new
+`check_source_body_bsp` separately classifies each selected supporting patch's
+closed above-floor body wedge; its result explicitly assumes grounding and
+leaves below-floor BSP space unclassified. Original terrain/static below-floor
+and numerical margins are unchanged. It is not connected to live movement.
+Forty-one focused BSP/static/floor tests pass, including changed-cell refusal,
+water in the body, missing children, exact floor contact, nonzero volume and
+sloped support. Both diagnostic tools compile and `git diff --check` passes.
+
+**VERIFIED copied-source results:** approved client archives and retained helper
+geometry only; no removed working copy was accessed. The probes include 21,834
+terrain faces, 9,576 static faces and 178 placements. No baked heights were
+flattened. Static inventory SHA
+`b49d11674658e30a6df8914c4ba2002df6772f093b859647f05ad43c2842647a`;
+terrain WLD SHA
+`ce43cea4ea9a83cc0db0b25a666cfbe538543dcc451c34ee3bc984227ef1f9d1`.
+The copied inputs and code hashes are pinned in each artifact under
+`~/.local/share/eql-automation/nav-candidates/`:
+
+- `crushbone-source-body-crossings-0.41.98.json`, SHA
+  `b14bed5ed58a855e01eba453280660a708759ec2a727353f9d5215ffad5f9435`:
+  four local 658→623 crossings at portal fractions .50/.65/.80/.85 pass all
+  three full source cells, including static objects and above-support BSP.
+  Each crosses six units, with hypothetical body radius 1.2/height 6 and
+  source grade ≤1. These do not establish a whole corridor or real movement.
+  The original expanded BSP prism still refuses and is retained separately.
+  Crossings at 3244 and 4316 still fail source coverage; 3244 includes an
+  actual rock, so its failure cannot be corrected by flattening baked heights.
+- `crushbone-source-corridor-occupancy-0.41.98.json`, SHA
+  `e1c38747e4545bfab6a9eee8cad8da0a55280a6db31e9b626630b307e9c6a3ca`:
+  a 174-polygon graph alternative avoids 3244 and 4316. Its continuous source
+  audit passes 519 terrain/static cells, then refuses cell 519 at segment 70,
+  division 4, polygon 440: `selected_floor_uncovered_ground_area`. It also
+  retains 515 BSP refusals. Both complete-route flags remain false. Continuing
+  terrain diagnostics after BSP refusal is not route acceptance.
+- Initial entrance-only refusal: `crushbone-source-corridor-0.41.98.json`, SHA
+  `39c299da1528c99398a149fa7adaf60ee1b37fddcbee89c5bb8eef1c660a48d7`.
+
+**VERIFIED repaired guide retry:** a source-supported waypoint inside polygon
+440 clears the raised corner at unchanged body and clearance settings. Tool
+option `--repair-raised-corner` rechecks the full prefix rather than trusting
+that local result. `crushbone-source-corridor-raised-corner-0.41.98.json`, SHA
+`5776160874ed8952d0f6b3d7aeb728c50c6e341c985262b7812519fe064174e1`,
+passes 537 terrain/static cells before a separate body-band intersection at
+polygon 510. BSP refusals remain recorded from the initial cell and the route
+remains unaccepted. This identifies the next actual source obstacle instead
+of repeatedly failing the already understood polygon-440 corner.
+
+**OBSERVED in independent read-only source review:** source face 2014/10 has
+Z=0, while BSP node 3652 splits at Z=6.000000212225132e−6 with missing right
+child. At historical entrance WLD XY (−424.04, 274.06), positive Z=1e−7
+still reaches that missing child; Z=1e−5 and greater sampled heights reach
+unlabelled region 1795. Thus this particular refusal is a real source/BSP
+plane discrepancy, not an impossible traversal branch or exact-contact-only
+case. Exact clipping alone would not resolve it. No tolerance or label rule
+has been changed to erase it. Client interpretation remains unverified.
+
+**Remaining:** identify the full corridor coverage failure and a supported BSP
+interpretation; consume real owner hotbutton/motion/current position/zone
+observations for the first supervised route leg. The already staged 0.39.12
+helper and HOWTO test are unchanged. G0 is passed and does not need repeating.
+No client input, login, current-level observation, automated XP, whole 1–20
+route or fresh-character 1–50 acceptance occurred. Level, XP/hour, deaths and
+camp remain unknown. Existing assist 0.39.6 still uses the earlier rotation bot.
+
+
 ## Supervised relative measurement shipped as 0.39.12 — 2026-11-14 08:59 UTC
 
 **VERIFIED implementation:** source 0.41.97 composes the existing helper's

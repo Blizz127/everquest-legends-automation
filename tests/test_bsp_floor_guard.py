@@ -69,3 +69,48 @@ def test_report_rounding_always_encloses_exact_bounds():
     exact = Fraction(1, 3)
     assert Fraction(outward_float(exact, lower=True)) <= exact
     assert Fraction(outward_float(exact, lower=False)) >= exact
+
+
+def test_source_step_entry_keeps_full_prism_and_exact_cell_binding():
+    from eql_automation.bsp_floor_guard import check_source_bsp_floor
+    data,accepted,sources=context();tree=view((leaf(1),))
+    direct=check_source_bsp_floor(accepted.floor_step,data[2],sources,tree)
+    assert direct==check_bsp_floor(accepted,data[2],sources,tree)
+    assert not direct.input_authorized
+    assert not check_source_bsp_floor(replace(accepted.floor_step,candidate=False),data[2],sources,tree).candidate
+    assert not check_source_bsp_floor(accepted.floor_step,tuple((x+1,y) for x,y in data[2]),sources,tree).candidate
+
+
+def test_source_body_classifies_above_floor_without_waiving_terrain_margin():
+    from eql_automation.bsp_floor_guard import check_source_body_bsp
+    data,accepted,sources=context()
+    tree=view(((0.,0.,1.,.000015,0,2,0),leaf(1)))
+    assert check_bsp_floor(accepted,data[2],sources,tree).reason=='missing_bsp_child'
+    direct=check_source_body_bsp(accepted.floor_step,data[2],sources,tree)
+    assert direct.candidate and not direct.below_floor_bsp_classified
+    assert direct.terrain_collision_margins_unchanged and not direct.input_authorized
+    assert not check_source_body_bsp(replace(accepted.floor_step,candidate=False),data[2],sources,tree).candidate
+    assert not check_source_body_bsp(accepted.floor_step,tuple((x+1,y) for x,y in data[2]),sources,tree).candidate
+
+
+def test_source_body_rejects_water_in_upper_body():
+    from eql_automation.bsp_floor_guard import check_source_body_bsp
+    data,accepted,sources=context()
+    tree=view(((0.,0.,1.,-7.,0,2,3),leaf(1),leaf(2)),{0:{'water'}})
+    result=check_source_body_bsp(accepted.floor_step,data[2],sources,tree)
+    assert not result.candidate and result.reason=='labelled_bsp_volume'
+
+
+def test_source_body_follows_a_sloped_patch_with_exact_floor_contact():
+    from eql_automation.bsp_floor_guard import check_source_body_bsp
+    footprint=((-0.5,-0.5),(0.5,-0.5),(0.5,0.5),(-0.5,0.5))
+    source=SourceFace(tuple((y,x,.5*x) for x,y in ((-100.,-100.),(100.,-100.),(0.,100.))),0,'Diffuse',9,0)
+    chain=SourceFloorChain(inventory_sha256='a'*64,seed_evidence_sha256='b'*64,seed_ids=((9,0),),body_height=6.)
+    step=chain.advance(footprint,(source,));assert step.candidate
+    tree=view(((0.,-.5,1.,.000015,0,2,0),leaf(1)))
+    result=check_source_body_bsp(step,footprint,(source,),tree)
+    assert result.candidate and result.selected_ids==((9,0),)
+    assert result.grounded_body_assumed and result.geometry_sha256==step.geometry_sha256
+    # An actually unknown halfspace touching the floor is still visited.
+    touching=view(((0.,-.5,1.,0.,0,2,0),leaf(1)))
+    assert check_source_body_bsp(step,footprint,(source,),touching).reason=='missing_bsp_child'

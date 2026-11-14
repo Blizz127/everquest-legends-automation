@@ -1,8 +1,8 @@
-"""Conservative copied-BSP classification of a complete vertical prism.
+"""Conservative copied-BSP classification of closed convex body volumes.
 
 Plane arithmetic is exact for the supplied binary floats/rational bounds.
-The prism is not clipped as branches are traversed: this can visit extra
-leaves and refuse unnecessarily, but cannot discard a possible prism leaf.
+The volume is not clipped as branches are traversed: this can visit extra
+leaves and refuse unnecessarily, but cannot discard a possible occupied leaf.
 Unlabelled copied regions do not establish live dryness or collision safety.
 """
 from __future__ import annotations
@@ -88,6 +88,39 @@ class BspVolumeView:
         boundary = hull(xy)
         if len(boundary) != len(xy) or area(boundary) <= 0 or low >= high:
             raise ValueError("BSP prism must have a convex nonzero footprint and height")
+        vertices = tuple((x, y, z) for x, y in boundary for z in (low, high))
+        return self.check_convex_volume(vertices, max_visits=max_visits, max_depth=max_depth)
+
+    def check_convex_volume(self, vertices_wld, *, max_visits=4096, max_depth=256):
+        """Conservatively classify the closed convex hull of exact 3D vertices.
+
+        Affine extrema occur at vertices. Every branch still sees the entire
+        hull, so this can refuse unnecessarily; it cannot discard an occupied
+        leaf. This supports source-floor wedges without inventing below-floor
+        volume. It does not claim to classify a union's convex hull as dry.
+        """
+        if (not isinstance(vertices_wld, tuple) or not 4 <= len(vertices_wld) <= 256
+                or any(not isinstance(p, tuple) or len(p) != 3 for p in vertices_wld)
+                or type(max_visits) is not int or not 1 <= max_visits <= 4096
+                or type(max_depth) is not int or not 1 <= max_depth <= 256):
+            raise ValueError('Invalid convex BSP volume or traversal budget')
+        vertices = tuple(tuple(rational_number(v) for v in p) for p in vertices_wld)
+        # Exact rank check: a point/line/plane is not a body volume.
+        basis = {}
+        origin = vertices[0]
+        for point in vertices[1:]:
+            row = [point[k]-origin[k] for k in range(3)]
+            for pivot, existing in sorted(basis.items()):
+                factor = row[pivot]
+                row = [a-factor*b for a,b in zip(row, existing)]
+            pivot = next((i for i,v in enumerate(row) if v), None)
+            if pivot is not None:
+                scale = row[pivot]
+                basis[pivot] = tuple(v/scale for v in row)
+            if len(basis) == 3:
+                break
+        if len(basis) != 3:
+            raise ValueError('BSP body volume must have nonzero 3D extent')
         stack = [(1, frozenset())]
         visits = 0
         regions = set()
@@ -117,9 +150,8 @@ class BspVolumeView:
                     labelled.append((region, self.labels[region]))
                     return result(False, 'labelled_bsp_volume')
                 continue
-            planar = tuple(nx*x + ny*y + split for x, y in boundary)
-            a, b = nz*low, nz*high
-            minimum, maximum = min(planar) + min(a, b), max(planar) + max(a, b)
+            values = tuple(nx*x + ny*y + nz*z + split for x,y,z in vertices)
+            minimum, maximum = min(values), max(values)
             next_ancestry = ancestry | {number}
             if minimum > 0:
                 stack.append((left, next_ancestry))

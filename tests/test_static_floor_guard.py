@@ -52,3 +52,13 @@ def test_failed_terrain_trial_is_never_recovered_by_empty_static_query():
     accepted,footprint,terrain,view=context()
     result=check_static_floor(replace(accepted,candidate=False),footprint,terrain,view)
     assert not result.candidate and result.reason=='accepted_terrain_trial_required'
+
+
+def test_source_step_entry_preserves_placed_wall_refusal_and_cell_binding():
+    from eql_automation.static_floor_guard import check_source_static_floor
+    wall=SourceFace(((-2.,32.,-1.),(2.,32.,-1.),(0.,32.,10.)),16,'TransparentMasked',101,0)
+    accepted,footprint,terrain,view=context((wall,))
+    result=check_source_static_floor(accepted.floor_step,footprint,terrain,view)
+    assert result==check_static_floor(accepted,footprint,terrain,view) and not result.candidate
+    assert not check_source_static_floor(replace(accepted.floor_step,candidate=False),footprint,terrain,view).candidate
+    assert not check_source_static_floor(accepted.floor_step,tuple((x+1,y) for x,y in footprint),terrain,view).candidate

@@ -5,6 +5,7 @@ import json
 import re
 
 from .floor_replay import FloorTrial
+from .source_floor_chain import FloorChainStep
 from .source_occupancy import SourceOccupancy,check_selected_floor_clearance
 
 
@@ -25,7 +26,14 @@ def check_static_floor(floor_trial,footprint,terrain_sources,static_view):
             or floor_trial.floor_step is None or not floor_trial.floor_step.candidate
             or floor_trial.floor_step.occupancy is None or not floor_trial.floor_step.occupancy.candidate):
         return StaticFloorCheck(False,'accepted_terrain_trial_required')
-    step=floor_trial.floor_step
+    return check_source_static_floor(floor_trial.floor_step,footprint,terrain_sources,static_view)
+
+
+def check_source_static_floor(step,footprint,terrain_sources,static_view):
+    """Check placed objects against an accepted source cell, without a baked claim."""
+    if (not isinstance(step,FloorChainStep) or not step.candidate
+            or step.occupancy is None or not step.occupancy.candidate):
+        return StaticFloorCheck(False,'accepted_source_floor_step_required')
     try:
         geometry=sha256(json.dumps({'footprint':footprint,'sources':[asdict(s) for s in terrain_sources]},
                                   sort_keys=True,separators=(',',':')).encode()).hexdigest()
