@@ -1,5 +1,14 @@
 # FINDINGS
 
+## Private 0.41.53 staging — 2026-11-14 01:41 UTC
+
+**VERIFIED:** Commit `fb0733f` archive SHA
+`efb26be50ce614ad7b0791efe44496c9e2957eaf35537e19d72256cdf173f2bb`
+matched at Alienware `~/.local/share/eql-automation/owner-tools/0.41.53/source`.
+CLI startup for portal repair/replay and invalid hash/portal argument refusals
+passed in the remote smoke (`../smoke.json`). This source-only staging did
+not open input devices, change the game prefix or operate a character.
+
 ## GFay westward portal repair — 2026-11-14 01:40 UTC
 
 **VERIFIED source comparison:** The failed step-63 footprint is wholly inside

@@ -1,7 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 01:40 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:41 UTC for coordinator task `829a00229b29`.
 
+- Private source **0.41.53**, commit `fb0733f`, is staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.53/source`. Archive SHA
+  `efb26be50ce614ad7b0791efe44496c9e2957eaf35537e19d72256cdf173f2bb`
+  matched. Both CLI startup checks and missing-hash/out-of-range-portal
+  refusals passed remotely. No input device or game input was used.
 - Source **0.41.53** repairs the GFay steep-section route by moving two
   portal crossings west. The same 155-polygon corridor is retained; all three
   changed segments pass continuous radius-1.2 ground tubes and existing
