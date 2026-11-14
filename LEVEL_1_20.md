@@ -1,9 +1,15 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 03:45 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 04:00 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.63 wires the read-only input observer into the existing helper
+in separate candidate 0.39.8. Eighty-three focused checks and synthetic
+actual-engine/offscreen GUI smokes pass; live session/input acceptance and
+UI/zone/ground/speed providers remain missing. No movement is enabled.
+The pending owner 0.41.61 location/map command and assist 0.39.6 are unchanged.
 
 Source 0.41.62 completes the revised same-zone GFay replay with terrain,
 static-object occupancy and whole-prism copied BSP checks: all 155 segments,

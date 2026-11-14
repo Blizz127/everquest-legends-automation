@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.62 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.63 / assist 0.39.6 / observation candidate 0.39.8
 
 ## Current availability
 
@@ -19,11 +19,17 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.62 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.62/source`; the runnable
+Source tools 0.41.63 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.63/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
-Source 0.41.62 adds a full-volume copied BSP hazard check to the existing
+Source 0.41.63 connects read-only input observation to the existing helper's
+job and cancellation lifecycle in separate candidate 0.39.8. It observes the
+game window/process and two input samples, then reports the live providers
+still missing. It does not enable movement. Eighty-three focused checks,
+an actual-engine synthetic smoke and an offscreen Alienware GUI smoke pass.
+
+Source 0.41.62 added a full-volume copied BSP hazard check to the existing
 terrain/static replay. It covers the complete expanded movement footprint
 from below the lowest selected floor to above the highest head position.
 Exact arithmetic preserves small offsets at BSP planes. Contact includes
@@ -165,6 +171,38 @@ hold. An over-0.20-second reported hold or cancellation is not a pass.
 Assist's movement path refuses immediately; this adds no turn, targeting,
 combat, camp or route action. The candidate keeps the same assist controls
 and HP calibration, but its movement implementation is not client-accepted.
+
+## Separate read-only navigation candidate: 0.39.8
+
+This isolated build adds **Read-only navigation check** to the measurement
+tab of the existing rotation helper. It is available for a later diagnostic;
+the pending location/map collector below remains at 0.41.61. No new check or
+repeat of G0 is currently requested. To open the candidate, close other helpers:
+
+```bash
+cd ~/.local/share/eql-automation/owner-assist/0.39.8
+EQL_ROTATION_TRACE="$HOME/eql-navigation-observation.jsonl" ./launch.sh --measure-navigation
+```
+
+**Read-only navigation check** waits four seconds for game focus, observes
+the same window/process and takes two input samples on separate engine ticks.
+It sends no game commands, keys or movement and does not capture the screen.
+The trace records device/activity counts, not typed keys. F9, F11 or
+**Stop measurement** cancel; a settings/session change also cancels the pending
+observation. The reader is closed on completion, cancellation or helper exit.
+
+An input-clear result means only that this sample saw no owner input and had
+stable coverage. It does not verify chat, target, combat, current zone, ground,
+speed or a route. Those missing providers are listed in `nav_preflight_result`;
+`movement_authorized` and `real_client_accepted` remain false. G2 and F11
+travel stay disabled. **Check movement stop** is a separate button that still
+performs the G0 pulse; it is not part of the read-only check.
+
+The candidate passed synthetic actual-engine and offscreen GUI checks on
+Alienware. No live device/session observation in this new integrated path
+or live movement acceptance is claimed. Assist 0.39.6 remains the current
+owner rotation test; this candidate also retains its manual movement/targeting
+limits and the separate 0.39.7 watchdog implementation.
 
 ## Read-only UI observation for the next movement gate
 

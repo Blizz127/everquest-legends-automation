@@ -1,0 +1,51 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -206,7 +206,7 @@
+             title = QLabel("Movement measurement" if measurement_only else "Paladin + Cleric")
+             title.setObjectName("title")
+             layout.addWidget(title)
+-            subtitle = QLabel("Measure movement on open, flat ground." if measurement_only else
++            subtitle = QLabel("Observe navigation readiness, or measure movement on open ground." if measurement_only else
+                               "One combat key. Your learned spells. Level 1–50.")
+             subtitle.setObjectName("muted")
+             layout.addWidget(subtitle)
+@@ -350,7 +350,7 @@
+                 self.tabs.setTabEnabled(3, False)
+             layout.addWidget(self.tabs, 1)
+             footer = QLabel(
+-                "G0 stop check only · one short pulse · F9/F11 cancel · leveling disabled"
++                "Read-only check sends no input · G0 is a separate pulse · F9/F11 cancel · leveling disabled"
+                 if measurement_only else
+                 "F6 prepares  ·  F8 turns persistent combat on  ·  F9 turns it off  ·  F7 toggles on/off  ·  "
+                 "Movement, targeting and melee are manual  ·  F11/F12 disabled")
+@@ -382,7 +382,7 @@
+             self.ap_state.setObjectName("state")
+             column.addWidget(self.ap_state)
+             self.ap_default_status = (
+-                "Only the G0 movement-stop check is available: one 0.15-second forward pulse. F9/F11 cancel."
++                "Read-only check observes input. G0 separately requests one 0.15-second pulse. F9/F11 cancel."
+                 if measurement_only else
+                 "Travel is unavailable in this assist preview. Movement and targeting stay manual.")
+             self.ap_status = QLabel(self.ap_default_status)
+@@ -415,6 +415,12 @@
+             for button in (start, stop, calibrate):
+                 row.addWidget(button)
+             if measurement_only:
++                self.nav_preflight = QPushButton("Read-only navigation check")
++                self.nav_preflight.setObjectName("navPreflightButton")
++                self.nav_preflight.setToolTip("Observe the game session and input coverage. "
++                                             "Sends no commands, keys or movement; F9/F11 cancel.")
++                self.nav_preflight.clicked.connect(lambda: self.post("nav_preflight_later"))
++                row.addWidget(self.nav_preflight)
+                 check_stop = QPushButton("Check movement stop")
+                 check_stop.setToolTip("Stand on clear, flat ground. Requests one 0.15-second forward pulse, "
+                                       "releases it, then checks for continued movement. "
+@@ -908,6 +914,8 @@
+                     "travel_tab_enabled": window.tabs.isTabEnabled(3),
+                     "travel_tab_label": window.tabs.tabText(3),
+                     "chat_recovery_enabled": window.chat_recovery.isEnabled(),
++                    "navigation_preflight_visible": measurement_only and window.nav_preflight.isVisible(),
++                    "navigation_preflight_enabled": measurement_only and window.nav_preflight.isEnabled(),
+                 }, indent=2) + "\n")
+             app.quit()
+         QTimer.singleShot(400, render)

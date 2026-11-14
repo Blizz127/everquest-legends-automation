@@ -1,5 +1,51 @@
 # FINDINGS
 
+## Existing-helper read-only observation — 2026-11-14 04:00 UTC
+
+**VERIFIED source 0.41.63 / candidate 0.39.8:** The existing November rotation
+engine now has a measurement-only `nav_preflight_later` job and GUI button.
+It binds one game window/process and settings snapshot, waits across engine
+ticks, opens the existing read-only input observer without creating a sender,
+and takes baseline/later samples. Results contain counts and the explicit
+missing UI, zone/ground, speed and checked-route providers; they never authorize
+movement. Raw keys are not persisted. Queued requests retain their original
+settings/generation/epoch; GUI posts revoke a pending result immediately.
+F9/F11, settings changes, session/focus changes and helper exit close readers.
+The inherited stopped state is preserved. This path does not capture the game.
+
+Eighty-three focused tests pass, including cancellation during a scan or close,
+queued settings changes, source/window/process identity and actual input-reader
+fixtures. The actual retained helper's engine passes a synthetic dispatch/tick
+smoke locally and on Alienware without opening devices, capture or sender.
+The Alienware offscreen GUI smoke shows the new button and measurement-only
+badge with worker/input/settings writes false; its PNG was inspected. The
+initial help copy incorrectly said G0 was the only check; it was corrected,
+and the final candidate was rebuilt and smoked. The unpublished earlier
+snapshot is preserved with a `before-help-text-fix` suffix.
+
+Final candidate archive SHA
+`9516de9e4423c91599938db72ed685df8c155ee7d7840127d22de6f992144ba5`
+matched on Alienware at `~/.local/share/eql-automation/owner-assist/0.39.8`.
+GUI SHA `774f8d41d96ce5cf6e66a6cea1f9dc4a0f428e48523a89fdde40d2dcbe9de3f2`;
+preflight source SHA
+`4cc33a96723b48973e8237418320ebcd1f6bce948c1b725630d29155f4cea9b0`;
+render SHA `4664190bdc36ec28fc5022e186b973608ec93ce9d7d415183c616d69de7a26d7`.
+Private `releases/owner-assist-0.39.8-staging.json` records the smoke scope.
+No live input/session observation through this integration is accepted.
+
+**OBSERVED remaining gap:** There is still no retained real game UI crop or
+paired location/UI record in the local approved store. The browsed-map label
+cannot independently establish current zone. Next implement a tick-driven,
+owner-invoked location/UI collection session in the helper using the existing
+unbound collector; retain its unknown identity/zone/alignment fields. Then
+wire source-ground observation with live height calibration, rather than
+reusing synthetic replay calibration. These are actual runtime dependencies.
+
+Assist 0.39.6, the pending owner collector command at 0.41.61 and completed G0
+remain unchanged. No new/repeated owner test is requested. Full-auto 1–20,
+automated XP and fresh-character level 50 remain unverified. No lead login,
+game input, installation/access change, public release or git push occurred.
+
 ## Private 0.41.62 staging — 2026-11-14 03:46 UTC
 
 **VERIFIED:** Commit `8ddde9bec83ae906784e0066767f313f074a6738`, archive SHA
