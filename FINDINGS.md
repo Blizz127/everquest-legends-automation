@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Private source 0.41.64 staging — 2026-11-14 04:06 UTC
+
+**VERIFIED:** Source commit `3c9cf0394597cd07153686cc7bbd0ca9264431e7`, archive SHA
+`e6832e42c16fa23644846164ea97694c0a80bfc653b11e6c99e06171214a698e`, matched on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.41.64/source`. Four startup checks
+pass: package/position/crop/adapter imports and the builder, location collector
+and UI collector help paths. No game assets, capture, devices or input were
+used. Remote `../smoke.json` and private local
+`releases/eql-automation-0.41.64-staging.json` retain the record. Candidate
+0.39.9's actual-engine synthetic event and GUI evidence is recorded below.
+Current assist 0.39.6 and the original 0.41.61 collector remain available.
+
 ## Position/UI collection in the existing helper — 2026-11-14 04:06 UTC
 
 **VERIFIED source 0.41.64 / candidate 0.39.9:** `Observe current position`

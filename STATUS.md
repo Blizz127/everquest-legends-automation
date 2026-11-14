@@ -19,6 +19,9 @@ Updated 2026-11-14 04:06 UTC for coordinator task `829a00229b29`.
   `4dc6022f36b0dd434a88335147ccda82b6eb8622d9652b5322d835f9f9c6fbd6`.
   The new button collects the same evidence as the pending standalone tool;
   it sends no input and does not enable movement. Live capture remains unrun.
+  Source commit `3c9cf03` also staged under `owner-tools/0.41.64/source`;
+  four no-input startup checks pass; archive SHA
+  `e6832e42c16fa23644846164ea97694c0a80bfc653b11e6c99e06171214a698e` matched.
 - Source **0.41.63** / isolated candidate **0.39.8**: **VERIFIED** read-only
   input observation is wired into the existing helper job/tick/cancellation
   lifecycle. 83 local focused checks pass; synthetic actual-engine and
