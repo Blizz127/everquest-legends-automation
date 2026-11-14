@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.14** · rotation preview **0.39.13** · destination preview **0.39.17** · short route trial **0.39.15**.
+Source **0.42.15** · rotation preview **0.39.13** · destination preview **0.39.18** · short route trial **0.39.15**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -15,7 +15,7 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Read-only position observation | One owner-triggered capture; no commands, keys or clicks sent. | **Observe current position**, F9/Stop to cancel. |
 | Stationary location-hotbutton test | Sends one explicitly configured key, then checks the log for one fresh position reply. No route movement or combat. | **Test /location hotbutton…**, F9/F11/Stop to cancel. |
 | Supervised motion measurement | Four short forward presses and three turns on owner-confirmed open ground; saves relative observations and stops. | **Supervised motion measurement…**, F9/F11/Stop to cancel. |
-| Supervised destination travel | In 0.39.17, measures motion, plans from current GFay coordinates toward Crushbone, checks each movement and stops. No zone crossing or leveling. | **Travel toward Crushbone…**, F9/F11/Stop to cancel. |
+| Supervised destination travel | In 0.39.18, measures motion, plans from current GFay coordinates toward Crushbone, checks each movement and stops. No zone crossing or leveling. | **Travel toward Crushbone…**, F9/F11/Stop to cancel. |
 | Supervised short route trial | In 0.39.15/0.39.16, measures motion, creates a two-unit GFay path from fresh current positions, checks terrain/objects/BSP, follows it if checks pass, then stops. No combat or leveling. | **Supervised short route trial…**, F9/F11/Stop to cancel. |
 
 Run only one helper at a time. **G0 passed; do not repeat the movement-stop
@@ -23,26 +23,34 @@ pulse.** Assist still uses the existing rotation bot. Preview 0.39.15 is a
 separate finite movement test; it cannot switch into assist or full auto.
 The requested seamless assist/full-auto switch is still unfinished.
 
-## Travel toward Crushbone on Alienware: 0.39.17
+## Travel toward Crushbone on Alienware: 0.39.18
 
 This new preview adds **Travel toward Crushbone…**. It uses the installed
 client's map label, the copied navmesh and your current position. It measures
 motion, plans a full Greater Faydark approach, follows individually checked
 moves and stops. It does not cross into Crushbone, fight, loot or level for you.
-Real-client traversal has not been verified. This update stops travel and
-discards the old zone when client logging restarts or transition text is
-incomplete. Keep logging enabled; a logging reset requires a newly observed
-zone entry. Startup verification is recorded in FINDINGS.md. The preceding
-0.39.16 destination flow passed simulated arrival and F9 release checks.
+Real-client traversal has not been verified. This update can recognize your
+current zone from the open map during the stationary hotbutton test. It checks
+the exact zone name against the installed catalog and compares all three map
+coordinates with the new `/location` reply. Live map placement and recognition
+still need owner testing. Keep logging enabled; logging changes and zoning
+clear the observation. The preceding destination flow passed simulated arrival
+and F9 release checks.
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.17
+cd ~/.local/share/eql-automation/owner-assist/0.39.18
 EQL_ROTATION_TRACE="$HOME/eql-destination-trace.jsonl" ./launch.sh --measure-navigation
 ```
 
-Use one helper at a time. Select the correct character. As with 0.39.15, the
-helper currently needs to observe a Greater Faydark zone entry after startup,
-and **Test /location hotbutton…** must succeed in this same helper session.
+Use one helper at a time. Select the correct character. In the game, open the
+map so its zone name and three coordinate labels are visible. Run **Test
+/location hotbutton…** in this helper and focus the game during its countdown.
+Look for **Current zone recognized from map: The Greater Faydark**. You can
+start while already in GFay; a fresh zone entry is an alternative if map
+recognition is unavailable. Unreadable or mismatched labels leave the zone
+unknown and travel refuses before moving. The test sends the configured
+hotbutton only once and does not start travel. After it stops, close the map
+before choosing travel.
 Start on clear, flat, open ground; close chat, clear your target and turn melee
 off. Choose **Travel toward Crushbone…**, then focus the game during the
 four-second countdown. The seven calibration presses and route belong to this
@@ -81,7 +89,7 @@ EQL_ROTATION_TRACE="$HOME/eql-route-trial-trace.jsonl" ./launch.sh --measure-nav
    **The new helper must observe a Greater Faydark zone entry while it is
    running.** Starting it while already in GFay cannot establish the zone from
    old log history. If no new entry is seen, the trial refuses before moving;
-   automatic current-zone recognition is still unfinished. Any zoning is yours
+   this older preview does not include the map recognition in 0.39.18. Any zoning is yours
    to perform, and is not part of this test's movement.
 2. Configure/test a hotbutton containing only `/location` in this same helper,
    using the stationary hotbutton steps below. A prior helper's result is not

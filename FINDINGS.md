@@ -1,5 +1,66 @@
 # FINDINGS
 
+## Current-zone recognition at stationary startup — 2026-11-14 12:11 UTC
+
+**VERIFIED implementation:** source 0.42.15 / destination preview 0.39.18
+adds visible-map recognition to the existing stationary `/location` hotbutton
+test. It reads the pinned client's zone label and all three coordinate labels,
+requires a complete exact unique catalog name and confident single-line OCR,
+and compares the displayed integers with the same test's fresh raw log reply.
+The reader retains its live log cursor; map coordinates never become navigation
+positions. A route still obtains its own fresh stopped pair. No extra game key
+is sent by recognition. Unknown/clipped labels, changed sources/process/focus,
+logging/zone boundaries, duplicate replies and cancellation leave startup stopped.
+A final callback-cancellation gap found during review was reproduced and fixed
+with a short locked commit and a scalar cancellation recheck after callbacks.
+
+**VERIFIED focused checks:** 100 cases pass in 11.71 seconds, including the
+actual Tesseract adapter on synthetic rendered labels, retained-engine hotbutton
+integration using a pipe instead of a device, F9 during recognition/final
+observation, logging resets and existing hotbutton/UI/tracker regressions.
+The initial run found one OCR padding problem and six missing-fixture errors;
+those were corrected. Cropping blank padding raised the synthetic `11` reading
+from 84.02 to 96.04 confidence without lowering the 85 threshold. These tests
+are not real-client acceptance.
+
+**VERIFIED static source evidence:** the pinned native types 1021/1022/1023
+read actor fields +0x74/+0x78/+0x7c, in the same order as the three `/location`
+values. Their display formatter is `%.0f`; the log formatter is `%1.2f`.
+The allowed difference is 0.505 units for formatting, not a movement tolerance.
+`tools/audit_current_zone_label.py` now reproduces those spans and formats as
+well as the actor-zone dispatch. Private artifact
+`client-data/map-zone-0.42.15/probe.json` SHA
+`8d8d9f7d06ee0a90778a1404ca1b6b1ae75fa18dd67bfd0b11db45d18a3f5905`.
+No game/native client was executed or attached for this audit.
+
+**VERIFIED private publication:** 0.39.18 is staged at Alienware
+`~/.local/share/eql-automation/owner-assist/0.39.18`. Its manifest, offscreen GUI,
+installed map/catalog/archive and destination-loader startup checks pass. The
+GUI image was inspected. Archive SHA
+`e173bb56b36a917a3ccdfecba54c0d24bf96cba027e87f1564e92a4c0d3ac45c`;
+startup SHA `412c2b8b5a2d181db8293a16c81be4ea7e9c0110e0596d9005b8b57fe9f9c7a0`.
+The production OCR adapter reads synthetic “The Greater Faydark” on Alienware
+at 91.21 confidence. This startup uses a synthetic zone identity; no engine
+worker, device, game input, settings write or install change occurs.
+
+Alienware lacked Tesseract, so its private dependency is staged separately at
+`tools/tesseract-5.5.0-linux64` outside the game install. It contains the existing
+local 5.5.0 executable, resolved loader/libraries, English model and license
+files; all 174 payload file hashes match its manifest. It uses one OCR thread,
+not a system installation. Tool archive SHA
+`a9dbdae3c1230647fb6e9bd90cd7cd0449fdd8de81170123561d4b9d605898d2`;
+manifest SHA `1a12779535242e14bc6883b36dcd1da4e72d1bd7f7ab26ee4034dbb2c8eea462`;
+startup SHA `d4a673c23c9a4b0a547ebcdd417e357463ff002102899bbd9fd4eef268673c5c`.
+All binaries/model data remain outside git.
+
+**Remaining real-client gate:** owner runs the existing stationary hotbutton
+test with the map visible, then supervises travel. Live crop placement, OCR
+accuracy and label refresh are not verified. Starting already in GFay now has
+an implemented observation path; old zone history is still not replayed.
+Actual traversal, zone crossing, camps/combat and 1–20/1–50 are unfinished.
+Level, XP/hour, deaths and camp remain unknown. G0 is passed and owner-confirmed;
+no repeat. Assist remains 0.39.13, based on the existing rotation tool.
+
 ## Logging continuity and current-zone startup — 2026-11-14 12:01 UTC
 
 **VERIFIED fix:** source 0.42.14 / destination preview 0.39.17 invalidates

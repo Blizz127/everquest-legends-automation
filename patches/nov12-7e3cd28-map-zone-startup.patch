@@ -1,0 +1,29 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -382,7 +382,7 @@
+             self.ap_state.setObjectName("state")
+             column.addWidget(self.ap_state)
+             self.ap_default_status = (
+-                "Test your /location hotbutton, then use Supervised motion measurement on open flat ground. "
++                "Open the game map and test your /location hotbutton to recognize the current zone. "
+                 "Choose a short GFay test or supervised travel to the Crushbone approach. Combat and leveling stay manual."
+                 if measurement_only else
+                 "Travel is unavailable in this assist preview. Movement and targeting stay manual.")
+@@ -770,6 +770,8 @@
+             text = QLabel("In EverQuest, create a hotbutton containing only /location. Bind it to a "
+                           "function key below and remove any other action on that key. Manually verify "
+                           "that it prints your position and does nothing else.\n\n"
++                          "Open the in-game map so its zone name and three coordinates are visible. "
++                          "The helper compares those labels with the fresh reply to recognize your current zone.\n\n"
+                           "This test sends that key once after a four-second focus countdown. "
+                           "Close chat, stand still and release keys. F9/F11 stop. It does not start a route.")
+             text.setWordWrap(True)
+@@ -834,7 +836,7 @@
+             layout = QVBoxLayout(dialog)
+             text = QLabel("This moves toward the client map's Crushbone approach in Greater Faydark. "
+                           "It does not enter Crushbone, fight, loot or level unattended. "
+-                          "The helper needs a Greater Faydark zone entry observed since startup and a successful "
++                          "The helper needs Greater Faydark recognized from the open map or a new zone entry, and a successful "
+                           "Test /location hotbutton in this same helper session.\n\n"
+                           "Start on wide open, flat ground with chat closed, target cleared and melee off. "
+                           "After a four-second focus countdown, seven short calibration presses measure movement. "

@@ -24,6 +24,8 @@ SPANS = {
     'selectors_1018_1023': (0x548d6d, 0x548d73, '03414590b23d00b8df9b71a4037ad44b310fcd3de38ba24a4313f9f3c5b75d07'),
     'destinations_1018_1023': (0x548920, 0x548938, '276d52703ff493680f2eece0bd88ce88ee4d10dcbcfaac4c6e00896efe3d02c6'),
     'type_1020_actor_zone': (0x547e32, 0x547e82, '26dfa7d629ecda78a45d7c2f545cfae53a67c9cd68ec927f5e4de9c66045248e'),
+    'types_1021_1023_actor_coordinates': (0x547e82, 0x547eee, '43aaae859a4224288db94d7fb06343ec2daffb5357cc0b9353d071bdae5a75ff'),
+    'location_actor_coordinates': (0x24d280, 0x24d3e3, 'e519458ba5ac02a907fd13a20ee90f57453fa34fbd041ad0806128026916a7a3'),
     'label_update_caller': (0x467840, 0x4679ac, 'f2469b8006da6af5a86c7a94f889fcada580c0c6d8ee25735b5912c99c0b8dd2'),
     'adapter_update_caller': (0x3f23d0, 0x3f2489, '9f6e05dc286baf286c5ffbe65f1476680c693023858565b17c0c0e5e847b7363'),
     'zone_name_lookup': (0x6ec290, 0x6ec389, '9b19f0c3e04bffda8c6e53ceb6daaaef9f05d31ffaa434e6d87d380a3ff7e8fe'),
@@ -43,9 +45,15 @@ def inspect(exe=EXE, xml=XML):
             if section[2] <= rva < section[2]+section[3]:
                 return section[4]+rva-section[2]
         raise ValueError('Unbacked source RVA')
-    labels = ET.fromstring(ui).findall(".//Label[@item='MRA_ZoneLabel']")
-    if len(labels) != 1 or labels[0].findtext('EQType') != '1020':
-        raise ValueError('Map label EQType changed')
+    root = ET.fromstring(ui)
+    for name, kind in (('MRA_ZoneLabel',1020), ('MRA_LocXCoords',1021),
+                       ('MRA_LocYCoords',1022), ('MRA_LocZCoords',1023)):
+        labels = root.findall(".//Label[@item='"+name+"']")
+        if len(labels) != 1 or labels[0].findtext('EQType') != str(kind):
+            raise ValueError('Map label EQType changed: '+name)
+    for address, expected in ((0xb28084,b'%.0f\0'),(0x96d75c,b'%1.2f\0')):
+        if raw[offset(address):offset(address)+len(expected)] != expected:
+            raise ValueError('Actor coordinate formatting changed')
     bindings = []
     for kind, expected in zip(range(1018, 1024),
                               (0x547d73, 0x547dca, 0x547e32, 0x547e82, 0x547eba, 0x547ed4)):
@@ -69,6 +77,10 @@ def inspect(exe=EXE, xml=XML):
         label='MRA_ZoneLabel', eqtype=1020, dispatch=bindings, source_spans=spans,
         native_type_1020_source='actor global 0x140f3a808, field +0x1ec; zone catalog 0x140f3a7c8',
         selected_map_field_used_by_type_1020=False,
+        coordinate_fields=['actor+0x74','actor+0x78','actor+0x7c'],
+        map_coordinate_format='%.0f', location_coordinate_format='%1.2f',
+        map_coordinate_order='X label = first raw location; Y label = second; Z label = third',
+        coordinate_format_difference_bound=.505,
         null_behavior='missing actor/catalog leaves initialized empty output',
         invalid_zone_behavior='zone lookup initializes Unknown Zone',
         instance_suffix='lookup can append space plus integer for flagged zone metadata',

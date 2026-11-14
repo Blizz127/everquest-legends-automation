@@ -32,13 +32,24 @@ def test_fresh_stationary_fix_is_retained_without_inventing_a_zone(tmp_path):
 
 
 @pytest.mark.parametrize('body',('LOADING, PLEASE WAIT...','You have entered The Greater Faydark.',
-                                'Your Location is nan, 2, 3'))
+                                'Your Location is nan, 2, 3',
+                                "Logging to 'eqlog.txt' is now *ON*.",
+                                "Logging to 'eqlog.txt' is now *OFF*."))
 def test_transition_or_malformed_location_refuses_the_whole_batch(tmp_path,body):
     p,r=reader(tmp_path);append(p,'Your Location is 1, 2, 3');append(p,body)
     with pytest.raises(ValueError):r.poll(now=1)
     assert r.latest is None and r.refused
     append(p,'Your Location is 4, 5, 6',2)
     with pytest.raises(ValueError):r.poll(now=2)
+
+
+@pytest.mark.parametrize('body',("Logging to 'eqlog.txt' is now *ON*.",
+                                'You have entered The Greater Faydark.'))
+def test_malformed_timestamp_boundary_refuses_stationary_observation(tmp_path, body):
+    p,r=reader(tmp_path);append(p,'Your Location is 1, 2, 3')
+    with p.open('a') as out:out.write('[invalid timestamp] '+body+'\n')
+    with pytest.raises(ValueError):r.poll(now=1)
+    assert r.latest is None and r.refused
 
 
 def test_replacement_never_replays_history_or_reuses_observation(tmp_path):

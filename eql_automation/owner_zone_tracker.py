@@ -54,6 +54,7 @@ class LiveZoneTracker:
             expected_character=expected_character, expected_server=expected_server)
         self.lease = None
         self.closed = False
+        self.map_observation = None
         self.check_binding()
 
     def close(self):
@@ -109,7 +110,7 @@ def owner_zone_binding(engine):
             settings.server, *window_identity(engine.gate, require_focus=False))
 
 
-def make_zone_tracking_engine(base_engine, *, clock=time.monotonic):
+def make_zone_tracking_engine(base_engine, *, clock=time.monotonic, zone_observer=None):
     """Observe from actual helper log ticks; never create a sender or device.
 
     A missing window/catalog/log is reported in the trace and leaves zone
@@ -132,8 +133,71 @@ def make_zone_tracking_engine(base_engine, *, clock=time.monotonic):
                 self._live_zone_status = state
                 self.trace('current_zone_tracking', reason=reason, zone_id=state[1],
                     zone_display_name=state[2], zone_generation=state[3],
-                    source='appended_zone_entry', game_input_sent=False,
+                    source=('map_label_with_fresh_location' if tracker is not None
+                        and tracker.map_observation is not None
+                        and tracker.map_observation[0] == state[3] else 'appended_zone_entry'), game_input_sent=False,
                     movement_authorized=False)
+
+        def _observe_hotkey_zone(self, pending):
+            if zone_observer is None:
+                return super()._observe_hotkey_zone(pending)
+            from .map_zone_observer import MapZoneObservation
+            self._service_zone_tracker()
+            tracker = self.live_zone_tracker
+            if tracker is None:
+                return dict(status='unavailable', reason='Current game/character log binding unavailable')
+            if tracker.reader.zone_id is not None:
+                return dict(status='already_observed', zone=tracker.reader.zone_display_name)
+            reader = tracker.reader
+            baseline = (reader.tail.identity, reader.tail.epoch, reader.zone_generation)
+            def current():
+                self._hotkey_current(pending, focused=True)
+                tracker.check_binding()
+                sample = pending['observer'].sample()
+                if not sample.clear_at(clock()):
+                    raise ValueError('Owner input during map recognition')
+                tracker.poll()
+                if (self.live_zone_tracker is not tracker or tracker.lease is not None
+                        or baseline != (reader.tail.identity, reader.tail.epoch, reader.zone_generation)
+                        or reader.tail.partial or pending['reader'].tail.identity != reader.tail.identity):
+                    raise ValueError('Zone/log binding changed during map recognition')
+                if pending['reader'].poll(now=clock()) or pending['reader'].tail.partial:
+                    raise ValueError('Another or incomplete location arrived during map recognition')
+            try:
+                current()
+                observed = zone_observer(self, pending, still_current=current)
+                self.pump()  # Process F9 before installing any observation.
+                with self.g0_stop_lock:
+                    current()
+                    now = clock()
+                    if (not isinstance(observed, MapZoneObservation)
+                            or observed.zone_id != reader.zone_ids.get(observed.zone_name)
+                            or (observed.window_id, *observed.process) != tuple(pending['window'])
+                            or observed.raw_coordinates != pending['fix'].raw_coordinates
+                            or not pending['fix'].received_monotonic <= observed.capture_started_at
+                                <= observed.checked_at <= now
+                            or now-pending['fix'].received_monotonic > 2.5):
+                        raise ValueError('Map observation does not match the current hotbutton session')
+                    record = observed.record()
+                    # Reentrant callbacks above can cancel while holding an
+                    # RLock. Check scalar state after them, before committing.
+                    if (self.hotkey_test is not pending or pending['cancelled'] or self.cancelled
+                            or pending['generation'] != self.cancel_generation
+                            or pending['epoch'] != self.hotkey_test_epoch
+                            or self.live_zone_tracker is not tracker or tracker.closed):
+                        raise ValueError('Hotbutton test cancelled before map observation commit')
+                    reader._clear_zone()
+                    reader.zone_id, reader.zone_display_name = observed.zone_id, observed.zone_name
+                    # The log reader stays at its live cursor and supplies no old fix.
+                    tracker.map_observation = (reader.zone_generation, record)
+                self._zone_status()
+                self.trace('current_zone_from_map', **observed.record(), movement_authorized=False)
+                self.emit('Current zone recognized from map: '+observed.zone_name)
+                return dict(status='observed', **observed.record())
+            except Exception as error:
+                self._hotkey_current(pending, focused=True)  # Cancellation still ends the whole test.
+                self.emit('Map zone unavailable: '+str(error)+'. Open the map and retry the hotbutton test, or use a new zone entry.')
+                return dict(status='unavailable', reason=str(error), game_input_sent=False)
 
         def _close_zone_tracker(self):
             tracker, self.live_zone_tracker = self.live_zone_tracker, None

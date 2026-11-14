@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 12:01 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 12:11 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,18 @@ Updated 2026-11-14 12:01 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.15 / owner 0.39.18:** the stationary hotbutton test now
+  recognizes the visible map zone, cross-checking all three coordinates against
+  its fresh log reply. Starting already in GFay no longer requires a new zone
+  entry when recognition succeeds. 100 focused checks pass, including actual
+  OCR on synthetic labels and pipe-only cancellation/invalidation checks.
+  Alienware private OCR, GUI, source-manifest and installed-data startup pass
+  without a worker, device, game input or install change. Owner preview startup
+  SHA `412c2b8b5a2d181db8293a16c81be4ea7e9c0110e0596d9005b8b57fe9f9c7a0`.
+  **Next:** owner map recognition/travel evidence, then real zone transition and
+  camp execution. Actual live OCR/label refresh, route traversal and leveling
+  remain unverified. Current level, XP/hour, deaths and camp unknown. G0 stays
+  passed; assist 0.39.13 is unchanged. HOWTO uses destination preview 0.39.18.
 - **Source 0.42.14 / owner 0.39.17:** fixed old-zone retention across logging
   resets and incomplete transition text. Travel now stops on logging changes;
   transition pairing requires a new zone observation. 97 focused checks pass.

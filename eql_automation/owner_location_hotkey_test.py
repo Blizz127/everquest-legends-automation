@@ -73,6 +73,9 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                     or (not initializing and (self.cancelled or self.sender is not pending['sender']))):
                 raise ValueError('Hotbutton test cancelled or helper/game binding changed')
 
+        def _observe_hotkey_zone(self, pending):
+            return None  # Route-capable wrappers may inspect the visible map.
+
         def _finish_hotkey_test(self, outcome, reason):
             pending, self.hotkey_test = self.hotkey_test, None
             if pending is None:
@@ -100,6 +103,8 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                 game_key_attempted=pending['fired'], chat_keys_sent=False,
                 movement_requested=False, real_route_accepted=False,
                 request_correlation_verified=False)
+            if pending.get('current_zone_observation') is not None:
+                record['current_zone_observation'] = pending['current_zone_observation']
             self.last_hotkey_test, self.last_hotkey_test_path = record, None
             note = ''
             try:
@@ -224,6 +229,12 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                         raise ValueError('Location reply timestamp is not fresh')
                     pending.update(stage='settling', fix=fix, settle_until=clock()+.35)
                 if pending['stage'] == 'settling' and clock() >= pending['settle_until']:
+                    pending['busy'] = True
+                    try:
+                        pending['current_zone_observation'] = self._observe_hotkey_zone(pending)
+                        self._hotkey_current(pending, focused=True)
+                    finally:
+                        pending['busy'] = False
                     self._finish_hotkey_test('observed_location', 'One fresh location reply observed')
             except Exception as error:
                 self._finish_hotkey_test('refused', str(error))

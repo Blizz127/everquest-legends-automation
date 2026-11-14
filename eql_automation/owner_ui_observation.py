@@ -80,7 +80,8 @@ class UiFrameSample:
 
 
 def sample_focused_ui(*, gate, layout_loader, game, character, server,
-                      include_chat=False, still_current=lambda: None, clock=time.monotonic):
+                      include_chat=False, still_current=lambda: None, clock=time.monotonic,
+                      controls=CONTROLS, required_control='PlayerWindow__Player_HP'):
     """Capture once and resolve regions in memory, without writing PNG/JSON.
 
     Uses only the supplied gate's read methods; it neither owns nor closes it.
@@ -115,10 +116,10 @@ def sample_focused_ui(*, gate, layout_loader, game, character, server,
         if name == "MainChat" and not include_chat:
             continue
         crops[name] = box_of(layout.window(name), image)
-    for window, control in CONTROLS:
+    for window, control in controls:
         crops[f"{window}__{control}"] = box_of(layout.control(window, control), image)
-    if crops["PlayerWindow__Player_HP"] is None:
-        raise RuntimeError("Current client files did not resolve the player HP rectangle")
+    if crops.get(required_control) is None:
+        raise RuntimeError("Current client files did not resolve the required UI rectangle: "+required_control)
     if not any(crops.get(name) is not None for name in WINDOWS):
         raise RuntimeError("Current client files did not resolve an on-screen window")
 

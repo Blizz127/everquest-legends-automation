@@ -40,14 +40,15 @@ def zone_binding(reader):
 
 def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_loader=None,
         observer_factory=OwnerInputObserver, clock=time.monotonic,
-        local_wall_clock=datetime.now, output_root=None, motion_output=None, hotkey_output=None):
+        local_wall_clock=datetime.now, output_root=None, motion_output=None, hotkey_output=None,
+        zone_observer=None):
     if not callable(planner_loader) or (destination_loader is not None and not callable(destination_loader)):
         raise ValueError('Pinned current-zone geometry loader required')
     output_root=Path(output_root) if output_root is not None else (
         Path.home()/'.local/share/eql-automation/route-trials')
     base=make_route_session_engine(motion_engine(base_engine,clock=clock,
         observer_factory=observer_factory,output_root=motion_output,hotkey_output=hotkey_output),
-        output_root=output_root/'routes')
+        output_root=output_root/'routes', zone_observer=zone_observer)
 
     class TrialEngine(base):
         def __init__(self,*args,**kwargs):

@@ -9,7 +9,7 @@ from math import isfinite
 from pathlib import Path
 import time
 
-from .location_log import NonReplayingLogTail,parse_client_log_line,parse_raw_location
+from .location_log import NonReplayingLogTail,parse_client_log_line,parse_raw_location,is_logging_boundary
 
 
 @dataclass(frozen=True)
@@ -57,13 +57,16 @@ class UnboundLocationReader:
         found=[]
         for line in lines:
             parsed=parse_client_log_line(line)
-            if parsed is None:continue
+            if parsed is None:
+                if any(marker in line for marker in ('LOADING, PLEASE WAIT', 'You have entered ', "Logging to '")):
+                    self._refuse('Unparsed transition or logging change during observation')
+                continue
             log_time,body=parsed
             if self.last_log_time is not None and log_time<self.last_log_time:
                 self._refuse('Client log clock moved backward')
             self.last_log_time=log_time
-            if body=='LOADING, PLEASE WAIT...' or (body.startswith('You have entered ') and body.endswith('.')):
-                self._refuse('Zone transition during stationary observation')
+            if body.startswith(('LOADING, PLEASE WAIT', 'You have entered ')) or is_logging_boundary(body):
+                self._refuse('Zone transition or logging change during stationary observation')
             raw=parse_raw_location(body)
             if raw is None:
                 if body.startswith('Your Location is '):self._refuse('Malformed raw location')

@@ -13,11 +13,11 @@ from .route_session import RouteSessionDriver
 from .owner_zone_tracker import make_zone_tracking_engine
 
 
-def make_route_session_engine(base_engine, *, output_root=None):
+def make_route_session_engine(base_engine, *, output_root=None, zone_observer=None):
     output_root = Path(output_root) if output_root is not None else (
         Path.home()/'.local/share/eql-automation/route-sessions')
 
-    class RouteSessionEngine(make_zone_tracking_engine(base_engine)):
+    class RouteSessionEngine(make_zone_tracking_engine(base_engine, zone_observer=zone_observer)):
         def __init__(self,*args,**kwargs):
             self.route_session_driver = None
             self.route_session_epoch = 0
