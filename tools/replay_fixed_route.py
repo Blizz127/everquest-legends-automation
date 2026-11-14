@@ -73,7 +73,7 @@ def local_seam_diagnostic(view, footprint, reference, component, window, detail_
 def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=False,
         shorten_ground_step=False, plan=PLAN, plan_sha256=PLAN_SHA, precision_portals=False,
         source_z_limit=.6, wall_budget=35., precision_overlaps=False, maximum_portal_ulp_steps=1,
-        tile_rounding=False,source_floor_chain=False,static_objects=False):
+        tile_rounding=False,source_floor_chain=False,static_objects=False,bsp_volume=False):
     began = time.monotonic()
     began_cpu = time.process_time()
     sys.path[:0] = [str(PROJECT), str(HELPER)]
@@ -87,6 +87,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     from eql_automation.source_floor_chain import SourceFloorChain
     from eql_automation.floor_replay import bind_floor_replay_seed,check_floor_trial
     from eql_automation.static_floor_guard import check_static_floor
+    from eql_automation.bsp_floor_guard import check_bsp_floor
     from eql_automation.location_log import RawLocationFix
     import numpy as np
     from eqnav import steer
@@ -100,6 +101,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         raise ValueError('Conditional source floor requires the explicit tile diagnostic')
     if static_objects and not source_floor_chain:
         raise ValueError('Static occupancy requires a checked source-floor chain')
+    if bsp_volume and not static_objects:
+        raise ValueError('BSP volume requires terrain and static occupancy checks')
     pins = dict(PINS)
     pins[plan] = plan_sha256
     for path in (Path(__file__), PROJECT / "eql_automation/fixed_route_follower.py",
@@ -143,6 +146,10 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         pins.update({Path(p):h for p,h in static_evidence['pins'].items()})
         pins[STATIC_EVIDENCE]=STATIC_EVIDENCE_SHA
         path=PROJECT/'eql_automation/static_floor_guard.py';pins[path]=sha256(path.read_bytes()).hexdigest()
+    bsp_view=None;bsp_trials=[];bsp_frame=None
+    if bsp_volume:
+        for module in ('bsp_floor_guard','bsp_volume','bsp_probe','region_audit','ground_bsp_route'):
+            path=PROJECT/'eql_automation'/(module+'.py');pins[path]=sha256(path.read_bytes()).hexdigest()
     seam_evidence = None
     if local_seam_experiment:
         pins[SEAM_EXPERIMENT] = SEAM_EXPERIMENT_SHA
@@ -182,6 +189,13 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         if (static_view.inventory_sha256!=static_evidence['inventory_sha256']
                 or len(static_view.sources)!=static_evidence['static_source_faces']):
             raise ValueError('Complete static inventory did not reproduce')
+        if bsp_volume:
+            from eql_automation.bsp_probe import BspPointLookup
+            from eql_automation.bsp_volume import BspVolumeView
+            from eql_automation.ground_bsp_route import verify_helper_bsp_frame
+            lookup=BspPointLookup(terrain)
+            bsp_frame=verify_helper_bsp_frame(lookup,json.loads(MESH.with_suffix('.json').read_text()))
+            bsp_view=BspVolumeView(lookup,region_count=terrain.bsp_region_count,wld_sha256=terrain.sha256)
     # Check all selected route adjacencies against actual reciprocal links,
     # area and component arrays, independently of each synthetic observation.
     with np.load(MESH, allow_pickle=False) as data:
@@ -329,13 +343,20 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                         precision_last=check.precision_retry
                         floor_trials.append({'step':step,'segment':index,'hold':seconds,'trial':asdict(check)})
                         if check.candidate and static_view is not None:
-                            static_check=check_static_floor(check,footprint,
-                                source_view.source_faces_for_footprint(footprint),static_view)
+                            cell_sources=source_view.source_faces_for_footprint(footprint)
+                            static_check=check_static_floor(check,footprint,cell_sources,static_view)
                             static_trials.append({'step':step,'segment':index,'hold':seconds,
                                 'footprint':footprint,'trial':asdict(static_check)})
                             if not static_check.candidate:
                                 next_floor_chain=None
                                 check=static_check
+                            if check.candidate and bsp_view is not None:
+                                bsp_check=check_bsp_floor(check,footprint,cell_sources,bsp_view)
+                                bsp_trials.append({'step':step,'segment':index,'hold':seconds,
+                                    'footprint':footprint,'trial':asdict(bsp_check)})
+                                if not bsp_check.candidate:
+                                    next_floor_chain=None
+                                    check=bsp_check
                     elif (check.reason == 'uncovered_ground_area' or
                             (precision_overlaps and check.reason == 'overlapping_ground_faces')) and precision_view is not None:
                         precision_last = precision_view.retry(check,footprint,detail_ids,
@@ -428,7 +449,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                               "source_ground_sampled_independently_from_copied_terrain",
                               "synthetic_character_height_above_source_2.564",
                               "mesh_detail_edge_projection_up_to_0.0005",
-                              ("conditional_terrain_and_static_occupancy_no_BSP_dynamic_guard" if static_objects else
+                              ("conditional_terrain_static_and_BSP_volume_no_dynamic_guard" if bsp_volume else
+                               "conditional_terrain_and_static_occupancy_no_BSP_dynamic_guard" if static_objects else
                                "continuous_detail_ground_only_no_wall_BSP_dynamic_guard" if ground_sweep else
                                "endpoint_detail_sample_only_not_swept_guard")],
               "ground_sweep_assumptions": ({"speed_upper": speed * 1.2, "release_overrun_seconds": .02,
@@ -464,6 +486,12 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                   'source_faces':len(static_view.sources),'placements':len(static_view.identities),
                   'all_flags_retained':True,'dynamics_included':False,'live_collision_verified':False},
               "static_floor_trials":static_trials,
+              "bsp_volume":None if bsp_view is None else {
+                  'inventory_sha256':bsp_view.inventory_sha256,'wld_sha256':bsp_view.wld_sha256,
+                  'frame_control':bsp_frame,'conservative_unclipped_traversal':True,
+                  'maximum_node_visits_per_prism':4096,'maximum_depth':256,
+                  'live_hazards_verified':False,'dynamics_included':False},
+              "bsp_volume_trials":bsp_trials,
               "maximum_portal_ulp_steps":maximum_portal_ulp_steps,
               "tile_rounding":None if source_view.tile_grid is None else asdict(source_view.tile_grid),
               "precision_limits":({"maximum_source_baked_z_difference":source_z_limit,"source_boundary_margin":.002,
@@ -502,6 +530,8 @@ def main():
                         help='Offline only: seed from pinned source-floor proof and recheck every proposed footprint')
     parser.add_argument('--static-objects',action='store_true',
                         help='Offline only: add parity-checked all-flag static occupancy to every accepted terrain trial')
+    parser.add_argument('--bsp-volume',action='store_true',
+                        help='Offline only: require no copied BSP labels in each complete possible-motion prism')
     parser.add_argument('--source-z-limit',type=float,default=.6,
                         help='Diagnostic source/baked height-difference limit, not live calibration (default .6)')
     parser.add_argument('--wall-budget',type=float,default=35.,
@@ -532,6 +562,8 @@ def main():
         parser.error('--source-floor-chain requires --tile-rounding')
     if args.static_objects and not args.source_floor_chain:
         parser.error('--static-objects requires --source-floor-chain')
+    if args.bsp_volume and not args.static_objects:
+        parser.error('--bsp-volume requires --static-objects')
     output = args.output.expanduser()
     if (output.parent.resolve() != (STORE / "nav-candidates").resolve() or output.exists()
             or output.is_symlink() or output.suffix != ".json"
@@ -548,7 +580,7 @@ def main():
         source_z_limit=args.source_z_limit,wall_budget=args.wall_budget,
         precision_overlaps=args.precision_overlaps,maximum_portal_ulp_steps=args.maximum_portal_ulp_steps,
         tile_rounding=args.tile_rounding,source_floor_chain=args.source_floor_chain,
-        static_objects=args.static_objects)
+        static_objects=args.static_objects,bsp_volume=args.bsp_volume)
 
 
 if __name__ == "__main__":

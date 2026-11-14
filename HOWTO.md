@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.61 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.62 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,25 +19,27 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.61 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.61/source`; the runnable
+Source tools 0.41.62 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.62/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
-Source 0.41.61 connects the parity-checked static-object inventory to every
-accepted terrain trial in the copied GFay follower replay. A refused object
-check cannot commit a new terrain-floor cell or advance simulated movement.
-All source face flags and heights are retained; no dense query is truncated.
-The combined replay now completes all 155 segments in 2,191 steps, with
-1,014 queries containing static faces and no failed occupancy check.
-Dynamics, fresh scene/position/speed and real movement remain unverified;
-F11 stays unavailable and no live 1–20 leveling is claimed.
+Source 0.41.62 adds a full-volume copied BSP hazard check to the existing
+terrain/static replay. It covers the complete expanded movement footprint
+from below the lowest selected floor to above the highest head position.
+Exact arithmetic preserves small offsets at BSP planes. Contact includes
+both sides; any labelled region, missing data or exhausted traversal budget
+refuses. The enclosing volume can conservatively include extra regions.
+This checks copied BSP labels, not live dryness, dynamic objects or movement.
 
-This source release also includes a read-only location/map collector, described
-below. It lets you supply a fresh stationary observation without a zone change
-or another G0 pulse. Your G0 stop remains passed. Assist 0.39.6 is unchanged;
-the source XP-gain metric is still separate from its GUI. Forty-eight focused
-fixture/geometry checks pass; the new collector has not been run against the
-live client.
+The preceding 0.41.61 terrain/static replay completed all 155 GFay segments
+in 2,191 steps. Current body dimensions, scene/position/speed and live route
+following remain unverified; F11 stays unavailable and no 1–20 leveling run
+is accepted. Fifty focused fixture/geometry checks pass for the new changes.
+
+Your G0 stop remains passed and assist 0.39.6 is unchanged. The pending
+read-only location/map command below still uses **0.41.61**; it needs no update
+or repeated G0 pulse. That collector has not yet produced a live paired
+observation. The source XP-gain metric remains separate from the assist GUI.
 
 Detailed source-release history and hashes are in [FINDINGS.md](FINDINGS.md).
 The current playable-route status is in [LEVEL_1_20.md](LEVEL_1_20.md).
