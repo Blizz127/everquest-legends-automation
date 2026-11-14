@@ -6,7 +6,11 @@ Updated 2026-11-14 22:48 UTC for coordinator task `829a00229b29`.
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.71 locally verified; not installed.** VERIFIED 152 focused
+- **Source 0.42.71 locally verified; not installed.** Source commit
+  `35e91d7559d85c0141e8433e771d17340fe66c81`; private candidate
+  `releases/eql-source-tools-0.42.71-candidate.tar.gz`, SHA
+  `4c89c3f495607019d10f3d5067c13cfa4bdf05d87c1d7d4a8369eebd25b5429e`.
+  All 547 archived source pins and evidence hashes match. VERIFIED 152 focused
   checks (140 geometry/preflight plus 12 synthetic stair receipt checks), runtime
   import smoke and copied-client replay. The replay covers 16 approach cells,
   53 stair cells, eight contact exits and 32 whole-pulse probes, including every

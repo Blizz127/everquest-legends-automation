@@ -2,6 +2,14 @@
 
 ## 2026-11-14 22:48 UTC — 0.42.71 contact preflight and bounded runout
 
+VERIFIED local source commit `35e91d7559d85c0141e8433e771d17340fe66c81`
+is packaged at `releases/eql-source-tools-0.42.71-candidate.tar.gz`, SHA
+`4c89c3f495607019d10f3d5067c13cfa4bdf05d87c1d7d4a8369eebd25b5429e`.
+All 547 archived source pins and packaged evidence hashes match. Validation
+SHA `d9a0383f7803a48f98ce5c6ead8aa286fca75bdb55a98e84a53ebfd389765891`.
+This is local staging only; Alienware installation is blocked by SSH availability.
+
+
 VERIFIED **152 focused tests**: 140 contact/preflight/geometry cases in 34.44s
 and 12 retained stair receipt-feedback cases in 20.32s. Feedback is synthetic;
 no real pipe sender or client movement was exercised in this increment.
