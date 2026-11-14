@@ -1,6 +1,17 @@
 # FINDINGS
 
-## Existing-helper read-only observation — 2026-11-14 04:00 UTC
+## Private source 0.41.63 staging — 2026-11-14 03:58 UTC
+
+**VERIFIED:** Source commit `6cc87d1469c17a3b1eb74e144bf564c4e47042e6`, archive SHA
+`e9e152b191882309f6fd4a7f8552cd069225e534bde26ce91371b898b27f093a`, matched on
+Alienware at `~/.local/share/eql-automation/owner-tools/0.41.63/source`.
+Package/preflight imports, the candidate builder and location collector startup
+checks pass there with no assets, captures or input. Remote `../smoke.json` and
+private local `releases/eql-automation-0.41.63-staging.json` retain the record.
+The separate candidate 0.39.8 engine/GUI smoke scope and hashes are below.
+Owner assist 0.39.6 and the pending 0.41.61 collector remain unchanged.
+
+## Existing-helper read-only observation — 2026-11-14 03:58 UTC
 
 **VERIFIED source 0.41.63 / candidate 0.39.8:** The existing November rotation
 engine now has a measurement-only `nav_preflight_later` job and GUI button.

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 04:00 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 03:58 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No real-client 1–20 route, automated level gain
   or fresh-character hands-off 1–50 run is accepted.
@@ -18,7 +18,10 @@ Updated 2026-11-14 04:00 UTC for coordinator task `829a00229b29`.
   `~/.local/share/eql-automation/owner-assist/0.39.8`; archive SHA
   `9516de9e4423c91599938db72ed685df8c155ee7d7840127d22de6f992144ba5`.
   It sends no game input and always reports movement unavailable; live
-  observation through this new integration is not yet accepted.
+  observation through this new integration is not yet accepted. Source commit
+  `6cc87d1` is also staged under `owner-tools/0.41.63/source` with three no-input
+  startup checks; archive SHA
+  `e9e152b191882309f6fd4a7f8552cd069225e534bde26ce91371b898b27f093a` matched.
 - Source **0.41.62**: **VERIFIED** conditional GFay terrain, static-object and
   whole-prism BSP replay arrives through all 155 segments in 2,191 steps.
   All 2,191 BSP checks pass (28,837 node visits, max 27 per prism). Both terrain
