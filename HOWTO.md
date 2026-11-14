@@ -1,8 +1,8 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.42** · travel/camp test **0.39.28** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.43** · travel/camp test **0.39.29** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.28 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.29 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -25,14 +25,14 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
 Preview 0.39.24 switches between assist and the repeated stationary camp test without a
-restart. Preview 0.39.28 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
+restart. Preview 0.39.29 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
 
-## Choose a travel/camp destination — preview 0.39.28
+## Choose a travel/camp destination — preview 0.39.29
 
 Close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.28/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.29/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
@@ -65,6 +65,11 @@ by releasing the key also stops it. **F8 switches to assist and gives movement
 back to you**; F9/F11 stops and closing the helper releases the monitor.
 This monitor is read-only and sends no keys. It applies to a camp reached by
 the Travel button; standalone F11 camp behavior is unchanged.
+
+Preview 0.39.29 also remembers the floor reached by travel while you camp.
+Stop, assist, manual input or a changed game/log binding discards that record.
+It does not yet move you to another camp automatically. The next trip still
+needs fresh position and motion observations; old calibration is not renewed.
 
 The North Wall path passed copied terrain/object/region checks and a bounded
 long-leg fixture. It has **not been traversed or accepted in the real client**.
@@ -625,21 +630,29 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-The latest private source is staged on Alienware at:
+Source 0.42.43 is being staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.42/source
+~/.local/share/eql-automation/owner-tools/0.42.43/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.42.42 shares the existing route driver's original-terrain,
+above. Source 0.42.43 captures the actual arrived floor before travel gives
+up its log reader, then retains it through camp without rearming the travel
+observer. It also adds a pure validator for two newly collected stopped replies
+on that floor. The new height correspondence must match the arrival offset;
+an expired old calibration cannot supply it. Automatic collection and camp
+relocation are not connected yet. Preview **0.39.29** includes floor retention.
+
+Source 0.42.42 shares the existing route driver's original-terrain,
 object and body-region checks with an unknown-heading probe checker. It can
 use a retained source floor where a baked-mesh start cannot establish support.
 The copied-data diagnostic `tools/audit_camp_source_probes.py --help` replays
 the historical Slave Mines floor and checks explicit hypothetical probe sizes.
 It sends no input; successful geometry is not fresh character state, measured
 speed, or permission to move. Live floor capture, fresh height/heading collection
-and automatic relocation are still unfinished. Preview **0.39.28** is unchanged.
+and automatic relocation are still unfinished. That source increment left preview 0.39.28 unchanged; the current preview is
+0.39.29 above.
 
 Source 0.42.41 adds a continuous area check for a possible short pulse
 when heading is unknown. It requires fresh stopped observations and checks all
@@ -651,7 +664,7 @@ probe refuses both copied points: Slave Mines needs retained floor provenance
 and North Wall has incomplete baked coverage. The source-floor checker in
 0.42.42 above supports five tested hypothetical areas; it does not waive
 those mesh refusals or enable movement. G0 stays passed.
-Use preview **0.39.28** above for owner-run assist/travel/camp tests.
+Use preview **0.39.29** above for owner-run assist/travel/camp tests.
 
 Source 0.42.38 adds bounded near-straight proposal compaction and the
 pinned North Wall/Castle guide. Its complete copied-data check passes; the
@@ -665,7 +678,7 @@ Its `--strategy graph|reverse` options never send input. The initial North Wall
 graph failed ground coverage; the original reverse-corridor check exhausted
 its work budget. Those attempts remain refused; the compacted 0.42.38 check
 supersedes them for North Wall. That source increment shipped with preview 0.39.26; the current preview is
-0.39.28 above. G0 remains passed. Use the owner launch commands above for game testing.
+0.39.29 above. G0 remains passed. Use the owner launch commands above for game testing.
 
 Source 0.41.97 additionally wires a finite, owner-supervised relative
 motion experiment into candidate 0.39.12; it preserves the stationary setup

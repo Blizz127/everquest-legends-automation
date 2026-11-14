@@ -1,11 +1,25 @@
 # STATUS
 
-Updated 2026-11-14 17:19 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 17:32 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.43 / preview 0.39.29 validated, publication pending:** exact reached
+  source-floor provenance now transfers from travel into camp, with a private
+  checked fork and immutable history. Stop, assist or changed input/log context
+  discards it; the old travel observer and calibration are never rearmed.
+  A new input-free validator checks two fresh stopped replies on that retained
+  floor and requires their height offset to match the actual arrival.
+  **67 focused local checks passed**. The final Alienware snapshot passes
+  **71 checks in 175.21 seconds**, including full retained-engine/OS-pipe
+  handoff and three late-F9 cases with simulated game feedback. Output SHA
+  `deecae856afff85c2afd4e9e2c626ea5828ec48eb001dbcb52a83db5bac96cac`.
+  Publication is pending. No game input or live route
+  acceptance. Next: collect this fresh pair after camp recovery with the existing
+  configured location hotbutton and exclusive log-reader lease; automatic camp
+  relocation is not connected. G0 remains passed, including visible-stop confirmation.
 - **Source 0.42.42 published / owner preview stays 0.39.28:** original
   source geometry resolves the short-probe blockers: Slave Mines .02/.05/.1
   and North Wall .02/.05 maximum-hold hypotheses pass; North Wall .1 still

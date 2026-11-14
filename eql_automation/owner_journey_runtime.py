@@ -16,6 +16,7 @@ from .owner_route_trial import SOURCE_JOB, make_owner_route_trial_engine, zone_b
 from .source_walk_driver import SourceWalkFinished
 from .crushbone_source_guide import destination_spec
 from .camp_motion_continuity import CampInputContinuity, arrival_motion_basis
+from .camp_floor_checkpoint import CampFloorCheckpoint
 
 
 @dataclass
@@ -27,6 +28,7 @@ class Journey:
     destination_id: str = 'slave-mines'
     destination_assets: object = None
     camp_motion: object = None
+    arrival_floor: object = None
 
 
 @dataclass(frozen=True)
@@ -45,6 +47,7 @@ class Arrival:
     destination: object
     source_evidence: bytes
     motion_basis: bytes
+    floor_checkpoint: CampFloorCheckpoint
 
 
 def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
@@ -101,6 +104,9 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                 except Exception as error:reason=str(reason)+'; camp input cleanup: '+str(error)
                 continuity=monitor.snapshot(include_basis=True)
                 self.trace('journey_camp_input_closed',**continuity)
+            if j is not None and j.arrival_floor is not None:
+                checkpoint,j.arrival_floor=j.arrival_floor,None
+                checkpoint.invalidate(reason)
             if j is not None:
                 self.journey_last_result = dict(phase='stopped', reason=str(reason),
                     prior_phase=j.phase,destination_id=(j.destination_id if j.destination_assets is None
@@ -226,11 +232,26 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             destination=p['continuation']['destination']
             if destination is not j.destination_assets or destination.destination_id!=j.destination_id:
                 raise ValueError('Source destination changed before arrival')
-            basis=arrival_motion_basis(r,p)
-            token = Arrival(j,p,r,receipt,tracker,r.zone,p['window'],self.sender,self.gate,clock(),
-                            j.destination_id,destination,destination.source_evidence,basis)
-            j.phase = 'handoff'
-            return token
+            checkpoint=CampFloorCheckpoint(r.ledger)
+            try:
+                basis=arrival_motion_basis(r,p)
+                checkpoint.check()
+                now=clock()
+                if (self.journey is not j or j.phase!='travel' or j.generation!=self.cancel_generation
+                        or j.settings!=settings_identity(self.settings) or not navigation_active(self)
+                        or r.completed_arrival is not receipt or r.ledger.reference is not receipt.reference
+                        or r.ledger.phase!='ready' or not checkpoint.valid
+                        or p['busy'] or self.sender.held or self.sender.unfinished
+                        or self.live_zone_tracker is not tracker or tracker.reader is not r.reader
+                        or j.destination_assets is not destination
+                        or not 0<=now-receipt.reference.raw_fix.received_monotonic<=.5):
+                    raise ValueError('Arrival changed during floor checkpoint capture')
+                token = Arrival(j,p,r,receipt,tracker,r.zone,p['window'],self.sender,self.gate,now,
+                    j.destination_id,destination,destination.source_evidence,basis,checkpoint)
+                j.arrival_floor=checkpoint;j.phase='handoff'
+                return token
+            except BaseException as error:
+                checkpoint.invalidate(str(error));raise
 
         def _arrival_current(self, token):
             j, p, r = token.journey, token.pending, token.runtime
@@ -238,6 +259,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             sample = p['observer'].sample()
             veto = p['veto'].poll()
             window = window_identity(self.gate, require_focus=True)
+            token.floor_checkpoint.check()
             now = clock()
             if (self.journey is not j or j.phase != 'handoff' or j.generation != self.cancel_generation
                     or j.settings != settings_identity(self.settings) or self.route_trial is not None
@@ -250,6 +272,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                     or j.destination_id!=token.destination_id or j.destination_assets is not token.destination
                     or p['continuation']['destination'] is not token.destination
                     or token.destination.source_evidence is not token.source_evidence
+                    or j.arrival_floor is not token.floor_checkpoint or not token.floor_checkpoint.valid
                     or r.completed_arrival is not token.receipt or r.phase != 'complete'
                     or r.ledger.reference is not token.receipt.reference
                     or not 0 <= now-token.receipt.reference.raw_fix.received_monotonic <= .5
@@ -285,7 +308,8 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                 self.stop_action('Arrived; camp did not start'); return dict(camp_started=False)
             if (j.destination_id!=token.destination_id or j.destination_assets is not token.destination
                     or p['continuation']['destination'] is not token.destination
-                    or token.destination.source_evidence is not token.source_evidence):
+                    or token.destination.source_evidence is not token.source_evidence
+                    or j.arrival_floor is not token.floor_checkpoint or not token.floor_checkpoint.valid):
                 self.stop_action('Source destination changed during camp handoff')
                 return dict(camp_started=False,reason='Destination changed before handoff commit')
             j.phase = 'camp'
@@ -316,10 +340,11 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             binding=self._camp_motion_binding()
             if (self.journey is not j or j.phase!='camp' or self.camp_session is None or
                     binding[0] is not token.sender or binding[2] is not token.gate or
-                    binding[3] is not token.tracker or binding[8]!=token.zone or binding[9]!=token.window):
+                    binding[3] is not token.tracker or binding[8]!=token.zone or binding[9]!=token.window
+                    or j.arrival_floor is not token.floor_checkpoint or not token.floor_checkpoint.valid):
                 raise ValueError('Arrival input monitor lost its camp owner')
             j.camp_motion=CampInputContinuity(token.pending['observer'],topology=token.pending['topology'],
-                basis=token.motion_basis,binding=binding,clock=clock)
+                basis=token.motion_basis,binding=binding,clock=clock,floor=token.floor_checkpoint)
 
         def _camp_current(self,*,allow_pending_level=False):
             if not super()._camp_current(allow_pending_level=allow_pending_level):return False
@@ -341,6 +366,8 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             if j is not None and j.phase=='camp' and j.camp_motion is not None and j.camp_motion.observer is pending['observer']:
                 if self._camp_current():return  # Ownership transferred; no route input authority.
                 self.stop_action('Camp input continuity changed at navigation cleanup')
+            elif j is not None and j.arrival_floor is not None:
+                self.stop_action('Camp handoff ended before floor ownership transfer')
             return super()._finish_trial_input_observer(pending)
 
         def start_stationary_camp(self, **kwargs):

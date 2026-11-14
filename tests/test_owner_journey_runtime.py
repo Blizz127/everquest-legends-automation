@@ -60,6 +60,12 @@ def start(h,destination_id=None):
 
 def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,monkeypatch):
     assets=configure(h,monkeypatch,destination_id='north-wall');e=h.engine
+    from eql_automation.source_observer import SourceItineraryObserver
+    source_check=SourceItineraryObserver.check
+    def no_observer_resume(observer):
+        assert e.journey is None or e.journey.phase!='camp','Old movement observer was resumed'
+        return source_check(observer)
+    monkeypatch.setattr(SourceItineraryObserver,'check',no_observer_resume)
     import eql_automation.owner_camp_runtime as camp_runtime
     fallback=NpcCandidate('orc fixture',(5,),'a'*64,((1,2),),'retained_owner_history','b'*64)
     monkeypatch.setattr(camp_runtime,'observed_candidates',lambda *a,**k:())
@@ -92,11 +98,19 @@ def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,
     basis=json.loads(captured[0].motion_basis)
     assert basis['arrival_heading_estimate']==captured[0].runtime.ledger.pose.heading
     assert e.live_zone_tracker.lease is None and not navigation_active(e)
+    checkpoint=captured[0].floor_checkpoint;ledger=captured[0].runtime.ledger
+    assert e.journey.arrival_floor is checkpoint and e.journey.camp_motion.floor is checkpoint
+    assert checkpoint._chain is not ledger.chain and checkpoint._reference is ledger.reference
+    assert checkpoint._calibration is ledger.observer.calibration
+    assert checkpoint._chain.previous.proof_sha256==ledger.chain.previous.proof_sha256
+    assert e.live_zone_tracker.reader.latest is None
+    checkpoint.check()
     assert e.camp_session.preparation_due and not record['real_client_accepted']
     h.tick();assert e.camp_session.phase=='preparing'
     h.tick();assert h.commands==['/outputfile spellbook eql-rotation-spellbook.txt']
     e.stop_action('F9');before=list(h.commands);h.tick();assert h.commands==before
     assert h.observer_closed
+    assert not checkpoint.valid and checkpoint._chain is None
 
 
 @pytest.mark.parametrize('stop',('movement','location'))
@@ -112,7 +126,7 @@ def test_f9_never_hands_off_and_late_f11_release_cannot_restart(h,monkeypatch,st
     assert not h.sender.held and e.live_zone_tracker.lease is None
 
 
-@pytest.mark.parametrize('where',('lease_release','gauges','start_stop','monitor_transfer'))
+@pytest.mark.parametrize('where',('lease_release','gauges','start_stop','monitor_transfer','floor_capture'))
 def test_late_f9_during_arrival_or_cleanup_never_arms_camp(h,monkeypatch,where):
     from eql_automation.owner_zone_tracker import ZoneReaderLease
     configure(h,monkeypatch);e=h.engine;fired=[]
@@ -132,6 +146,12 @@ def test_late_f9_during_arrival_or_cleanup_never_arms_camp(h,monkeypatch,where):
             if text and 'Camp starting' in text:stop()
             return emit(text)
         e.emit=notice
+    elif where=='floor_capture':
+        import eql_automation.owner_journey_runtime as runtime
+        factory=runtime.CampFloorCheckpoint;checkpoints=[]
+        def capture(ledger):
+            checkpoint=factory(ledger);checkpoints.append(checkpoint);stop();return checkpoint
+        monkeypatch.setattr(runtime,'CampFloorCheckpoint',capture)
     else:
         # F9 wins even after the monitor changes ownership, before the commit.
         original=e._retain_camp_input
@@ -142,6 +162,7 @@ def test_late_f9_during_arrival_or_cleanup_never_arms_camp(h,monkeypatch,where):
     assert fired,(record,h.notices)
     assert e.camp_session is None and e.cancelled and not e.active
     assert not h.commands and not h.sender.held and e.live_zone_tracker.lease is None
+    if where=='floor_capture':assert not checkpoints[0].valid and checkpoints[0]._chain is None
 
 
 def test_f8_during_navigation_arms_only_after_cleanup_and_f9_defeats_it(h,monkeypatch):

@@ -9,6 +9,8 @@ from hashlib import sha256
 import json
 import math
 
+from .camp_floor_checkpoint import CampFloorCheckpoint
+
 
 def arrival_motion_basis(runtime, pending):
     ledger=runtime.ledger;reference=runtime.completed_arrival.reference
@@ -28,33 +30,43 @@ def arrival_motion_basis(runtime, pending):
 
 class CampInputContinuity:
     """Own the original observer until camp ends; invalidation is permanent."""
-    def __init__(self,observer,*,topology,basis,binding,clock):
-        if type(basis) is not bytes or not basis or type(topology) is not int:
+    def __init__(self,observer,*,topology,basis,binding,clock,floor=None):
+        if (type(basis) is not bytes or not basis or type(topology) is not int
+                or floor is not None and type(floor) is not CampFloorCheckpoint):
             raise ValueError('Camp requires copied arrival metadata and input topology')
         self.observer=observer;self.topology=topology;self.basis=basis
         self.binding=binding;self.clock=clock;self.valid=True;self.closed=False
         self.reason='';self.last_observed_at=None;self.samples=0
         self.basis_sha256=sha256(basis).hexdigest()
         self._context=(observer,topology,basis,binding,clock)
+        self.floor=self._floor_context=floor
 
     def invalidate(self,reason):
         if self.valid:self.reason=str(reason)
         self.valid=False
+        if self._floor_context is not None:self._floor_context.invalidate(reason)
 
     def check_binding(self,binding):
         # The first six members are live objects and must retain identity.
         if (not self.valid or self.closed or self.observer is not self._context[0] or
                 self.topology!=self._context[1] or self.basis is not self._context[2] or
                 self.binding is not self._context[3] or self.clock is not self._context[4] or
+                self.floor is not self._floor_context or
                 len(binding)!=len(self.binding) or
                 any(a is not b for a,b in zip(binding[:6],self.binding[:6])) or
                 binding[6:]!=self.binding[6:] or sha256(self.basis).hexdigest()!=self.basis_sha256):
             self.invalidate('Camp movement-observation binding changed')
             raise ValueError(self.reason)
+        if self.floor is not None:
+            try:self.floor._assert_intact()
+            except Exception as error:
+                self.invalidate(str(error));raise ValueError(self.reason) from error
 
     def check(self,binding):
         self.check_binding(binding)
         try:
+            if self.floor is not None:self.floor.check()
+            self.check_binding(binding)
             sample=self.observer.sample();now=self.clock()
             if (not sample.clear_at(now) or sample.topology_generation!=self.topology or
                     self.last_observed_at is not None and sample.started_at<self.last_observed_at):
@@ -75,4 +87,6 @@ class CampInputContinuity:
             last_observed_at=self.last_observed_at,basis_sha256=self.basis_sha256,
             movement_authorized=False,current_heading_verified=False,current_motion_verified=False)
         if include_basis:result['arrival_basis']=json.loads(self.basis)
+        if self._floor_context is not None:
+            result['arrival_floor']=self._floor_context.snapshot(include_evidence=include_basis)
         return result

@@ -1,5 +1,42 @@
 # FINDINGS
 
+## 2026-11-14 17:32 UTC — source 0.42.43, reached floor retained through camp
+
+VERIFIED local implementation and 67 focused checks: `CampFloorCheckpoint`
+captures the exact latest stopped source-ledger reference before navigation
+releases its reader. It keeps a private floor-chain fork, source/static/BSP
+pins, model/policy identity, immutable arrival and historical-height records.
+Camp keeps this historical checkpoint while the original movement observer
+expires normally. F9, assist, manual input or changed bindings discard it.
+The physical-input monitor performs full floor checks before sampling devices;
+its final checks invoke no extra model callback after the freshness boundary.
+
+`measure_camp_stopped_height` is an input-free producer for two new consecutive
+stopped replies after a new acquisition baseline. It uses only the retained
+checked floor cap, validates the fresh height offset against the actual arrival,
+and expires its result at the second reply plus 0.5 seconds. It neither renews
+the old calibration nor grants movement authority. Automatic collection is not
+yet connected. Local preview 0.39.29 manifest and all runtime bytes match source.
+
+VERIFIED final Alienware snapshot `owner-tools/0.42.43-validation-1` passes
+all 71 selected checks in 175.21 seconds. This includes a full actual retained-
+engine/OS-pipe handoff and late F9 during floor capture, lease release and input-
+monitor transfer. Output SHA
+`deecae856afff85c2afd4e9e2c626ea5828ec48eb001dbcb52a83db5bac96cac`.
+All game feedback is synthetic. Publication is pending. No game input, device creation, prefix
+edit, login or character action. G0 remains passed; no repeated owner check.
+No accepted live 1–20 route, automated level gain or fresh hands-off 1–50 run;
+actual level, XP, XP/hour, deaths and camp remain unknown.
+
+Read-only integration design for the next increment: reuse `StoppedLocationPair`,
+the tracker lease and the exact same-session `OwnerLocationHotkey` after the
+first matching kill and recovery. Preserve the final stand-command completion
+time as a settling reference, not proof of standing. Release the lease after
+hotbutton cleanup on cancellation, before assist may resume. Record a successful
+fresh pair and resume the same camp; any later relocation needs another fresh
+pair. No extra device, log parser, fabricated open-ground declaration or old
+observer restart is needed.
+
 ## 2026-11-14 17:19 UTC — source 0.42.42 published, five source probe areas pass
 
 VERIFIED private publication on Alienware at
