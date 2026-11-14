@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 05:42 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:43 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -18,6 +18,9 @@ Updated 2026-11-14 05:42 UTC for coordinator task `829a00229b29`.
   including real watchdog pipe writes with simulated positions. The follower
   permits zero backward speed because it never requests backward movement.
   No verified travel ceiling, live calibration or new input is enabled.
+  Source `6e9139d` is privately staged at `owner-tools/0.41.75/source`; five
+  remote synthetic/no-input startup checks pass. Archive SHA
+  `3ad452339379a7e8a3d32a6db38f01361562b30f4ae4b92bc93705d776761a33`.
 - **Source 0.41.74 / observation candidate 0.39.10:** automatic icon analysis
   is now connected to the existing owner capture flow. The raw pair is saved
   first and survives analysis failure. Eighty-seven focused checks and actual

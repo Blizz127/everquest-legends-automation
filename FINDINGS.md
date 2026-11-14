@@ -1,5 +1,19 @@
 # FINDINGS
 
+## Private source 0.41.75 staged — 2026-11-14 05:43 UTC
+
+**VERIFIED:** source commit `6e9139d62782c4b7f9e2af295168045b1fef4cd9`,
+archive SHA `3ad452339379a7e8a3d32a6db38f01361562b30f4ae4b92bc93705d776761a33`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.75/source`.
+Five remote startup checks pass: source version, finite experiment schema,
+synthetic receipt/position reduction with the pinned retained fitter, existing
+output preservation and cancelled receipt refusal. These remote receipts and
+positions were synthetic; the actual pipe-watchdog test ran on the devbox.
+No input devices, display capture, client assets or login were opened by the
+remote smoke. Its private `../smoke.json` and local
+`releases/eql-automation-0.41.75-staging.json` record the result. Assist 0.39.6
+and observation candidate 0.39.10 remain unchanged. No G0 repeat is needed.
+
 ## Conditional motion estimation 0.41.75 — 2026-11-14 05:42 UTC
 
 **VERIFIED implementation:** `motion_calibration.py` reduces seven isolated
