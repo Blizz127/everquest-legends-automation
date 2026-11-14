@@ -1,5 +1,20 @@
 # FINDINGS
 
+## Private source 0.41.76 staged — 2026-11-14 05:56 UTC
+
+**VERIFIED:** commit `cb5dbc49876cb1d9191ae41c0eea2b3205b79b78`, archive SHA
+`97a85859153e3ea85998958f90bce1fa20fd625eeae8e069e6ce4dad4bf606e3`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.76/source`.
+Seven remote startup checks pass, including a new fixture-log stopped pair
+advancing to a motion proposal and then refusing an ASSIST-mode change before
+any pulse. The explicit pulse callback was forbidden. Other checks cover
+version/schema, pinned retained fitting, output preservation, cancelled receipt
+refusal and adapter import. Remote checks used synthetic positions/receipts,
+opened no client assets/devices and sent no game input. Local staging evidence
+is `releases/eql-automation-0.41.76-staging.json`; remote `../smoke.json` retains
+the result. Read-only listing still found zero saved owner position pairs.
+Assist 0.39.6 and observation candidate 0.39.10 are unchanged; G0 needs no repeat.
+
 ## Finite motion collection 0.41.76 — 2026-11-14 05:55 UTC
 
 **VERIFIED implementation:** `MotionExperimentSession` uses the existing

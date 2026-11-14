@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 05:55 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:56 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -18,6 +18,9 @@ Updated 2026-11-14 05:55 UTC for coordinator task `829a00229b29`.
   artifact SHA `457f809c1baf1b85dcdfda05dc68b65f3dcf07430e5a5e9d09d8a25ed6a23f3e`.
   An earlier 0.2176-second hold exceeded the 0.20 limit and was rejected; its
   partial receipt evidence is retained. Results save independently of tracing.
+  Source `cb5dbc4` is privately staged at `owner-tools/0.41.76/source`; seven
+  remote no-input startup checks pass. Archive SHA
+  `97a85859153e3ea85998958f90bce1fa20fd625eeae8e069e6ce4dad4bf606e3`.
 - **Source 0.41.75:** an offline receipt/stopped-position estimator now reuses
   the existing bot's bearing and turn fitter without prior speed/heading/rate.
   It preserves timing/error assumptions and rejects inactive short turns before
@@ -88,7 +91,7 @@ Updated 2026-11-14 05:55 UTC for coordinator task `829a00229b29`.
   button and manual `/location` flow. It additionally saves private copied
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
-  turn (2026-11-14 05:42 UTC) found zero paired records. No lead capture was initiated.
+  turn (2026-11-14 05:56 UTC) found zero paired records. No lead capture was initiated.
 - **Next / real-client gate:** validate the source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported
   initial travel envelope and current scene, then supply the checked sender
