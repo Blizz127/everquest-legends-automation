@@ -21,6 +21,9 @@ Updated 2026-11-14 10:10 UTC for coordinator task `829a00229b29`.
   plus current scene for the first GFay leg. Real route/XP remain unaccepted;
   assist 0.39.13, measurement 0.39.12 and passed G0 are unchanged. Current level,
   XP/hour, deaths and camp unknown. No engine execution or game input.
+  Source `f0523e9` is staged at Alienware `owner-tools/0.42.4/source`;
+  no-input raw flags/record precedence/missing-child startup checks pass.
+  Startup SHA `d4d67ccd5479325a475f8c797d44f571975c71bb82f53654ce025c6692026860`.
 - **Source 0.42.3:** resolved the installed DLL's actual WLD tree/point-query
   chain. A null child returns -1; label consumers propagate absence/defaults,
   not a proven dry classification. Added a separate binary32 point diagnostic

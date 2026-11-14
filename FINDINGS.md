@@ -78,6 +78,16 @@ scene for the first supervised GFay leg. G0 stays passed; assist 0.39.13 and
 measurement 0.39.12 remain unchanged. No live route, XP gain or fresh-character
 run is accepted; current level, XP/hour, deaths and camp remain unknown.
 
+**VERIFIED private staging:** source commit
+`f0523e94427afe6311a24342b751dae364e20299` is staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.4/source`. Archive SHA
+`979a48d936448a048394876ddc3ef2b08fe474e72e221c9d1eee3edf55caba45`.
+Remote no-input startup passes case-sensitive flags, marker positions,
+transition-intent recording, copied type precedence, untyped-region handling
+and missing-child distinction. Startup SHA
+`d4d67ccd5479325a475f8c797d44f571975c71bb82f53654ce025c6692026860`.
+No engine was constructed and no native client code was executed.
+
 ## Installed-client BSP lookup resolved — 2026-11-14 10:02 UTC
 
 **VERIFIED static evidence, not native execution:** the retained

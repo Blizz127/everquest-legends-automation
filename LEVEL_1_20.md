@@ -13,6 +13,9 @@ branch with unbound actor fields; this does not establish a universal floor
 clearance. Next: bind physical offsets/collision and the pending owner motion
 and current scene. No route enabled, no new owner test, and no G0 repeat.
 
+Source `f0523e9` is staged at Alienware `owner-tools/0.42.4/source`;
+no-input raw flags, record precedence and missing-child startup checks pass.
+
 Source 0.42.3 resolves the installed graphics DLL's tree-query behavior:
 missing children return -1, and callers propagate no label/defaults rather
 than a proven dry region. A separate copied-point model matches the observed
