@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-13 17:48 CST. This is the prioritized route and acceptance
+Updated 2026-11-13 18:02 CST. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -27,6 +27,10 @@ the Butcherblock camp if its spawn and safe route are observed. For Legira's
 current level band, the same-zone GFay orc route is the first practical
 movement-test candidate while the two Crushbone cuts remain unresolved. Camp changes
 must use measured XP, con, crowd and danger rather than the table alone.
+A controlled full-zone Crushbone bake with half-size horizontal cells reduced
+the inner-ring height error at the second cut, but its outer footprint still
+fails grade 1.2 and warnings increased from 21 to 128. That mesh is not a
+replacement route and does not enable F11.
 The Crushbone alternatives let the planner compare same-zone options before
 committing to the unresolved Cauldron→Unrest crossing; they do not authorize
 F11 or a pull. The helper's protected-target rules must still exclude

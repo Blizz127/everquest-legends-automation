@@ -1,5 +1,44 @@
 # FINDINGS
 
+## Controlled Crushbone horizontal-grid sensitivity — 2026-11-13 18:02 CST
+
+**VERIFIED offline bake, no game input:** New `tools/probe_crushbone_bake.py`
+uses the pinned owner helper, two copied archives and original baker. Both
+variants used all 26,570 ordered triangles and 5,586 classifier nodes with
+one low-priority thread and a 90-second child timeout. The EQTR SHA-256 is
+`ad521d7df14c0d4a578923595316794cb06181672bb8f22b21f0925ec43e9da5`.
+A repeated full-zone baseline preserved the grid origin and reproduced all
+65 local ground heights at the old 658→623 crossing exactly (maximum
+difference 0.0). It produced the retained counts: 5,143 polygons, 55 tiles,
+21 Recast warnings, in 12.34 seconds.
+
+Changing only the input `cell_size` from 0.6 to 0.3, with vertical cell height
+0.3 and detail error 0.25 unchanged, produced 6,307 polygons, 190 tiles and
+128 unclassified warnings in 56.65 seconds. At the fixed helper-frame
+point `(-180.14373779296875,98.74378967285156)`, the 0.6-radius ring's
+maximum height dropped from 1.29823 to 0.76766; its maximum radial/angular
+grades dropped from 1.58037/1.47035 to 0.72182/0.95924. The 1.2-radius ring
+still fails grade 1.2: radial 1.39795 and angular 1.33682. The copied source
+ground at these samples is flat at Z=0. This is incomplete improvement,
+not an accepted turn or route. Cell size also changes derived tile width
+and detail sample spacing, so this does not isolate one internal Recast
+stage as the cause. No warnings have been waived.
+
+Private evidence: `nav-candidates/crushbone-cell-sensitivity-0.41.42/report.json`
+under `~/.local/share/eql-automation/`, SHA-256
+`9af647dce65f4ebb2907e7008e22db2adf33a5451d98633d8e4361adce9b1fba`.
+Baseline EQNM SHA-256 is
+`e798100211c36cbb86f54f8445d0dec1422b77242cfeab49f95999987f7380b0`;
+half-cell EQNM SHA-256 is
+`c476212e29f32bead6a8c0782d0bf1b700567bc2696318990c49d6d2e4bcc533`.
+The exact executed script is retained there as `probe-source.py`, SHA-256
+`a4e389f9b3b0dc1a5d6656243ca73e75b349545b722ea1383e85b2d6bd0bb499`.
+The released script additionally checkpoints partial results and preserves
+timeout/sampling-failure diagnostics. Those error paths were source-reviewed;
+both real bakes succeeded, so those errors were not exercised by this run.
+F11 remains off. The next live dependency is still the owner's idle UI
+capture; the same-zone GFay route remains the practical level-7 candidate.
+
 ## Crushbone directed junction probe — 2026-11-13 17:56 CST
 
 **VERIFIED copied-mesh diagnostic by read-only probe, no game input:** On the

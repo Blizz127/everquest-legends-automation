@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.41 / owner preview 0.39.4
+# EverQuest Legends automation — project 0.41.42 / owner preview 0.39.4
 
 ## Current availability
 
@@ -19,8 +19,8 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.41 are privately staged on Alienware under
-`~/.local/share/eql-automation/owner-tools/0.41.41/source`; they do not
+Source tools 0.41.42 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.42/source`; they do not
 replace the owner-run 0.39.4 assist preview.
 
 The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
@@ -242,6 +242,10 @@ evidence only; F11 remains disabled.
 Version 0.41.41 applies the same raw-WLD-to-helper-mesh XY conversion to the
 future G2 start-area preflight. No production caller uses that gate yet;
 G2 remains disabled.
+Version 0.41.42 adds a bounded copied-client Crushbone bake comparison. Its
+repeated baseline reproduced 65 ground heights exactly. Halving horizontal
+cell size reduced the inner-ring height error, but the outer ring still
+failed the grade limit and warnings increased. It provides no playable route.
 Corrected Cauldron and Unrest funnel scans also have no copied water/unknown
 labels; the prior Unrest water claim was caused by the frame error. The
 Unrest route still fails its turn/strip selector. A corrected GFay→Butcher
@@ -352,7 +356,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.41/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.42/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -360,7 +364,7 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.41/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.42/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 

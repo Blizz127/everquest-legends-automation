@@ -1,8 +1,18 @@
 # STATUS
 
-Updated 2026-11-13 17:56 CST for coordinator task `829a00229b29`.
+Updated 2026-11-13 18:02 CST for coordinator task `829a00229b29`.
 
 - Last owner-reported real-client level: 7 for Legira in Greater Faydark; no lead-controlled login or automated level gain verified. A later level has not been observed by the lead.
+- Controlled Crushbone full-zone bake comparison completed: identical
+  copied source/baker reproduced all 65 baseline ground heights exactly.
+  Halving horizontal cell size reduced the inner-ring error at 658→623,
+  but the outer ring still exceeds grade 1.2 and warnings rose from 21 to
+  128. Neither mesh gains movement acceptance. The private report SHA-256
+  is `9af647dce65f4ebb2907e7008e22db2adf33a5451d98633d8e4361adce9b1fba`.
+  Next: examine the source/detail footprint and warning locations before
+  adopting any mesh; prioritize same-zone GFay for the first owner-run leg.
+  No owner UI capture was found at this turn's check; live HP/scene/speed
+  remain unverified, XP/hour and deaths unavailable, F11 disabled.
 - Future G2 start-area preflight now converts the calibrated raw-WLD point
   to the retained helper navmesh's swapped XY frame before querying ground.
   A focused asymmetric frame test and all four G2-start tests passed. The
