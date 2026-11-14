@@ -1,11 +1,26 @@
 # STATUS
 
-Updated 2026-11-14 23:26 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 23:31 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Owner 0.39.34 / source 0.42.74 cleared focused laptop checks; publishing privately.**
+  Alienware is reachable. VERIFIED five current-revision watchdog/OS-pipe cases
+  pass in 66.09s: contact route, both DOWN cancellation cases, full owner contact
+  travel→camp and ordinary travel→camp. All 560 tested Python hashes match;
+  deadlines stayed unchanged. The two devbox failures pass on Alienware. Latest
+  unique focused results: **74 passed**, with original failures retained.
+  Runtime receipt SHA `32a7caf18e6585ed02d3cef57ddbe6df7dc294dd178bb63340b48140cb307283`;
+  JUnit SHA `66098d70bbb2054d01dd3bd6292acbfb757255497b9b0b48a6db55c990556855`.
+  The old .69 arrival receipt was recovered: return -24/SIGXCPU, not success;
+  that batch was not rerun. Release validation SHA
+  `0c20b158b4d493ff992ca0d2ecc8f85b708e3c195e08513dd8209b294c05fb26`.
+  Final preview differs from the tested candidate only in HOWTO/generated pins;
+  startup succeeds. Installing additively next; no helper restart or game input.
+  Owner test command and current controls are in HOWTO. Full 1–20/1–50 remain
+  unfinished; real metrics unknown. G0 remains passed, with no repeat needed.
 - **Source 0.42.74 / owner 0.39.34 local candidate; not installed or accepted.**
   Terminal contact now runs through the shared itinerary/execution loop, retains
   the actual stair landing connector, and hands its distinct stopped arrival to

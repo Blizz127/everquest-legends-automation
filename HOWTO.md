@@ -1,40 +1,34 @@
 # EverQuest Legends automation — current owner guide
 
-Development source **0.42.74** · local Throne candidate **0.39.34** · installed travel/camp test **0.39.32** (runtime source 0.42.61) · retained assist **0.39.13**.
+Owner test **0.39.34** · runtime/source **0.42.74** · retained assist **0.39.13**.
+Publication status and evidence are recorded in STATUS.md.
 
 **G0 passed, including the visible stop. Do not repeat it.** The complete 1–20
-or 1–50 autopilot is not ready. Continue using the installed launcher below.
+or 1–50 autopilot is not ready. This build extends the existing rotation bot;
+Blizz starts and supervises the live test himself.
 
-Local candidate 0.39.34 extends the existing rotation bot with a **Throne Room**
-destination. Its copied map suggests levels 17–22. Starting near North Wall and
-Castle, the proposed route climbs the stairs and crosses the rug corridor to
-the exact map marker. A fresh stopped arrival can hand off to stationary
-camping while preserving the actual rug position. The optional next-camp
-selector can choose it after leaving the North Wall map range. Departure from
-a contact camp into a further route is not implemented.
+0.39.34 adds **Throne Room** to the travel/camp selector. Its copied map suggests
+levels 17–22. Start near North Wall and Castle: the proposed route climbs the
+stairs and crosses the rug corridor to the exact map marker. After a fresh
+stopped arrival, it can start stationary camping while preserving the actual
+rug position. Optional next-camp selection can choose it after the North Wall
+map range. Departure from a contact camp into a further route is not implemented.
+Do not choose this destination for a low-level character solely because its
+route is available. The map annotation does not establish live camp suitability.
 
-The complete copied-client geometry rebuild and simulated route/camp handoff
-checks pass locally. Real-time pipe runs on the heavily loaded devbox have
-also stopped at their unchanged freshness deadlines; the full owner journey
-has not passed this release's real-time check. No real Throne travel or leveling
-has been accepted. This is a local candidate, **not installed on Alienware**.
-SSH currently times out, so there is no new command to run yet. STATUS.md
-records the installed versions and remaining checks.
+The copied-client geometry rebuild and focused simulated checks passed. On
+Alienware, all five retained pipe checks passed, including the full contact and
+ordinary travel-to-camp handoffs and cancellation. Both timing failures from
+the loaded devbox passed unchanged on Alienware; stop deadlines were not
+relaxed. These checks used synthetic game feedback and OS pipes, not game
+input. Real travel, stairs, camp suitability and leveling remain unverified.
 
 The separate **Throne stair landing · movement test** remains a stop-only
 selection before the contact corridor. It starts near North Wall, disables
-camp continuation and starts no combat. Assist still leaves movement and target
+camp continuation and starts no combat. Assist leaves movement and target
 selection to Blizz; F8 selects assist and F9 stops helper input.
 
-Preview 0.39.32 lets a released focus click settle before the location-hotbutton
-test, within its original deadline, and explains input-monitoring failures. It
-keeps optional camp relocation after observed level-ups and fresh combat
-preparation after stopped arrival. The full continuation passed a
-synthetic-game/watchdog-pipe check on Alienware. Real-client travel and leveling
-still need owner-run acceptance. This guide describes this release; publication
-receipts and the latest installed version are recorded in STATUS.md.
-
-**The complete 1–20 autopilot is not ready. Preview 0.39.32 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.34 offers supervised travel to Slave Mines, North Wall and Castle, or Throne Room, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -42,24 +36,18 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 
 | Mode | What is available today | Controls |
 | --- | --- | --- |
-| Assist / rotation | Supervised preview using the existing rotation bot. Blizz moves, chooses his target and controls melee. | F8 arm, F7 toggle, F9 stop, F10 request heal. |
-| Full auto | In development; no accepted 1–20 or 1–50 run. | No complete leveling mode yet. |
-| Stationary camp test | In 0.39.24, prepares learned spells automatically, searches observed NPC names, checks fresh considerations, fights and recovers between fights. Stops at observed level 20 or a failed check. | F11 starts/stops; F8 switches to assist; F9 stops all helper input. |
-| Read-only position observation | One owner-triggered capture; no commands, keys or clicks sent. | **Observe current position**, F9/Stop to cancel. |
-| Stationary location-hotbutton test | Sends one explicitly configured key, then checks the log for one fresh position reply. No route movement or combat. | **Test /location hotbutton…**, F9/F11/Stop to cancel. |
-| Supervised motion measurement | Four short forward presses and three turns on owner-confirmed open ground; saves relative observations and stops. | **Supervised motion measurement…**, F9/F11/Stop to cancel. |
-| Supervised destination travel | In 0.39.18, measures motion, plans from current GFay coordinates toward Crushbone, checks each movement and stops. No zone crossing or leveling. | **Travel toward Crushbone…**, F9/F11/Stop to cancel. |
-| Supervised zone crossing | In 0.39.19, a separate action measures motion, follows the GFay route into the expected Crushbone zone line, then stops after fresh arrival positions. No combat or leveling. | **Travel into Crushbone…**, F9/F11/Stop to cancel. |
-| Supervised source route | In 0.39.21, measures motion and plans from the current Crushbone position toward Slave Mines, with fresh stopped observations after each pulse and explicit step handling. No combat or leveling. | **Travel to Slave Mines…**, F9/F11/Stop to cancel. |
-| Supervised short route trial | In 0.39.20, measures motion, creates a two-unit GFay or Crushbone path from fresh current positions, checks terrain/objects/region evidence, follows it if checks pass, then stops. No combat or leveling. | **Supervised short route trial…**, F9/F11/Stop to cancel. |
+| Assist / rotation | Uses the existing rotation bot. Blizz moves, chooses the target and controls melee. | F8 arm, F7 toggle, F9 stop, F10 heal. |
+| Full auto | In development; no accepted 1–20 or 1–50 run. | No complete leveling mode yet; F12 is disabled. |
+| Stationary camp test | Prepares learned spells, searches observed NPC names, checks targets, fights and recovers. Stops at observed level 20 or a failed check. | F11 starts/stops; F8 switches to assist; F9 stops. |
+| Location-hotbutton test | Sends the configured location key, checks a fresh log reply; no movement or combat. | **Test /location hotbutton…**; F9/F11/Stop cancels. |
+| Travel and camp test | Measures motion, follows the selected Crushbone route, then prepares spells and starts camping after stopped arrival. | **Travel to selected destination…**; F8 assist, F9/F11/Stop cancels. |
+| Stair-landing test | Travels from near North Wall to the top stair landing, then stops without combat. | Select **Throne stair landing · movement test** and use the travel button. |
 
-Run only one helper at a time. **G0 passed; do not repeat the movement-stop
-pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
-separate finite movement test; it cannot switch into assist or full auto.
-Preview 0.39.24 switches between assist and the repeated stationary camp test without a
-restart. Preview 0.39.32 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
+Run only one helper at a time. G0 is complete. Travel/camp and assist switch in
+the same process without a restart or re-login. The older separate diagnostic
+builds described later in this file are not additional buttons in 0.39.34.
 
-## Optional next-camp continuation — 0.39.32
+## Optional next-camp continuation — 0.39.34
 
 This release keeps the existing rotation and adds an unchecked
 **After level-ups, travel to the next supported camp** option beside the travel
@@ -68,8 +56,8 @@ trip. After a new level is observed in the current log and spell preparation
 finishes, it can measure movement again and travel to a supported later camp.
 It uses the same input monitor and hazard log. F8 returns to assist; F9 stops.
 
-The copied map currently supplies only Slave Mines (7–10) and North Wall/Castle
-(13–17) with packaged guides. Levels 11–12 and 18–20 have no packaged next route;
+The copied map supplies Slave Mines (7–10), North Wall/Castle (13–17), and
+Throne Room (17–22) with packaged guides. Levels 11–12 have no packaged next route;
 the current camp continues and still checks each live target. No route is
 invented from the gap. The extra trip has one 25-minute deadline, including its
 measurement and planning; the seven-probe measurement itself remains limited
@@ -77,12 +65,12 @@ to 120 seconds. A fresh stopped arrival now starts a new camp session, prepares
 learned spells again and requires new target checks before combat. F8/F9 can
 cancel the handoff. This is supervised testing, not the full 1–20 path.
 
-## Choose a travel/camp destination — preview 0.39.32
+## Choose a travel/camp destination — preview 0.39.34
 
 Close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.32/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.34/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
@@ -95,6 +83,11 @@ In **Travel and camp test**, select the destination:
 - **North Wall and Castle**: start near Slave Mines. The route retraces the
   corridor to reach this combined map destination. The copied map suggests
   levels 13–17; this does not establish live camp suitability.
+- **Throne Room**: start near North Wall and Castle. The copied map suggests
+  levels 17–22. This crosses stairs and rugs; live movement and camp suitability
+  still need owner testing. It cannot automatically leave this contact camp.
+- **Throne stair landing · movement test**: same starting area, but stops on
+  the top landing before the rug corridor and starts no combat.
 
 Start inside Clan Crushbone. Open the map and run **Test /location hotbutton…**
 using your configured `/location` key. After focusing the game, release all keys,
@@ -105,7 +98,7 @@ observations produce their own explanation. If setup stops, no location key was
 sent; use the test button again when ready. This does not repeat G0.
 Then close map/chat, clear your target,
 turn native melee off and stand on clear, flat ground. Click **Travel to selected
-camp…**, confirm the open starting area and focus EverQuest during the countdown.
+destination…**, confirm the open starting area and focus EverQuest during the countdown.
 The helper measures motion, checks a route from your current floor and travels
 if those checks pass. A fresh stopped arrival hands over to automatic learned
 spell preparation in gems **1–8**, then repeated stationary fights and recovery.

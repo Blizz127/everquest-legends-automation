@@ -1,5 +1,36 @@
 # FINDINGS
 
+## 2026-11-14 23:31 UTC — Alienware timing checks recovered and passed
+
+VERIFIED the laptop is reachable again. The retained 0.42.69 arrival receipt
+reports **return -24 (SIGXCPU)** and only one progress dot; it did not finish.
+Recovered receipt SHA `02598a4aa57e48dc8c467e7c8fc880d41c942a613c641650df3154ebdb2a1307`.
+The old batch was not restarted. This resolves the earlier unknown completion.
+
+VERIFIED current source 0.42.74 in a separate private test directory: all five
+focused watchdog/OS-pipe cases pass in **66.09s**, using synthetic game feedback.
+They cover the terminal contact journey, F9 during movement/location DOWN, full
+owner contact arrival→camp and ordinary arrival→camp. All **560** Python pins
+match the packaged candidate/current source. Load before testing was 2.66 on 24
+CPUs. Both failed devbox travel cases passed without changes to source or stop
+deadlines. This supports an environment/timing explanation; it does not claim
+the load was the sole cause or establish client acceptance.
+
+Artifacts in the private releases directory:
+
+- `eql-0.42.74-runtime-alienware.json`, SHA `32a7caf18e6585ed02d3cef57ddbe6df7dc294dd178bb63340b48140cb307283`.
+- `eql-0.42.74-runtime-alienware.xml`, SHA `66098d70bbb2054d01dd3bd6292acbfb757255497b9b0b48a6db55c990556855`.
+- `eql-0.42.74-release-validation.json`, SHA `0c20b158b4d493ff992ca0d2ecc8f85b708e3c195e08513dd8209b294c05fb26`.
+
+The final owner snapshot contains identical runtime/GUI/rotation code to the
+tested candidate. Only HOWTO and generated manifest/entry pins changed. Final
+startup/manifest checks pass. HOWTO now lists the controls actually visible in
+0.39.34, the exact launch command, all four destinations, map level ranges and
+remaining gaps. Private additive publication follows these checks; no running
+helper/game is restarted. The lead has sent no game input, logged in or changed
+character progress, account access or the game prefix. G0 stays passed; real
+level/XP/XP-hour/deaths/camp are unknown and 1–20/1–50 remain incomplete.
+
 ## 2026-11-14 23:26 UTC — 0.42.74 terminal contact itinerary and Throne candidate
 
 VERIFIED local candidate packaging: source commit
