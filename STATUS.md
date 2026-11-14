@@ -1,16 +1,19 @@
 # STATUS
 
-Updated 2026-11-14 17:51 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 17:52 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.46 static movement audit checked; publication pending.**
+- **Source 0.42.46 privately published; owner preview stays 0.39.30.**
   The actual copied client has extra velocity and post-integration position
   terms, plus an unresolved clock callback. A normal forward-speed sample
   alone cannot bound final displacement. New reproducible audit pins nine
-  dispatch slots, six constants and 15 source spans; eight focused checks pass.
+  dispatch slots, six constants and 15 source spans; eight local checks and
+  eight Alienware startup checks pass against the installed executable.
+  Published at `owner-tools/0.42.46/source`, revision `3d53836`.
+  Startup SHA `6c9c1774a649f2b4f858599df006565af5cbe3a57e7863a6d7b972aa5ec1e767`.
   Report SHA `6f589331bafb99b3a65c30d5cef577ac0bde69db766f9250d3d01cf230a84a15`.
   No current speed bound or input authority is issued. Owner preview remains
   0.39.30, G0 passed, no new owner check. Next: supported contribution/clock

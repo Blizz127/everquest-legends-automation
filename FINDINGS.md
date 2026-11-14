@@ -1,5 +1,26 @@
 # FINDINGS
 
+## 2026-11-14 17:52 UTC — source 0.42.46 privately published
+
+VERIFIED Alienware `owner-tools/0.42.46/source`, revision
+`3d53836f2da4e950943a7ab265a2d888b9b45622`. All eight startup checks pass,
+including byte identity of the locally checked audit script, matching
+static facts against the actual installed executable, changed-source refusal
+and diagnostic CLI startup. Eight local audit checks also pass. This reads
+the owner's installed binary without executing it or changing the prefix.
+Owner preview remains 0.39.30; no new owner test is requested.
+
+- Archive SHA `eec1fdd94bb253f67589309ebce696eae7405aff3b8f7a2b87fb7a6cc4b55b24`.
+- Startup SHA `6c9c1774a649f2b4f858599df006565af5cbe3a57e7863a6d7b972aa5ec1e767`.
+- Publication record `releases/eql-automation-0.42.46-staging.json`.
+
+No client process, input device, game input, login or character action was
+started. G0 remains passed, including visible stop. Current level, XP/hour,
+deaths and camp are unknown. Static movement composition does not certify a
+speed bound or live route; automatic camp relocation and full 1–20/1–50 remain
+unfinished. Next: current scene evidence and bounds on additional motion
+contributions/clock before automatic heading probes.
+
 ## 2026-11-14 17:51 UTC — source 0.42.46, static movement composition
 
 VERIFIED copied executable SHA `fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36`.
