@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.64 / assist 0.39.6 / observation candidate 0.39.9
+# EverQuest Legends automation — project 0.41.65 / assist 0.39.6 / observation candidate 0.39.9
 
 ## Current availability
 
@@ -19,9 +19,19 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.64 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.64/source`; the runnable
+Source tools 0.41.65 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.65/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.65 adds the ground-position producer needed by the route follower.
+It preserves raw coordinates and independently measures source terrain and
+baked mesh heights using supplied current calibration. It does not create
+calibration or accept the unbound diagnostic as a navigation fix. Forty-two
+focused checks pass, including the actual retained follower integration.
+The copied-GFay point probe accepts 199/211 samples; eleven refuse source-floor
+queries without the selected-floor chain and one has no exact adjacent mesh support. These are offline results,
+not live route acceptance. Assist and the pending 0.39.9/0.41.61 observation
+instructions stay unchanged; no new owner test is requested.
 
 Source 0.41.64 adds **Observe current position** to separate candidate 0.39.9.
 This integrates the existing manual `/location` and private UI collector into

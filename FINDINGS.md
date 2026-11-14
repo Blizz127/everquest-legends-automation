@@ -1,5 +1,65 @@
 # FINDINGS
 
+## Ground-position producer for the retained route follower — 2026-11-14 04:13 UTC
+
+**VERIFIED source 0.41.65:** `RouteGroundObserver` now produces source-floor,
+mesh-projection and aligned-position records from a fresh `RawLocationFix`,
+pinned copied geometry and an externally supplied current `HeightCalibration`.
+It creates no calibration, never converts an unbound diagnostic, preserves the
+same raw object and exact XY, and independently measures source Z and baked Z.
+The identity WLD frame and helper XY swap remain explicit. Current selected
+polygon support takes precedence; only verified absence allows a selected
+adjacent polygon within the existing portal disk. Source/height failure cannot
+select a more convenient neighbor. Every result passes the existing binding
+validator against the exact supplied calibration object and geometry context.
+
+The new detail query distinguishes absent, supported and ambiguous geometry.
+It uses exact rational arithmetic on the stored floats, without the older
+replay helper's up-to-0.0005-unit edge projection. Missing/malformed/degenerate
+or excessive detail data refuses. Reciprocal dry same-component links and
+source/mesh hashes are checked. The file loader rechecks copied inputs after
+loading and makes array views read-only. An optional committed source-floor
+chain is sampled without `advance()` or state mutation; otherwise the existing
+all-layer source query refuses layered/unsupported floors. No raw Z or offset
+is used to choose a source layer.
+
+Forty-two focused checks pass, including an integration with the actual pinned
+`eqnav.steer` follower: produced observations advance its two synthetic route
+segments to arrival. Checks cover unequal raw axes and three different heights,
+current-polygon precedence, conflicting detail heights, tiny unsupported gaps,
+current height/source/session/age refusal, unbound records and unchanged source
+chain state on success/refusal. The private NumPy Python 3.13 environment ran
+these tests using the installed pure-Python pytest runner with plugin autoload
+disabled. Earlier attempts exposed missing pytest there and a Python 3.12/3.13
+NumPy mismatch; neither was a code result. The successful run used matching
+Python/NumPy, with no dependency/access changes.
+
+**VERIFIED copied-geometry probe, synthetic calibration only:** 199 of 211
+retained replay samples pass the producer. Ten all-layer source queries refuse
+missing/layered support and one refuses collision/material flags; this probe
+did not reconstruct/use the committed floor chain. One other sample, step 1856
+at segment 127, has no exact support on current polygon 20481 or next polygon
+20500. Both old edge-projection lookups supplied Z; the new producer refuses.
+Its position is approximately 3.94e-11 units from the planned portal. This
+needs attribution/correction, not a tolerance increase or an accepted live leg.
+The maximum baked-Z difference from prior replay among accepted samples is
+3.73e-5 units. Runtime was 23.58 wall/7.83 CPU seconds.
+
+Artifact `nav-candidates/gfay-ground-producer-probe-0.41.65.json`, SHA
+`db2d1311f27fbfeb52383ae326048f446c54b2ca9ce9c61f49d37ce8cc8e3ed5`;
+probe script SHA `430ddbb92a990bdaed478e047104b0f5c10fa5ad19990dd80741d529e8b83302`.
+Its eight code/data pins rechecked. Source query and calibration fixtures are
+explicitly offline; no live movement, actual alignment or route acceptance is
+claimed. The previous whole-footprint BSP replay remains historical evidence,
+not a substitute for these live observation requirements.
+
+**Next:** connect the committed floor context and resolve exact portal support,
+then pair current owner position/UI evidence with measured height/frame/speed
+and checked movement. Owner assist 0.39.6, observation candidate 0.39.9 and the
+0.41.61 standalone command are unchanged. No new owner test or G0 repeat is
+requested. Current level/XP/rate/deaths/camp remain unknown, no automated level
+gain is accepted, and the full 1–20/1–50 goals remain incomplete.
+
 ## Private source 0.41.64 staging — 2026-11-14 04:06 UTC
 
 **VERIFIED:** Source commit `3c9cf0394597cd07153686cc7bbd0ca9264431e7`, archive SHA
