@@ -1,5 +1,77 @@
 # FINDINGS
 
+## Current-position route producer — 2026-11-14 11:05 UTC
+
+**VERIFIED implementation:** source 0.42.9 adds `CurrentStartPlanner`. It uses
+two fresh consecutive stopped log positions bound to the current owner/log
+and expected client-catalog zone. It finds exact baked XY support without
+snapping or choosing the floor nearest actor Z, samples all source terrain
+layers independently, and preserves every source seed ID. It constructs a
+short one-polygon capsule from the second position and supplied same-session
+heading. Selected-polygon exact coverage, complete local ground, terrain
+occupancy, static-object occupancy and BSP checks all must pass. Body/motion
+parameters remain explicit hypotheses; neither live acceptance nor movement
+authority is produced.
+
+The output contains new geometry evidence, a hashed fixed-route artifact and
+the accepted initial source-floor chain. It does not reuse the historical
+route's starting location or coverage proof. A fresh stopped-height startup
+remains necessary before movement; planning does not retimestamp its inputs.
+The new route still needs owner scene/motion/session assembly. One-polygon
+planning is a finite first traversal stage, not completion of camp routing or
+the 1–20 goal. Multi-polygon transitions and real movement remain required.
+
+`BspDetailMeshView.load` now binds its exact bytes with SHA-256 and makes its
+arrays read-only. The planner checks that identity with ground/source/static
+and BSP identities, including after callbacks. Deadline and monotonic time
+are checked after binding callbacks; replacing geometry or crossing a deadline
+cannot produce a successful final plan. `RouteMotionBounds.validate_values`
+allows the same hypothesis validation before a follower/floor chain exists;
+the existing body-height match remains in the runtime validator.
+
+**VERIFIED focused checks:** all 29 final producer/detail-loader tests pass.
+They cover translated current starts, overlapping baked/source floors,
+interior holes/static obstacles/water, stale/moving/unbound positions,
+source/process changes, deadline callback changes and same-count foreign
+detail meshes. A plan round trip feeds the existing observed-height producer
+and fixed follower with fresh synthetic pairs. A larger focused run had
+68 passes and an existing pipe case stop after release on its timing guard;
+its isolated recheck passed. No deadline was widened or failure hidden.
+
+**VERIFIED copied GFay probe, synthetic positions:** the first probe used
+package XY `(1780.12, -1802.22)`, four units along the retained first leg, only
+as a reproducible fixture. A separate polygon-center fixture also refused.
+The diagnostic found `invalid_footprint_or_face_budget`: the new selected
+polygon query incorrectly charged remote detail triangles against its local
+budget. Those early refusals did **not** establish a physical edge/gap. The
+fix queries every intersecting XY bounding box and retains the same local
+limit, without truncation. An explicit large-polygon regression passes.
+
+After the fix, the original shifted fixture produces a new two-unit plan in
+polygon 32475, passes all terrain/static/BSP guards and creates a fresh
+height correspondence. Planning/startup took about 0.208 seconds after view
+loading. The checked capsule includes four static faces from the complete
+109,932-face/2,799-placement inventory. The body radius 1.2, height 6 and motion
+envelope remain hypotheses; the synthetic actor-height offset is 2.564.
+Measured fixture correspondence is 2.5592270276605618, not a live calibration.
+
+Private artifacts under `nav-candidates/`:
+
+| Artifact | SHA-256 | Result |
+| --- | --- | --- |
+| `gfay-current-start-0.42.9/probe.json` | `edd33babeb049d2417762be5e0d19a8168b5891e48978e704f95ae358c50721f` | Initial budget refusal |
+| `gfay-current-start-center-0.42.9/probe.json` | `0f3f5dd665ae49dc216b6a978692a77e89734c87a32c493f91d80e20777d2474` | Same budget refusal |
+| `gfay-current-start-local-query-0.42.9/probe.json` | `e0fca4fd35c82af948dae32259546908c6f3a30d803fe84296f58c51e0da52e9` | New plan and height produced |
+| `gfay-current-start-local-query-0.42.9/plan.json` | `47ce46da4940d116e447c61c18c9ef3dc24df30e8269ffc9b8134c108c01d7f2` | New current-XY fixed plan |
+| `gfay-current-start-local-query-0.42.9/geometry.json` | `09850ab55d46d90bcdf060bdf556605b028d0686d53353a050828857dbd80aec` | New capsule/source proof |
+
+**Next:** preserve the completed motion session's observer and current heading
+through a single explicitly owner-started trial; connect current-zone lease,
+position collection, this producer, height and route driver. No owner control
+is enabled yet. Assist 0.39.13 and motion 0.39.12 stay unchanged; G0 passed and
+needs no repeat. Current level, XP/hour, deaths and camp remain unknown. No
+client input, login, install change or automated XP occurred in this work.
+
 ## Finite supervised route policy and current-zone label correction — 2026-11-14 10:56 UTC
 
 **VERIFIED implementation:** source 0.42.8 adds `SupervisedRoutePolicy` to the

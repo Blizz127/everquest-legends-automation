@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.8** · rotation preview **0.39.13** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
+Source **0.42.9** · rotation preview **0.39.13** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -20,14 +20,16 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** The next owner check is the combined hotbutton + motion measurement
 below. The manual position observation remains available separately.
 
-Source 0.42.8 adds a finite supervised route-trial policy to the checked route
-sender. It retains source geometry checks and stops on changed focus, owner
-input, log hazards or cancellation. It records open-ground declarations and
-planning assumptions separately from verified observations. This is source
-work, not an enabled owner route button. The route launcher still needs the
-same-session motion handoff, a plan starting at your observed position and
-fresh stopped-position startup. A saved 0.39.12 result alone cannot supply
-current heading or enable autopilot.
+Source 0.42.9 can generate a short trial plan from fresh printed coordinates,
+without using a historical starting waypoint. It checks the complete local
+terrain, placed objects and BSP volume. A copied Greater Faydark case passes
+with synthetic position replies and fresh height startup. This initial
+producer stays within one navigation polygon; it is not the 1–20 camp route.
+The finite supervised policy from 0.42.8 retains focus, input, log, geometry
+and release checks with conditional assumptions recorded separately.
+The owner route button still needs same-session motion handoff and startup
+assembly. A saved 0.39.12 result alone cannot supply current heading or
+enable autopilot. No route control is enabled by this source release.
 
 The installed client's zone-label producer was also traced to the character's
 current zone. Live recognition and refresh checks remain unfinished. Passive

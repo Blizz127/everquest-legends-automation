@@ -1,5 +1,6 @@
 import importlib.util
 import json
+from hashlib import sha256
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
@@ -25,6 +26,10 @@ class BspDetailViewTests(unittest.TestCase):
             view = BspDetailMeshView.load(path, zone="sample")
             self.assertEqual(view._detail_start.tolist(), [0, 2, 3])
             self.assertEqual(view._detail[:, 0, 2].tolist(), [2, 3, 8])
+            self.assertEqual(view.mesh_sha256, sha256(path.read_bytes()).hexdigest())
+            self.assertFalse(view._detail.flags.writeable)
+            self.assertFalse(view._detail_start.flags.writeable)
+            self.assertFalse(view.area.flags.writeable)
             self.assertIsNone(_supported_detail_height(view, 0, 1.0, 1.0))
 
     def test_detail_view_rejects_bad_polygon_reference(self):

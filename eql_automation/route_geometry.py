@@ -32,23 +32,31 @@ class RouteMotionBounds:
     body_height: float
 
     def validate(self, runner, chain):
+        self.validate_values(calibration_record_id=runner.calibration,
+                             maximum_step_seconds=runner.max_step_seconds)
+        if self.body_height != chain.body_height:
+            raise ValueError('Missing matching external motion/body bounds')
+
+    def validate_values(self, *, calibration_record_id, maximum_step_seconds):
+        """Validate explicit hypotheses before a follower/floor chain exists."""
         values = (self.minimum_requested_hold, self.maximum_requested_hold,
                   self.maximum_actual_hold, self.forward_speed_upper_bound,
                   self.pivot_displacement_upper_bound, self.position_error,
                   self.heading_error_degrees, self.post_release_drift,
                   self.body_radius, self.body_height)
         if (not isinstance(self.record_id, str) or not self.record_id
-                or self.calibration_record_id != runner.calibration
+                or self.calibration_record_id != calibration_record_id
+                or not isinstance(calibration_record_id,str) or not calibration_record_id
+                or not finite(maximum_step_seconds) or not 0<maximum_step_seconds<=.2
                 or not all(finite(v) for v in values)
                 or not 0 < self.minimum_requested_hold <= self.maximum_requested_hold
-                    <= self.maximum_actual_hold <= runner.max_step_seconds
+                    <= self.maximum_actual_hold <= maximum_step_seconds
                 or self.forward_speed_upper_bound <= 0
                 or min(self.pivot_displacement_upper_bound, self.position_error,
                        self.post_release_drift) < 0
                 or not 0 <= self.heading_error_degrees <= 180
                 or not 0 < self.body_radius <= 100
-                or not 0 < self.body_height <= 100
-                or self.body_height != chain.body_height):
+                or not 0 < self.body_height <= 100):
             raise ValueError('Missing matching external motion/body bounds')
 
 

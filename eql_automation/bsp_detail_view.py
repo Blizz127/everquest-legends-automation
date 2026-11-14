@@ -7,6 +7,8 @@ Source and mesh hashes are verified by the calling offline tool.
 from __future__ import annotations
 
 import json
+from hashlib import sha256
+from io import BytesIO
 from pathlib import Path
 
 import numpy as np
@@ -22,7 +24,8 @@ class BspDetailMeshView:
     @classmethod
     def load(cls, path: Path, *, zone: str, expected_format: int = 1) -> "BspDetailMeshView":
         try:
-            with np.load(path, allow_pickle=False) as data:
+            raw = path.read_bytes()
+            with np.load(BytesIO(raw), allow_pickle=False) as data:
                 meta = json.loads(str(data["meta"]))
                 area = np.asarray(data["poly_area"], dtype=np.int64).reshape(-1)
                 nv = np.asarray(data["poly_nv"], dtype=np.int64).reshape(-1)
@@ -40,5 +43,9 @@ class BspDetailMeshView:
             raise ValueError("copied mesh detail view has invalid metadata or arrays")
         order = np.argsort(detail_poly, kind="stable")
         sorted_poly = detail_poly[order]
-        return cls(area, detail[order],
+        view = cls(area, detail[order],
                    np.searchsorted(sorted_poly, np.arange(len(area) + 1)))
+        view.mesh_sha256 = sha256(raw).hexdigest()
+        for value in (view.area, view._detail, view._detail_start):
+            value.flags.writeable = False
+        return view
