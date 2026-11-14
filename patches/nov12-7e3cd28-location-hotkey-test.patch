@@ -1,0 +1,64 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -427,6 +427,11 @@
+                                                 "Saves player, target and map crops; no chat crop or input.")
+                 self.observe_position.clicked.connect(lambda: self.post("observe_position"))
+                 row.addWidget(self.observe_position)
++                self.test_location_hotkey = QPushButton("Test /location hotbutton…")
++                self.test_location_hotkey.setObjectName("testLocationHotkeyButton")
++                self.test_location_hotkey.setToolTip("Test one configured key while stationary; no movement or fallback typing.")
++                self.test_location_hotkey.clicked.connect(self.configure_location_hotkey_test)
++                row.addWidget(self.test_location_hotkey)
+                 check_stop = QPushButton("Check movement stop")
+                 check_stop.setToolTip("Stand on clear, flat ground. Requests one 0.15-second forward pulse, "
+                                       "releases it, then checks for continued movement. "
+@@ -732,6 +737,40 @@
+                     self.worker.engine.cancelled = True
+                 self.worker.engine.post(name, value)
+ 
++        def configure_location_hotkey_test(self):
++            if not measurement_only:
++                return
++            from eql_automation.location_hotkey import HOTKEY_CODES
++            dialog = QDialog(self)
++            dialog.setWindowTitle("Test your /location hotbutton")
++            layout = QVBoxLayout(dialog)
++            text = QLabel("In EverQuest, create a hotbutton containing only /location. Bind it to a "
++                          "function key below and remove any other action on that key. Manually verify "
++                          "that it prints your position and does nothing else.\n\n"
++                          "This test sends that key once after a four-second focus countdown. "
++                          "Close chat, stand still and release keys. F9/F11 stop. It does not start a route.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            key = QComboBox()
++            key.addItem("Choose the key you configured", None)
++            for name in HOTKEY_CODES:
++                key.addItem(name, name)
++            layout.addWidget(key)
++            confirmation = QCheckBox("I verified this key runs only /location in this game session.")
++            layout.addWidget(confirmation)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Test once")
++            ok.setEnabled(False)
++            refresh = lambda *_: ok.setEnabled(key.currentData() is not None and confirmation.isChecked())
++            key.currentIndexChanged.connect(refresh)
++            confirmation.toggled.connect(refresh)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if dialog.exec() == QDialog.DialogCode.Accepted:
++                self.post("test_location_hotkey", {"key_name": key.currentData(), "confirmed": True})
++
+         def confirm_chat_closed(self):
+             if self.worker is None or measurement_only:
+                 return
+@@ -924,6 +963,8 @@
+                     "navigation_preflight_enabled": measurement_only and window.nav_preflight.isEnabled(),
+                     "position_observation_visible": measurement_only and window.observe_position.isVisible(),
+                     "position_observation_enabled": measurement_only and window.observe_position.isEnabled(),
++                    "location_hotkey_test_visible": measurement_only and window.test_location_hotkey.isVisible(),
++                    "location_hotkey_test_enabled": measurement_only and window.test_location_hotkey.isEnabled(),
+                 }, indent=2) + "\n")
+             app.quit()
+         QTimer.singleShot(400, render)

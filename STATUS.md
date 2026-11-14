@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 08:36 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 08:46 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,23 @@ Updated 2026-11-14 08:36 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.96 / owner candidate 0.39.11:** the stationary location-hotbutton
+  setup test is now runnable from the existing measurement GUI. An explicit
+  owner-selected key and setup confirmation start a four-second focus countdown,
+  one 20 ms key cycle and a fresh single-reply check. Results finish stopped and
+  save under `location-hotkey-tests/`; no fallback typing, movement or combat.
+  The route and setup test share the same sender/cleanup code. Forty-six focused
+  source checks pass; the built candidate also passed 48 setup/manual-observation
+  checks. Alienware offscreen GUI/dialog checks pass with no engine or input:
+  no default key, confirmation required, helper keys excluded. The new candidate
+  is staged at `owner-assist/0.39.11`, archive SHA
+  `b4436eaf7c69aec24ff4d40ec4ea9ecc3f4185bb0d8983d3b1d79af483fa4be1`.
+  Built-candidate synthetic result SHA
+  `cdd74a72163d5b30964b8084c212429ef0cac365aa91ad3e85528e6a6b05e0af`.
+  HOWTO has the exact owner setup/launch/test steps. Next: consume the owner's
+  live result, bind current scene/zone/height and measure motion for the first
+  supervised route leg. No live hotbutton result, real route or XP is accepted.
+  G0 remains passed; assist stays 0.39.6 and F11 movement remains disabled.
 - **Source 0.41.95:** route location acquisition now has a concrete single
   hotbutton alternative, avoiding typed chat and per-character recognition.
   Twenty-seven focused tests pass using the retained helper, actual watchdog

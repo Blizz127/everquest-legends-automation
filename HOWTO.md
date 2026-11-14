@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.95** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.96** · rotation preview **0.39.6** · observation **0.39.10** · hotbutton test **0.39.11**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -13,9 +13,47 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Assist / rotation | Supervised preview using the existing rotation bot. Blizz moves, chooses his target and controls melee. | F8 arm, F7 toggle, F9 stop, F10 request heal. |
 | Full auto | In development; no accepted 1–20 or 1–50 run. | F11 is disabled. There is no live switch to full auto yet. |
 | Read-only position observation | One owner-triggered capture; no commands, keys or clicks sent. | **Observe current position**, F9/Stop to cancel. |
+| Stationary location-hotbutton test | Sends one explicitly configured key, then checks the log for one fresh position reply. No route movement or combat. | **Test /location hotbutton…**, F9/F11/Stop to cancel. |
 
 Run only one helper at a time. **G0 passed; do not repeat the movement-stop
-pulse.** The pending owner check is the stationary position observation below.
+pulse.** The new owner check is the stationary hotbutton test below; the manual
+position observation remains available separately.
+
+## New stationary hotbutton test on Alienware: 0.39.11
+
+This tests a faster way for the route controller to request your position.
+It does **not** start leveling or movement.
+
+1. In EverQuest, make a hotbutton containing **only `/location`**. Bind it to
+   an unused function key among F1–F5 or F13–F24; remove any other action on that
+   key. F6–F12 are reserved for the helper. Manually verify that your selected
+   key prints your position and does nothing else. The helper does not edit
+   your game configuration or choose a key for you.
+2. Close other helpers. Start the new candidate on Alienware:
+
+   ```bash
+   cd ~/.local/share/eql-automation/owner-assist/0.39.11
+   EQL_ROTATION_TRACE="$HOME/eql-location-hotkey-trace.jsonl" ./launch.sh --measure-navigation
+   ```
+
+3. Choose the correct character and level. In **Movement measurement**, click
+   **Test /location hotbutton…**, select the key you configured, and confirm
+   that you verified its single-command binding. Click **Test once**.
+4. Within four seconds, focus EverQuest, close chat, stand still and release
+   the keyboard/mouse. The helper sends one 20 ms key press. F9, F11 or
+   **Stop measurement** cancels. Do not click **Check movement stop**; G0 is done.
+5. The result should say **One fresh location reply observed** and give a
+   report path under `~/.local/share/eql-automation/location-hotkey-tests/`.
+   Report that result or its refusal reason. A missing or duplicate reply,
+   focus loss or activity during the query stops the test. It does not retry
+   or type a fallback command.
+
+The test finishes stopped. Its setup declaration is owner-confirmed; it does
+not mechanically prove the hotbutton's contents, current zone, navigation
+alignment or route safety. Keep the same hotbar/page during the test. No live
+hotbutton result or route has been accepted yet. The shipped helper passed
+focused pipe tests and an offscreen Alienware GUI check; those sent no game
+input. Assist remains the separate 0.39.6 preview below.
 
 ## Owner-run rotation test on Alienware today: preview 0.39.6
 
@@ -108,16 +146,23 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.95/source
+~/.local/share/eql-automation/owner-tools/0.41.96/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.95 adds a route-position option that presses a single
+above. Source 0.41.96 shares the same bounded hotbutton sender between route
+acquisition and the new 0.39.11 stationary setup test. The explicit owner job
+handles sender initialization, a four-second focus countdown, one key cycle,
+fresh-log response checks and a saved result. F9/F11, settings/jobs, focus loss,
+duplicate replies and timeouts stop it; there is no automatic retry or typing.
+The previous manual observation and assist controls are unchanged.
+
+Source 0.41.95 adds a route-position option that presses a single
 owner-configured `/location` hotbutton instead of typing into chat. It uses
 the existing sender, stop/focus checks, input observation and release watchdog;
 the route still requires a fresh, single location reply. It never assumes a
-default key. This option needs a same-session owner setup/test and launcher
-integration before use; no hotkey test or route control is enabled today.
+default key. Route use still needs same-session owner setup/test evidence and
+route launcher integration; 0.39.11 now provides the stationary setup test.
 The current Alienware files contain no `/location` hotbutton. Per-character
 font/caret classification belongs to the optional typed-command approach; it
 is not an owner requirement or a prerequisite for the hotbutton alternative.

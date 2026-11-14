@@ -1,5 +1,68 @@
 # FINDINGS
 
+## Stationary hotbutton test shipped as 0.39.11 — 2026-11-14 08:46 UTC
+
+**VERIFIED implementation:** source 0.41.96 extracts the existing hotbutton
+transaction into `location_hotkey.py`; the route executor and the new owner
+setup test both call it. The owner selects an already configured nonprinting
+key and explicitly confirms that it invokes only `/location` in this session.
+The measurement GUI has no default key and does not enable Test once until
+selection and confirmation are present. The test initializes the sender,
+pumps pending stop input, checks the unchanged owner request, then starts a
+four-second focus countdown. One 20 ms key cycle is followed by a bounded
+single fresh-log-reply check and a short duplicate-observation interval.
+
+F9/F11, queued jobs, settings/session/focus changes, owner input during dispatch
+or reply collection, log replacement/transition, timeout and duplicate replies
+stop the operation. A busy marker prevents recursive ticks from sending again.
+There is no retry, fallback typing, Escape, movement, target change or combat
+command. The owner-confirmed macro contents are not mechanically verified;
+observing a fresh location is temporal correlation, not a client request ID.
+All outcomes finish stopped. JSON records contain the owner declaration,
+saved-config hashes, window/process identity, pulse/cleanup record and raw fix,
+under `~/.local/share/eql-automation/location-hotkey-tests/`.
+
+**VERIFIED focused checks:** 46 source tests passed for setup and route paths,
+including prior-stop rearming, F9 during sender initialization/countdown/DOWN,
+reply-before-UP, no retries, device replacement and complete fixture travel.
+The first run exposed a stale `self.owner_input` reference during extraction
+into the shared function; it failed before DOWN and was corrected. The built
+0.39.11 adapter then passed 48 setup/manual-position tests. The first attempt
+to run those from the minimal bundle could not import route-only fixture
+dependencies; adding the source tree as a test-only package fallback allowed
+collection while retaining the bundled adapter/sender. No extra runtime
+dependency was added to the owner package.
+
+Saved built-candidate fixture result:
+`evidence/owner-location-hotkey-test-0.41.96.json`, SHA-256
+`cdd74a72163d5b30964b8084c212429ef0cac365aa91ad3e85528e6a6b05e0af`.
+This is synthetic owner setup/input observation and a fixture position reply;
+the retained engine and watchdog use pipes, not a game device.
+
+**VERIFIED private staging/startup:** Alienware path
+`~/.local/share/eql-automation/owner-assist/0.39.11`. Archive SHA-256
+`b4436eaf7c69aec24ff4d40ec4ea9ecc3f4185bb0d8983d3b1d79af483fa4be1`.
+Source guard, imports and reserved-key refusal pass. The actual helper GUI
+rendered with Qt offscreen and its input worker disabled. The new test button
+is visible/enabled; the actual dialog starts without a key and keeps Test once
+disabled until explicit selection+confirmation. Removing confirmation disables
+it again; F9 is not offered. The smoke rejected the dialog without posting a
+test. No game window, account or character was opened or controlled.
+
+GUI PNG SHA `54cbff33213b79fe20fe499e5e8e029041be1963eb4559f30744d4e5f7a001cf`;
+GUI metadata SHA `754f77d2966a13e2eae5ff243d2645019bd156d17a6f40962ab85dc8a6d3c3ab`.
+The helper screen was visually inspected; the new button is visible, with
+horizontal scrolling available for the longer existing measurement row.
+These are helper UI checks, not EverQuest screenshots or live acceptance.
+
+**Remaining real-client gate:** the owner configures/verifies the single-command
+hotbutton and runs this stationary test himself. HOWTO gives the exact launch
+command and controls. No live hotbutton reply has been collected. The subsequent
+first route still needs current scene/zone/height/motion bindings and actual
+movement/arrival evidence. Assist 0.39.6, manual observation 0.39.10 and G0's
+passed result remain available; no G0 repeat. Level, XP/hour, deaths and camp
+remain unknown for a real automation run. Task 829a00229b29 is not complete.
+
 ## Private source 0.41.95 staged — 2026-11-14 08:37 UTC
 
 **VERIFIED:** source `34cdcd110e8f6cb05aed338aa33c8457ad60e54f` is staged at

@@ -1,9 +1,19 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 08:36 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 08:46 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.96 ships the stationary hotbutton setup test as owner candidate
+0.39.11. It shares route acquisition's sender and cleanup implementation and
+requires an explicit configured key; no key is assumed. The existing helper
+provides a countdown, cancellation, single fresh-reply check and saved result.
+Forty-six focused source checks and 48 built-candidate checks pass; Alienware
+offscreen UI/dialog checks pass with no input engine. This is now an owner-run
+check, documented in HOWTO, rather than an unwired executor. A real result and
+current scene/zone/height/motion binding are still missing; F11 stays disabled.
+G0 does not need repeating. The full 1–20/1–50 objective remains unachieved.
 
 Source 0.41.95 provides a single owner-configured hotbutton route-position
 executor. The retained helper and actual watchdog completed a two-segment
