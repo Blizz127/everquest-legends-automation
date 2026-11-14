@@ -73,7 +73,7 @@ def f(tmp_path,monkeypatch,legacy,request):
         p.source.source_minimum=coords.min(axis=1);p.source.source_maximum=coords.max(axis=1)
         guide=replace(guide,goal=(4.,3.9),operations=(SourceWalkHint((4.,2.),(4.,3.1)),
             SourceStepHint((4.,3.1),(4.,3.5),((10,2),),.5,1.),SourceWalkHint((4.,3.5),(4.,3.9))))
-    if getattr(request,'param',None)=='stair_preflight':
+    if getattr(request,'param',None) in ('stair_preflight','stair_route'):
         from test_source_stair_topology import fixture as stair_sources
         sources,f.stair_groups=stair_sources()
         p.source.sources=tuple(replace(s,vertices_wld=tuple((y+4.,x+4.,z+.2)
@@ -81,6 +81,11 @@ def f(tmp_path,monkeypatch,legacy,request):
         coords=np.asarray([s.vertices_wld for s in p.source.sources])[:,:,[1,0,2]]
         p.source.source_minimum=coords.min(axis=1);p.source.source_maximum=coords.max(axis=1)
         p.source.source_minimum.setflags(write=False);p.source.source_maximum.setflags(write=False)
+        if request.param=='stair_route':
+            from eql_automation.source_stair_hint import SourceStairHint
+            guide=replace(guide,goal=(4.,10.5),operations=(SourceWalkHint((4.,2.),(4.,2.4)),
+                SourceStairHint((4.,2.4),(4.,10.),f.stair_groups,1.2,vertical_model='bounded_source_contacts'),
+                SourceWalkHint((4.,10.),(4.,10.5))))
     plan=plan_current_source_itinerary(p,f.reader,f.a,f.b,guide=guide,
         **{k:v for k,v in f.options.items() if k!='length'})
     a,b,options=fresh(f,plan.initial)

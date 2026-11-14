@@ -1,15 +1,23 @@
 # EverQuest Legends automation — current owner guide
 
-Development source **0.42.68** · travel/camp test **0.39.32** (runtime source 0.42.61) · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Development source **0.42.69 candidate** · travel/camp test **0.39.32** (runtime source 0.42.61) · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-Source 0.42.68 adds a stair controller that uses the existing movement sender,
-stopped replies and cancellation controls. It checks the full pulse envelope,
-keeps intermediate stair positions provisional and commits only an observed
-complete landing. Geometry beyond the target is checked for the last pulse.
-These checks pass with synthetic game positions and real watchdog test pipes;
-the controller is not yet connected to the owner route runner. The launcher
-and controls remain those of 0.39.32; Throne is not yet an available destination.
-G0 is complete and must not repeat.
+Source 0.42.69 connects stair travel to the existing owner route runner.
+A fresh stopped pair follows stair planning; each movement uses the retained
+sender and stopped feedback. Only the actual final landing updates the walking
+floor, and travel then continues from that observed position. A finite
+North Wall → Throne stair landing guide has been rebuilt from copied client
+geometry. The complete synthetic route passed real watchdog-pipe tests.
+
+**Preview 0.39.33 is a local candidate and is not installed yet.** It adds
+“Throne stair landing · movement test” to the destination selector. This is an
+optional supervised test from near North Wall and Castle: it stops on the top
+stair landing, before the unfinished Throne exit. It starts no combat and disables
+camp continuation for that selection. Actual stair movement remains unverified.
+Keep using the installed 0.39.32 launcher below until STATUS.md records the new
+installation. The later arrival test has no retrieved result, and Alienware
+SSH currently times out; installing and checking the new build remain pending.
+G0 is complete, including the owner's visible-stop confirmation, and must not repeat.
 
 Preview 0.39.32 lets a released focus click settle before the location-hotbutton
 test, within its original deadline, and explains input-monitoring failures. It

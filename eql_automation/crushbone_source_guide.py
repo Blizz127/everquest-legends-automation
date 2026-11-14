@@ -22,6 +22,7 @@ class SourceGuideDestination:
     file_sha256: str
     goal: tuple
     provenance_sha256: str
+    arrival_mode: str = 'camp'
 
 
 DESTINATIONS=MappingProxyType({
@@ -30,7 +31,11 @@ DESTINATIONS=MappingProxyType({
     'north-wall':SourceGuideDestination('north-wall','North Wall and Castle',
         'crushbone-north-wall-source-guide-v1.json',
         '62f8f50797414ace566d7ec967a5ed61153b15ccdb11efeb4f2ea35f38f67d97',(-95.,-78.),
-        '8704194aa161892c590ddfb7359d41a0d7d70fb777b3c369268964eb026c0bea')})
+        '8704194aa161892c590ddfb7359d41a0d7d70fb777b3c369268964eb026c0bea'),
+    'throne-stair-landing':SourceGuideDestination('throne-stair-landing','Throne stair landing',
+        'crushbone-throne-stair-landing-source-guide-v1.json',
+        '78f7a100bc0affef13612737365a9106d0336339bc2cd4afbb769465053138a0',(2.851,52.27075),
+        '790eb4995d486428261d322c066e0de76c23a7afe91646c6ac2387faf7bedc6f','stop')})
 
 
 def destination_spec(identifier):
@@ -50,6 +55,7 @@ def load_crushbone_source_guide(root,destination_id='slave-mines'):
             or guide.wld_sha256!=WLD_PIN or guide.static_inventory_sha256!=STATIC_PIN
             or guide.goal!=spec.goal or guide.provenance_sha256!=spec.provenance_sha256
             or guide.radius!=1.2 or guide.body_height!=6.
+            or data.get('arrival_mode','camp')!=spec.arrival_mode
             or data['input_authorized'] is not False or data['real_client_accepted'] is not False):
         raise ValueError('Private source guide identity or provenance changed')
     return guide

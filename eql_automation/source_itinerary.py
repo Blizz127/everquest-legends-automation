@@ -19,6 +19,7 @@ from .native_step_regions import classify_source_step_regions
 from .route_floor_commit import _chain_snapshot
 from .source_detour import find_source_detour, swept_square
 from .source_step import check_source_step
+from .source_stair_hint import SourceStairHint
 from .source_step_bsp import check_source_step_bsp
 from .static_floor_guard import check_source_static_floor
 
@@ -77,7 +78,7 @@ class SourceItineraryGuide:
             raise ValueError('Bounded pinned source itinerary guide required')
         previous = None
         for op in self.operations:
-            if (type(op) not in (SourceWalkHint, SourceStepHint)
+            if (type(op) not in (SourceWalkHint, SourceStepHint, SourceStairHint)
                     or not xy(op.start) or not xy(op.end)
                     or math.dist(op.start, op.end) > 80
                     or previous is not None and math.dist(previous, op.start) > 1e-6):
@@ -93,6 +94,10 @@ class SourceItineraryGuide:
                     or any(type(k) is not tuple or len(k) != 2
                         or any(type(i) is not int or i < 0 for i in k) for k in op.landing_seed_ids)):
                 raise ValueError('Invalid explicit source step guide')
+            if type(op) is SourceStairHint:
+                op.validate()
+                if op.vertical_model!='bounded_source_contacts' or op.radius<=self.radius/math.cos(math.pi/16):
+                    raise ValueError('Stair guide requires explicit grounded contact clearance')
             previous = op.end
         if math.dist(previous, self.goal) > 80:
             raise ValueError('Exact destination needs a bounded final connector')
@@ -100,7 +105,8 @@ class SourceItineraryGuide:
     def record(self):
         self.validate()
         value = asdict(self)
-        value['operations'] = [dict(kind='walk' if type(op) is SourceWalkHint else 'step',
+        kinds={SourceWalkHint:'walk',SourceStepHint:'step',SourceStairHint:'stair'}
+        value['operations'] = [dict(kind=kinds[type(op)],
                                     **asdict(op)) for op in self.operations]
         return value
 
@@ -115,6 +121,10 @@ class SourceItineraryGuide:
                 operations.append(SourceStepHint(tuple(item['start']), tuple(item['end']),
                     tuple(tuple(k) for k in item['landing_seed_ids']),
                     item['max_step_height'], item['max_lift'], item['lift_clearance']))
+            elif item['kind']=='stair':
+                operations.append(SourceStairHint(tuple(item['start']),tuple(item['end']),
+                    tuple(tuple(tuple(k) for k in group) for group in item['tread_ids']),
+                    item['radius'],item['max_rise'],item['max_lift'],item['vertical_model']))
             else:
                 raise ValueError('Unknown source itinerary operation')
         guide = cls(data['zone'], data['wld_sha256'], data['static_inventory_sha256'],
@@ -266,6 +276,18 @@ def plan_source_itinerary(prefix, start, guide, terrain, static, bsp, region_pol
             chain = walk(chain, position, op.start, 'guide_rounding_connector')
         if type(op) is SourceWalkHint:
             chain = walk(chain, op.start, op.end, index)
+        elif type(op) is SourceStairHint:
+            from .source_stair_plan import plan_stair_flight
+            chain=walk(chain,op.start,op.start,'stair_departure_cap')
+            departure_height=chain.floor_at(op.start)[0]
+            check()
+            stair,landing=plan_stair_flight(chain,op.start,op.end,op.tread_ids,terrain,static,bsp,
+                region_policy,radius=op.radius,body_radius=guide.radius,max_rise=op.max_rise,
+                max_lift=op.max_lift,vertical_model=op.vertical_model,check_context=check)
+            cells.append(dict(kind='stair',origin=index,start=op.start,end=op.end,
+                start_floor_height=departure_height,end_floor_height=landing.floor_at(op.end)[0],
+                hint=asdict(op),stair_plan=stair.record(),stair_plan_sha256=stair.sha256))
+            chain=landing  # Only the planning suffix uses this hypothetical cap.
         else:
             # A departure cap is actual geometry, not an asserted start point.
             chain = walk(chain, op.start, op.start, 'step_departure_cap')

@@ -41,6 +41,7 @@ def test_map_ranges_keep_current_camp_and_never_fill_unbuilt_level_gaps(annotati
     assert record['level_hint']==[13,17] and record['observed_level']==13
     assert not record['live_suitability_verified'] and not record['label_z_used_for_floor']
     assert provider.choose_next_destination(root,'north-wall',17) is None
+    assert provider.choose_next_destination(root,'throne-stair-landing',17) is None
     with pytest.raises(ValueError):provider.choose_next_destination(root,'slave-mines',True)
     (root/'crushbone_3.txt').write_text('changed')
     with pytest.raises(ValueError):provider.choose_next_destination(root,'slave-mines',13)

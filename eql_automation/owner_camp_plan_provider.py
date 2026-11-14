@@ -31,6 +31,7 @@ def choose_next_destination(root,current_id,level):
     """Choose only a packaged guide at the copied annotation's exact XY."""
     current=destination_spec(current_id)
     if type(level) is not int or not 1<=level<=50:raise ValueError('Current observed level required')
+    if current.arrival_mode!='camp':return None
     annotations=read_camp_annotations(checked_bytes(Path(root)/'crushbone_3.txt',DATA_PINS['crushbone_3.txt']))
     def annotation(spec):
         rows=[a for a in annotations if (-a.map_xyz[0],-a.map_xyz[1])==spec.goal]
@@ -38,7 +39,7 @@ def choose_next_destination(root,current_id,level):
         return rows[0]
     if annotation(current).hint_includes(level):return None
     eligible=[(spec,annotation(spec)) for spec in DESTINATIONS.values()
-        if spec.identifier!=current_id and annotation(spec).hint_includes(level)]
+        if spec.arrival_mode=='camp' and spec.identifier!=current_id and annotation(spec).hint_includes(level)]
     if not eligible:return None
     spec,hint=min(eligible,key=lambda pair:(-pair[1].level_hint[0],pair[0].identifier))
     return spec,encoded(dict(kind='copied_map_next_camp_hint',destination_id=spec.identifier,

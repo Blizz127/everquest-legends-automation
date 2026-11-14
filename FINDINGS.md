@@ -1,5 +1,65 @@
 # FINDINGS
 
+## 2026-11-14 22:30 UTC — 0.42.69 route integration and 0.39.33 local candidate
+
+VERIFIED **39 checks** passed on Alienware in 30.77s, using synthetic game
+feedback and real watchdog/OS pipes. JUnit SHA
+`47cefbc2e13dd7b97ca6467cc23b06ede55571e0cbae98cbe7efdf9ff603ee26`;
+receipt `releases/eql-0.42.69-runtime-alienware.json`, SHA
+`5608e9a172a703097d2f227469ae54182b9b2f1389144dd9e236f30030b224c1`.
+The snapshot manifest is retained in that receipt. The runtime now hands off an
+explicit stair operation, collects a fresh pair after preflight, crosses three
+synthetic risers in 16 pulse receipts and resumes ordinary walking from an early
+actual landing. Twenty-one total movements finish that synthetic route. The
+original scope and aggregate budgets remain; no per-stair budget renewal.
+
+VERIFIED the finite North Wall to Throne stair landing guide was rebuilt from
+the pinned copied-client contact artifact
+`87caed49fe7b8e6f991b7e2a57a2f6746b40e22fd34d731426c69f8d1bbadb6e`.
+It contains **11 operations / 18 checked cells**, starts at the explicitly
+synthetic copied North Wall position (-95,-78), and ends at (2.851,52.27075),
+floor height 16. Guide SHA
+`78f7a100bc0affef13612737365a9106d0336339bc2cd4afbb769465053138a0`;
+evidence `nav-candidates/crushbone-stair-landing-guide-0.42.69.json`, SHA
+`49d39427fc82996c2fee230d8fdb2431a043b05cfd8f6a2bc965358be7116151`.
+No Throne rug/exit or camp is included. The guide stays in the private data store.
+This geometry check is not evidence that the client has traversed the stairs.
+
+VERIFIED **11 guide/admission checks** pass, JUnit SHA
+`ef11414e1abaddfe9f969df1e5f2fcc185566cad8125925658f10c7f59868a46`;
+the new pinned-guide check also passes, SHA
+`ce1ae547a35f4568118af52926d0bfbccfa60126ae66f8aa0a19205d0c5c7119`.
+Stop-only destinations reject camp continuation, skip combat candidate loading
+and are excluded from automatic next-camp selection. The GUI selection/dialog
+check clears and disables continuation and explains that arrival stops without
+combat. Settings writes, engine creation and device creation were forbidden by
+the smoke harness. Existing assist input behavior is unchanged.
+
+A read-only review found a general stair→ordinary-step composition defect: a
+pending connector could survive the later step's landing and point backward.
+The synthetic regression reproduced that stale connector before the fix. The
+ordinary controller now retires it only on a checked actual step landing; all
+eight selected landing/cancellation checks pass. The finite stair-ending guide
+cannot encounter that sequence, but the shared runtime is corrected for later
+routes. Test clocks are synthetic in this regression; no game input occurred.
+
+The 39-case remote snapshot predates the later destination registry, admission,
+arrival branch, version and connector changes. Their separate local checks and
+final file pins must not be described as a single exact remote test revision.
+The subsequent four-case arrival batch's SSH wrapper timed out; its completion
+is **UNKNOWN**. Read-only receipt recovery then failed with an Alienware port-22
+connection timeout. A local arrival attempt stopped in the existing calibration
+watchdog under heavy load, before the changed arrival branch. No deadline was
+relaxed. Recover the existing receipt before deciding whether to rerun it.
+
+Owner 0.39.33 is a local candidate, **not installed or live accepted**. Installed
+owner/runtime remain 0.39.32/0.42.61 and source tools 0.42.68. No helper restart,
+game input, login, character mutation or client-prefix write. G0 remains VERIFIED
+passed by its trace and the owner's visible-stop confirmation; never repeat it.
+Current real level, XP, XP/hour, deaths and camp remain unknown. Full 1–20 and
+fresh-character hands-off 1–50 are not complete. Next: retrieve arrival evidence,
+finish private installation/startup checks, then owner-run route acceptance.
+
 ## 2026-11-14 22:07 UTC — source 0.42.68 privately published
 
 VERIFIED `owner-tools/0.42.68/source` contains commit

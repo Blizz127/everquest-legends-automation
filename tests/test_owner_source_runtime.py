@@ -14,7 +14,7 @@ from test_source_motion import f, legacy
 from test_route_step_sender import after_down
 
 
-def setup(f, tmp_path, monkeypatch, *, stop=None, elevated=False):
+def setup(f, tmp_path, monkeypatch, *, stop=None, elevated=False,scope='local_trial',feedback=None):
     tracker = SimpleNamespace(reader=f.reader, owner_binding=f.owner, check_binding=lambda:f.owner)
     lease = ZoneReaderLease(tracker)
     tracker.lease = lease
@@ -24,7 +24,7 @@ def setup(f, tmp_path, monkeypatch, *, stop=None, elevated=False):
     p = dict(sender=f.sender, lease=lease, observer=f.policy.owner_input, binding=binding,
         veto=f.policy.log_veto, window=(42, 10, 100), topology=1, busy=False,
         source_runtime=None, corridor_runtime=None, driver=None,
-        trial_id='synthetic-source-runtime', continuation=dict(scope='local_trial'))
+        trial_id='synthetic-source-runtime', continuation=dict(scope=scope))
     e = SimpleNamespace(sender=f.sender, gate=f.gate, g0_stop_lock=f.ledger.lock,
         route_session_driver=None, cancelled=False, jobs=Queue(), zone_loading_until=0.,
         pump=lambda:None, _route_idle=lambda:True)
@@ -33,7 +33,8 @@ def setup(f, tmp_path, monkeypatch, *, stop=None, elevated=False):
         if e.cancelled or f.mode != 'measurement' or f.generation != 1:
             raise ValueError('Owner source runtime cancelled')
     e._trial_common_current = current
-    r = OwnerSourceRuntime(e, p, SourceWalkDriver(f.ledger), clock=f.clock, local_wall_clock=f.wall)
+    r = OwnerSourceRuntime(e, p, SourceWalkDriver(f.ledger), clock=f.clock, local_wall_clock=f.wall,
+        startup_released_at=f.first.raw_fix.received_monotonic-.2)
     p['source_runtime'] = r
     e.autopilot_tick = lambda now:r.tick()
     def cancel(reason):
@@ -58,11 +59,11 @@ def setup(f, tmp_path, monkeypatch, *, stop=None, elevated=False):
     after_down(monkeypatch, down)
     import eql_automation.owner_source_runtime as module
     real_step = module.run_checked_source_step
-    positions = iter((2.2, 2.4, 2.6, 2.8, 3., 3.15, 3.35, 3.55, 3.75))
+    positions = iter(feedback if feedback is not None else
+        tuple((y,3.01 if y>3.3 else 2.7) for y in (2.2,2.4,2.6,2.8,3.,3.15,3.35,3.55,3.75)))
     def step(*args, **kwargs):
         seal = real_step(*args, **kwargs)
-        state.y = next(positions)
-        state.z = 3.01 if state.y > 3.3 else 2.7
+        state.y,state.z = next(positions)
         state.pulses += 1
         return seal
     monkeypatch.setattr(module, 'run_checked_source_step', step)
@@ -101,7 +102,7 @@ def test_runtime_owns_each_reply_partial_transfer_and_resumed_walk(f, tmp_path, 
 
 
 @pytest.mark.parametrize('stop', ('movement', 'location'))
-@pytest.mark.parametrize('f', ['step'], indirect=True)
+@pytest.mark.parametrize('f', ['step','stair_route'], indirect=True)
 def test_runtime_stop_during_down_releases_and_never_rearms(f, tmp_path, monkeypatch, stop):
     r, e, state = setup(f, tmp_path, monkeypatch, stop=stop)
     old = f.ledger.chain
@@ -157,3 +158,26 @@ def test_stop_in_new_pair_final_clock_does_not_restore_runtime_phase(f, tmp_path
     with pytest.raises((RuntimeError, ValueError)):
         r._new_pair()
     assert r.phase == 'stopped' and f.ledger.phase == 'stopped' and r.collector is old
+
+
+@pytest.mark.parametrize('f',['stair_route'],indirect=True)
+def test_owner_stair_route_collects_fresh_start_climbs_and_connects_actual_landing(f,tmp_path,monkeypatch):
+    feedback=((2.4,2.7),(2.8,2.7),(3.2,2.7),(3.6,2.7),(3.98,3.2),
+        (4.38,3.7),(4.78,3.7),(5.18,3.7),(5.58,3.7),(5.98,4.2),
+        (6.38,4.7),(6.78,4.7),(7.18,4.7),(7.58,4.7),(7.98,5.2),
+        (8.38,5.7),(8.78,5.7),(9.18,5.7),(9.58,5.7),(9.98,5.7),(10.38,5.7))
+    r,e,state=setup(f,tmp_path,monkeypatch,scope='destination_travel',feedback=feedback)
+    original=f.ledger.chain
+    r.tick()
+    assert r.phase=='stair_start' and r.seal is None and state.pulses==0
+    assert r.stair_boundary.start[:2]==(4.,2.) and r.stair_boundary.planned_start[:2]==(4.,2.4)
+    assert f.ledger.chain is original and r.stair_preflight.hint.start==(4.,2.)
+    finish(f,r)
+    outcomes=[v['outcome'] for v in r.events if v['kind']=='source_acknowledgment']
+    assert outcomes==['in_transfer']*15+['landed']+['walk']*5
+    assert sum(v['kind']=='source_stair_start' for v in r.events)==1
+    assert state.pulses==21 and f.ledger.steps==21 and r.driver._stair_connector is None
+    assert r.completed_arrival.reference is f.ledger.reference
+    assert f.ledger.reference.package_xyz[:2]==(4.,10.38)
+    assert r.policy.ledger is f.ledger and r.stair_preflight is None
+    assert not f.sender.held and not r.snapshot()['real_client_accepted']

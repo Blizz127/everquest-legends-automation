@@ -17,7 +17,7 @@ from .source_execution_loop import SourceExecutionLoop
 
 
 class OwnerSourceRuntime(SourceExecutionLoop):
-    def __init__(self, engine, pending, driver, *, clock, local_wall_clock):
+    def __init__(self, engine, pending, driver, *, clock, local_wall_clock,startup_released_at):
         if type(driver) is not SourceWalkDriver or driver.ledger.phase != 'ready':
             raise ValueError('Freshly started source driver required')
         self.engine, self.pending, self.driver = engine, pending, driver
@@ -31,6 +31,8 @@ class OwnerSourceRuntime(SourceExecutionLoop):
         self.phase, self.reason = 'ready', ''
         self.completed_arrival = None
         self.transfer = self.seal = self.collector = None
+        self.stair_preflight=self.stair_boundary=None
+        self.last_movement_release=startup_released_at
         self.observations, self.events, self.pairs = [], [], []
         if (self.ledger.observer.reader is not self.reader or self.ledger.clock is not clock
                 or self.ledger.lock is not engine.g0_stop_lock):
@@ -90,13 +92,16 @@ class OwnerSourceRuntime(SourceExecutionLoop):
 
     def _request_location(self, request):
         e, p, collector, active, seal = self.engine, self.pending, self.collector, self.active, self.seal
+        pre=self.stair_preflight
         if type(request) is not LocationRequest or collector is None:
             raise ValueError('Owned source position request required')
 
         def current():
             self.check_current()
             collector.check()
-            active._check_seal(seal)
+            if seal is not None:active._check_seal(seal)
+            elif pre is not None and self.stair_preflight is pre and self.phase=='stair_start':pre.check()
+            else:raise ValueError('Source location request lacks a movement seal or stair preflight')
             if (self.active is not active or self.seal is not seal or self.collector is not collector
                     or collector.pending is not request or collector.phase != 'requesting'
                     or not p['busy'] or self.clock() < e.zone_loading_until
@@ -107,8 +112,10 @@ class OwnerSourceRuntime(SourceExecutionLoop):
             e.pump()
             e.autopilot_tick(self.clock())
 
+        expires=(seal.expires_at if seal else min(self.policy.started+self.policy.declaration.maximum_seconds,
+            self.ledger.observer.calibration.valid_until_monotonic))
         receipt = send_location_hotkey(self.sender, binding=self.hotkey, owner_input=self.owner_input,
-            lock=self.ledger.lock, clock=self.clock, expires_at=min(request.expires_at, seal.expires_at),
+            lock=self.ledger.lock, clock=self.clock, expires_at=min(request.expires_at,expires),
             ensure_current=current, cancel=lambda reason:e._cancel_trial(reason),
             pump=pump, record_event=self.events.append)
         return CommandReceipt(receipt.pulse.down_started_at, receipt.released_at)

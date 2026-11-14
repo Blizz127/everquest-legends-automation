@@ -36,6 +36,16 @@ def test_north_wall_guide_has_exact_pinned_goal_and_seven_explicit_steps():
     assert sha256((ROOT/spec.filename).read_bytes()).hexdigest()==spec.file_sha256
 
 
+def test_stair_landing_is_a_separate_finite_movement_destination():
+    from eql_automation.source_stair_hint import SourceStairHint
+    spec=destination_spec('throne-stair-landing');guide=load_crushbone_source_guide(ROOT,spec.identifier)
+    assert spec.arrival_mode=='stop' and guide.goal==(2.851,52.27075)
+    assert guide.operations[0].start==(-95.,-78.) and len(guide.operations)==11
+    assert type(guide.operations[-1]) is SourceStairHint
+    assert guide.operations[-1].vertical_model=='bounded_source_contacts'
+    assert guide.operations[-1].end==guide.goal and guide.body_height==6. and guide.radius==1.2
+
+
 @pytest.mark.parametrize('identifier',('unknown','../slave-mines',None,[]))
 def test_unknown_destination_never_falls_back_to_default(identifier):
     with pytest.raises(ValueError,match='Unknown'):load_crushbone_source_guide(ROOT,identifier)

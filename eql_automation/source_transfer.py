@@ -375,6 +375,10 @@ class SourceTransferController:
                     l.steps+=self.local_steps;l.serial=self.serial;l.phase='ready';l._busy=None
                     if after:
                         self.driver.index=self.boundary.cell_index+1;self.driver._active_step=None
+                        # An early stair landing can hand off this step before
+                        # its ordinary connector finishes. The checked actual
+                        # step landing supersedes that earlier approach.
+                        self.driver._stair_connector=None
                     self.driver._boundary=None
                     self.phase='landed' if after else 'approach'
                 else:

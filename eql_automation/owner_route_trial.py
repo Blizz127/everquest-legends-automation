@@ -430,7 +430,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             ledger.start(*p['source_observations'],released_at=pair.released_at)
             p['expires']=clock()+scope_limits(p['continuation']['scope'])[0]
             runtime=OwnerSourceRuntime(self,p,SourceWalkDriver(ledger),
-                clock=clock,local_wall_clock=local_wall_clock)
+                clock=clock,local_wall_clock=local_wall_clock,startup_released_at=pair.released_at)
             p.update(stage='source_route',source_runtime=runtime,collector=None)
             self._trial_current(p)
             self.emit(p['continuation']['label']+' active · movement only · F9/F11 stop.')

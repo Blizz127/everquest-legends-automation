@@ -172,6 +172,8 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                         selected=destination_spec(declaration.get('destination_id','slave-mines')).identifier
                         continuation=declaration.get('continue_camps',False)
                         if type(continuation) is not bool:raise ValueError('Invalid camp continuation choice')
+                        if destination_spec(selected).arrival_mode=='stop' and continuation:
+                            raise ValueError('The stair landing test ends on arrival; camp continuation is unavailable')
                     except ValueError as error:
                         self.emit('Travel did not start: '+str(error));return
                     value=dict(value,declaration={'open_flat_clear':declaration.get('open_flat_clear')})
@@ -197,10 +199,11 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                 if j is None or destination.destination_id!=j.destination_id:
                     raise ValueError('Loaded source destination differs from the queued choice')
                 j.destination_assets=destination
-                candidates = tuple(super()._load_camp_candidates('crushbone'))
+                movement_only=destination_spec(j.destination_id).arrival_mode=='stop'
+                candidates = () if movement_only else tuple(super()._load_camp_candidates('crushbone'))
                 if j is None or self.journey is not j or not navigation_active(self):
                     raise ValueError('Travel cancelled while loading observed camp candidates')
-                if not candidates:
+                if not movement_only and not candidates:
                     raise ValueError('No observed Crushbone NPC/consider/kill candidates; travel-to-camp unavailable')
                 j.candidates = candidates
             return recipe
@@ -315,6 +318,16 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
         def _continue_source_journey(self,p,token):
             self._arrival_current(token)
             self.zone = 'crushbone'  # From the fresh zone-bound arrival, never history.
+            if destination_spec(token.destination_id).arrival_mode=='stop':
+                result=dict(phase='arrived',destination_id=token.destination_id,
+                    itinerary_sha256=token.receipt.itinerary_sha256,
+                    stopped_log_seq=token.receipt.reference.raw_fix.log_line_seq,
+                    actual_position=token.receipt.reference.package_xyz,
+                    camp_started=False,real_client_accepted=False)
+                self.stop_action('Stair landing reached · movement stopped')
+                self.journey_last_result=result
+                self.trace('journey_movement_arrival',**result)
+                return result
             started = self.start_stationary_camp(arrival_check=lambda:self._arrival_current(token))
             j = token.journey
             if self.journey is not j or self.cancel_generation != j.generation:

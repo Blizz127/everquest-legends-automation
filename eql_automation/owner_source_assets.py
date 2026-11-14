@@ -24,13 +24,14 @@ class SourceDestinationAssets:
         self.check()
 
     def check(self):
+        from .crushbone_source_guide import destination_spec
+        destination_spec(self.destination_id)
         if (type(self.planner) is not CurrentStartPlanner or self.planner.zone != 'crushbone'
                 or self.planner.zone_id != 58 or self.planner.region_policy is None
                 or self.guide.zone != 'crushbone'
                 or (self.guide.wld_sha256, self.guide.static_inventory_sha256) != self.planner.pins[2:]
                 or tuple(vars(self.guide).items()) != self._guide_state
                 or not isinstance(self.target_name, str) or not self.target_name
-                or self.destination_id not in ('slave-mines','north-wall')
                 or type(self.source_evidence) is not bytes or not 0 < len(self.source_evidence) <= 65536):
             raise ValueError('Current Crushbone planner and unchanged private guide required')
         self.planner._check_views()
@@ -48,5 +49,6 @@ def load_owner_source_destination(engine):
     evidence = encoded(dict(kind='copied_client_source_guide', zone='crushbone',
         destination_id=identifier,guide_file_sha256=spec.file_sha256, guide_sha256=sha256(encoded(guide.record())).hexdigest(),
         package_goal_xy=guide.goal, target=spec.label, current_position=False,
+        arrival_mode=spec.arrival_mode,
         safe_camp_verified=False, real_client_accepted=False))
     return SourceDestinationAssets(planner,guide,'Crushbone '+spec.label,evidence,identifier)

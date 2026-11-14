@@ -73,6 +73,28 @@ def test_saved_guides_cannot_override_the_current_floor_or_claim_acceptance():
     assert not result['real_client_accepted']
 
 
+def test_stair_guide_roundtrip_and_compaction_keep_explicit_contact_operation():
+    from eql_automation.source_stair_hint import SourceStairHint
+    from eql_automation.source_guide_compaction import compact_source_guide
+    from test_source_stair_plan import setup as stair_setup
+    prefix,start,end,groups,terrain,static,bsp,policy=stair_setup()
+    stair=SourceStairHint(start,end,groups,1.2,vertical_model='bounded_source_contacts')
+    guide=SourceItineraryGuide('crushbone','a'*64,'d'*64,'f'*64,.1,6.,(6.5,0.),
+        (SourceWalkHint(start,start),stair,SourceWalkHint(end,(6.5,0.))))
+    assert SourceItineraryGuide.from_record(guide.record())==guide
+    compact=compact_source_guide(guide)
+    assert next(op for op in compact.operations if type(op) is SourceStairHint) is stair
+    before=_chain_snapshot(prefix)
+    result=plan_source_itinerary(prefix,start,compact,terrain,static,bsp,policy,
+        check_context=lambda:None).record()
+    cells=[c for c in result['cells'] if c['kind']=='stair']
+    assert len(cells)==1 and cells[0]['stair_plan']['vertical_model']=='bounded_source_contacts'
+    assert cells[0]['start_floor_height']==0. and cells[0]['end_floor_height']==3.
+    assert _chain_snapshot(prefix)==before and result['goal']==[6.5,0.]
+    with pytest.raises(ValueError,match='grounded contact'):
+        replace(guide,operations=(replace(stair,vertical_model='lift_transfer'),)).validate()
+
+
 def test_same_xy_upstairs_connector_does_not_jump_to_downstairs_guide():
     args = fixture(); _, guide, terrain, static, bsp, policy = args
     floors = (*rectangle(-5.,5.,0.,0), *rectangle(-5.,5.,20.,10))

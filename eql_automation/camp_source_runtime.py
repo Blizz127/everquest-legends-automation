@@ -60,6 +60,8 @@ class CampSourceRuntime(SourceExecutionLoop):
         self.fd, self.fd_identity = self.ui.fileno(), _fd_identity(self.ui.fileno())
         self.phase, self.reason, self.busy = 'startup', '', False
         self.collector = self.transfer = self.seal = self.completed_arrival = None
+        self.stair_preflight=self.stair_boundary=None
+        self.last_movement_release=None
         self.ledger = self.observer = self.driver = self.policy = None
         self._owned_ledger = self._owned_observer = self._owned_driver = self._owned_policy = None
         self.events, self.pairs, self.observations = [], [], []
@@ -118,6 +120,7 @@ class CampSourceRuntime(SourceExecutionLoop):
             self.completed_arrival = None
             if self.collector is not None:self.collector.cancel(reason)
             if self.transfer is not None:self.transfer.cancel(reason)
+            if self.stair_preflight is not None:self.stair_preflight.cancel(reason)
             if self._owned_ledger is not None:self._owned_ledger.cancel(reason)
             if self._owned_observer is not None:self._owned_observer.cancel(reason)
 
@@ -137,12 +140,15 @@ class CampSourceRuntime(SourceExecutionLoop):
 
     def _request_location(self, request):
         collector, active, seal = self.collector, self.active, self.seal
+        pre=self.stair_preflight
         if type(request) is not LocationRequest or collector is None:
             raise ValueError('Owned camp route location request required')
         def current():
             self.check_current();collector.check()
             if seal is not None:active._check_seal(seal)
-            else:active._check()
+            elif self.phase=='stair_start' and pre is not None and self.stair_preflight is pre:pre.check()
+            elif self.phase=='startup':active._check()
+            else:raise ValueError('Camp position request lacks its startup or receipt context')
             if (not self.busy or self.collector is not collector or self.active is not active
                     or self.seal is not seal or collector.phase != 'requesting'
                     or collector.pending is not request or self.input_request is not request):
@@ -180,6 +186,7 @@ class CampSourceRuntime(SourceExecutionLoop):
             if isinstance(action, LocationRequest):c.command_sent(action, self._request_location(action))
             if c.phase != 'complete':return
             self.ledger.start(*self.observations, released_at=c.released_at)
+            self.last_movement_release=c.released_at
             self.pairs.append(c.snapshot());self.collector = None;self.observations = []
             policy = self.plan.policy_factory(self.ledger, self.check_current)
             self.check_current()

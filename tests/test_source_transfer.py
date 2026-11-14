@@ -36,8 +36,19 @@ def replies(f,c,seal,*,y,z):
 
 
 @pytest.mark.parametrize('f',['step'],indirect=True)
-def test_multiple_approaches_partial_step_then_landing_resume_ordinary_walk(f):
+@pytest.mark.parametrize('after_stair',[False,True])
+def test_multiple_approaches_partial_step_then_landing_resume_ordinary_walk(f,after_stair):
     f.real=False;f.now=time.monotonic();driver=SourceWalkDriver(f.ledger)
+    connector=None
+    if after_stair:
+        # The previous stair landed early on this same flat approach. Its
+        # remaining connector must survive approach receipts, then retire
+        # when the following step actually lands beyond it.
+        from eql_automation.source_walk_driver import _Target
+        connector=_Target('walk',f.ledger.reference.package_xyz,(4.,3.1,.2),None)
+        driver._stair_connector=connector
+        driver.index=next(i for i,row in enumerate(driver.targets) if row.kind=='step')
+    initial_index=driver.index
     policy_started=f.policy.started;results=[];partial_chain=None
     c=begin(f,driver)
     for y,z in ((2.2,2.7),(2.4,2.7),(2.6,2.7),(2.8,2.7),(3.,2.7),(3.15,2.7),(3.35,3.01),(3.55,3.01)):
@@ -45,10 +56,11 @@ def test_multiple_approaches_partial_step_then_landing_resume_ordinary_walk(f):
         assert f.ledger.chain is old and f.ledger.phase=='transfer'
         pair=replies(f,c,seal,y=y,z=z)
         result=c.acknowledge_stopped(seal,*pair);results.append(result.kind)
+        if result.kind!='landed':assert driver._stair_connector is connector
         if result.kind=='in_transfer':
             assert isinstance(result.reference,SourceTransitionFix)
             assert f.ledger.chain is old and f.ledger.phase=='transfer'
-            assert not result.reference.observed_grounded and driver.index==0
+            assert not result.reference.observed_grounded and driver.index==initial_index
             partial_chain=old
         else:
             assert result.kind in ('approach','landed') and f.ledger.phase=='ready'
@@ -59,7 +71,9 @@ def test_multiple_approaches_partial_step_then_landing_resume_ordinary_walk(f):
     assert results==['approach']*6+['in_transfer','landed']
     assert f.ledger.chain is not partial_chain and f.ledger.steps==8
     assert f.policy.started==policy_started and driver._active_step is None
-    assert driver.index>0 and driver.next_action().kind=='forward'
+    assert driver._stair_connector is None
+    command=driver.next_action()
+    assert driver.index>0 and command.kind=='forward' and command.target[:2]==(4.,3.9)
 
 
 @pytest.mark.parametrize('f',['step'],indirect=True)

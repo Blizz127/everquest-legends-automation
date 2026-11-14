@@ -3,7 +3,9 @@ from dataclasses import asdict
 
 from .motion_collection import LocationRequest
 from .source_transfer import SourceTransferController
-from .source_walk_driver import SourceStepBoundary, SourceWalkFinished
+from .source_walk_driver import SourceStepBoundary,SourceStairBoundary,SourceWalkFinished
+from .source_stair_preflight import SourceStairPreflight
+from .source_stair_controller import SourceStairController
 from .stopped_location_pair import StoppedLocationPair
 
 
@@ -21,7 +23,48 @@ class SourceExecutionLoop:
                 self.collector.cancel(reason)
             if self.transfer is not None:
                 self.transfer.cancel(reason)
+            if self.stair_preflight is not None:self.stair_preflight.cancel(reason)
             self.ledger.cancel(reason)
+
+    def _begin_stair(self,boundary):
+        hint=self.driver.stair_hint(boundary)
+        with self.ledger.lock:
+            self.check_current()
+            self.stair_boundary=boundary
+            self.stair_preflight=SourceStairPreflight(self.ledger,policy=self.policy,hint=hint,
+                released_at=self.last_movement_release)
+        pre=self.stair_preflight
+        pre.prepare()  # Geometry does not hold the stop lock or send input.
+        collector=StoppedLocationPair(self.lease,released_at=self.last_movement_release,
+            check_current=self.check_current,clock=self.clock,local_wall_clock=self.wall)
+        with self.ledger.lock:
+            self.check_current();pre.check()
+            if self.stair_preflight is not pre or self.stair_boundary is not boundary:
+                collector.cancel('Stair preflight handoff changed')
+                raise ValueError('Stair preflight handoff changed')
+            self.collector=collector;self.observations=[];self.phase='stair_start'
+
+    def _collect_stair_start(self):
+        pre,collector=self.stair_preflight,self.collector
+        pre.check();action=collector.tick()
+        fixes=tuple(raw for raw in (collector.first,collector.second) if raw is not None)
+        if len(fixes)!=len(self.observations):
+            if len(fixes)!=len(self.observations)+1:raise ValueError('Skipped stair start reply')
+            self.observations.append(pre.observe_reply(fixes[-1]))
+        if isinstance(action,LocationRequest):
+            collector.command_sent(action,self._request_location(action))
+        if collector.phase!='complete':return
+        with self.ledger.lock:
+            self.check_current();pre.check()
+            if self.stair_preflight is not pre or self.collector is not collector or self.phase!='stair_start':
+                raise ValueError('Stair start collection changed')
+            start=pre.bind_start(*self.observations)
+            controller=SourceStairController.from_preflight(pre,start)
+            self.transfer=controller  # Constructor has already bound the same policy.
+            self.pairs.append(collector.snapshot())
+            self.events.append(dict(kind='source_stair_start',cache_sha256=pre.cache.sha256,
+                raw_seq=start.second.raw_fix.log_line_seq,real_client_accepted=False))
+            self.stair_preflight=self.collector=None;self.observations=[];self.phase='ready'
 
     def _new_pair(self):
         # Settling retains the same release/deadline; it never buys another
@@ -65,6 +108,9 @@ class SourceExecutionLoop:
             self._new_pair()
             return
         if kind in ('approach', 'landed'):
+            if type(self.transfer) is SourceStairController:
+                self.driver.finish_stair(self.stair_boundary,self.transfer,outcome)
+                self.stair_boundary=None
             self.policy.finish_transfer(self.transfer)
             self.transfer = None
         self.collector = self.seal = None
@@ -81,10 +127,14 @@ class SourceExecutionLoop:
         try:
             self.active._check()
             if self.collector is not None:
-                self._collect()
+                if self.phase=='stair_start':self._collect_stair_start()
+                else:self._collect()
                 return
             action = self.transfer.next_command() if self.transfer is not None else self.driver.next_action()
-            if isinstance(action, SourceStepBoundary):
+            if type(action) is SourceStairBoundary:
+                self._begin_stair(action)
+                return
+            if type(action) is SourceStepBoundary:
                 self.transfer = SourceTransferController(self.driver, action)
                 self.policy.bind_transfer(self.transfer)
                 action = self.transfer.next_command()
@@ -94,6 +144,7 @@ class SourceExecutionLoop:
                 return
 
             self.seal = self._send_movement(action)
+            self.last_movement_release=self.seal.receipt.up_completed_at
             self.events.append(dict(kind='source_pulse', cell_index=action.cell_index,
                 movement=action.kind, receipt=asdict(self.seal.receipt),
                 geometry_sha256=self.seal.ticket.geometry.sha256, real_client_accepted=False))
@@ -109,6 +160,7 @@ class SourceExecutionLoop:
             cell_index=self.driver.index, completed_movements=self.ledger.steps,
             transfer_phase=None if self.transfer is None else self.transfer.phase,
             partial_movements=0 if self.transfer is None else self.transfer.local_steps,
+            stair_preflight_phase=None if self.stair_preflight is None else self.stair_preflight.phase,
             incomplete_pair=None if self.collector is None else self.collector.snapshot(),
             stopped_pairs=list(self.pairs), executor_events=list(self.events), policy=self.policy.snapshot(),
             ordinary_route_driver_used=False, real_client_accepted=False)

@@ -1,11 +1,35 @@
 # STATUS
 
-Updated 2026-11-14 22:07 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 22:30 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.69 / owner 0.39.33 candidate built; not installed.** VERIFIED
+  39 Alienware runtime/driver/itinerary checks, 12 local guide/admission checks
+  and eight local step-connector checks pass. These are synthetic game feedback
+  and test pipes, not real-client acceptance. The complete synthetic stair route
+  takes 16 stair pulses, lands early and resumes ordinary walking from the
+  actual observed position. A later ordinary step now retires the pending stair
+  connector only after its actual landing; the regression failed before the fix.
+  The optional new destination ends at the Throne stair landing with combat and
+  camp continuation off. Its copied-client guide has 11 operations / 18 checked
+  cells, SHA `78f7a100bc0affef13612737365a9106d0336339bc2cd4afbb769465053138a0`.
+  Selection/dialog checks pass without starting an engine, creating a device or
+  saving settings. Assist still uses the existing rotation bot; no assist
+  movement or targeting was added.
+  **Publication blocker:** the separate four-case arrival run has no retrieved
+  result after an SSH transport timeout; a subsequent read-only receipt request
+  failed to connect to Alienware port 22. Do not rerun that batch without first
+  checking its retained receipt. Local real-time arrival testing refused an
+  existing calibration watchdog under heavy devbox load; deadlines stay unchanged.
+  **Next:** recover the arrival receipt when Alienware is reachable, validate the
+  final private package and install it additively, then owner-run location/travel
+  acceptance. Installed owner preview/runtime remain **0.39.32/0.42.61**; source
+  tools remain **0.42.68**. No helper restart, login, game input, character progress
+  change or prefix write. G0 is passed, including the owner's visible-stop
+  confirmation. Full 1–20/1–50, stairs, transitions and leveling remain unaccepted.
 - **Source 0.42.68 privately published; owner preview stays 0.39.32.** VERIFIED 55 focused stair,
   preflight and landing checks plus 16 transport checks on Alienware. Synthetic
   feedback crosses three risers, including half-rise observations; only the

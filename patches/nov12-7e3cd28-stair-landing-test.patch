@@ -1,0 +1,116 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -452,23 +452,29 @@
+             self.source_destination.setObjectName("journeyDestinationBox")
+             self.source_destination.addItem("Slave Mines  ·  map hint 7–10", "slave-mines")
+             self.source_destination.addItem("North Wall and Castle  ·  map hint 13–17", "north-wall")
++            self.source_destination.addItem("Throne stair landing  ·  movement test", "throne-stair-landing")
+             column.addWidget(self.source_destination)
+             self.continue_camps = QCheckBox("After level-ups, travel to the next supported camp")
+             self.continue_camps.setObjectName("journeyContinueCampsBox")
+             self.continue_camps.setToolTip("Supervised test: uses newly observed levels and prepares a fresh camp after stopped arrival. Missing routes keep the current camp. F8 assist; F9 stops.")
+             column.addWidget(self.continue_camps)
+-            self.supervised_source = QPushButton("Travel to selected camp…")
++            self.source_destination.currentIndexChanged.connect(self.refresh_destination_mode)
++            self.supervised_source = QPushButton("Travel to selected destination…")
+             self.supervised_source.setObjectName("supervisedSourceTravelButton")
+             self.supervised_source.clicked.connect(self.configure_supervised_source)
+             column.addWidget(self.supervised_source)
+             travel = QLabel("Start inside Crushbone. Test your /location hotbutton with the map visible, then close the map. "
+                             "Travel measures motion on clear open ground, follows the source route and starts the camp "
+                             "only after a fresh stopped arrival. F8 switches to assist; F9 or F11 stops travel/camp. "
++                            "The stair landing movement test starts near North Wall and stops without combat. "
+                             "North Wall travel starts from the Slave Mines area. Map level ranges are hints; live camp suitability is unverified. "
+                             "F11 camps where you stand; the destination applies to the Travel button. "
+                             "The first F11 after travel/setup is always OFF. Supervise every travel test.")
+             travel.setWordWrap(True)
+             column.addWidget(travel)
++            self.travel_help = travel
++            self.camp_travel_help = travel.text()
++            self.refresh_destination_mode()
+             column.addStretch()
+             # Keep inherited widget references for settings compatibility, but
+             # do not expose controls the stationary runtime does not use.
+@@ -685,7 +691,7 @@
+             state = autopilot.get("state", "off")
+             if not measurement_only:
+                 self.source_destination.setEnabled(not bool(autopilot.get("journey_phase")))
+-                self.continue_camps.setEnabled(not bool(autopilot.get("journey_phase")))
++                self.refresh_destination_mode()
+             badge = (state, autopilot.get("journey_phase"), autopilot.get("journey_destination_id"))
+             if badge != self.ap_badge:
+                 self.ap_badge = badge
+@@ -693,7 +699,7 @@
+                 label = {"running": "RUNNING", "paused": "PAUSED", "halted": "STOPPED"}.get(
+                     state, "IDLE" if measurement_only else "OFF")
+                 destination = autopilot.get("journey_destination_id")
+-                suffix = {"slave-mines": " · Slave Mines", "north-wall": " · North Wall and Castle"}.get(destination, "")
++                suffix = {"slave-mines": " · Slave Mines", "north-wall": " · North Wall and Castle", "throne-stair-landing": " · Stair landing"}.get(destination, "")
+                 self.ap_state.setText(f"●  {kind} {label}{suffix}")
+                 self.ap_state.setStyleSheet({"running": "color: #7addac;", "paused": "color: #f5ca72;",
+                                              "halted": "color: #ffb9c2;"}.get(state, "color: #a9b5c5;"))
+@@ -798,13 +804,29 @@
+             if dialog.exec() == QDialog.DialogCode.Accepted:
+                 self.post("test_location_hotkey", {"key_name": key.currentData(), "confirmed": True})
+ 
++        def refresh_destination_mode(self, *_):
++            from eql_automation.crushbone_source_guide import destination_spec
++            movement_only = destination_spec(self.source_destination.currentData()).arrival_mode == "stop"
++            if movement_only:
++                self.continue_camps.setChecked(False)
++            self.continue_camps.setEnabled(self.source_destination.isEnabled() and not movement_only)
++            if hasattr(self, "travel_help"):
++                self.travel_help.setText(
++                    "Start near North Wall and Castle. This movement test climbs to the top stair landing, "
++                    "then stops without combat. It does not continue to the Throne camp. "
++                    "Test your /location hotbutton with the map visible, then close the map. "
++                    "Start calibration on clear, flat, open ground. Stay present: real stair movement is unverified. "
++                    "F8 returns to assist; F9/F11 stops."
++                    if movement_only else self.camp_travel_help)
++
+         def configure_supervised_source(self):
+             from eql_automation.crushbone_source_guide import destination_spec
+             identifier = self.source_destination.currentData()
+             selected = destination_spec(identifier)
+-            continuation = self.continue_camps.isChecked()
++            movement_only = selected.arrival_mode == "stop"
++            continuation = self.continue_camps.isChecked() and not movement_only
+             dialog = QDialog(self)
+-            dialog.setWindowTitle("Travel to " + selected.label + ", then camp")
++            dialog.setWindowTitle("Travel to " + selected.label + (", then stop" if movement_only else ", then camp"))
+             layout = QVBoxLayout(dialog)
+             text = QLabel("Start inside Clan Crushbone. This measures motion, plans from your current position "
+                           f"toward {selected.label}, then starts the repeated stationary camp after a fresh stopped arrival. "
+@@ -816,6 +838,15 @@
+                           "After a four-second focus countdown, seven short calibration presses precede planning.\n\n"
+                           "Stay present. F9/F11 or Stop autopilot cancels; F8 switches to assist. Travel is limited to 25 minutes. "
+                           "The helper stops on an observed attack or zone change; it does not recover automatically.")
++            if movement_only:
++                text.setText("Start near North Wall and Castle inside Crushbone. This optional movement test measures motion, "
++                             "follows the approach and climbs to the top stair landing, then stops. It does not start combat "
++                             "or continue to the Throne camp. Real stair movement remains unverified.\n\n"
++                             "First use Test /location hotbutton with the map visible. Then close the map and chat, clear "
++                             "your target and turn melee off. Start on clear, flat, open ground. Seven short calibration "
++                             "presses follow the four-second focus countdown.\n\n"
++                             "Stay present. F9/F11 stops; F8 returns to assist. The trip is limited to 25 minutes and stops "
++                             "on an observed attack or zone change.")
+             if continuation:
+                 text.setText(text.text() + "\n\nAfter a newly observed level-up and spell preparation, the helper may measure again and travel to a supported later camp. This additional trip is limited to 25 minutes. After stopped arrival, the helper prepares learned spells again and checks new targets before combat. Missing routes keep the current camp. Stay present throughout.")
+             text.setWordWrap(True)
+@@ -824,7 +855,7 @@
+             layout.addWidget(confirmation)
+             buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+             ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
+-            ok.setText("Travel, then camp")
++            ok.setText("Travel, then stop" if movement_only else "Travel, then camp")
+             ok.setEnabled(False)
+             confirmation.toggled.connect(ok.setEnabled)
+             buttons.accepted.connect(dialog.accept)
+@@ -1031,6 +1062,7 @@
+                     "journey_travel_enabled": window.supervised_source.isEnabled(),
+                     "journey_destination_ids": [window.source_destination.itemData(i) for i in range(window.source_destination.count())],
+                     "journey_destination_current": window.source_destination.currentData(),
++                    "journey_destination_help": window.travel_help.text(),
+                     "journey_continue_camps_checked": window.continue_camps.isChecked(),
+                     "journey_continue_camps_enabled": window.continue_camps.isEnabled(),
+                     "journey_continue_camps_text": window.continue_camps.text(),
