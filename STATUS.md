@@ -1,11 +1,25 @@
 # STATUS
 
-Updated 2026-11-14 15:34 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 15:42 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.35 / preview 0.39.24 candidate:** repeated camp automatically
+  prepares learned spells at startup and between fights after level-ups. It
+  uses the retained catalog/rotation/sender, fresh export evidence, helper-slot
+  clear requests and serialized exact-spell begin/finish receipts. Silence does
+  not count as memorization. Partial failure/F9 leaves the bar unprepared and
+  never resumes on mixed gems. Same reader drains hazards before each key/Enter.
+  **75 focused checks pass** with the actual retained Engine/KeySender and OS
+  pipes; no game input. The owner's existing spellbook export was copied
+  read-only: all 18 rows resolve against the copied client catalog. No live gem
+  contents, current level or character progress were inferred from that file.
+  **Publication pending startup check.** Next: owner preparation/combat/rest
+  acceptance and same-process travel→camp handoff. Spell buying/scribing,
+  initial fresh-character candidate discovery and complete leveling remain
+  unfinished; actual level/XP/XP-hour/deaths/camp remain unknown.
 - **Source 0.42.34 / published preview 0.39.23:** repeated stationary encounters
   now use the same retained rotation, sender, log reader and cancellation scope.
   After a matching kill, the helper waits for fresh resource recovery, requests

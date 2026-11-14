@@ -7,10 +7,12 @@ from __future__ import annotations
 
 from datetime import datetime
 import math
+from pathlib import Path
 import time
 
 from .camp_session import StationaryCamp, observed_candidates
 from .camp_recovery import CampRecovery, PostureCommandBinding
+from .camp_preparation import CampPreparation, PreparationCatalog
 from .location_log import NonReplayingLogTail
 from .owner_gauge_lifecycle import make_owner_nov12_engine as assist_engine
 
@@ -32,12 +34,16 @@ class CampLogTail:
                 camp.observe(raw, self.seq, self.engine.camp_clock(), self.engine.camp_wall(),
                     consider=self.engine.camp_client.consider_target,
                     safe=self.engine.camp_client.safe_leveling_target)
+                if camp.running and camp.preparation is not None:
+                    try:camp.preparation.observe(raw,self.seq,self.engine.camp_clock(),self.engine.camp_client)
+                    except ValueError as error:camp.stop(str(error))
         return rows
 
 
 def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                            clock=time.monotonic, wall=datetime.now, repeat=False,
-                           posture_loader=PostureCommandBinding):
+                           posture_loader=PostureCommandBinding,auto_prepare=False,
+                           preparation_catalog_loader=None):
     """Bind only to the existing owner helper; construction sends no input."""
     class OwnerCampEngine(assist_engine(base_engine)):
         camp_client = client
@@ -49,6 +55,7 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             self._camp_command = None; self._camp_binding = None
             self._camp_posture = None
             self._camp_checked_at = 0.
+            self._camp_reading_during_input = False
             super().__init__(*args, **kwargs)
 
         def make_tail(self):
@@ -94,10 +101,11 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             if (self.measurement_only or self.preparing or self.stopping or self.recorder is not None
                     or self.autopilot_running() or self.pointer is not None):
                 self.emit('Camp did not start: stop the other activity first'); return False
-            if not self.prepared or self.prepared_level != self.settings.level or self.rotation is None:
-                self.emit('Prepare the spell bar with F6 before starting the camp test'); return False
-            if not self.rotation.spell_action('nuke', self.rotation.damage_interval):
-                self.emit('Camp requires a prepared general damage spell'); return False
+            if not auto_prepare:
+                if not self.prepared or self.prepared_level != self.settings.level or self.rotation is None:
+                    self.emit('Prepare the spell bar with F6 before starting the camp test'); return False
+                if not self.rotation.spell_action('nuke', self.rotation.damage_interval):
+                    self.emit('Camp requires a prepared general damage spell'); return False
             if type(self.settings.level) is not int or not 1 <= self.settings.level < (20 if repeat else 21):
                 self.emit('Camp supports configured levels below 20 and stops new pulls at level 20'); return False
             if (not self.gate.controls_ready() or self.blocked_keys() or
@@ -138,8 +146,9 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             self.reset_target(False, forget=True, clear_seen=True, clear_role=True)
             self.native_attack_off_pending = False
             camp = StationaryCamp(candidates, self.settings.level, generation, clock(), self.zone,repeat=repeat)
+            camp.preparation_due=auto_prepare
             binding = (sender, self.gate, self.tail, self.tail.tail.epoch,
-                self.settings.character, self.settings.server, self.settings.level, self.zone)
+                self.settings.character, self.settings.server, self.settings.level, self.zone,self.settings.game_dir)
             focused = self.gate.controls_ready(); blocked = self.blocked_keys()
             if (not focused or blocked or generation != self.cancel_generation or
                     self.camp_session is not None or self.active or self.stopping or self.preparing):
@@ -159,21 +168,27 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             camp = self.camp_session
             if camp is None or not camp.running:
                 return False
+            preparation_bound=camp.preparation;catalog_bound=camp.catalog_source
             focused = self.gate.controls_ready(); blocked = self.blocked_keys()
             try:
                 if camp.repeat:self._camp_posture.check()
+                if camp.catalog_source is not None:camp.catalog_source.check()
             except (OSError,ValueError,AttributeError):
                 return False
             now = clock()
             current = (self.sender, self.gate, self.tail, self.tail.tail.epoch,
-                self.settings.character, self.settings.server, self.settings.level, self.zone)
+                self.settings.character, self.settings.server, self.settings.level, self.zone,self.settings.game_dir)
             binding_matches=self._camp_binding == current
+            preparation_owned=(camp.phase=='preparing' and camp.preparation is not None and
+                camp.preparation.level==camp.level and camp.preparation.generation==camp.generation and
+                camp.preparation.source is camp.catalog_source)
             if allow_pending_level and self._camp_binding is not None:
                 binding_matches=(current[:6]==self._camp_binding[:6] and current[7:]==self._camp_binding[7:] and
                     current[6]==camp.pending_level and camp.pending_level>=camp.level)
             valid = (self.camp_session is camp and camp.running and binding_matches and self.autopilot is camp and
+                    camp.preparation is preparation_bound and camp.catalog_source is catalog_bound and
                     self.cancel_generation == camp.generation and not self.cancelled and
-                    not self.stopping and not self.measurement_only and not self.preparing and
+                    not self.stopping and not self.measurement_only and (not self.preparing or preparation_owned) and
                     not self.command_recovery_pending and self.sender is not None and
                     now-camp.started <= camp.session_seconds and focused and not blocked)
             if valid:self._camp_checked_at=now
@@ -192,6 +207,8 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                     camp.running and not self.cancelled and self.cancel_generation==camp.generation)
 
         def _camp_noncast_permitted(self,camp,command):
+            if camp.phase=='preparing' and camp.preparation is not None:
+                return self.preparing and command==camp.preparation.command(self._camp_checked_at)
             if command=='/consider':return camp.phase=='probe'
             if camp.phase=='target':return command==client.target_command(camp.requested)
             return (camp.repeat and camp.phase=='recovery' and camp.recovery is not None and
@@ -199,6 +216,12 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
 
         def allowed(self):
             allowed = super().allowed()  # May consume F9 and replace the scope.
+            camp=self.camp_session
+            if (allowed and self._camp_command is not None and camp is not None and
+                    camp.phase=='preparing' and not self._camp_reading_during_input):
+                self._camp_reading_during_input=True
+                try:self.read_log()  # Same reader, before each next key/Enter.
+                finally:self._camp_reading_during_input=False
             if self._camp_command is None:
                 return allowed and self.camp_session is None
             camp = self.camp_session
@@ -238,6 +261,7 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                     if not self._camp_current(allow_pending_level=True):
                         self.stop_action('Observed level changed outside the camp scope');return
                     camp.level=camp.pending_level;camp.pending_level=None;camp.level_source='client_log'
+                    if auto_prepare:camp.preparation_due=True
                     self._camp_binding=(*self._camp_binding[:6],camp.level,*self._camp_binding[7:])
                     self.trace('camp_level',level=camp.level,prepared_level=self.prepared_level,
                                spell_upgrades_applied=False)
@@ -276,6 +300,15 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 return super().autopilot_tick(now)
             if not self._camp_current() or self.sender.unfinished:
                 self.stop_action('Camp interrupted; explicit restart required'); return
+            if (camp.repeat and camp.level>=camp.target_level and camp.phase!='loot_observation' and
+                    (camp.engaged_name is None or camp.killed_at is not None)):
+                self.stop_action('Target level observed; no further pulls');return
+            if camp.phase=='preparing':
+                self._camp_preparation_tick(camp,now);return
+            if camp.preparation_due and camp.phase in {'select','waiting_respawn'}:
+                if now>=max(self.command_pause_until,self.rotation.busy_until if self.rotation else 0.):
+                    self._camp_begin_preparation(camp,now)
+                return
             if camp.phase == 'loot_observation':
                 self.active = False
                 if now-camp.killed_at >= 2:
@@ -326,6 +359,7 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 self.stop_action('No fresh consideration reply; camp stopped')
 
         def _camp_begin_recovery(self,camp,now):
+            if self.camp_session is not camp or not self._camp_current():return
             if not self._camp_fresh_gauges(now):
                 self.stop_action('Recovery requires fresh readable HP and mana');return
             camp.grant_until=0.;camp.phase='recovery'
@@ -334,6 +368,58 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             camp.recovery=CampRecovery(now,phase='stand_after_rest' if full else 'stand_before_sit')
             self.trace('camp_recovery_start',hp=self.hp,mana=self.mana,posture_observed=None)
             self.emit('Between fights · recovering resources · posture requested, not confirmed · F9 stops')
+
+        def _camp_begin_preparation(self,camp,now):
+            if not self._camp_fresh_gauges(now) or not self._camp_gauges_ok():
+                self.stop_action('Preparation needs fresh readable HP and mana');return
+            try:
+                source=(preparation_catalog_loader(self.settings.game_dir) if preparation_catalog_loader else
+                        PreparationCatalog(self.settings.game_dir,client))
+                preparation=CampPreparation(camp.level,camp.generation,now,
+                    Path(self.settings.game_dir)/'eql-rotation-spellbook.txt',source,dict(client.SLOTS))
+                if self.camp_session is not camp or not self._camp_current():return
+                camp.reset_round();camp.phase='preparing';camp.preparation=preparation;camp.catalog_source=source
+                self.preparing=True;self.prepared=False;self.prepared_level=None
+                self.active=False;self.target_ready=False
+                self.trace('camp_preparation_start',**preparation.snapshot())
+                self.emit('Preparing learned spells automatically · each gem requires fresh begin/finish messages · F9 stops')
+            except (OSError,ValueError) as error:
+                if self.camp_session is camp:self.stop_action('Preparation stopped: '+str(error))
+
+        def _camp_preparation_tick(self,camp,now):
+            preparation=camp.preparation
+            try:
+                preparation.advance(now)
+                if self.camp_session is not camp or not self._camp_current():return
+                command=preparation.command(now)
+                if command:
+                    if preparation.phase=='clear' and not preparation.clears_submitted:
+                        self.invalidate_prepared_state()
+                    self.send(command)
+                    completed=clock();completed_wall=wall()
+                    if self.camp_session is not camp or not self._camp_current():return
+                    preparation.submitted(command,self.tail.seq,completed,completed_wall)
+                    self.trace('camp_preparation_command',command=command,phase=preparation.phase)
+                elif preparation.phase=='ready':
+                    # A finish is only evidence. Publish after the complete log
+                    # batch and callback-bearing rotation/marker operations.
+                    self.read_log()
+                    if self.camp_session is not camp or not self._camp_current():return
+                    rotation=self.make_rotation(preparation.profile)
+                    if self.camp_session is not camp or not self._camp_current():return
+                    self.catalog=preparation.source.catalog;self.known=preparation.known
+                    self.profile=preparation.profile;self.rotation=rotation
+                    self.prepared=True;self.prepared_level=camp.level
+                    self.save_prepared_state()
+                    if self.camp_session is not camp or not self._camp_current():
+                        self.invalidate_prepared_state();self.prepared=False;self.prepared_level=None
+                        return
+                    result=preparation.snapshot();camp.preparation_history.append(result)
+                    camp.preparation=None;camp.preparation_due=False;self.preparing=False
+                    self.trace('camp_preparation_complete',**result)
+                    self._camp_begin_recovery(camp,clock())
+            except (OSError,ValueError,RuntimeError) as error:
+                if self.camp_session is camp:self.stop_action('Preparation stopped: '+str(error))
 
         def _camp_fresh_gauges(self,now):
             return (type(self.last_gauge) in (int,float) and math.isfinite(self.last_gauge) and
@@ -359,6 +445,7 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 if recovery.phase=='recovered':
                     camp.record('recovery_complete',hp=self.hp,mana=self.mana,posture_observed=None)
                     self.trace('camp_recovery_complete',hp=self.hp,mana=self.mana,posture_observed=None)
+                    if self.camp_session is not camp or not self._camp_current():return
                     camp.reset_round()
                     self.reset_target(False,forget=True,clear_seen=True,clear_role=True)
                     self.native_attack_off_pending=False
@@ -368,6 +455,9 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
         def stop_action(self, reason, *, keep_autopilot=False):
             camp = self.camp_session
             if camp is not None:
+                if camp.preparation is not None:
+                    self.preparing=False;self.prepared=False;self.prepared_level=None
+                    self.invalidate_prepared_state()
                 camp.stop(reason)
                 self.camp_last_result = camp.snapshot()
                 self.trace('camp_finished', **self.camp_last_result)

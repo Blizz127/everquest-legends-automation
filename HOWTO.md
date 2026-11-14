@@ -1,8 +1,8 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.34** · assist/camp test **0.39.23** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.35** · assist/camp test **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-**The 1–20 autopilot is not ready. In 0.39.23, F11 repeats stationary fights with resource recovery; F12 is disabled.** No real route,
+**The 1–20 autopilot is not ready. In 0.39.24, F11 prepares learned spells and repeats stationary fights with recovery; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -12,7 +12,7 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | --- | --- | --- |
 | Assist / rotation | Supervised preview using the existing rotation bot. Blizz moves, chooses his target and controls melee. | F8 arm, F7 toggle, F9 stop, F10 request heal. |
 | Full auto | In development; no accepted 1–20 or 1–50 run. | No complete leveling mode yet. |
-| Stationary camp test | In 0.39.23, searches observed NPC names, checks fresh considerations, casts prepared spells and recovers between fights. Stops at observed level 20 or a failed check. | F11 starts/stops; F8 switches to assist; F9 stops all helper input. |
+| Stationary camp test | In 0.39.24, prepares learned spells automatically, searches observed NPC names, checks fresh considerations, fights and recovers between fights. Stops at observed level 20 or a failed check. | F11 starts/stops; F8 switches to assist; F9 stops all helper input. |
 | Read-only position observation | One owner-triggered capture; no commands, keys or clicks sent. | **Observe current position**, F9/Stop to cancel. |
 | Stationary location-hotbutton test | Sends one explicitly configured key, then checks the log for one fresh position reply. No route movement or combat. | **Test /location hotbutton…**, F9/F11/Stop to cancel. |
 | Supervised motion measurement | Four short forward presses and three turns on owner-confirmed open ground; saves relative observations and stops. | **Supervised motion measurement…**, F9/F11/Stop to cancel. |
@@ -24,15 +24,15 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
-Preview 0.39.23 switches between assist and the repeated stationary camp test without a
+Preview 0.39.24 switches between assist and the repeated stationary camp test without a
 restart. Switching between movement and the complete full-auto mode is unfinished.
 
-## Assist and repeated stationary fights — preview 0.39.23
+## Assist and repeated stationary fights — preview 0.39.24
 
 Close the older helper first, then run on Alienware:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-assist/0.39.23
+cd ~/.local/share/eql-automation/owner-assist/0.39.24
 EQL_ROTATION_TRACE="$HOME/eql-camp-trace.jsonl" ./launch.sh
 ```
 
@@ -41,7 +41,8 @@ selection, posture, looting, camps and native melee remain yours in assist.
 F9 stops; F10 requests a heal. F6 prepares the spell bar as before.
 
 For the repeated camp test, stand at your chosen camp, turn native melee off,
-close chat and prepare the spell bar with F6. Set the helper's correct character
+close chat. F11 now prepares the spell bar automatically; no initial F6 is needed
+for the camp. Set the helper's correct character
 level (1–19); HP must read at least 70% and mana at least 50%. Focus EverQuest
 and press **F11**, or click **Repeat stationary camp** and return to the game
 during the four-second countdown. Supervise this first test.
@@ -60,9 +61,17 @@ for two fresh settled readings before another fight. When resources are already
 full, it skips the sit toggle. These are posture requests; the preview cannot
 confirm sitting/standing visually. No input is sent to open or complete looting.
 
-Fresh level-up messages update the camp's level while preserving the current
-memorized spells. It does **not** buy, scribe or memorize upgrades automatically;
-stop between fights and use F6 to refresh spells you already own. Observed level
+At startup, F11 exports your learned spellbook through the client, clears helper
+gem slots **1–8**, and loads the selected heal/damage/buff spells. Each spell
+requires a fresh matching begin-and-finish acknowledgment; silence never counts
+as a correct gem. Automatic preparation changes your bar. In F8 assist, preparation remains an
+explicit F6 action and target selection stays manual.
+
+Fresh level-up messages update the camp's level. After the current fight and
+resource recovery, it repeats preparation to use available learned upgrades.
+It does **not** buy or scribe spells. A failed/partial preparation stops with the
+bar marked unprepared; it never resumes the old rotation on a mixed bar. F9
+stops preparation too, including before the next command's Enter. Observed level
 20 stops further pulls. An empty candidate sweep waits 30 seconds before retrying
 and stops after 15 minutes without an eligible target. A fight stops after four
 minutes or 30 seconds without matching damage; recovery stops after five minutes
@@ -77,9 +86,9 @@ Stopping leaves posture and native melee under your control and does not cancel 
 spell already submitted. Switching between assist and camp needs no re-login.
 
 This is a supervised combat increment, not the hands-off 1–20 path. No movement,
-camp relocation, vendor/supply service, death recovery or automatic spell upgrade
+camp relocation, vendor/supply service, death recovery or spell buying/scribing
 is included. Loot messages do not prove complete looting. Current HP calibration,
-actual targeting/kill and rest behavior still need owner acceptance. Same-name
+actual targeting/kill, rest and automatic preparation behavior still need owner acceptance. Same-name
 log messages cannot establish a unique entity ID. Use 0.39.21 separately for the
 movement test below; **do not repeat G0**. Previous one-kill preview 0.39.22 remains
 available if you want the shorter test.

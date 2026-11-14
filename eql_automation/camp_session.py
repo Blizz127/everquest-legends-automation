@@ -1,8 +1,8 @@
 """Bounded stationary camp state, using observed NPC names as search candidates.
 
 History supplies names, never a current target, encounter safety or current
-character level. A successful session means one matching client kill message;
-it does not establish loot completion or unattended leveling acceptance.
+character level. Logged kill/resource progress does not establish complete
+looting or unattended leveling acceptance.
 """
 from __future__ import annotations
 
@@ -108,6 +108,10 @@ class StationaryCamp:
     wait_until: float=0.
     empty_since: float | None=None
     recovery: object | None=None
+    preparation: object | None=None
+    catalog_source: object | None=None
+    preparation_due: bool=False
+    preparation_history: list=field(default_factory=list)
     inventory_full: bool | None=None
     rest_count: int=0
     round_number: int=0
@@ -178,6 +182,8 @@ class StationaryCamp:
             self.stop('Delayed or future log line during camp'); return
         level=level_from_message(raw)
         if level is not None and self.repeat:
+            if self.phase=='preparing':
+                self.stop('Level changed during spell preparation');return
             if level<max(self.level,self.pending_level or 0) or level>50:
                 self.stop('Unexpected level change');return
             self.pending_level=level;self.grant_until=0.
@@ -287,5 +293,7 @@ class StationaryCamp:
             logged_xp_awards=self.xp_awards, current_xp=None,level=self.level,level_source=self.level_source,
             target_level=self.target_level,rest_count=self.rest_count,round_number=self.round_number,
             posture_requested=getattr(self.recovery,'posture_requested',None),posture_observed=None,
+            preparation=self.preparation.snapshot() if self.preparation else None,
+            preparation_history=self.preparation_history,
             candidates=[dict(name=c.name, source_sha256=c.source_sha256, pairs=c.pairs) for c in self.candidates],
             evidence=self.evidence)

@@ -1,5 +1,74 @@
 # FINDINGS
 
+## Automatic learned-spell preparation — 2026-11-14 15:42 UTC
+
+**VERIFIED implementation, source 0.42.35 / preview 0.39.24 candidate:** an
+explicit camp preparation phase now runs at startup and between fights after a
+fresh level-up. It reuses the retained Catalog, profile selection, slot map,
+KeySender, rotation builder and prepared-marker storage. The same log reader
+checks new hazards before each key/Enter. No nested preparation worker, extra
+reader or cancellation reset is introduced. Assist/F6 behavior stays separate.
+
+A fresh filename-specific export acknowledgment and a changed, stable export
+file are both required. The installed spell catalog is loaded and bound to its
+file identity. Helper slots 1–8 receive one ID-zero clear request each; these
+requests are explicitly not treated as verified empty slots. Every intended
+gem then requires exact-name begin followed by finish after its sole submitted
+command, with fresh sequence/time boundaries and no overlapping request. Wrong,
+bare, duplicate, late or backward-time replies and silence fail. Readiness is
+published only after settling, a complete log-batch check and current scope
+checks. Logs name spells, not gem numbers; slot attribution is from the sole
+outstanding command and uninterrupted scope, not an invented slot field.
+
+Before any clear, the old prepared marker is invalidated. After partial failure
+or F9, the bar remains unprepared; the old rotation never resumes on mixed gems.
+The final marker save is also checked after its callback-bearing session lookup;
+a late stop invalidates the saved marker again. Cooldowns for unchanged spells
+use the retained rotation builder. After preparation, the ordinary recovery and
+stand request precede further targeting. No buying or scribing is implemented.
+
+**VERIFIED 75 focused checks pass** using the actual retained Engine/KeySender,
+synthetic game feedback and OS pipes. They include startup without F6, a second
+preparation after a ding with the same sender/generation, missing/stale export,
+missing begin/finish, wrong spell, duplicate-spell refusal, changed catalog,
+attack/zone/ding interruption, backward timestamps, F9 or attack while typing,
+last-finish plus attack in one batch, and F9 during marker save. No game input.
+
+**VERIFIED client evidence:** copied `eqstr_us.txt`, SHA
+`0dd0117a23092cb195d0e62d6b03a49bf1aaf8dbfb843dd629e38ca950732fde`, documents
+`/memspellslot` in resource 10009 and ID 0 forgetting the slot in resource 10010.
+Resources 12053/12007/12496 name begin/finish/forget; 12052 is duplicate-spell
+refusal. Historical owner log SHA
+`d622b3c12567f903d411860d3de1a0be28e4e8b38be7bbdc2bebfdd62c60f04e` contains
+begin/finish pairs (e.g. Light Healing lines 458–461, Furor 12047–12053,
+Center 15860–15863) and duplicate refusals at 2457/2458. Forget lines do not
+identify a slot or prove an ID-zero command was used. **No retained real
+ID-zero submission or new automatic-preparation acceptance exists.**
+
+**OBSERVED old false-success path:** retained live trace SHA
+`c24a83e8f42a246e7e3f87f30d5f04285a24bf5e058147198d1381a3c8024c26` records six
+`mem_outcome=already` results after roughly two seconds with no begin/finish.
+That establishes the old timeout classification, not correct gem contents.
+The new automatic camp path never accepts that classification. Manual F6 still
+uses the retained path; its prior success must not be promoted to strict proof.
+
+**VERIFIED read-only Alienware export copy:** the existing client-produced
+`eql-rotation-spellbook.txt` is retained at
+`client-data/spellbook-observed-20261114T1540Z/eql-rotation-spellbook.txt` in the
+private store. It has 235 bytes and 18 tab-separated rows, SHA
+`ee7147598c13c6bcd1d1fa17de8e889d436b53608187ab9ce37d1c097ce8df92`.
+All 18 names resolve through the retained parser against copied `spells_us.txt`,
+SHA `c179a57fe444a65838c3728895e57161912eb527e77d92859ecb007a3236c8e9`.
+The catalog check is alongside the export, SHA
+`edf3595ab94101af8d592cd7a72dc81db5a67a8c77856796cf7a93be2b5cbf32`.
+This proves existing export format compatibility, not current level, current
+gems or automated character progress. No game input or prefix modification.
+
+**Still unfinished:** real preparation/targeting/combat/recovery acceptance,
+travel→camp handoff, spell acquisition, vendors/supplies, death/relogin recovery,
+a fresh-character 1–20 route and hands-off 1–50 proof. G0 remains passed; no repeat.
+Private publication follows startup checks. Current actual metrics remain unknown.
+
 ## Repeated stationary camp and resource recovery — 2026-11-14 15:33 UTC
 
 **VERIFIED source 0.42.34 / preview 0.39.23:** the existing owner

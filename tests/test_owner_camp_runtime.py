@@ -43,16 +43,24 @@ def h(tmp_path, monkeypatch, client, request):
     h.path = game/'Logs/eqlog_Probe_private.txt'; h.path.touch()
     h.append = lambda body: h.path.open('a').write(h.wall().strftime('[%a %b %d %H:%M:%S %Y] ')+body+'\n')
     candidate = NpcCandidate('orc fixture', (5,), 'a'*64, ((1,2),))
+    options=getattr(request,'param',False)
+    options=options if isinstance(options,dict) else {'repeat':options}
+    h.prep_source=SimpleNamespace(catalog=rotation_core.Catalog([
+        rotation_core.Spell(200,'Minor Healing',1,255,100,0,100,5,0,1),
+        rotation_core.Spell(14,'Strike',1,255,100,0,100,5,0,1)]),
+        check=lambda:None,source_sha256={'fixture':'a'*64})
     E = make_owner_camp_engine(client.Engine, client=client, clock=h.clock, wall=h.wall,
-                              candidates_loader=lambda e:(candidate,),repeat=getattr(request,'param',False),
-                              posture_loader=lambda p:SimpleNamespace(check=lambda:None))
+                              candidates_loader=lambda e:(candidate,),**options,
+                              posture_loader=lambda p:SimpleNamespace(check=lambda:None),
+                              preparation_catalog_loader=lambda p:h.prep_source)
     e = h.engine = E(rotation_core.Settings(game_dir=str(game), character='Probe', server='private', level=7),
                      lambda p:None, lambda *a:None)
     e.selector.close(); e.trace = lambda event, **values:h.traces.append((event,values))
+    e.prepared_state_path=tmp_path/'prepared.json'
     h.saved_levels=[];e.settings.save=lambda:h.saved_levels.append(e.settings.level)
     e.emit = lambda text=None:h.notices.append(text)
     e.gate = SimpleNamespace(controls_ready=lambda:h.focus, focused=lambda:h.focus,
-                            read_gauges=lambda *a:(1.,1.))
+                            read_gauges=lambda *a:(1.,1.),game_session=lambda:dict(pid=123,start=456))
     e.input_events = lambda:h.cancel_hook()
     e.blocked_keys = lambda:False
     e.stop_keys_held = lambda:False
@@ -409,3 +417,155 @@ def test_f9_during_last_recovery_permission_never_authorizes_a_key(h):
     camp.recovery.command=proposal
     assert not e.allowed() and e.camp_session is None and e.cancelled
     e._camp_command=None
+
+
+AUTO={'repeat':True,'auto_prepare':True}
+
+
+def start_auto(h):
+    e=h.engine;e.prepared=False;e.prepared_level=None;e.rotation=None;e.profile={}
+    assert e.start_stationary_camp(),h.notices
+    repeat_tick(h);assert e.preparing and e.camp_session.preparation.phase=='export'
+    repeat_tick(h);assert h.commands[-1]=='/outputfile spellbook eql-rotation-spellbook.txt'
+    assert e.camp_session.preparation.phase=='await_export'
+
+
+def export_auto(h):
+    e=h.engine
+    (Path(e.settings.game_dir)/'eql-rotation-spellbook.txt').write_text('1\tMinor Healing\n1\tStrike\n')
+    h.append('Outputfile Complete: eql-rotation-spellbook.txt');repeat_tick(h)
+    assert h.commands[-1]=='/memspellslot 1 0' and e.marker_invalidated
+    for _ in range(7):repeat_tick(h)
+    assert h.commands[-8:]==[f'/memspellslot {slot} 0' for slot in range(1,9)]
+    assert e.camp_session.preparation.phase=='clear_settle'
+    h.now+=1.1;repeat_tick(h)
+    assert h.commands[-1]=='/memspellslot 1 200'
+
+
+def memorize_auto(h,*,settle=True):
+    e=h.engine;prep=e.camp_session.preparation
+    while prep.phase=='await_gem':
+        slot,spell=prep.gems[prep.index]
+        h.append(f'Beginning to memorize {spell.name}...')
+        h.now+=.2;h.append(f'You have finished memorizing {spell.name}.');repeat_tick(h)
+    assert prep.phase=='settle' and not e.prepared
+    if settle:
+        h.now+=1.1;repeat_tick(h)
+        assert e.prepared and e.prepared_level==e.settings.level and not e.preparing
+        assert e.camp_session.phase=='recovery'
+    return prep
+
+
+@pytest.mark.parametrize('h',[AUTO],indirect=True)
+def test_camp_automatically_prepares_startup_and_ding_without_new_sender(h):
+    start_auto(h);e=h.engine;camp=e.camp_session;sender=e.sender;generation=e.cancel_generation
+    export_auto(h);prep=memorize_auto(h)
+    assert [(r['slot'],r['spell_id']) for r in prep.receipts]==[(1,200),(3,14)]
+    assert all(not r['slot_named_in_log'] for r in prep.receipts)
+    assert e.prepared_state_path.exists()
+    finish_full_recovery(h)
+    h.append('Orc fixture scowls at you, ready to attack -- looks like quite a gamble. (Lvl: 5)');repeat_tick(h)
+    h.append('You have gained a level! Welcome to level 8!');kill_to_recovery(h)
+    # Finish recovery before the automatic level-8 preparation begins.
+    repeat_tick(h)
+    for _ in range(2):h.now+=.6;repeat_tick(h)
+    assert camp.phase=='select' and camp.preparation_due
+    repeat_tick(h);repeat_tick(h)
+    assert camp.phase=='preparing' and camp.preparation.level==8
+    export_auto(h);memorize_auto(h)
+    assert e.camp_session is camp and e.sender is sender and e.cancel_generation==generation
+    assert len(camp.preparation_history)==2 and e.prepared_level==8
+    assert h.commands.count('/target orc_fixture')==1
+
+
+@pytest.mark.parametrize('h',[AUTO],indirect=True)
+@pytest.mark.parametrize('fault',('silence','finish_only','wrong_spell','duplicate_refusal','attack','zone','level','file'))
+def test_auto_preparation_never_accepts_silence_or_mixed_gems(h,fault):
+    start_auto(h);export_auto(h);e=h.engine
+    before=list(h.commands)
+    if fault=='silence':h.now+=61.
+    elif fault=='finish_only':h.append('You have finished memorizing Minor Healing.')
+    elif fault=='wrong_spell':h.append('Beginning to memorize Strike...')
+    elif fault=='duplicate_refusal':h.append('You cannot memorize a spell you already have memorized.')
+    elif fault=='attack':h.append('Orc fixture hits YOU for 3 points of damage.')
+    elif fault=='zone':h.append('You have entered Elsewhere.')
+    elif fault=='level':h.append('You have gained a level! Welcome to level 8!')
+    else:
+        def changed():raise ValueError('spell catalog changed')
+        h.prep_source.check=changed
+    repeat_tick(h)
+    assert e.camp_session is None and e.cancelled and not e.prepared and not e.preparing
+    assert e.marker_invalidated and not e.prepared_state_path.exists()
+    repeat_tick(h);assert h.commands==before and not e.active
+
+
+@pytest.mark.parametrize('h',[AUTO],indirect=True)
+@pytest.mark.parametrize('fault',('no_file','unchanged_file','no_ack','old_ack'))
+def test_auto_preparation_requires_fresh_export_and_corresponding_log_ack(h,fault):
+    e=h.engine;export=Path(e.settings.game_dir)/'eql-rotation-spellbook.txt'
+    if fault=='unchanged_file':export.write_text('1\tMinor Healing\n1\tStrike\n')
+    start_auto(h)
+    if fault=='no_ack':export.write_text('1\tMinor Healing\n1\tStrike\n')
+    elif fault=='old_ack':
+        h.path.open('a').write('[Sat Nov 14 16:59:59 2026] Outputfile Complete: eql-rotation-spellbook.txt\n')
+    else:h.append('Outputfile Complete: eql-rotation-spellbook.txt')
+    repeat_tick(h);h.now+=11;repeat_tick(h)
+    assert e.camp_session is None and not any(c.startswith('/memspellslot ') for c in h.commands)
+
+
+@pytest.mark.parametrize('h',[AUTO],indirect=True)
+@pytest.mark.parametrize('command',('/outputfile spellbook eql-rotation-spellbook.txt','/memspellslot 2 0','/memspellslot 1 200'))
+@pytest.mark.parametrize('fault',('F9','attack'))
+def test_preparation_interrupt_during_typing_prevents_enter(h,command,fault):
+    e=h.engine
+    def write(kind,key,value):
+        os.write(h.write_fd,struct.pack('iii',kind,key,value))
+        if h.commands and h.commands[-1]==command and value==1:
+            e.sender.ui.write=lambda k,c,v:os.write(h.write_fd,struct.pack('iii',k,c,v))
+            if fault=='F9':e.stop_action('F9 during automatic preparation')
+            else:h.append('Orc fixture hits YOU for 3 points of damage.')
+    e.sender.ui.write=write
+    e.prepared=False;e.prepared_level=None;e.rotation=None;e.profile={}
+    assert e.start_stationary_camp();repeat_tick(h);repeat_tick(h)
+    if command!='/outputfile spellbook eql-rotation-spellbook.txt':
+        (Path(e.settings.game_dir)/'eql-rotation-spellbook.txt').write_text('1\tMinor Healing\n1\tStrike\n')
+        h.append('Outputfile Complete: eql-rotation-spellbook.txt')
+        for _ in range(10):
+            if e.camp_session is None:break
+            h.now+=.2;repeat_tick(h)
+        if e.camp_session is not None:h.now+=1.1;repeat_tick(h)
+    assert e.camp_session is None and e.cancelled and not e.preparing and not e.prepared
+    assert command==h.commands[-1] and not e.sender.held and e.sender.unfinished
+    assert not any(event=='command' and values.get('phase')=='entered' and values.get('text')==command
+                   for event,values in h.traces)
+
+
+@pytest.mark.parametrize('h',[AUTO],indirect=True)
+def test_f9_from_marker_save_cannot_republish_prepared_scope(h):
+    start_auto(h);export_auto(h);memorize_auto(h,settle=False);e=h.engine
+    def session():
+        e.stop_action('F9 while saving marker');return dict(pid=123,start=456)
+    e.gate.game_session=session
+    h.now+=1.1;repeat_tick(h)
+    assert e.camp_session is None and e.cancelled and not e.prepared and not e.preparing
+    assert e.marker_invalidated and not e.prepared_state_path.exists()
+    assert not any(event=='camp_preparation_complete' for event,values in h.traces)
+
+
+@pytest.mark.parametrize('h',[AUTO],indirect=True)
+def test_last_finish_and_attack_in_same_batch_never_publishes_bar(h):
+    start_auto(h);export_auto(h);e=h.engine
+    h.append('Beginning to memorize Minor Healing...');h.append('You have finished memorizing Minor Healing.');repeat_tick(h)
+    h.append('Beginning to memorize Strike...');h.append('You have finished memorizing Strike.')
+    h.append('Orc fixture hits YOU for 3 points of damage.');repeat_tick(h)
+    assert e.camp_session is None and not e.prepared and not e.preparing
+    assert not any(event=='camp_preparation_complete' for event,values in h.traces)
+
+
+@pytest.mark.parametrize('h',[AUTO],indirect=True)
+def test_preparation_rejects_backward_time_even_with_matching_spells(h):
+    start_auto(h);export_auto(h);e=h.engine
+    h.now+=2.;h.append('Beginning to memorize Minor Healing...');repeat_tick(h)
+    stamp=(h.wall()-timedelta(seconds=1)).strftime('[%a %b %d %H:%M:%S %Y] ')
+    h.path.open('a').write(stamp+'You have finished memorizing Minor Healing.\n');repeat_tick(h)
+    assert e.camp_session is None and not e.prepared and 'backward' in e.camp_last_result['reason']
