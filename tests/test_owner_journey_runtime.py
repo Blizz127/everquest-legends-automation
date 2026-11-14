@@ -171,16 +171,13 @@ def test_f8_after_release_enters_existing_assist_without_target_or_movement_inpu
 
 def test_packaged_native_f11_release_survives_gui_stop_and_keeps_deduplication(h,tmp_path,monkeypatch):
     import importlib.util
-    import shutil
-    import subprocess
     import sys
+    from hashlib import sha256
     from pathlib import Path
-    retained=Path.home()/'.local/share/eql-automation/owner-assist/0.39.13'
-    packaged=tmp_path/'packaged';packaged.mkdir()
-    for name in ('rotation_engine.py','eql_rotation.py'):shutil.copy2(retained/name,packaged/name)
-    patch=Path(__file__).resolve().parents[1]/'patches/nov12-7e3cd28-journey-camp.patch'
-    subprocess.run(['patch','--batch','--forward','-p1','-i',str(patch)],cwd=packaged,check=True,capture_output=True)
-    spec=importlib.util.spec_from_file_location('journey_native_test',packaged/'rotation_engine.py')
+    packaged=Path.home()/'.local/share/eql-automation/owner-assist/0.39.25'
+    native=packaged/'rotation_engine.py'
+    assert sha256(native.read_bytes()).hexdigest()=='d4925d8250e69d6e631f64b4c7eea115b34473aef90d86c9838c045ad355309e'
+    spec=importlib.util.spec_from_file_location('journey_native_test',native)
     module=importlib.util.module_from_spec(spec);monkeypatch.setitem(sys.modules,spec.name,module);spec.loader.exec_module(module)
     e=h.engine;code=h.sender.codes.KEY_F11
     monkeypatch.setitem(sys.modules,'evdev',SimpleNamespace(ecodes=h.sender.codes))
