@@ -12,6 +12,8 @@ closed chat before/after. The route reader remains exclusive. Ninety-eight
 provider/safety checks and five actual retained-sender pipe cases passed.
 The calibrated live pixel classifier itself is still missing; current feature
 candidates remain unknown. No live input, route acceptance or hotkey change.
+Source `67d5160` is staged on Alienware at `owner-tools/0.41.93/source`;
+remote module startup and dependency/phase refusals pass without any game action.
 
 Source 0.41.92 joins the route sender to concrete terrain, static-object and
 BSP volume preparation. The exact stopped position, committed floor and

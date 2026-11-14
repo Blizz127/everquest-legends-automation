@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Private source 0.41.93 staged — 2026-11-14 08:20 UTC
+
+**VERIFIED:** source `67d51602343b6bfd8d773c2b448ba2d0a9c80061`, archive SHA
+`33b9be5574ec9491a28a5edd7a740b13dcabde6663da549543d003906fa1b937`,
+is staged at Alienware `owner-tools/0.41.93/source`. Startup checks pass for
+imports, unknown UI defaults, missing independent dependencies and wrong-phase
+refusal. No engine/input device was constructed and no game capture/input ran.
+Remote startup artifact SHA
+`cec11d717fe0582ee62233cd2cfd3920ea4cbce8534386e256d4398498fc2d8a`.
+Local staging record: `releases/eql-automation-0.41.93-staging.json` under the
+private store. This is a source build; owner assist/observation helpers are unchanged.
+
 ## Phase-aware command observation 0.41.93 — 2026-11-14 08:20 UTC
 
 **VERIFIED implementation:** `CommandInputProvider` supplies the concrete

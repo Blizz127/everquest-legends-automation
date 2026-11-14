@@ -25,6 +25,10 @@ Updated 2026-11-14 08:20 UTC for coordinator task `829a00229b29`.
   pixel classifier is still missing, as are current zone/height/motion/body
   bindings. This closes provider composition, not the remaining classifier.
   No owner launcher change or new test request; G0 remains passed.
+  Source `67d5160` is privately staged at `owner-tools/0.41.93/source`.
+  Remote no-input startup/unknown-default/dependency/phase checks pass;
+  startup artifact SHA
+  `cec11d717fe0582ee62233cd2cfd3920ea4cbce8534386e256d4398498fc2d8a`.
 - **Source 0.41.92:** the route sender now has concrete terrain/static/BSP
   geometry preparation with explicit external motion/body bounds. It computes
   forward and pivot candidates before arming, then consumes one exact reference/
