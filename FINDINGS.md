@@ -9,13 +9,13 @@ completed idealized actuation commits the fork. Rejected or shortened trials
 cannot change the previous floor. The new flag requires the pinned complete
 0.41.58 proof and explicit tile-precision diagnostic; defaults are unchanged.
 
-The first run stopped at segment87/step1,153: support comparison included a
-baked platform74.13 units above selected grass, although ground coverage had
+The first run stopped at segment 87/step 1,153: support comparison included a
+baked platform 74.13 units above selected grass, although ground coverage had
 already excluded that height band. Its artifact is preserved as
 `nav-candidates/gfay-tracked-floor-replay-0.41.59.json`, SHA
 `e510acad7252cbf021eef545cb7852a261476f5dc41d4a02502cc7688e634f53`,
-with source baseline commit `9ec69a8`. Actual detail triangles202831/202835/
-202837/202839/202841 span Z74.268753–77.568756; reference Z is4.376260.
+with source baseline commit `9ec69a8`. Actual detail triangles 202831/202835/
+202837/202839/202841 span Z 74.268753–77.568756; reference Z is 4.376260.
 
 The corrected comparison excludes only triangles whose ENTIRE vertex-Z range
 lies strictly outside the explicit ground window. Crossing/boundary triangles
@@ -23,31 +23,31 @@ remain checked. This exclusion survives XY-only seam correction and does not
 remove any source face from the preceding all-height occupancy check. There
 is no nearest-height choice, height-limit increase or stored-mesh modification.
 
-**VERIFIED replay:** 150.45 seconds, segment125 of155, step1,820, halted on
-`steep_detail_plane`, not the time budget. All1,821 committed floor cells passed
-conditional terrain occupancy. Detail face166882 (local index4) has grade
-2.08764181598 against limit1.0 at reference
+**VERIFIED replay:** 150.45 seconds, segment 125 of 155, step 1,820, halted on
+`steep_detail_plane`, not the time budget. All 1,821 committed floor cells passed
+conditional terrain occupancy. Detail face 166882 (local index 4) has grade
+2.08764181598 against limit 1.0 at reference
 (202.24202037,1293.73888163,-3.46258753) in package coordinates. Reducing the
-hypothetical pulse to0.02 seconds still refuses. Maximum measured source/baked
-Z difference on passing trials is1.17496755365, under the explicitly requested
-2.0 sensitivity setting; default0.6 remains unchanged. It is not a complete
+hypothetical pulse to 0.02 seconds still refuses. Maximum measured source/baked
+Z difference on passing trials is 1.17496755365, under the explicitly requested
+2.0 sensitivity setting; default 0.6 remains unchanged. It is not a complete
 regional error bound. Artifact `gfay-tracked-floor-window-replay-0.41.59.json`,
 SHA `0a551dc6fa248ea7c118e2da7ece168c3150ab92f520460eb3f0aff6f8f5add0`.
-All28 artifact input pins were rechecked after completion.
+All 28 artifact input pins were rechecked after completion.
 
-**VERIFIED focused checks:** 21 floor-trial/chain checks plus43 telemetry/offline
+**VERIFIED focused checks:** 21 floor-trial/chain checks plus 43 telemetry/offline
 checks pass. The floor regressions include both continuous and precision-retry
 paths under a high platform, intersecting walls, crossing height bands, source
 height limits and unchanged prior state after rejection. CLI help and four
 stdlib startup checks pass locally, without copied assets or a game/input device.
 
-**Next:** repair or avoid the segment125 baked slope using copied source
+**Next:** repair or avoid the segment 125 baked slope using copied source
 evidence. Add a separate static-placement occupancy query, preserving terrain
 floor identity: use the pinned helper's center-before `model` transform and
 unique instance IDs; do not mix in the different Lantern transform. The full
 live gate remains fresh scene/position/speed observations, full collision and
-hazards, plus checked sender integration. G0 is passed, assist0.39.6 and
-G0candidate0.39.7 are unchanged, and no 1–20 leg/F11 or automated XP is accepted.
+hazards, plus checked sender integration. G0 is passed, assist 0.39.6 and
+G0 candidate 0.39.7 are unchanged, and no 1–20 leg/F11 or automated XP is accepted.
 
 ## Gross client-reported XP gain reader — source 0.41.59
 
@@ -68,9 +68,9 @@ or change the separate owner assist preview. No current owner XP rate is claimed
 
 **OBSERVED client format:** Read-only `eqstr_us.txt`, SHA
 `0dd0117a23092cb195d0e62d6b03a49bf1aaf8dbfb843dd629e38ca950732fde`,
-contains award templates138/14541/14542 and level-loss templates442/443.
-Template16001 describes per-class levels and a selected-loadout-dependent
-character level after10. Thus an unreported loadout change can leave the
+contains award templates 138/14541/14542 and level-loss templates 442/443.
+Template 16001 describes per-class levels and a selected-loadout-dependent
+character level after 10. Thus an unreported loadout change can leave the
 reader's last observed level stale; a fresh UI/direct level observation must
 reset the window. This gross award metric is not yet connected to camp ranking
 or the owner helper UI and is not a trusted substitute for those observations.

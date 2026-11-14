@@ -6,13 +6,13 @@ of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
 Source 0.41.59 now carries the selected terrain floor through actual offline
-follower footprints. Fixing a comparison against a platform74 units overhead
-moves replay from segment87 to segment125/step1,820, where baked detail
-face166882 has grade2.08764 against limit1.0. Shortening to the minimum
+follower footprints. Fixing a comparison against a platform 74 units overhead
+moves replay from segment 87 to segment 125/step 1,820, where baked detail
+face 166882 has grade 2.08764 against limit 1.0. Shortening to the minimum
 hypothetical pulse does not pass. The maximum source/baked difference on
-passing trials is1.174968 units, within the explicit2.0 diagnostic limit;
+passing trials is 1.174968 units, within the explicit 2.0 diagnostic limit;
 this is not a certified regional or live bound. Terrain-only source tracking
-still passes the full2,399-cell corridor, but static objects, dynamics,
+still passes the full 2,399-cell corridor, but static objects, dynamics,
 current scene/position/speed and sender checks remain open. No live movement
 or automated XP is claimed. Your G0 stop remains passed; no repeat or new
 owner command is requested. Detailed hashes are in [FINDINGS.md](FINDINGS.md).

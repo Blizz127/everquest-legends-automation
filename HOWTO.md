@@ -24,15 +24,15 @@ Source tools 0.41.59 use the private Alienware path
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
 Source 0.41.59 binds the copied terrain-floor tracker into the offline
-follower. The replay now reaches segment125 of155 before a steep baked face
+follower. The replay now reaches segment 125 of 155 before a steep baked face
 refuses movement. It checks all terrain heights for body clearance, then
 compares only the supporting baked height band with the selected source floor.
-The complete source-only chain still passes all2,399 cells; placed objects,
+The complete source-only chain still passes all 2,399 cells; placed objects,
 dynamics, current scene/position/speed and real movement remain unverified.
 The source status reader also reports exact gross logged XP percentage gains,
 separately from raw or net XP. That field is not yet wired into this assist GUI.
 64 focused checks pass. F11 stays unavailable. Your G0 stop remains passed;
-no repeat or new owner command is needed, and assist0.39.6 is unchanged.
+no repeat or new owner command is needed, and assist 0.39.6 is unchanged.
 
 Detailed source-release history and hashes are in [FINDINGS.md](FINDINGS.md).
 The current playable-route status is in [LEVEL_1_20.md](LEVEL_1_20.md).
