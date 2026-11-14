@@ -5,7 +5,7 @@ Updated 2026-11-14 02:03 UTC for coordinator task `829a00229b29`.
 - Source **0.41.55** separates physical source floor, baked projection and
   calibrated character height. G2/follower now require independent expected
   geometry evidence and current height calibration; endpoint 0.25 and G2 snap
-  0.0005 are unchanged. **VERIFIED:** 33 pure checks, 24 retained follower/pipe
+  0.0005 are unchanged. **VERIFIED:** 34 pure checks, 24 retained follower/pipe
   integrations and five source-lookup checks pass. No input devices or game.
 - **VERIFIED copied-data diagnostics:** Sampling source at every stop exposes
   0.759658 and 0.925760 bake differences at segment 5, refusing the default

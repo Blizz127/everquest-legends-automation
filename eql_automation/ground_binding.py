@@ -16,7 +16,12 @@ from .location_log import RawLocationFix
 
 
 def finite(value):
-    return isinstance(value,(int,float)) and not isinstance(value,bool) and math.isfinite(value)
+    if not isinstance(value,(int,float)) or isinstance(value,bool):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
 
 
 def point(value):
@@ -82,6 +87,13 @@ class GroundGeometryEvidence:
 
 @dataclass(frozen=True)
 class MeshProjection:
+    """Exact-XY mesh observation supplied by an independent geometry verifier.
+
+    A route producer must prefer the current selected polygon when it has
+    support at this XY. Neighbor fallback requires verified absence of that
+    support, in addition to the consumer's portal disk and adjacency checks.
+    The replay exercises that lookup order; a live producer is still absent.
+    """
     raw_fix: RawLocationFix
     package_xyz: tuple[float,float,float]
     mesh_sha256: str

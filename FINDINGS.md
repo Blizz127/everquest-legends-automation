@@ -26,14 +26,17 @@ immediate selected neighbor within the shared endpoint disk, with independent
 reciprocal adjacency evidence. Component changes, stale/session-switched fixes
 and source height inconsistencies refuse. No production input path calls it.
 
-**VERIFIED focused checks:** 33 pure binding/G2/radial tests pass; 24 retained
+**VERIFIED focused checks:** 34 pure binding/G2/radial tests pass; 24 retained
 steering/follower and real watchdog-child pipe tests pass; five analytic source
 lookup tests pass. They cover raw jumps hidden by a fixed mesh height, source
 layers, wrong XY/frame, calibration identity/expiry, independent proof/limit,
 neighbor support away from endpoints, changed components, unchanged endpoint
-Z tolerance and assist/cancel refusal. The pipe tests open no input device.
+Z tolerance and assist/cancel refusal. The pipe tests open no input device. An oversized integer time is also
+refused without raising an overflow exception.
 
-**VERIFIED copied-data replay:** `PortalPrecisionView.source_floor_at()` now
+**VERIFIED copied-data replay:** The replay implementation and pinned sources
+are retained in local commit `d8587fc`; the later malformed-integer guard does
+not change normal float calculations. `PortalPrecisionView.source_floor_at()` now
 queries all copied source layers at every stopped XY, allowing shared source
 edges only at the same height and refusing missing/unsupported/layered ground.
 The raw character Z is then *synthetically* source Z + 2.564, not baked Z.

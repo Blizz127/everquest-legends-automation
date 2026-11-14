@@ -27,7 +27,7 @@ Source 0.41.55 separates source terrain, baked navigation height and raw
 character height in the G2/follower observations. It requires independently
 supplied height calibration and geometry evidence; an observation cannot set
 its own height tolerance or portal adjacency. Endpoint tolerance remains
-0.25 and G2 mesh snap remains 0.0005. Sixty-two focused checks pass, including
+0.25 and G2 mesh snap remains 0.0005. Sixty-three focused checks pass, including
 the retained steering classes and actual watchdog child writing to a pipe.
 The copied-data replay now samples source terrain at every stopped position.
 This exposes bake offsets up to 0.925760 before segment 38; the default 0.6

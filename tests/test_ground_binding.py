@@ -97,3 +97,7 @@ def test_both_xy_frames_must_be_exactly_same_raw_location():
     value = ground.aligned((2., 1., .4))
     swapped = replace(value, mesh_projection=replace(value.mesh_projection, package_xyz=(1., 2., .4)))
     assert check(swapped).reason == 'ground_projection_changed_raw_xy'
+
+
+def test_oversized_integer_time_refuses_without_numeric_exception():
+    assert not check(ground.aligned(), now=10**1000).candidate
