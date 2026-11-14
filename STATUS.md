@@ -1,12 +1,16 @@
 # STATUS
 
-Updated 2026-11-14 22:30 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 22:26 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.69 / owner 0.39.33 candidate built; not installed.** VERIFIED
+- **Source 0.42.69 / owner 0.39.33 candidate built; not installed.** Local commit
+  `968d051b4d409a0f44418f63fcb80da34e285a61`; candidate archive
+  `releases/eql-owner-journey-0.39.33-candidate.tar.gz`, SHA
+  `5a9293f28dc06d74993265973e714c5a4ee87b5600e45faffa1052afd1ed4c1f`.
+  All 541 final source pins and preview runtime copies match. VERIFIED
   39 Alienware runtime/driver/itinerary checks, 12 local guide/admission checks
   and eight local step-connector checks pass. These are synthetic game feedback
   and test pipes, not real-client acceptance. The complete synthetic stair route

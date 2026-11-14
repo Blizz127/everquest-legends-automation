@@ -1,6 +1,15 @@
 # FINDINGS
 
-## 2026-11-14 22:30 UTC — 0.42.69 route integration and 0.39.33 local candidate
+## 2026-11-14 22:26 UTC — 0.42.69 route integration and 0.39.33 local candidate
+
+Local source commit `968d051b4d409a0f44418f63fcb80da34e285a61`. Immutable
+private candidate package `releases/eql-owner-journey-0.39.33-candidate.tar.gz`
+contains the preview, source, private guide and validation evidence; SHA
+`5a9293f28dc06d74993265973e714c5a4ee87b5600e45faffa1052afd1ed4c1f`.
+All 541 final source pins and the preview runtime copies match. Validation SHA
+`2503ef757c6ee3de6f1599eb8129611e0bb75d494f3520df89d04fedb4236aad`.
+This is local staging, not Alienware installation. The candidate source snapshot
+retains the earlier drafted documentation timestamp; this entry corrects it.
 
 VERIFIED **39 checks** passed on Alienware in 30.77s, using synthetic game
 feedback and real watchdog/OS pipes. JUnit SHA
