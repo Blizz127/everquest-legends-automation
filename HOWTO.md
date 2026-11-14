@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.71 / assist 0.39.6 / observation candidate 0.39.9
+# EverQuest Legends automation — project 0.41.72 / assist 0.39.6 / observation candidate 0.39.9
 
 ## Current availability
 
@@ -19,9 +19,20 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.71 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.71/source`; the runnable
+Source tools 0.41.72 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.72/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.72 can analyze the existing stationary capture's combat-icon crop.
+It uses the pinned client decal size and saved UI scale, checks XML provenance
+and parent/child crop consistency, and ranks source sprites with transparent
+backgrounds accounted for. It preserves competing scores and chooses no live
+state. Twenty-three focused checks pass; all five real source sprites rank
+correctly in ten synthetic rendering cases. Live rendering and texture identity
+at capture remain unverified. This offline diagnostic adds no helper control,
+movement or new owner test; the same 0.39.9 stationary capture remains pending.
+The source command is `python3 tools/analyze_owner_combat_capture.py --help`;
+it consumes copied private metadata/atlas pins and writes a new private report.
 
 Source 0.41.71 adds a latched client-log veto to the measurement scene provider.
 New incoming attacks (including misses and single-point damage), native melee

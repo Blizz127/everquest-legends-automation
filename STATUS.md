@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 05:15 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:19 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,12 @@ Updated 2026-11-14 05:15 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.72:** saved combat-icon analysis now connects the client atlas
+  to the existing observation format. Twenty-three focused tests pass; 10/10
+  synthetic renderings of actual source icons rank correctly. Crops and source
+  XML are pinned and parent/child pixels checked. Results select no live state;
+  active rendering/texture identity and the live scene budget remain unverified.
+  Source staging follows the commit; assist remains unchanged.
 - **Source 0.41.71:** latched positive-hazard log monitoring now brackets
   measurement scene observations. Quiet logs never grant safety. Eighty focused
   reader/provider checks and three actual-watchdog pipe cases pass. The retained
@@ -47,7 +53,7 @@ Updated 2026-11-14 05:15 UTC for coordinator task `829a00229b29`.
   position** button is an alternative to the 0.41.61 terminal collector. It
   sends no input and saves private player/target/map crops plus an unbound
   location record. Its 98 local checks and actual-helper synthetic/GUI smokes
-  passed; live capture remains unrun. Read-only listing at 04:57 UTC found zero
+  passed; live capture remains unrun. Read-only listing this turn (2026-11-14 05:19 UTC) found zero
   paired records. No lead capture was initiated.
 - **Next / real-client gate:** validate the source-derived scene templates against the
   pending owner capture; supply the checked sender with current scene and

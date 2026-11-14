@@ -1,5 +1,52 @@
 # FINDINGS
 
+## Source-derived saved combat-icon analysis — 2026-11-14 05:19 UTC
+
+**VERIFIED source 0.41.72:** `combat_ui_match.py` and
+`tools/analyze_owner_combat_capture.py` read pinned copied UI metadata, its exact
+combat-control PNG and the source-derived atlas. They verify captured XML
+against the atlas, saved skin, crop bounds/dimensions/hashes and, when present,
+parent-window/child pixel equality. They never open the display, current game
+files or input devices. Capture provenance hashes XML/INIs, not textures;
+texture identity at capture remains explicitly unverified.
+
+**OBSERVED source/layout detail:** `PW_CombatStateAnim` declares a 13×13 decal,
+but its containing widget can be about 13×26 UI units. The matcher derives
+floor/ceil decal sizes from that declaration and saved scale, searching within
+the crop rather than stretching to the whole control. Nearest/bilinear filters
+and straight-alpha 8-bit rendering are explicit diagnostic hypotheses. Per
+channel, an unknown background gives the allowed alpha-compositing interval;
+the score measures residual outside it with half-unit rounding slack. Fully
+transparent pixels convey no identity. Each animation retains a representative
+best box and tied-hypothesis count. No confidence threshold, selected state,
+active-skin verification or G2 safety flag is generated. Standing may still be
+the statically observed null-player fallback; absent attack borders cannot
+establish native melee OFF. Attack-border classification is not implemented.
+
+**VERIFIED focused tests:** 23 tests passed in 1.38 seconds, covering tall-control
+placement, scaling/alpha, ties, transparent templates, bounded search, source
+changes and consistent/inconsistent parent crops. After adding the explicit
+texture-at-capture unknown flag, its focused regression passed again. CLI help,
+compile and whitespace checks passed. No full suite ran.
+
+**VERIFIED copied-source experiment, not live:** the five real combat sprites,
+rendered at a synthetic 16×16 size/offset into a 17×33 control over a fixed fake
+background, each ranked correctly under nearest and bilinear rendering: 10/10
+unique best matches, zero residual for their corresponding source. Runtime
+11.68 seconds for all ten offline searches; this does not establish the 100 ms
+live scene budget. Private evidence `evidence/combat-ui-ranking-0.41.72.json`,
+SHA `1d341c177e600c0ae31c91bee562d23c389fccd4c119990b8b8cda5d18febcbb`,
+pins atlas manifest `7d7a98dd3055c76bac46bdb7adc7b9b34820cd6549e1666c67ead1130a92df21`.
+No game pixels/assets were added to git.
+
+**Current live gate:** one read-only Alienware listing this turn found zero
+`g2-ui-observations/*/unbound-location.json` pairs. No capture was initiated.
+The existing 0.39.9 stationary capture is sufficient input for the first icon
+diagnostic; no different owner test or G0 repeat is needed. Current live
+calibration, complete scene/motion providers and real route acceptance remain
+missing. Assist 0.39.6 is unchanged. Level, XP/hour, deaths and camp remain
+unknown; no accepted 1–20 or fresh-character 1–50 run exists.
+
 ## Private source 0.41.71 staging — 2026-11-14 05:15 UTC
 
 **VERIFIED:** Commit `a7976735dc7b8dcf5599e3388552c00bf33c6f51`, archive SHA
