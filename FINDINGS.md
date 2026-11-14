@@ -1,5 +1,32 @@
 # FINDINGS
 
+## Private source 0.41.78 staged — 2026-11-14 06:16 UTC
+
+**VERIFIED:** commit `9a5ee313c554ecf0f3b8b9138e703563fd2a03bc`, archive SHA
+`85733f911c0fd3c2776205b0c03a3d9139f80aa8c080c4a9552524042f8dcfe6`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.78/source`.
+Ten remote startup checks pass, including the new single-frame feature path
+with the actual retained gauge reader and five copied source sprites.
+The benchmark read and pinned the three installed UI asset files, copied them
+only to its private benchmark folder, and rendered ten synthetic frames.
+It opened no input devices, captured no game frame and sent no game input.
+
+**OBSERVED Alienware timing:** cold/max 403.8 ms and warm median 248.2 ms;
+zero of ten synthetic cases meet 100 ms. All ten sprite rankings and gauge
+values matched the fabricated frames. No real capture/layout loading or
+input/log scans are included. The remote detailed artifact
+`../synthetic-frame-features.json` SHA is
+`460dcfeafcc767df7cd89bf8462e936c4a439f19170a796537f4e9b2bc1de829`.
+Staging evidence is `releases/eql-automation-0.41.78-staging.json` locally and
+`../smoke.json` remotely. This timing is not live acceptance; the measured
+latency now needs reduction before this path can serve per-input checks.
+Reading the retained benchmark's stage timings identifies the feature pass as
+the dominant cost: warm median 228.9 ms versus 12.1 ms sampling, with 5,096,440
+pixel comparisons per icon search. This identifies matching/feature processing
+as the next optimization target without another client run.
+Read-only listing still found zero saved owner position pairs. Existing assist
+and observation launchers remain unchanged; G0 passed and needs no repeat.
+
 ## One-frame feature reading 0.41.78 — 2026-11-14 06:15 UTC
 
 **VERIFIED implementation:** `sample_focused_ui` now separates the existing

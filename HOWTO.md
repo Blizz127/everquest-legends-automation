@@ -30,6 +30,8 @@ Seventy-two checks pass, including focus/process changes, source changes,
 missing regions and observation timing. No live state or route acceptance is
 claimed; chat and target state remain unknown. This is source integration,
 with no new owner control or change to the pending observation launch command.
+Alienware's synthetic-frame pass is 248 ms warm median, above the 100 ms
+observation budget; real capture and the complete live scene are unverified.
 
 Source 0.41.77 supplies concrete location-command and short-pulse executors
 using the existing rotation bot's sender and release watchdog. It creates no

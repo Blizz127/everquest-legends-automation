@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:15 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:16 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -18,7 +18,11 @@ Updated 2026-11-14 06:15 UTC for coordinator task `829a00229b29`.
   above the 100 ms budget. Artifact SHA
   `1fb997572f4192ae2edad6de9c5c8b81696c9df006b81b103be2ee91b84600a7`.
   This is pixel-reading source integration, not a complete live scene reader;
-  chat/player/target acceptance remains unresolved. Private staging follows.
+  chat/player/target acceptance remains unresolved. Source `9a5ee31` is staged
+  at `owner-tools/0.41.78/source`; ten remote startup checks pass. Alienware's
+  synthetic-frame warm median is 248 ms (cold/max 404 ms), also over 100 ms;
+  no real capture/layout/input/log timing is included. Archive SHA
+  `85733f911c0fd3c2776205b0c03a3d9139f80aa8c080c4a9552524042f8dcfe6`.
 - **Source 0.41.77:** concrete location/pulse executors now reuse the retained
   bot's actual sender and watchdog with shared stop locking and original-device
   cleanup. Fifty-six focused checks pass, including F9 during a pipe pulse and
@@ -110,8 +114,9 @@ Updated 2026-11-14 06:15 UTC for coordinator task `829a00229b29`.
   button and manual `/location` flow. It additionally saves private copied
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
-  turn (2026-11-14 06:08 UTC) found zero paired records. No lead capture was initiated.
-- **Next / real-client gate:** validate the source-derived scene templates against the
+  turn (2026-11-14 06:16 UTC) found zero paired records. No lead capture was initiated.
+- **Next / real-client gate:** reduce the measured one-frame feature latency;
+  implement selected-skin dynamic chat-page resolution and validate the source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported
   initial travel envelope and current scene, then supply the checked sender
   with measured whole-motion bounds; obtain the
