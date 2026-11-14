@@ -1,5 +1,16 @@
 # FINDINGS
 
+## Private source 0.41.65 staging — 2026-11-14 04:14 UTC
+
+**VERIFIED:** Source commit `ae680f284bf44534e4d0158ad0d39ccefa9fbe21`, archive SHA
+`2853d27c12ff713227382d8e343a374f389e25b81af0d3c5304a618c71338ab3`, matched on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.41.65/source`. Six synthetic/startup
+checks passed: import/version, exact triangle support, missing edge support,
+ambiguous heights, probe CLI and the location collector CLI. No client assets,
+devices, real capture or game input were used. Remote `../smoke.json` and local
+private `releases/eql-automation-0.41.65-staging.json` retain the scope.
+Owner assist 0.39.6 and observation candidate 0.39.9 are unchanged.
+
 ## Ground-position producer for the retained route follower — 2026-11-14 04:13 UTC
 
 **VERIFIED source 0.41.65:** `RouteGroundObserver` now produces source-floor,

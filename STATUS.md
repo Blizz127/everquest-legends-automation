@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 04:13 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 04:14 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -17,6 +17,9 @@ Updated 2026-11-14 04:13 UTC for coordinator task `829a00229b29`.
   positions, ambiguous detail and unsupported exact XY. It never creates a
   calibration, snaps to an edge or advances the source-floor chain.
   **42 focused checks pass**, including the actual retained route follower.
+  Source `ae680f2` is staged at `owner-tools/0.41.65/source`; six remote
+  no-input startup checks pass, archive SHA
+  `2853d27c12ff713227382d8e343a374f389e25b81af0d3c5304a618c71338ab3` matched.
 - **Copied-data probe:** 199/211 sampled replay positions pass. Eleven source
   queries refuse layered/unsupported geometry without a committed floor chain;
   one segment-127 portal sample has no exact current/next detail support where
