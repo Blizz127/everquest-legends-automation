@@ -1,0 +1,209 @@
+"""Reduce a finite stop/observe experiment using the retained navigation code.
+
+This module sends no input and does not authorize its proposed experiment.
+The initial travel envelope and current scene must be resolved independently.
+Endpoint bearings cannot rule out extra full turns, and descriptor timestamps
+do not establish client input-consumption times. Results are conditional
+estimates, never a verified maximum speed or an accepted live calibration.
+"""
+from dataclasses import asdict, dataclass
+import math
+from statistics import median
+
+from .uinput_watchdog import PulseReceipt
+
+
+class CalibrationUnavailable(ValueError):
+    pass
+
+
+@dataclass(frozen=True)
+class Probe:
+    key: str
+    key_code: int
+    seconds: float
+
+
+# Experiment choices, not constants obtained from the game. No initial
+# heading is needed: each forward leg measures the heading after its turn.
+PROBES = (Probe("forward", 103, .10), Probe("right", 106, .05),
+          Probe("forward", 103, .10), Probe("right", 106, .15),
+          Probe("forward", 103, .10), Probe("left", 105, .15),
+          Probe("forward", 103, .10))
+
+
+@dataclass(frozen=True)
+class Position:
+    at: float                         # received monotonic; not game timestamp
+    sequence: int
+    raw_yxz: tuple[float, float, float]
+    zone: str
+    log_epoch: int
+    zone_generation: int
+
+
+@dataclass(frozen=True)
+class StoppedPair:
+    first: Position
+    second: Position
+
+
+def finite(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(value)
+
+
+def integer(value):
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def reduce_experiment(pairs, receipts, *, legacy, horizontal_error, record_id):
+    """Analyze eight stationary pairs and seven actual release receipts.
+
+    ``legacy`` is the pinned owner's navigation module (Loc, bearing, wrap180,
+    fit_calibration). ``horizontal_error`` is an explicit assumed XY error
+    radius for each printed fix, not a verified precision claim. The result
+    retains raw samples, timing and conditional uncertainty for later review.
+    It cannot be fed to the legacy saved-calibration loader as a live result.
+    """
+    if (len(pairs) != 8 or len(receipts) != 7 or not isinstance(record_id, str)
+            or not record_id.strip() or not finite(horizontal_error) or horizontal_error <= 0):
+        raise CalibrationUnavailable("Need eight pairs, seven receipts and an explicit positive position-error assumption")
+    points, radii = [], []
+    binding = None
+    previous = None
+    for pair in pairs:
+        if not isinstance(pair, StoppedPair):
+            raise CalibrationUnavailable("Expected a stopped position pair")
+        for fix in (pair.first, pair.second):
+            if (not isinstance(fix, Position) or not finite(fix.at) or fix.at < 0
+                    or not integer(fix.sequence) or not fix.zone
+                    or not isinstance(fix.zone, str) or not integer(fix.log_epoch)
+                    or not integer(fix.zone_generation)
+                    or not isinstance(fix.raw_yxz, (tuple, list)) or len(fix.raw_yxz) != 3
+                    or not all(finite(v) for v in fix.raw_yxz)):
+                raise CalibrationUnavailable("Invalid raw position/provenance")
+            current = (fix.zone, fix.log_epoch, fix.zone_generation)
+            if binding is None:
+                binding = current
+            if current != binding or (previous and (
+                    fix.sequence <= previous.sequence or fix.at <= previous.at)):
+                raise CalibrationUnavailable("Repeated/reordered fixes or zone/log generation changed")
+            previous = fix
+        a, b = pair.first, pair.second
+        drift = math.dist(a.raw_yxz[:2], b.raw_yxz[:2])
+        if (not .4 - 1e-9 <= b.at - a.at <= 2.5 or drift > .25
+                or abs(a.raw_yxz[2] - b.raw_yxz[2]) > .25):
+            raise CalibrationUnavailable("Positions do not form a stopped pair")
+        points.append(tuple((x + y) / 2 for x, y in zip(a.raw_yxz, b.raw_yxz)))
+        radii.append(horizontal_error + drift / 2)
+    if pairs[-1].second.at - pairs[0].first.at > 120:
+        raise CalibrationUnavailable("Finite experiment exceeded its 120-second analysis window")
+
+    timings = []
+    for index, (probe, receipt) in enumerate(zip(PROBES, receipts)):
+        if not isinstance(receipt, PulseReceipt):
+            raise CalibrationUnavailable("Actual child DOWN/UP receipt required; legacy elapsed time is insufficient")
+        stamps = (receipt.down_started_at, receipt.down_completed_at,
+                  receipt.up_started_at, receipt.up_completed_at)
+        if (not integer(receipt.key_code) or receipt.key_code != probe.key_code
+                or not finite(receipt.requested_seconds) or receipt.requested_seconds != probe.seconds
+                or receipt.completion != "elapsed" or not all(finite(v) for v in stamps)
+                or not stamps[0] <= stamps[1] < stamps[2] <= stamps[3]
+                or not 0 < receipt.maximum_held_seconds <= .2
+                or stamps[2] - stamps[1] < probe.seconds - 1e-9
+                or not 0 <= stamps[0] - pairs[index].second.at <= .5
+                or not .12 - 1e-9 <= pairs[index + 1].first.at - stamps[3] <= 2.5):
+            raise CalibrationUnavailable("Wrong key/duration, cancelled receipt, overrun or out-of-order stopped observation")
+        low, high = stamps[2] - stamps[1], stamps[3] - stamps[0]
+        timings.append((low, high))
+        if abs(points[index + 1][2] - points[index][2]) > .25:
+            raise CalibrationUnavailable("Experiment changed height")
+        if (probe.key != "forward" and math.dist(points[index][:2], points[index + 1][:2])
+                > min(.25, radii[index] + radii[index + 1])):
+            raise CalibrationUnavailable("Turn translated the character; possible strafe or residual movement")
+
+    legs = []
+    for index in (0, 2, 4, 6):
+        start, end = points[index], points[index + 1]
+        distance = math.dist(start[:2], end[:2])
+        error = radii[index] + radii[index + 1]
+        if distance <= error:
+            raise CalibrationUnavailable("Forward displacement cannot resolve a heading")
+        low, high = timings[index]
+        heading = legacy.bearing(legacy.Loc(*start), legacy.Loc(*end))
+        legs.append(dict(index=index, displacement=distance, heading=heading,
+                         heading_error_degrees=math.degrees(math.asin(error / distance)),
+                         speed=distance / ((low + high) / 2),
+                         conditional_speed_interval=((distance - error) / high, (distance + error) / low)))
+    speed = median(leg["speed"] for leg in legs)
+    # An overlap is needed before treating four legs as a constant-speed fit.
+    speed_low = max(leg["conditional_speed_interval"][0] for leg in legs)
+    speed_high = min(leg["conditional_speed_interval"][1] for leg in legs)
+    if speed_low > speed_high:
+        raise CalibrationUnavailable("Forward samples contradict a constant-speed estimate")
+    speed = min(max(speed, speed_low), speed_high)
+
+    turns = []
+    for index, before, after in zip((1, 3, 5), legs, legs[1:]):
+        delta = legacy.wrap180(after["heading"] - before["heading"])
+        error = before["heading_error_degrees"] + after["heading_error_degrees"]
+        if abs(delta) <= error or abs(delta) + error >= 180:
+            raise CalibrationUnavailable("Turn is inactive/ambiguous under the position-error assumption")
+        low, high = timings[index]
+        turns.append(dict(index=index, seconds=(low + high) / 2,
+                          seconds_interval=(low, high), delta=delta, delta_error=error))
+    short, long, left = turns
+    if short["delta"] * long["delta"] <= 0 or short["delta"] * left["delta"] >= 0:
+        raise CalibrationUnavailable("Right/left direction measurements contradict one another")
+    t1, t2 = short["seconds"], long["seconds"]
+    a1, a2 = abs(short["delta"]), abs(long["delta"])
+    dt_low = long["seconds_interval"][0] - short["seconds_interval"][1]
+    dt_high = long["seconds_interval"][1] - short["seconds_interval"][0]
+    if dt_low <= 0 or a2 - a1 <= short["delta_error"] + long["delta_error"]:
+        raise CalibrationUnavailable("The two active turn samples do not identify a rate")
+    rate = (a2 - a1) / (t2 - t1)
+    latency = t1 - a1 / rate
+    # Crucial: the retained fit clamps latency. Reject an impossible intercept
+    # first instead of allowing that clamp to manufacture a valid-looking fit.
+    if not 0 <= latency <= min(.2, legacy.LATENCY_MAX):
+        raise CalibrationUnavailable("Unclamped turn latency is outside the bounded model")
+    rate_low = (a2 - a1 - short["delta_error"] - long["delta_error"]) / dt_high
+    rate_high = (a2 - a1 + short["delta_error"] + long["delta_error"]) / dt_low
+    latency_low = short["seconds_interval"][0] - (a1 + short["delta_error"]) / rate_low
+    latency_high = short["seconds_interval"][1] - (a1 - short["delta_error"]) / rate_high
+    expected = rate * max(0., left["seconds"] - latency)
+    expected_low = rate_low * max(0., left["seconds_interval"][0] - latency_high)
+    expected_high = rate_high * max(0., left["seconds_interval"][1] - latency_low)
+    actual_low = abs(left["delta"]) - left["delta_error"]
+    actual_high = abs(left["delta"]) + left["delta_error"]
+    if actual_high < expected_low or actual_low > expected_high:
+        raise CalibrationUnavailable("Independent left-turn trial contradicts the fitted right turns")
+    try:
+        fitted = legacy.fit_calibration(speed, (t1, short["delta"]), (t2, long["delta"]),
+            (left["seconds"], left["delta"]), now=0.)
+    except legacy.CalibrationError as exc:
+        raise CalibrationUnavailable("Retained fit domain not resolved: " + str(exc)) from exc
+    return dict(format="eql-conditional-motion-estimate-v1", record_id=record_id,
+        input_authorized=False, real_client_accepted=False, live_calibration_verified=False,
+        verified_speed_upper_bound=None, full_turn_ambiguity_resolved=False,
+        client_consumption_timing_verified=False,
+        assumptions=["supplied horizontal error radius bounds each fix",
+            "each stopped pair represents one stationary position between samples",
+            "each forward leg is straight with fixed heading and speed",
+            "turning is a constant-rate pivot after a fixed latency",
+            "turns contain no unobserved complete revolution",
+            "descriptor hold spans model client-held time",
+            "stopped fixes were requested after release without an older request in flight"],
+        horizontal_error_assumed=horizontal_error,
+        interval_semantics="conservative outer bounds conditional on assumptions, not confidence intervals",
+        total_requested_hold=sum(probe.seconds for probe in PROBES),
+        total_maximum_descriptor_hold=sum(r.maximum_held_seconds for r in receipts),
+        speed_estimator="median projected into common conditional interval",
+        estimate=dict(run_speed=fitted.run_speed, turn_rate=fitted.turn_rate,
+            turn_latency=fitted.turn_latency, right_sign=fitted.right_sign,
+            final_heading=legs[-1]["heading"], back_speed=None),
+        conditional_intervals=dict(speed=(speed_low, speed_high), turn_rate=(rate_low, rate_high),
+                                   unclamped_latency=(latency_low, latency_high)),
+        independent_left_residual_degrees=abs(left["delta"]) - expected,
+        forward_legs=legs, turns=turns, pairs=[asdict(p) for p in pairs],
+        receipts=[asdict(r) for r in receipts], proposed_sequence=[asdict(p) for p in PROBES])

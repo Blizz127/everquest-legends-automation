@@ -88,6 +88,24 @@ class FixedRouteTests(unittest.TestCase):
         self.assertEqual(runner.phase, "arrived")
         self.assertEqual(runner.index, 2)
 
+    def test_forward_pivot_only_needs_no_backward_speed_measurement(self):
+        motion = replace(self.motion, back_speed=0.)
+        runner = self.runner(motion=motion)
+        self.start(runner)
+        self.assertTrue(self.step(runner, (0., .6, 0.), .06).forward)
+        self.step(runner, (0., 1.2, 0.), .06)
+        self.assertEqual(runner.phase, "arrived")
+        pivot = self.runner(motion=motion, heading=350.)
+        self.start(pivot)
+        proposal = pivot.propose(100.54)
+        self.assertIsNotNone(proposal.turn)
+        self.assertFalse(proposal.forward)
+
+    def test_invalid_unused_backward_speed_is_still_rejected(self):
+        for speed in (-1., float("nan"), True):
+            with self.subTest(speed=speed), self.assertRaises(ValueError):
+                self.runner(motion=replace(self.motion, back_speed=speed))
+
     def test_predicted_endpoint_with_unchanged_raw_fix_does_not_advance(self):
         runner = self.runner()
         self.start(runner)

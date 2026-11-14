@@ -1,5 +1,58 @@
 # FINDINGS
 
+## Conditional motion estimation 0.41.75 — 2026-11-14 05:42 UTC
+
+**VERIFIED implementation:** `motion_calibration.py` reduces seven isolated
+receipt records and eight stationary position pairs using the retained owner's
+`navigation.bearing`, `wrap180` and `fit_calibration`. The private retained
+navigation SHA is `69dbc6472447942cc30dbe592a6e1cf02998c0a0b8811a8bb59672655dc4049e`.
+The proposed sequence is F .10 / R .05 / F .10 / R .15 / F .10 / L .15 /
+F .10 seconds: 0.75 seconds requested total, experimental settings rather
+than measured client constants. No sender is implemented or invoked by the
+reducer/CLI. The initial spatial envelope and current scene remain separate
+missing inputs; this does not bypass G2's unresolved speed-bound prerequisite.
+
+The reducer uses each forward leg's immediate pre/post stopped pair. It retains
+all receipt timestamps and position provenance, checks zone/log continuity,
+release/settle ordering, translation during pivots, height changes and constant
+forward speed. It computes bearing uncertainty from the explicit supplied
+horizontal error assumption and propagates descriptor-write timing intervals.
+Inactive/ambiguous short turns, overlapping duration/angle intervals and an
+invalid **unclamped** latency are rejected before calling the legacy fitter.
+The independent left sample must fit both the conditional outer intervals and
+the legacy point-residual policy. These are conditional outer bounds with
+correlated headings, not confidence intervals or proof of joint feasibility.
+
+Outputs explicitly leave input authorization, live calibration, client input
+consumption timing, full-turn ambiguity and live route acceptance unverified;
+`verified_speed_upper_bound` is null. The raw report cannot be loaded as a
+saved legacy calibration. The forward/pivot-only fixed-route follower now
+accepts `back_speed=0` as unused; backward/jump/probe controls remain rejected.
+No legacy long movement bursts or new owner measurement controls were enabled.
+
+**VERIFIED focused validation:** 36 estimator/CLI tests pass, including rounded
+client-format synthetic coordinates, both turn directions, wraparound, bad
+receipts, changing log generations, drift, wrong timing, insufficient resolution,
+input hashes, output preservation, and the retained fitter's slow-turn and
+left-residual refusal domains. One case ran seven actual watchdog
+subprocesses against a pipe and checked DOWN/UP plus final release events;
+all position feedback in that case was simulated. Twenty-four retained-follower
+tests plus 20 subtests pass under the private NumPy interpreter, including zero
+unused backward speed and actual retained forward/pivot behavior. Initial test
+expectations exposed rounded-angle error larger than a fixed two-degree guess;
+the final check requires the known synthetic rate inside the derived interval.
+The pipe test also checks the watchdog's existing extra final UP/SYN release.
+No client input, capture or login occurred. No full suite ran.
+
+**OBSERVED G0 limitation:** the retained trace has a parent elapsed hold of
+0.1508157029893482 seconds, displacement 4.640700378175716 and visible-stop
+confirmation, but no child DOWN/UP receipt. Its historical average 30.770671
+units/second is not a current verified upper speed bound. G0 remains passed
+and is not repeated. A read-only Alienware listing this turn found zero saved
+position pairs. Current level, XP/hour, deaths and camp remain unknown; no
+1–20 route or fresh-character 1–50 run is accepted. Assist stays 0.39.6 and
+the existing pending observation uses candidate 0.39.10.
+
 ## Automatic owner capture analysis: source 0.41.74 / candidate 0.39.10 — 2026-11-14 05:34 UTC
 
 **VERIFIED implementation:** the existing position-observation flow now calls

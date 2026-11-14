@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 05:34 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:42 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,13 @@ Updated 2026-11-14 05:34 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.75:** an offline receipt/stopped-position estimator now reuses
+  the existing bot's bearing and turn fitter without prior speed/heading/rate.
+  It preserves timing/error assumptions and rejects inactive short turns before
+  the legacy latency clamp. Sixty focused tests plus 20 subtests pass,
+  including real watchdog pipe writes with simulated positions. The follower
+  permits zero backward speed because it never requests backward movement.
+  No verified travel ceiling, live calibration or new input is enabled.
 - **Source 0.41.74 / observation candidate 0.39.10:** automatic icon analysis
   is now connected to the existing owner capture flow. The raw pair is saved
   first and survives analysis failure. Eighty-seven focused checks and actual
@@ -71,11 +78,11 @@ Updated 2026-11-14 05:34 UTC for coordinator task `829a00229b29`.
   button and manual `/location` flow. It additionally saves private copied
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
-  turn (2026-11-14 05:34 UTC) found zero paired records. No lead capture was initiated.
+  turn (2026-11-14 05:42 UTC) found zero paired records. No lead capture was initiated.
 - **Next / real-client gate:** validate the source-derived scene templates against the
-  pending owner capture; resolve the measured-speed/turn-calibration bootstrap,
-  then supply the checked sender with current scene and
-  measured whole-motion bounds; obtain the
+  pending owner capture; bind the new conditional motion estimator to an independently supported
+  initial travel envelope and current scene, then supply the checked sender
+  with measured whole-motion bounds; obtain the
   pending owner scene/position evidence and current zone/frame/height/speed
   calibration. Source-ground production, checked-step adapter and receipt bookkeeping exist;
   live providers and owner runtime wiring remain incomplete. No new owner test

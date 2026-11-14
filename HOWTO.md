@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.74 / assist 0.39.6 / observation candidate 0.39.10
+# EverQuest Legends automation — project 0.41.75 / assist 0.39.6 / observation candidate 0.39.10
 
 ## Current availability
 
@@ -19,9 +19,25 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.73 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.73/source`; the runnable
+Source tools 0.41.75 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.75/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.75 adds an **offline motion estimator**, reusing the existing
+rotation bot's bearing and turn-fitting code. It analyzes seven short pulse
+receipts and eight stopped position pairs without needing an initial heading
+or turn rate. Cancelled, incomplete, ambiguous or contradictory records are
+refused. The result is conditional on position/input timing assumptions and
+never supplies a verified speed ceiling or enables movement. The forward/pivot
+route follower now permits an explicitly unused backward speed of zero.
+Sixty focused tests plus 20 subtests pass, including actual watchdog
+writes to a pipe with simulated positions. No game input was sent.
+
+Developer analysis command: `python3 tools/reduce_motion_calibration.py
+--describe-experiment` prints the record schema and experimental sequence.
+It does not run the sequence. Saved private records can be analyzed with
+`--input`, `--input-sha256` and a new `--output`. This adds no owner test;
+G0 is passed, and the existing stationary observation remains pending.
 
 Source 0.41.74 ships observation candidate **0.39.10**. The existing **Observe
 current position** flow now automatically copies the layout-selected combat

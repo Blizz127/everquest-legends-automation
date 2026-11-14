@@ -1,9 +1,15 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 05:34 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 05:42 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.75 resolves the offline speed/turn estimation dependency using
+actual receipt fields and stopped positions with the retained rotation fitter.
+Sixty focused tests plus 20 subtests pass. It supplies conditional
+estimates only; the initial travel envelope, current scene and live calibration
+remain unresolved. No route input or additional owner measurement is enabled.
 
 Source 0.41.74 ships observation candidate 0.39.10: the same owner position
 capture now automatically saves a pinned icon diagnostic while preserving the

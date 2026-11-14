@@ -123,7 +123,10 @@ class FixedRouteFollower:
                         or abs(previous.end[2] - segment.start[2]) > height_tolerance):
                     raise ValueError("Fixed segments have a gap or unsupported height step")
         if (not isinstance(motion, legacy.Motion)
-                or not all(finite(v) and v > 0 for v in (motion.run_speed, motion.turn_rate, motion.back_speed))
+                or not all(finite(v) and v > 0 for v in (motion.run_speed, motion.turn_rate))
+                # This controller rejects backward/jump controls. Zero means
+                # backward speed is explicitly unused, not an invented fit.
+                or not finite(motion.back_speed) or motion.back_speed < 0
                 or not finite(motion.turn_latency) or not 0 <= motion.turn_latency <= .2
                 or motion.right_sign not in (-1, 1) or isinstance(motion.right_sign, bool)):
             raise ValueError("Explicit measured motion is invalid")
