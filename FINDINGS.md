@@ -2,6 +2,14 @@
 
 ## 2026-11-14 22:35 UTC — 0.42.70 conditional contact plan and local height states
 
+VERIFIED local source commit `5f57d89ec6ac0c2052e891f90485e02c83879392` is staged
+in `releases/eql-source-tools-0.42.70-candidate.tar.gz`, SHA
+`5fcc0d0d8e8dc17a1dd69ffefe10a304956cffd2a212818963d1d3f53af3486a`.
+All 544 archived source pins match. Validation SHA
+`c4a58eb8dde82064df98f075f42a78979a66bd6af5b3c2d4f80007c6f3298d82`.
+This is a local private candidate, not an Alienware installation or owner
+launcher update. The existing 0.39.33/runtime0.42.69 candidate stays separate.
+
 VERIFIED final copied-client replay completes **16 approach cells, 53 stair
 cells, eight exit cells and 24 full-pulse probes**, all with explicitly synthetic
 speed/error/body bounds. Exact goal (106,154) retains both terrain height 16

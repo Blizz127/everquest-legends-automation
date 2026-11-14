@@ -7,6 +7,10 @@ Updated 2026-11-14 22:36 UTC for coordinator task `829a00229b29`.
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
 - **Source 0.42.70: thin-contact corridor geometry implemented locally.**
+  Local commit `5f57d89ec6ac0c2052e891f90485e02c83879392`; source candidate archive
+  `releases/eql-source-tools-0.42.70-candidate.tar.gz`, SHA
+  `5fcc0d0d8e8dc17a1dd69ffefe10a304956cffd2a212818963d1d3f53af3486a`.
+  All 544 archived source pins match. This build is not installed on Alienware.
   VERIFIED 40 focused checks and runtime imports without development recipes.
   The old diagnostic and runtime share one implementation. Each pulse checks
   its full maximum hold, body, position/heading uncertainty, drift and pivot
