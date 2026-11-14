@@ -30,6 +30,10 @@ Updated 2026-11-14 11:18 UTC for coordinator task `829a00229b29`.
   Four further focused checks cover transitions during loading and the current
   zone/countdown indicator. The first 0.39.14 staging candidate refused an old
   catalog; 0.39.15 uses the current installed catalog, preserving old artifacts.
+  Source `5f7c717` is staged at Alienware `owner-tools/0.42.10/source`;
+  startup imports/composition pass and all 135 package files match preview
+  0.39.15. Source startup SHA
+  `4642e104d1fc349d224bdc02cc98b6d49604eeb0d1a51c1374dbd9d68e898f8f`.
 - **Source 0.42.9:** current-position producer now creates a new short plan
   from exact stopped XY and checks its complete terrain/static/BSP capsule.
   It refuses layered support, gaps, obstacles, water, changed bindings and

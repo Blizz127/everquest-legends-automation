@@ -61,6 +61,17 @@ payload. The new loader consumes the actual current copied data successfully.
 - Alienware startup SHA: `bf9be22fe38d2b0e21264ac9551b4ec7beabc77d0b2fe9fb1442fb58dfea8022`.
 - GUI image SHA: `657ac604daa81c2b592dfd1695256b7b10bbda7836ac3a0b0a96366b5184bc57`.
 
+Source `5f7c7173ae008ea899c4d5173b3d2bc793438bef` is also privately staged at
+Alienware `owner-tools/0.42.10/source`. Its no-input startup imports the runtime,
+composes the retained engine, verifies distinct motion/trial jobs and checks
+all 135 package files against the verified 0.39.15 owner preview. No worker,
+device or game input was started. Source archive SHA
+`19934789962e4799474b9c3afcc314d77f092c03ef88bfa69ee050a35f55ebae`;
+startup SHA `4642e104d1fc349d224bdc02cc98b6d49604eeb0d1a51c1374dbd9d68e898f8f`.
+The offscreen GUI screenshot was visually inspected: the separate route button
+and the stop/hotbutton/motion controls are visible without scrolling. Its saved
+character/level fields are configuration, not verified current run metrics.
+
 ## Current-position route producer — 2026-11-14 11:03 UTC
 
 **VERIFIED implementation:** source 0.42.9 adds `CurrentStartPlanner`. It uses
