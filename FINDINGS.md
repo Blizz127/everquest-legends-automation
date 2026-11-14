@@ -59,6 +59,16 @@ travel evidence is still needed. G0 is passed and must not be repeated.
 Current level, XP/hour, deaths and camp are unknown. No real route, automated
 XP, 1–20 or fresh hands-off 1–50 run is accepted.
 
+**VERIFIED private publication:** commit
+`94d4447c223d50eaaf5afb0095c0dfa3c6fab2af` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.42.17/source`. Its no-input startup
+checks exact zone-line BSP/area/polygon selection, strict defaults and rejection
+of other water/unknown/zone regions. No worker, device, game input or install
+change occurred. Archive SHA
+`95f95fe14d6f3775270c0a7f33399791ef135e418c00f53b7fd3d6390b14f8a3`;
+startup SHA `1c7f37e7f0880c17349a273e477cb99ecff0fe08eecc4c791f9f46fcb9887c87`.
+Owner preview 0.39.18 and assist 0.39.13 are unchanged.
+
 ## Expected zone-arrival handoff — 2026-11-14 12:17 UTC
 
 **VERIFIED implementation:** source 0.42.16 adds `ZoneArrivalHandoff` over the

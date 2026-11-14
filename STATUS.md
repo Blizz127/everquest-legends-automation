@@ -18,6 +18,9 @@ Updated 2026-11-14 12:29 UTC for coordinator task `829a00229b29`.
   rejects crossing preparation. 205 focused checks pass, followed by 93 checks
   after speeding up complete polygon-inventory rechecks. Copied probe SHA
   `cb0094eb72189b3f4e7172f2eb7993dc01bbb2742791133f88c1bccef311a322`.
+  Commit `94d4447` is staged on Alienware at `owner-tools/0.42.17/source`;
+  no-input exact-region/default-refusal startup passes, SHA
+  `1c7f37e7f0880c17349a273e477cb99ecff0fe08eecc4c791f9f46fcb9887c87`.
   No live crossing/input is enabled. **Next:** connect a distinct checked
   crossing pulse to the loading/arrival flow, carrying the existing source
   floor through the layered entrance; then destination geometry/camps. Owner
