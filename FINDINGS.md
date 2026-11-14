@@ -1,5 +1,73 @@
 # FINDINGS
 
+## 2026-11-14 20:48 UTC — source 0.42.62: underlay repair and explicit staircase gate
+
+VERIFIED offline development, **not real-client acceptance**. Owner preview stays
+0.39.32 (runtime source 0.42.61), with the existing rotation. G0 passed by trace
+and owner visible-stop confirmation; do not repeat it. Current real level, XP,
+XP/hour, deaths and camp remain unknown. No full 1–20 or fresh 1–50 run.
+
+The North Wall→Throne search now retains lower floors under platforms while
+proposing their actual steps. `discover_step_links(include_internal_edges=True)`
+adds two-owner edge proposals; its default is unchanged. Opposite interiors,
+height/width bounds and the complete source-riser/body checker still apply.
+A missing riser stays refused. No source geometry is removed from collision checks.
+
+`tools/source_covered_floors.py` checks only proposed lower faces, then retries
+the graph. Exact clipped upper patches must partition the entire lower triangle,
+with no holes or positive-area overlaps and strictly bounded height gaps at every
+patch vertex. This handles opposite triangle diagonals without nearest-Z selection.
+Only proven lower-face graph edges are excluded. Other goal layers remain in the
+source graph. Pair/patch/round exhaustion never becomes a geometry exclusion.
+
+`tools/source_walk_shortcuts.py` preserves the supplied floor lineage and every
+explicit step, and tests proposed walking shortcuts against complete local
+terrain/static geometry. The final itinerary still needs the independent full
+BSP/native-region rebuild. Walking repairs first passed two earlier route faults:
+
+| Private artifact under `nav-candidates/` | Result / SHA-256 |
+| --- | --- |
+| `crushbone-throne-transit-0.42.62-rejoin18.json` | First corner repaired; advanced to a static-object fault. `1ddc66dc2e48c6a2a354f8982600d3344efa16a10f7b37167bdabde9534c6469` |
+| `crushbone-throne-transit-0.42.62-rejoin31.json` | Static-object zigzag repaired; advanced to raised-platform body collision. `14a327d0e7a229f29396086ee6fd37ac4a5457a5c5263c4bf7e5362edc940695` |
+| `crushbone-throne-transit-0.42.62-covered-floors.json` | Identical-triangle filter alone still refused walk 24. `e800927f0b5b703b312858f50d8304a67a847a21421cabd359abf812757296af` |
+| `crushbone-throne-transit-0.42.62-covered-unions.json` | Exact upper-patch coverage advances through three checked steps, then refuses operation 64: `landing_selected_floor_uncovered_ground_area`. 32.79s wall / 9.81s CPU. `4f76fd213222cd174aed48e668c9756de2834be2958d8ab37fefccb1aca4339b` |
+| `crushbone-throne-stair-topology-0.42.62.json` | Exact projected support plus 15 complete risers across 16 retained treads; topology only. 195 source faces, 5.05s wall. `74e8839773311b88f82e358949dfbaca508efb5dfa549c3d69b1416f86183f00` |
+
+The last audit uses `tools/audit_crushbone_throne_stairs.py` and
+`tools/source_stair_topology.py`. It reconstructs the explicitly selected sequence
+of source components from the pinned proposal, includes all-height nearby source
+faces, and checks the complete projected tread partition, flat monotone heights,
+both outer supports and each actual bounded riser. All 15 rises are exactly one
+unit; interior tread depths are 2 units except one at 1.96875. The existing
+radius-1.2 single-step checker requires a complete approximately 2.4-unit cap on
+one level, so those intermediate caps cannot fit. **Do not shrink the body or
+weaken the step checker to make this pass.** The topology result explicitly has
+no body/static/BSP validation, no executable itinerary and no adopted floor lineage.
+
+Earlier fixed-center exclusions and bounded walking detours did not complete a
+route. They are search outcomes, not proof of physical disconnection. The former
+Trainer closure also applied to the older boundary-edge discovery model only;
+it does not establish closure under this new opt-in internal-edge proposal model.
+
+VERIFIED focused tests (30 total across the affected helpers):
+
+| Check | Result / private JUnit SHA-256 |
+| --- | --- |
+| `test_source_step_links.py` | 9 passed; `c033a43d71dd0cfcaa52ac7b5b339e9a90fa26f472726c955fb59c69c3bf7a33` |
+| `test_source_walk_shortcuts.py` | 6 passed; `ae8c5071cc541ffc32651cf7994c5cba1b1bc98e92e6b6e63514cffa8bcde428` |
+| `test_source_underlay_transit.py` | 11 passed in 1.38s; `15281a0720cccc2708e0b03ab3c095bf9d0620d73f57851130d5a408042c55f4` |
+| `test_source_stair_topology.py` | 4 passed in 0.38s; `d3dfbaf0a2a5e3a3009b57f00249289c514cc1e71130d74c24cfb2216e503bc6` |
+
+Both audit command-line help/startup checks pass. No game input, owner helper
+restart, install/prefix edit or character mutation occurred. All client geometry
+and artifacts stay in the private data store. No Throne guide was packaged.
+
+Next implementation: a distinct staircase flight model between full outer caps,
+with exact bounded per-riser body phases, all-source/static occupancy and
+BSP/native-region checks. Intermediate treads must not masquerade as ordinary
+full floor caps. Only a complete checked flight may link the final planning
+floor to the original prefix; actual movement remains an owner-run acceptance.
+
 ## 2026-11-14 20:21 UTC — source 0.42.61 / preview 0.39.32 privately published
 
 VERIFIED installed outside the game prefix on Alienware:

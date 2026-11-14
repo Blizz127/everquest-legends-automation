@@ -1,11 +1,24 @@
 # STATUS
 
-Updated 2026-11-14 20:21 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 20:48 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.62 built locally; owner preview remains 0.39.32.** VERIFIED
+  30 focused checks across internal-edge steps, walking shortcuts, exact upper
+  surface coverage and staircase topology. Two earlier Throne route crossings
+  repaired; the new source proposal passes three steps before refusing a narrow
+  stair landing at operation 64. Complete-route acceptance has not passed.
+  Copied-data evidence proves 16 retained treads / 15 one-unit risers; the
+  narrowest tread is 1.96875 units, smaller than the existing 2.4-unit footprint.
+  Stair topology SHA `74e8839773311b88f82e358949dfbaca508efb5dfa549c3d69b1416f86183f00`;
+  route refusal SHA `4f76fd213222cd174aed48e668c9756de2834be2958d8ab37fefccb1aca4339b`.
+  The topology helper has no body/static/BSP permit or executable route.
+  Next: explicit bounded staircase body phases and complete native checks;
+  owner location/travel acceptance is still outstanding. No Throne guide added.
+  G0 remains passed; no repeat. No game input or character mutation.
 - **Source 0.42.61 / preview 0.39.32 privately published on Alienware.**
   Exact locally checked runtime/test hashes match the installed source, and all
   198 runtime modules match the preview. Manifest, installed data pins and

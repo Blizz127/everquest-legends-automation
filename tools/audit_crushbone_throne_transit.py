@@ -27,23 +27,117 @@ from eql_automation.crushbone_assets import DATA_NAME, DATA_PINS, load_crushbone
 from eql_automation.native_region_policy import encoded
 from eql_automation.owner_route_assets import checked_bytes
 from eql_automation.source_detour import swept_square
-from eql_automation.source_floor_chain import SourceFloorChain
+from eql_automation.source_floor_chain import SourceFloorChain, inside, rational
+from eql_automation.ground_sweep import hull
 from eql_automation.source_guide_compaction import compact_source_guide
 from eql_automation.source_itinerary import (
     SourceItineraryGuide, SourceWalkHint, plan_source_itinerary,
 )
 from eql_automation.source_step_links import discover_step_links
 from eql_automation.source_transit_graph import SourceTransitGraph
+from eql_automation.static_floor_guard import check_source_static_floor
 
 START = (-95., -78.)
 GOAL = (106., 154.)
 
 
-def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, walk_range=None):
+def filter_centers(graph, prefix, planner, *, rounds, check, progress):
+    """Prune fixed graph waypoints, never whole components or goal layers.
+
+    Each face center is a mandatory point in this proposal graph. Its own
+    source-face seed is an OFFLINE hypothesis used only to reject that point.
+    Passing caps do not replace the caller's floor or accept any route edge.
+    Query/budget/ambiguity failures abort rather than becoming exclusions.
+    """
+    excluded = set()
+    cache = {}
+    attempts = []
+    rejected_reasons = {'selected_floor_uncovered_ground_area',
+                        'other_source_surface_intersects_body_band'}
+    for attempt in range(rounds+1):
+        check()
+        proposal = graph.propose(prefix, START, GOAL, excluded=excluded, max_seconds=10.)
+        if proposal is None:
+            progress(attempts, cache, len(excluded))
+            raise ValueError('No proposal after bounded fixed-center exclusions; physical disconnection not proven')
+        faces = tuple(dict.fromkeys(face for edge in proposal.edges
+            for face in (edge.origin, edge.destination) if face in graph.centers))
+        rejected = []
+        for face in faces:
+            check()
+            if face not in cache:
+                point = graph.centers[face][:2]
+                evidence = dict(kind='offline_proposal_center_hypothesis',
+                    source_wld_sha256=planner.source.wld_sha256,
+                    face=face, point=point, radius=1.2, body_height=6.,
+                    current_character_observation=False, input_authorized=False)
+                cap = swept_square(point, point, 1.2)
+                sources = planner.source.source_faces_for_footprint(cap)
+                probe = SourceFloorChain(inventory_sha256=planner.source.wld_sha256,
+                    seed_evidence_sha256=sha256(encoded(evidence)).hexdigest(),
+                    seed_ids=(face,), body_height=6.)
+                floor = probe.advance(cap, sources)
+                placed = (check_source_static_floor(floor, cap, sources, planner.static)
+                          if floor.candidate else None)
+                accepted = floor.candidate and placed.candidate
+                reason = placed.reason if placed is not None else floor.reason
+                # A one-face synthetic seed can miss joins retained by an
+                # arriving prefix. Require a deficit in ALL eligible local
+                # support from the graph component before excluding coverage.
+                support = [(s.fragment, s.face) for s in sources
+                    if graph.components.components.get((s.fragment, s.face))
+                       == graph.components.components[face]]
+                expanded = hull((x+dx, y+dy) for x, y in cap
+                    for dx in (-.002, .002) for dy in (-.002, .002))
+                witness = next((point for point in expanded if not any(
+                    inside(rational((point,))[0], rational(graph.components.faces[k][0]))
+                    for k in support)), None)
+                blocker = (next((hit for hit in floor.occupancy.faces
+                    if hit.classification == 'intersects_or_touches_body_band'
+                    and hit.minimum_above_floor is not None and hit.minimum_above_floor > .11), None)
+                    if floor.occupancy is not None else None)
+                definite = (reason == 'selected_floor_uncovered_ground_area' and witness is not None
+                    or reason == 'other_source_surface_intersects_body_band' and blocker is not None
+                    or floor.candidate and placed is not None
+                    and placed.reason == 'other_source_surface_intersects_body_band')
+                cache[face] = dict(seed=evidence, cap=cap, accepted_cap=accepted, reason=reason,
+                    excluded_center=definite, uncovered_corner=witness,
+                    positive_height_body_blocker=None if blocker is None else asdict(blocker),
+                    support_overapproximation_ids=support,
+                    classification=('cap_passed' if accepted else 'geometric_refusal' if definite
+                                    else 'independent_seed_inconclusive'),
+                    terrain=asdict(floor), static=None if placed is None else asdict(placed),
+                    route_accepted=False, physical_disconnection_proven=False)
+                if not accepted and reason not in rejected_reasons:
+                    progress(attempts, cache, len(excluded))
+                    raise ValueError('Center query cannot justify pruning '+str(face)+': '+reason)
+            if cache[face]['excluded_center']:
+                rejected.append(face)
+        attempts.append(dict(round=attempt, proposal=asdict(proposal), rejected_faces=rejected))
+        if not rejected:
+            progress(attempts, cache, len(excluded))
+            return proposal
+        # Every incoming/outgoing graph edge explicitly visits this center.
+        # The start/goal attachment edges also visit it; other faces in the
+        # same component and other goal layers remain available.
+        bad = set(rejected)
+        for face in bad:
+            excluded.add(('start', face)); excluded.add(('goal', face))
+        for edges in graph.adjacent.values():
+            excluded.update(edge.identity for edge in edges
+                            if edge.origin in bad or edge.destination in bad)
+        progress(attempts, cache, len(excluded))
+    raise ValueError('Fixed-center proposal retry budget exhausted')
+
+
+def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, walk_range=None,
+        center_rounds=0, smooth=False, underlay_steps=False, exclude_covered=False):
     began, cpu_began = time.monotonic(), time.process_time()
     pins = {str(p.relative_to(PROJECT)): sha256(p.read_bytes()).hexdigest()
             for p in (Path(__file__).resolve(),
                       Path(__file__).with_name('audit_crushbone_camp_transit.py').resolve(),
+                      Path(__file__).with_name('source_walk_shortcuts.py').resolve(),
+                      Path(__file__).with_name('source_covered_floors.py').resolve(),
                       *sorted((PROJECT/'eql_automation').glob('*.py')))}
     record = dict(format='eql-offline-throne-transit-v1',
         origin='north-wall', destination='throne', start=START, goal=GOAL,
@@ -52,6 +146,7 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
         historical_prefix_replayed=False, label_z_used_for_floor_selection=False,
         input_authorized=False, game_input_sent=False, real_client_accepted=False,
         cpu_budget_seconds=cpu_budget, wall_budget_seconds=wall_budget,
+        underlay_step_proposals=underlay_steps,
         code_sha256=pins, data_sha256=DATA_PINS)
 
     def save():
@@ -123,7 +218,7 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
             stage('discovering_steps')
             links = discover_step_links(tuple(planner.source.sources),
                 inventory_sha256=planner.source.wld_sha256,
-                max_step_height=2., min_width=2.404)
+                max_step_height=2., min_width=2.404, include_internal_edges=underlay_steps)
             record['step_links'] = len(links)
             stage('building_graph')
             graph = SourceTransitGraph(tuple(planner.source.sources),
@@ -131,7 +226,29 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
                 radius=1.2, max_step_height=2., max_lift=4.)
             record['goal_components'] = asdict(graph.components.goal(chain, GOAL))
             stage('proposing')
-            transit = graph.propose(chain, START, GOAL, max_seconds=10.)
+            if center_rounds:
+                def progress(attempts, cache, excluded):
+                    record['center_filter'] = dict(rounds=center_rounds, attempts=attempts,
+                        caps=list(cache.values()), excluded_directed_edges=excluded,
+                        current_floor_unchanged=True, whole_components_excluded=False,
+                        physical_disconnection_proven=False)
+                    save()
+                    print(json.dumps(dict(stage='center_filter', rounds=len(attempts),
+                        checked_centers=len(cache), excluded_centers=sum(r['excluded_center'] for r in cache.values()),
+                        excluded_edges=excluded)), flush=True)
+                transit = filter_centers(graph, chain, planner, rounds=center_rounds,
+                                         check=check, progress=progress)
+            else:
+                if exclude_covered:
+                    from tools.source_covered_floors import propose_above_covered_floors
+                    stage('proposing_above_underlays')
+                    def progress(evidence):
+                        record['covered_floor_filter'] = evidence
+                        save()
+                    transit = propose_above_covered_floors(graph, chain, START, GOAL,
+                        body_height=6., check_context=check, progress=progress)
+                else:
+                    transit = graph.propose(chain, START, GOAL, max_seconds=10.)
             if transit is None:
                 raise ValueError('No Throne proposal under current source/step model')
             record['proposal'] = asdict(transit)
@@ -140,6 +257,7 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
             record['uncompacted_operations'] = len(guide.operations)
             record['uncompacted_guide'] = guide.record()
             guide = compact_source_guide(guide)
+            record['guide'] = guide.record()
             record['compaction'] = dict(maximum_length=8.,
                 geometry_equivalence_claimed=False, requires_full_rebuild=True)
         else:
@@ -150,42 +268,64 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
                     or prior['seed_sha256'] != seed_pin or encoded(prior['seed']) != encoded(seed)):
                 raise ValueError('Prior proposal does not use this independent source seed')
             guide = SourceItineraryGuide.from_record(prior['guide'])
+            record['guide'] = guide.record()
             if (guide.goal != GOAL or guide.radius != 1.2 or guide.body_height != 6.
                     or guide.operations[0].start != START):
                 raise ValueError('Prior guide has different bounds or endpoints')
-            first, last = walk_range
-            if (not 0 <= first <= last < len(guide.operations)
-                    or any(type(op) is not SourceWalkHint for op in guide.operations[first:last+1])):
-                raise ValueError('Replacement must be an explicit contiguous walk-only range')
-            start, goal = guide.operations[first].start, guide.operations[last].end
-            record['repair'] = dict(prior_path=str(prior_path), prior_sha256=prior_pin,
-                first_walk=first, last_walk=last, start=start, goal=goal,
-                automatic_edge_exclusion=False, original_guide_sha256=sha256(encoded(guide.record())).hexdigest())
-            # The original start floor is reconstructed, then every prior walk
-            # and step is fully checked. No guessed floor is seeded at the fault.
-            stage('checking_repair_prefix')
-            prefix_guide = replace(guide, goal=start,
-                operations=guide.operations[:first] or (SourceWalkHint(START, START),))
-            prefix_plan = itinerary(chain, prefix_guide)
-            branch, replayed_goal, replay = replay_parent(
-                dict(plan=prefix_plan.record(), guide=prefix_guide.record()),
-                planner.source, planner.static, check)
-            if replayed_goal != start:
-                raise ValueError('Replayed repair prefix ends at a different point')
-            record['repair'].update(prefix_plan_sha256=prefix_plan.sha256, replay=replay)
-            stage('proposing_local_detour')
-            detour, _ = find_source_detour(branch, start, goal, planner.source,
-                planner.static, radius=1.2, max_seconds=60., max_expansions=128)
-            record['repair']['detour'] = asdict(detour)
-            if not detour.candidate:
-                raise ValueError('Local walk repair: '+detour.reason)
-            operations = tuple(SourceWalkHint(a, b) for a, b in zip(detour.points, detour.points[1:]))
-            if not operations:
-                operations = (SourceWalkHint(start, goal),)
-            guide = replace(guide,
-                provenance_sha256=sha256(encoded(record['repair'])).hexdigest(),
-                operations=guide.operations[:first]+operations+guide.operations[last+1:])
-            guide.validate()
+            if smooth:
+                from tools.source_walk_shortcuts import shortcut_walks
+                record['smoothing_prior_sha256'] = prior_pin
+                stage('shortcutting_walks')
+                def progress(evidence):
+                    record['smoothing'] = evidence
+                    save()
+                guide, evidence = shortcut_walks(chain, guide, planner.source, planner.static,
+                    check_context=check, progress=progress)
+                record['smoothing'] = evidence
+                guide = compact_source_guide(guide)
+            else:
+                first, last = walk_range
+                if (not 0 <= first <= last < len(guide.operations)
+                        or any(type(op) is not SourceWalkHint for op in guide.operations[first:last+1])):
+                    raise ValueError('Replacement must be an explicit contiguous walk-only range')
+                start, goal = guide.operations[first].start, guide.operations[last].end
+                record['repair'] = dict(prior_path=str(prior_path), prior_sha256=prior_pin,
+                    first_walk=first, last_walk=last, start=start, goal=goal,
+                    automatic_edge_exclusion=False, original_guide_sha256=sha256(encoded(guide.record())).hexdigest())
+                # The original start floor is reconstructed, then every prior walk
+                # and step is fully checked. No guessed floor is seeded at the fault.
+                stage('checking_repair_prefix')
+                prefix_guide = replace(guide, goal=start,
+                    operations=guide.operations[:first] or (SourceWalkHint(START, START),))
+                prefix_plan = itinerary(chain, prefix_guide)
+                branch, replayed_goal, replay = replay_parent(
+                    dict(plan=prefix_plan.record(), guide=prefix_guide.record()),
+                    planner.source, planner.static, check)
+                if replayed_goal != start:
+                    raise ValueError('Replayed repair prefix ends at a different point')
+                record['repair'].update(prefix_plan_sha256=prefix_plan.sha256, replay=replay)
+                stage('proposing_local_detour')
+                detour, _ = find_source_detour(branch, start, goal, planner.source,
+                    planner.static, radius=1.2, max_seconds=60., max_expansions=128)
+                record['repair']['detour'] = asdict(detour)
+                if not detour.candidate:
+                    raise ValueError('Local walk repair: '+detour.reason)
+                operations = tuple(SourceWalkHint(a, b) for a, b in zip(detour.points, detour.points[1:]))
+                if not operations:
+                    operations = (SourceWalkHint(start, goal),)
+                guide = replace(guide,
+                    provenance_sha256=sha256(encoded(record['repair'])).hexdigest(),
+                    operations=guide.operations[:first]+operations+guide.operations[last+1:])
+                guide.validate()
+        if smooth and prior_path is None:
+            from tools.source_walk_shortcuts import shortcut_walks
+            stage('shortcutting_new_proposal')
+            def progress(evidence):
+                record['smoothing'] = evidence
+                save()
+            guide, record['smoothing'] = shortcut_walks(chain, guide, planner.source, planner.static,
+                check_context=check, progress=progress)
+            guide = compact_source_guide(guide)
         record['guide'] = guide.record()
         stage('checking_complete_route')
         plan = itinerary(chain, guide)
@@ -221,19 +361,30 @@ if __name__ == '__main__':
     parser.add_argument('--prior-sha256')
     parser.add_argument('--replace-walks', type=int, nargs=2, metavar=('FIRST', 'LAST'),
                         help='Inclusive walk-only range; does not remove or bypass a step')
+    parser.add_argument('--smooth', action='store_true', help='Replace walking zigzags with checked source/static shortcuts; retain every step')
+    parser.add_argument('--underlay-steps', action='store_true',
+                        help='Also propose steps where the lower floor continues under a platform')
+    parser.add_argument('--exclude-covered-floors', action='store_true',
+                        help='Exclude lower graph faces only after exact upper-surface partition and headroom checks')
+    parser.add_argument('--center-rounds', type=int, default=0,
+                        help='Up to 16 retries excluding only graph centers refused by full caps')
     args = parser.parse_args()
     if (args.output.exists() or args.output.is_symlink()
             or args.output.with_suffix('.json.tmp').exists()
             or args.output.parent.resolve() != (STORE/'nav-candidates').resolve()
-            or not 30 <= args.wall_budget <= 300 or not 5 <= args.cpu_budget <= 120):
+            or not 30 <= args.wall_budget <= 300 or not 5 <= args.cpu_budget <= 120
+            or not 0 <= args.center_rounds <= 16
+            or args.prior is not None and (args.center_rounds or args.underlay_steps or args.exclude_covered_floors)
+            or args.center_rounds and args.exclude_covered_floors):
         parser.error('Use a new private nav-candidates output and bounded CPU/wall budgets')
-    if any(v is not None for v in (args.prior, args.prior_sha256, args.replace_walks)):
-        if (not all(v is not None for v in (args.prior, args.prior_sha256, args.replace_walks))
+    if args.prior is not None or args.prior_sha256 is not None or args.replace_walks is not None:
+        if (args.prior is None or args.prior_sha256 is None
+                or bool(args.replace_walks is not None) == args.smooth
                 or args.prior.parent.resolve() != (STORE/'nav-candidates').resolve()
                 or args.prior.is_symlink() or not args.prior.is_file()
                 or len(args.prior_sha256) != 64
                 or any(c not in '0123456789abcdef' for c in args.prior_sha256)):
-            parser.error('Repair needs a private prior file, its exact SHA256 and a walk range')
+            parser.error('Repair needs a private prior file, its exact SHA256 and either a walk range or --smooth')
     os.umask(0o077)
     os.nice(19)
     # Some graph construction loops have count bounds but no clock callback.
@@ -248,4 +399,6 @@ if __name__ == '__main__':
     resource.setrlimit(resource.RLIMIT_CPU, (cpu_limit, cpu_limit+5))
     signal.setitimer(signal.ITIMER_REAL, args.wall_budget)
     run(args.output, wall_budget=args.wall_budget, cpu_budget=args.cpu_budget,
-        prior_path=args.prior, prior_pin=args.prior_sha256, walk_range=args.replace_walks)
+        prior_path=args.prior, prior_pin=args.prior_sha256, walk_range=args.replace_walks,
+        center_rounds=args.center_rounds, smooth=args.smooth, underlay_steps=args.underlay_steps,
+        exclude_covered=args.exclude_covered_floors)

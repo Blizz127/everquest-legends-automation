@@ -9,7 +9,7 @@ from eql_automation.source_step_links import (
 from eql_automation.source_detour import swept_square
 from eql_automation.source_floor_chain import SourceFloorChain
 from eql_automation.source_step import check_source_step
-from test_source_step import face, setup
+from test_source_step import face, setup, rectangle
 
 
 def discover(sources, **kwargs):
@@ -38,6 +38,29 @@ def test_generated_caps_feed_existing_checker_without_manual_points():
     refused, _ = check_source_step(chain,proposal.start,proposal.end,missing[3],missing[4],
         landing_seed_ids=proposal.landing_seed_ids,radius=1.,max_step_height=.5,max_lift=1.)
     assert not refused.candidate
+
+
+@pytest.mark.parametrize('riser', [True, False])
+def test_lower_floor_underlay_can_propose_a_step_but_does_not_replace_its_riser(riser):
+    args = setup(riser=riser)
+    sources = (*args[3].source_faces_for_footprint(()), *rectangle(0., 5., 0., 10))
+    args[3].source_faces_for_footprint = lambda _: sources
+    assert not discover(sources)
+    links = discover(sources, include_internal_edges=True)
+    link = next(link for link in links if link.from_component == (1, 0))
+    cap = propose_step_caps(link, radius=1.)[0]
+    chain = SourceFloorChain(inventory_sha256='a'*64, seed_evidence_sha256='b'*64,
+        seed_ids=(link.from_face,), body_height=6.)
+    assert chain.advance(swept_square(cap.start, cap.start, 1.), sources).candidate
+    before = chain.previous
+    result, landing = check_source_step(chain, cap.start, cap.end, args[3], args[4],
+        landing_seed_ids=cap.landing_seed_ids, radius=1., max_step_height=.5, max_lift=1.)
+    assert result.candidate is riser
+    assert (landing is not None) is riser and chain.previous is before
+    assert not result.input_authorized and not result.client_step_capability_verified
+    if riser:
+        classified = {tuple(v['identifier']): v['classification'] for v in result.evidence['transfer_faces']}
+        assert classified[1, 10] == classified[1, 11] == 'below'
 
 
 def test_affine_gap_splits_at_zero_and_bounds_exactly():

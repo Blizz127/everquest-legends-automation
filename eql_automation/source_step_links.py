@@ -57,17 +57,23 @@ def _at(edge, axis, value):
 
 
 def discover_step_links(sources, *, inventory_sha256, max_step_height,
-                        min_width=0., max_pairs=1_000_000):
+                        min_width=0., max_pairs=1_000_000, include_internal_edges=False):
     """Return directed proposals with exact clipped height-gap intervals.
 
     Long edges are split at gap zero and both height limits; a valid partial
     interval survives even if the remainder exceeds the limit. Shared or
     ambiguous full edges are already represented in the ordinary component
-    graph and are excluded here. All source surfaces remain in later checks.
+    graph and are excluded by default. The explicit internal-edge option also
+    proposes crossings from two-owner edges: a lower floor can continue under
+    a raised platform. Opposite interiors, gap and width checks still apply;
+    the complete step checker must retain the underlay and verify a real riser.
+    Ambiguous edges with more than two owners remain excluded from discovery.
+    All source surfaces remain in later checks.
     """
     if (any(type(v) not in (int, float) or not math.isfinite(v)
             for v in (max_step_height, min_width))
             or not 0 < max_step_height <= 4 or not 0 <= min_width <= 20
+            or type(include_internal_edges) is not bool
             or type(max_pairs) is not int or not 1 <= max_pairs <= 10_000_000):
         raise ValueError('Invalid source step discovery bounds')
     graph = SourceFloorComponents(sources, inventory_sha256=inventory_sha256)
@@ -84,14 +90,14 @@ def discover_step_links(sources, *, inventory_sha256, max_step_height,
                 edges[tuple(sorted((a, b)))].append((identity, a, b, third))
     lines = defaultdict(list)
     for owners in edges.values():
-        if len(owners) != 1:
+        if len(owners) != 1 and not (include_internal_edges and len(owners) == 2):
             continue
-        identity, a, b, third = owners[0]
-        axis = 0 if abs(b[0]-a[0]) >= abs(b[1]-a[1]) else 1
-        other = 1-axis
-        slope = (b[other]-a[other])/(b[axis]-a[axis])
-        intercept = a[other]-slope*a[axis]
-        lines[(axis, slope, intercept)].append((identity, a, b, third))
+        for identity, a, b, third in owners:
+            axis = 0 if abs(b[0]-a[0]) >= abs(b[1]-a[1]) else 1
+            other = 1-axis
+            slope = (b[other]-a[other])/(b[axis]-a[axis])
+            intercept = a[other]-slope*a[axis]
+            lines[(axis, slope, intercept)].append((identity, a, b, third))
     links, pairs = [], 0
     for (axis, slope, _), members in sorted(lines.items()):
         for left, right in combinations(sorted(members), 2):
