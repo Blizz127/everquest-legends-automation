@@ -13,6 +13,40 @@ from dataclasses import dataclass
 from .ground_sweep import GroundCoverage,GroundFace
 from .portal_precision import PrecisionCheck,SourceSupport,retry_precision_gap,source_support
 from .source_floor_chain import FloorChainStep
+from .fixed_route_follower import FixedRoute
+
+
+@dataclass(frozen=True)
+class FloorSeedBinding:
+    baseline_plan_sha256: str
+    replay_plan_sha256: str
+    complete_static_chain_matches_replay_plan: bool
+    unchanged_prefix_segments: int
+    scope: str = 'initial_floor_seed_only; every replay footprint is checked anew'
+    input_authorized: bool = False
+    real_client_accepted: bool = False
+
+
+def bind_floor_replay_seed(baseline, candidate):
+    """Bind a known copied-data seed to a plan with exactly the same first leg.
+
+    The caller hash-checks both plan files and the source/profile inventory.
+    A changed suffix gets no whole-route claim from the old static scan.
+    """
+    if (not isinstance(baseline,FixedRoute) or not isinstance(candidate,FixedRoute)
+            or not baseline.segments or not candidate.segments
+            or baseline.zone!=candidate.zone or baseline.mesh_sha256!=candidate.mesh_sha256
+            or baseline.half_width!=candidate.half_width
+            or baseline.segments[0]!=candidate.segments[0]):
+        raise ValueError('Conditional floor seed requires the identical first leg, zone, mesh and width')
+    same=baseline.artifact_sha256==candidate.artifact_sha256
+    if same and baseline!=candidate:
+        raise ValueError('One pinned plan identity cannot describe two routes')
+    prefix=0
+    for old,new in zip(baseline.segments,candidate.segments):
+        if old!=new:break
+        prefix+=1
+    return FloorSeedBinding(baseline.artifact_sha256,candidate.artifact_sha256,same,prefix)
 
 
 @dataclass(frozen=True)

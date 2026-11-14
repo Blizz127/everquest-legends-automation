@@ -29,6 +29,7 @@ SEAM_EXPERIMENT_SHA = "0ca4fa85769c8e94e236ce69f09da180e70597006d2cb4934fc191598
 FLOOR_CHAIN = STORE/'nav-candidates/gfay-source-floor-chain-fast-0.41.58.json'
 FLOOR_CHAIN_SHA = '06c0a1d0818826ca0913e94a05b26912f9be05b994fa328230857b42dd04a497'
 SOURCE_PROFILE = STORE/'nav-candidates/gfay-tile-source-profile-0.41.57.json'
+FLOOR_SEED_PLAN = STORE/'nav-candidates/gfay-west-portal-plan-0.41.53.json'
 PINS = {
     PLAN: PLAN_SHA, MESH: MESH_SHA,
     MESH.with_suffix(".json"): "ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82",
@@ -81,7 +82,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     from eql_automation.ground_sweep_view import GroundSweepView
     from eql_automation.portal_precision_view import PortalPrecisionView
     from eql_automation.source_floor_chain import SourceFloorChain
-    from eql_automation.floor_replay import check_floor_trial
+    from eql_automation.floor_replay import bind_floor_replay_seed,check_floor_trial
     from eql_automation.location_log import RawLocationFix
     import numpy as np
     from eqnav import steer
@@ -112,16 +113,16 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     if precision_portals:
         if local_seam_experiment or not ground_sweep:
             raise ValueError('Precision retry requires ground checks and excludes the older seam experiment')
-    floor_evidence=None
+    floor_evidence=None;floor_seed_binding=None
     if source_floor_chain:
         if FLOOR_CHAIN.is_symlink() or sha256(FLOOR_CHAIN.read_bytes()).hexdigest()!=FLOOR_CHAIN_SHA:
             raise ValueError('Completed conditional floor-chain evidence changed')
         floor_evidence=json.loads(FLOOR_CHAIN.read_text())
         if (not floor_evidence['complete_conditional_source_chain'] or floor_evidence['budget_exhausted']
                 or floor_evidence['passed_cells']!=floor_evidence['expected_cells']
-                or floor_evidence['pins'].get(str(plan))!=plan_sha256
+                or str(FLOOR_SEED_PLAN) not in floor_evidence['pins']
                 or str(SOURCE_PROFILE) not in floor_evidence['pins']):
-            raise ValueError('Floor proof is incomplete or belongs to another plan')
+            raise ValueError('Floor proof is incomplete or has no pinned seed plan')
         pins.update({Path(p):h for p,h in floor_evidence['pins'].items()})
         pins[FLOOR_CHAIN]=FLOOR_CHAIN_SHA
         path=PROJECT/'eql_automation/floor_replay.py';pins[path]=sha256(path.read_bytes()).hexdigest()
@@ -141,6 +142,10 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
             raise ValueError("Replay source changed")
     verify()
     route = FixedRoute.load(plan, expected_sha256=plan_sha256, mesh_sha256=MESH_SHA)
+    if floor_evidence is not None:
+        baseline=FixedRoute.load(FLOOR_SEED_PLAN,
+            expected_sha256=floor_evidence['pins'][str(FLOOR_SEED_PLAN)],mesh_sha256=MESH_SHA)
+        floor_seed_binding=bind_floor_replay_seed(baseline,route)
     mesh = BspDetailMeshView.load(MESH, zone=route.zone)
     ground_view = GroundSweepView.load(MESH, zone=route.zone)
     source_view = PortalPrecisionView(ground_view,MESH,source_archive,zone=route.zone,
@@ -175,6 +180,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         'source_z_limit':source_z_limit, 'portal_pairs':sorted(portal_pairs)}
     if floor_evidence is not None:
         proof['conditional_source_chain_sha256']=FLOOR_CHAIN_SHA
+        proof['seed_binding']=asdict(floor_seed_binding)
     proof_sha = sha256(json.dumps(proof,sort_keys=True).encode()).hexdigest()
     geometry = GroundGeometryEvidence(route.zone, MESH_SHA, source_view.archive_sha256,
         source_view.wld_sha256, proof_sha, source_z_limit, tuple(sorted(portal_pairs)), True)
@@ -405,6 +411,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
               "precision_overlaps":precision_overlaps,
               "conditional_source_floor_chain":None if floor_evidence is None else {
                   'evidence_sha256':FLOOR_CHAIN_SHA,'body_height_hypothesis':floor_evidence['hypothetical_body_height'],
+                  'seed_binding':asdict(floor_seed_binding),
                   'initial':None if initial_floor_step is None else asdict(initial_floor_step),
                   'committed_cells':floor_chain.index,'last_proof_sha256':floor_chain.previous.proof_sha256 if floor_chain.previous else None,
                   'terrain_only':True,'live_verified':False},
