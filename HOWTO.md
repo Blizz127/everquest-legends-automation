@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.21** · rotation preview **0.39.13** · destination preview **0.39.18** · short route trial **0.39.15**.
+Source **0.42.22** · rotation preview **0.39.13** · crossing preview **0.39.19** · approach preview **0.39.18**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -16,6 +16,7 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Stationary location-hotbutton test | Sends one explicitly configured key, then checks the log for one fresh position reply. No route movement or combat. | **Test /location hotbutton…**, F9/F11/Stop to cancel. |
 | Supervised motion measurement | Four short forward presses and three turns on owner-confirmed open ground; saves relative observations and stops. | **Supervised motion measurement…**, F9/F11/Stop to cancel. |
 | Supervised destination travel | In 0.39.18, measures motion, plans from current GFay coordinates toward Crushbone, checks each movement and stops. No zone crossing or leveling. | **Travel toward Crushbone…**, F9/F11/Stop to cancel. |
+| Supervised zone crossing | In 0.39.19, a separate action measures motion, follows the GFay route into the expected Crushbone zone line, then stops after fresh arrival positions. No combat or leveling. | **Travel into Crushbone…**, F9/F11/Stop to cancel. |
 | Supervised short route trial | In 0.39.15/0.39.16, measures motion, creates a two-unit GFay path from fresh current positions, checks terrain/objects/BSP, follows it if checks pass, then stops. No combat or leveling. | **Supervised short route trial…**, F9/F11/Stop to cancel. |
 
 Run only one helper at a time. **G0 passed; do not repeat the movement-stop
@@ -33,9 +34,42 @@ Source 0.42.21 connects repeated checked moves, provisional movement receipts,
 fresh stopped source positions and expected-zone arrival through one log reader
 and one shared time/movement budget. Loading releases movement and discards the
 source transaction; only fresh destination positions can complete the handoff.
-This core is not yet wired to the owner action; the existing travel preview
-still stops at the approach. Destination geometry and camp execution also remain.
-Use the same 0.39.18 command below; this source update needs no new owner test.
+Source 0.42.22 connects that core to a separate owner action in preview 0.39.19.
+The existing **Travel toward Crushbone…** action still stops at the approach.
+Crushbone camp execution and level 1–20 automation remain unfinished.
+
+## Travel into Crushbone on Alienware: 0.39.19
+
+This is a supervised crossing preview, not unattended leveling. It starts in
+Greater Faydark, plans from fresh current positions using copied client geometry,
+and stops after observing the expected Crushbone entry and two new positions.
+It does not move around Crushbone, fight, loot, sell or choose a camp. Actual
+client crossing is unverified. G0 remains passed; do not repeat it.
+
+```bash
+cd ~/.local/share/eql-automation/owner-assist/0.39.19
+EQL_ROTATION_TRACE="$HOME/eql-crossing-trace.jsonl" ./launch.sh --measure-navigation
+```
+
+Close the other helper first. Select the correct character, open the in-game
+map and use **Test /location hotbutton…** to recognize your current GFay zone.
+The helper needs that successful hotbutton setup in the same session. Close
+the map and chat, clear your target and turn melee off. On clear, flat, open
+ground, choose **Travel into Crushbone…** and focus the game during its countdown.
+It performs seven short calibration presses, then plans and follows the route.
+You do not need to record a route by hand.
+
+Stay present. **F9, F11 or Stop measurement cancels.** Owner input, lost focus,
+combat hazards, unexpected zoning and failed checks stop the action. It does
+not restart itself. The source route has a 25-minute/3,000-move limit, with at
+most 90 additional seconds to observe arrival. Known loading prevents location
+hotbutton input; loading during an active location request may stop the preview
+rather than continue. The result is experimental until you observe it in game.
+
+The result is saved under `~/.local/share/eql-automation/route-trials/` as
+`owner-crossing-*.json`. Keep `~/eql-crossing-trace.jsonl`; the displayed result
+and the saved record identify where it stopped. **Travel toward Crushbone…**
+remains the approach-only option. Assist remains the separate 0.39.13 launcher.
 
 ## Travel toward Crushbone on Alienware: 0.39.18
 

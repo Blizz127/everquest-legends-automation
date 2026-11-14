@@ -1,5 +1,48 @@
 # FINDINGS
 
+## Owner crossing action integration — 2026-11-14 13:18 UTC
+
+**VERIFIED implementation:** source 0.42.22 adds a distinct owner crossing job,
+preview 0.39.19's **Travel into Crushbone…** action. The original approach-only
+job remains separate. The new loader binds copied GFay area 4, polygon 19256,
+native region 2884 and `DRNTP00255000004_ZONE` to the manifest endpoint and the
+unique catalog destination 58. It does not infer an arrival spawn or a server
+trigger from map lines. The original installed archives/catalog are read only.
+
+The same owner action retains motion measurement, then obtains separate plan,
+height and initial-ground pairs. Initial movement observations are newer than
+height calibration, never reused calibration samples. A provisional ledger,
+one aggregate corridor policy and an exclusive arrival reader replace the
+ordinary route driver for this job. Owner/settings/process/input/device checks
+remain valid across zoning; source-only checks stay with source transactions.
+The inherited rotation engine's normal stop-on-zone behavior is overridden only
+for exact loading/expected-entry messages during this owned crossing. The
+arrival controller still checks their order, freshness and destination.
+
+The location executor uses the tested owner hotbutton, shared stop lock and
+existing descriptor. Nested pumps check cancellation without consuming the
+arrival reader. Known client loading blocks the location transaction. A loading
+event during an active source hotbutton may stop this preview rather than
+resume; it cannot authorize another key during known loading. Arrival uses a
+new pair after the retained post-entry delay, then closes the lease and observer
+and stops. No camp, combat, target selection or automatic restart is added.
+
+**VERIFIED initial harness:** an actual retained owner engine plus OS-pipe
+sender completed calibration, source planning, movement, inherited `read_log`
+loading/entry dispatch and fresh destination positions, ending released and
+stopped. Game feedback/geometry and input observations were synthetic. F9 during
+movement, source and destination position requests also passed. A later combined
+run had three early timing/refusal failures (watchdog arm, interrupted pulse and
+expired stopped geometry) and one stale test expectation for label capitalization.
+The expectation was corrected. A focused retry passed movement cancellation,
+then stopped early on missing watchdog DOWN acknowledgment. Timing limits remain
+unchanged. Further focused checks and private staging are pending.
+
+**Remaining real-client gate:** owner-run current-map/hotbutton recognition and
+actual route/crossing acceptance. Next build fresh Crushbone arrival geometry and
+level-suitable camp execution. Current level, XP/hour, deaths and camp are
+unknown; no accepted 1–20 route, automated XP or completed fresh 1–50 run.
+
 ## Repeated source moves and exclusive arrival corridor — 2026-11-14 13:10 UTC
 
 **VERIFIED implementation:** source 0.42.21 adds `CrossingCorridorHandoff` and

@@ -29,10 +29,11 @@ def h(tmp_path,retained,monkeypatch):
         for x,y,z in s.vertices_wld)) for s in p.source.sources)
     xyz=np.asarray([s.vertices_wld for s in p.source.sources])[:,:,[1,0,2]]
     p.source.source_minimum=xyz.min(axis=1);p.source.source_maximum=xyz.max(axis=1)
-    loading=[lambda:p];destination_loading=[lambda:None]
+    loading=[lambda:p];destination_loading=[lambda:None];crossing_loading=[lambda:None]
     def factory(engine,*,observer_factory,output):
         return make_owner_route_trial_engine(engine,planner_loader=lambda _:loading[0](),
             destination_loader=lambda _:destination_loading[0](),
+            crossing_loader=lambda _:crossing_loading[0](),
             observer_factory=observer_factory,output_root=output/'trials',
             motion_output=output/'motion',hotkey_output=output/'hotkey')
     monkeypatch.setattr(setup,'make_owner_nov12_engine',factory)
@@ -47,6 +48,7 @@ def h(tmp_path,retained,monkeypatch):
         expected_character='Probe',expected_server='private',owner_setup=asdict(binding),record_id='synthetic-setup')
     h.point=[200.,400.,2.7];h.heading=350.;h.loader=p;h.loading=loading
     h.destination_loading=destination_loading
+    h.crossing_loading=crossing_loading
     def start():
         e.post(TRIAL_JOB,{'open_flat_clear':True});e.handle_job(*e.jobs.get_nowait())
     h.start_trial=start
@@ -113,7 +115,7 @@ def test_route_countdown_payload_uses_observed_zone(h):
     h.start_trial()
     state=h.engine.autopilot_payload()
     assert state['state']=='running' and state['trial_stage']=='countdown'
-    assert state['zone']=='Fixture' and 'Route trial' in state['phase']
+    assert state['zone']=='Fixture' and 'route trial' in state['phase'].lower()
 
 
 @pytest.mark.parametrize('missing',['zone','assets','transition_during_loading'])

@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 13:10 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 13:18 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,18 @@ Updated 2026-11-14 13:10 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.22 / owner candidate 0.39.19:** a distinct **Travel into
+  Crushbone…** action now connects calibration, fresh-source planning, checked
+  corridor moves and expected destination positions. It retains one observer,
+  sender and reader lease; no ordinary route driver runs beside it. Inherited
+  loading/entry handling is narrowly scoped to the expected crossing; known
+  loading blocks location input. One complete actual-owner-wrapper harness
+  passes with OS-pipe input and synthetic game feedback. F9 during movement,
+  source and destination position requests passes. Additional checks and private
+  staging remain in progress; no live acceptance follows. **Next:** stage the
+  tested crossing preview for owner traversal, then fresh Crushbone geometry
+  and camps. G0 remains passed; current level, XP/hour, deaths and camp unknown.
+  No accepted real crossing, automated XP or completed 1–20/1–50 run.
 - **Source 0.42.21:** the crossing corridor core now repeats checked pulses,
   resolves provisional source floors from fresh stopped pairs, then discards
   source state on loading and collects expected destination positions through

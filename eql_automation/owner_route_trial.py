@@ -19,6 +19,7 @@ from .motion_collection import CommandReceipt, LocationRequest
 from .observed_height import measure_current_height
 from .owner_input_observer import OwnerInputObserver
 from .owner_destination_assets import DestinationRouteAssets
+from .owner_crossing_assets import CrossingDestinationAssets
 from .owner_navigation_preflight import settings_identity, window_identity
 from .owner_route_adapter import make_route_session_engine
 from .owner_supervised_motion import MOTION_JOB, make_owner_nov12_engine as motion_engine
@@ -31,6 +32,7 @@ from .supervised_route import SupervisedRouteDeclaration, SupervisedRoutePolicy,
 
 TRIAL_JOB = 'supervised_local_route_trial'
 DESTINATION_JOB = 'supervised_destination_travel'
+CROSSING_JOB = 'supervised_crushbone_crossing'
 
 
 def zone_binding(reader):
@@ -38,11 +40,12 @@ def zone_binding(reader):
             reader.tail.epoch,reader.zone_generation)
 
 
-def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_loader=None,
+def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_loader=None, crossing_loader=None,
         observer_factory=OwnerInputObserver, clock=time.monotonic,
         local_wall_clock=datetime.now, output_root=None, motion_output=None, hotkey_output=None,
         zone_observer=None):
-    if not callable(planner_loader) or (destination_loader is not None and not callable(destination_loader)):
+    if (not callable(planner_loader) or (destination_loader is not None and not callable(destination_loader))
+            or (crossing_loader is not None and not callable(crossing_loader))):
         raise ValueError('Pinned current-zone geometry loader required')
     output_root=Path(output_root) if output_root is not None else (
         Path.home()/'.local/share/eql-automation/route-trials')
@@ -57,11 +60,11 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             super().__init__(*args,**kwargs)
 
         def _supervised_job_names(self):
-            return (MOTION_JOB,TRIAL_JOB,DESTINATION_JOB)
+            return (MOTION_JOB,TRIAL_JOB,DESTINATION_JOB,CROSSING_JOB)
 
         def _supervised_current(self,p,*,active):
             super()._supervised_current(p,active=active)
-            if p['job'] in (TRIAL_JOB,DESTINATION_JOB):
+            if p['job'] in (TRIAL_JOB,DESTINATION_JOB,CROSSING_JOB):
                 recipe=p['continuation']
                 if not recipe['started']<=clock()<=recipe['started']+recipe['maximum_seconds']:
                     raise ValueError('Owner route startup time budget exhausted')
@@ -80,8 +83,12 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 if p.get('driver') is not None:
                     runner=p['driver'].session.runner
                     data['phase']+=' · segment '+str(min(runner.index+1,len(runner.route.segments)))+'/'+str(len(runner.route.segments))
+                elif p.get('corridor_runtime') is not None:
+                    corridor=p['corridor_runtime'].corridor
+                    data['phase']+=' · '+corridor.phase.replace('_',' ')
+                    if corridor.phase=='ready':data['phase']+=' · segment '+str(corridor.runner.index+1)
             elif motion is not None:
-                trial=motion['job'] in (TRIAL_JOB,DESTINATION_JOB)
+                trial=motion['job'] in (TRIAL_JOB,DESTINATION_JOB,CROSSING_JOB)
                 label=motion['continuation']['label'] if trial else 'Motion measurement'
                 data.update(state='running',phase=(label+' · ')
                     +motion['stage'],trial_stage=motion['stage'] if trial else None)
@@ -92,9 +99,11 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             return data
 
         def _prepare_supervised_job(self,name):
-            if name not in (TRIAL_JOB,DESTINATION_JOB):return super()._prepare_supervised_job(name)
+            if name not in (TRIAL_JOB,DESTINATION_JOB,CROSSING_JOB):return super()._prepare_supervised_job(name)
             if name==DESTINATION_JOB and destination_loader is None:
                 raise ValueError('This helper has no destination travel loader')
+            if name==CROSSING_JOB and crossing_loader is None:
+                raise ValueError('This helper has no expected-zone crossing loader')
             if self.route_trial is not None or not self._route_idle():
                 raise ValueError('Finish the current helper action before starting a route trial')
             epoch=(self.cancel_generation,self.supervised_epoch,self.route_session_epoch,
@@ -105,9 +114,12 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 raise ValueError('Route trial needs a zone entry observed in this helper session')
             tracker.check_binding()
             zone=zone_binding(tracker.reader)
-            destination=destination_loader(self) if name==DESTINATION_JOB else None
+            destination=(crossing_loader(self) if name==CROSSING_JOB else
+                         destination_loader(self) if name==DESTINATION_JOB else None)
             if name==DESTINATION_JOB and not isinstance(destination,DestinationRouteAssets):
                 raise ValueError('Destination travel requires pinned map and mesh assets')
+            if name==CROSSING_JOB and type(destination) is not CrossingDestinationAssets:
+                raise ValueError('Crossing requires pinned native line and expected destination')
             planner=destination.planner if destination is not None else planner_loader(self)
             tracker.poll()  # Loading may take seconds; consume any intervening transition.
             if (not isinstance(planner,CurrentStartPlanner)
@@ -117,7 +129,8 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                               settings_identity(self.settings)) or not self.jobs.empty()):
                 raise ValueError('Current-zone geometry or owner job changed during preparation')
             return dict(planner=planner,destination=destination,
-                        scope='destination_travel' if destination is not None else 'local_trial',
+                        scope=('zone_crossing_corridor' if name==CROSSING_JOB else
+                               'destination_travel' if destination is not None else 'local_trial'),
                         label=destination.target_name if destination is not None else 'Supervised route trial',
                         zone=zone,tracker=tracker,route_epoch=self.route_session_epoch,
                         started=clock(),maximum_seconds=180.)
@@ -129,6 +142,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             if p.get('collector') is not None:p['collector'].cancel(reason)
             if p.get('policy') is not None:p['policy'].cancel(reason)
             if p.get('driver') is not None:p['driver'].session.cancel(reason)
+            if p.get('corridor_runtime') is not None:p['corridor_runtime'].cancel(reason)
 
         def post(self,name,value=None):
             self._cancel_trial('another owner job requested')
@@ -151,7 +165,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 return
             return super().handle_job(name,value)
 
-        def _trial_current(self,p):
+        def _trial_common_current(self,p):
             def bound():
                 if (self.route_trial is not p or p['cancelled'] or self.cancelled
                         or self.supervised_motion is not None or self.motion_collection_driver is not None
@@ -168,23 +182,34 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             if p['continuation']['destination'] is not None:
                 p['continuation']['destination'].check()
             p['binding'].check()
-            veto=p['veto'].poll();sample=p['observer'].sample()
-            if (not veto.continuity_available or veto.reason is not None
-                    or not sample.clear_at(clock()) or sample.topology_generation!=p['topology']):
-                raise ValueError('Owner input, coverage or log hazard changed during trial')
+            sample=p['observer'].sample()
+            if not sample.clear_at(clock()) or sample.topology_generation!=p['topology']:
+                raise ValueError('Owner input or coverage changed during trial')
             lease=p.get('lease')
             if lease is not None:
                 lease.check()
-                if zone_binding(lease.reader)!=p['continuation']['zone']:
-                    raise ValueError('Trial zone/log identity changed')
             bound()
+
+        def _trial_current(self,p):
+            self._trial_common_current(p)
+            runtime=p.get('corridor_runtime')
+            if runtime is not None:
+                runtime.check_current()
+                return
+            veto=p['veto'].poll()
+            if not veto.continuity_available or veto.reason is not None:
+                raise ValueError('Log hazard or coverage changed during trial')
+            lease=p.get('lease')
+            if lease is not None and zone_binding(lease.reader)!=p['continuation']['zone']:
+                raise ValueError('Trial zone/log identity changed')
+            self._trial_common_current(p)
 
         def _trial_binding(self,p):
             self._trial_current(p)
             return p['lease'].check()
 
         def _handoff_completed_motion(self,p,session,record):
-            if p['job'] not in (TRIAL_JOB,DESTINATION_JOB):return super()._handoff_completed_motion(p,session,record)
+            if p['job'] not in (TRIAL_JOB,DESTINATION_JOB,CROSSING_JOB):return super()._handoff_completed_motion(p,session,record)
             recipe=p['continuation']
             if (not isinstance(recipe,dict) or not isinstance(recipe.get('planner'),CurrentStartPlanner)
                     or self.route_trial is not None or self.sender.held
@@ -195,8 +220,9 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             # and result persistence. It never queues or rearms another job.
             self.supervised_motion=None
             self.route_trial=p
-            p.update(stage='startup_plan',busy=False,collector=None,lease=None,driver=None,policy=None,
-                trial_id=('owner-destination-' if p['job']==DESTINATION_JOB else 'owner-local-trial-')+uuid4().hex,
+            p.update(stage='startup_plan',busy=False,collector=None,lease=None,driver=None,policy=None,corridor_runtime=None,
+                trial_id=('owner-crossing-' if p['job']==CROSSING_JOB else
+                          'owner-destination-' if p['job']==DESTINATION_JOB else 'owner-local-trial-')+uuid4().hex,
                 motion_record=record,plan=None,
                 startup_pairs=[],events=[],expires=recipe['started']+recipe['maximum_seconds'])
             try:
@@ -250,6 +276,16 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 action=collector.tick()
                 if isinstance(action,LocationRequest):
                     collector.command_sent(action,self._startup_hotkey(p,action))
+                if p['stage']=='startup_corridor':
+                    runner,geometry=p['crossing_prepared']
+                    fixes=tuple(v for v in (collector.first,collector.second) if v is not None)
+                    if len(fixes)>len(p['crossing_observations']):
+                        if len(fixes)!=len(p['crossing_observations'])+1:
+                            raise ValueError('Crossing startup skipped a position reply')
+                        p['crossing_observations'].append(p['plan'].observer.observe(fixes[-1],
+                            route=runner.route,segment_index=0,height_calibration=runner.height_calibration,
+                            motion_calibration_record_id=runner.calibration,now=clock(),
+                            floor_chain=geometry.ledger.chain,mode='measurement'))
                 if collector.phase!='complete':return
                 self._trial_current(p)
                 p['startup_pairs'].append(collector.snapshot())
@@ -267,12 +303,16 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                     else:
                         destination.check()
                         p['plan']=plan_destination(planner,destination.navigation_mesh,p['lease'].reader,
-                            collector.first,collector.second,goal_xy=destination.goal_xy,**options)
+                            collector.first,collector.second,goal_xy=destination.goal_xy,
+                            expected_zone_line=(destination.expected_zone_line
+                                if type(destination) is CrossingDestinationAssets else None),**options)
                     self._trial_current(p)
                     p['stage']='startup_height'
                     self._new_startup_pair(p)
-                else:
+                elif p['stage']=='startup_height':
                     self._attach_trial_driver(p,collector)
+                else:
+                    self._attach_crossing_runtime(p,collector)
             finally:p['busy']=False
 
         def _attach_trial_driver(self,p,pair):
@@ -285,7 +325,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 route=plan.route,segment_index=0,owner_binding=p['lease'].owner_binding,
                 binding_reader=lambda:self._trial_binding(p),clock=clock,
                 record_id=p['trial_id']+'-height',released_at=pair.released_at,
-                local_wall_clock=local_wall_clock,valid_for=seconds+60. if scope=='destination_travel' else 300.)
+                local_wall_clock=local_wall_clock,valid_for=seconds+60. if scope!='local_trial' else 300.)
             fit=p['motion_fit']
             motion=steer.Motion(run_speed=fit['run_speed'],turn_rate=fit['turn_rate'],
                 right_sign=fit['right_sign'],turn_latency=fit['turn_latency'],back_speed=0.)
@@ -294,12 +334,28 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 height_calibration=cal,geometry_evidence=plan.observer.geometry,
                 generation=p['generation'],generation_reader=lambda:self.cancel_generation,
                 mode_reader=lambda:'measurement' if self.measurement_only else 'off',max_steps=steps)
-            ledger=RouteFloorCommit(runner,plan.floor_chain,stop_lock=self.g0_stop_lock,clock=clock)
+            if scope=='zone_crossing_corridor':
+                from .provisional_floor_commit import ProvisionalRouteFloorCommit
+                def source_context():
+                    self._trial_common_current(p)
+                    lease=p['lease'];line=p['continuation']['destination'].expected_zone_line
+                    if zone_binding(lease.reader)!=p['continuation']['zone']:
+                        raise ValueError('Crossing source zone/log binding changed')
+                    return (lease.check(),id(lease.reader),zone_binding(lease.reader),line.sha256)
+                ledger=ProvisionalRouteFloorCommit(runner,plan.floor_chain,stop_lock=self.g0_stop_lock,
+                    clock=clock,context_reader=source_context)
+            else:ledger=RouteFloorCommit(runner,plan.floor_chain,stop_lock=self.g0_stop_lock,clock=clock)
             planner=p['continuation']['planner']
             geometry=RouteGeometryPreparer(ledger,ground=planner.ground,source=planner.source,
                 static=planner.static,bsp=planner.bsp,bounds=p['bounds'],
                 static_inventory_sha256=planner.pins[3],vertical_window=3.,maximum_source_z_difference=2.,
-                precision_policy=plan.precision_policy)
+                precision_policy=plan.precision_policy,
+                expected_zone_line=(p['continuation']['destination'].expected_zone_line
+                    if scope=='zone_crossing_corridor' else None))
+            if scope=='zone_crossing_corridor':
+                p.update(stage='startup_corridor',crossing_prepared=(runner,geometry),crossing_observations=[])
+                self._new_startup_pair(p)
+                return
             session=RouteSession(ledger,p['lease'].reader,plan.observer,
                 initial_release_at=p['last_release'],binding_reader=lambda:self._trial_binding(p),
                 record_id=p['trial_id'],max_seconds=seconds,local_wall_clock=local_wall_clock,zone_lease=p['lease'])
@@ -327,26 +383,55 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             self._trial_current(p)
             self.emit(p['continuation']['label']+' active · movement only · F9/F11 stop.')
 
+        def _attach_crossing_runtime(self,p,pair):
+            from .owner_crossing_runtime import OwnerCrossingRuntime
+            self._trial_current(p)
+            runner,geometry=p['crossing_prepared']
+            runner.observe_stopped(*p['crossing_observations'],released_at=pair.released_at,now=clock())
+            seconds=scope_limits('zone_crossing_corridor')[0]
+            p['expires']=clock()+seconds+90.
+            runtime=OwnerCrossingRuntime(self,p,geometry,p['crossing_observations'][-1],
+                clock=clock,local_wall_clock=local_wall_clock)
+            p.update(stage='crossing',corridor_runtime=runtime,collector=None)
+            self._trial_current(p)
+            self.emit('Travel into Crushbone active · stops after observed arrival · F9/F11 stop.')
+
+        def zone_changed(self,body,now):
+            p=self.route_trial
+            runtime=None if p is None else p.get('corridor_runtime')
+            if runtime is not None and not p['cancelled'] and not self.cancelled:
+                expected='You have entered '+runtime.corridor.arrival.destination+'.'
+                if body in ('LOADING, PLEASE WAIT...',expected):
+                    self.zone_loading_until=now+(2. if body==expected else 120.)
+                    self.trace('owner_crossing_transition_seen',line=body,
+                        exclusive_arrival_reader=True,real_client_accepted=False)
+                    return
+            return super().zone_changed(body,now)
+
         def _finish_trial(self,reason):
             p=self.route_trial
             if p is None:return
             driver=p.get('driver')
             if p['busy'] or (driver is not None and driver.busy):return
+            runtime=p.get('corridor_runtime')
             self.route_trial=None
             if p.get('lease') is not None:p['lease'].release()
             try:p['observer'].close()
             except Exception as error:reason=str(reason)+'; input observer cleanup: '+str(error)
             self.cancelled=True
             plan=p.get('plan')
-            record=dict(format=('eql-owner-destination-travel-v1' if p['job']==DESTINATION_JOB
+            record=dict(format=('eql-owner-crossing-travel-v1' if p['job']==CROSSING_JOB else
+                                'eql-owner-destination-travel-v1' if p['job']==DESTINATION_JOB
                                 else 'eql-owner-local-route-trial-v1'),record_id=p['trial_id'],
                 scope=p['continuation']['scope'],
                 destination=None if p['continuation']['destination'] is None else
                     json.loads(p['continuation']['destination'].source_evidence),
-                outcome='arrived' if driver is not None and driver.session.phase=='arrived' else 'stopped',
+                outcome='arrived' if ((driver is not None and driver.session.phase=='arrived')
+                    or (runtime is not None and runtime.corridor.phase=='complete')) else 'stopped',
                 reason=str(reason),motion_record=p['motion_record'],startup_pairs=p['startup_pairs'],
                 incomplete_pair=None if p.get('collector') is None else p['collector'].snapshot(),
                 startup_events=p['events'],route=None if driver is None else driver.session.snapshot(),
+                crossing=None if runtime is None else runtime.snapshot(),
                 plan=None if plan is None else json.loads(plan.plan_bytes),
                 geometry=None if plan is None else json.loads(plan.evidence_bytes),
                 owner_supervised=True,real_client_accepted=False)
@@ -374,6 +459,10 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 p=self.route_trial
                 if p is None:return result
                 if p['stage'].startswith('startup_'):self._startup_tick(p)
+                elif p.get('corridor_runtime') is not None:
+                    p['corridor_runtime'].tick()
+                    if p['corridor_runtime'].corridor.phase=='complete':
+                        self._finish_trial('Fresh expected destination pair observed; movement stopped')
                 elif self.route_session_driver is None:
                     self._finish_trial(p['driver'].session.reason or 'destination reached')
                 return result

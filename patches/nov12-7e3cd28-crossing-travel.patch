@@ -1,0 +1,59 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -461,6 +461,11 @@
+                 self.supervised_destination.clicked.connect(self.configure_supervised_destination)
+                 travel_row.addWidget(self.supervised_destination)
+                 column.addLayout(travel_row)
++                self.supervised_crossing = QPushButton("Travel into Crushbone…")
++                self.supervised_crossing.setObjectName("supervisedCrushboneCrossingButton")
++                self.supervised_crossing.setToolTip("Travel from current GFay position through the expected zone line, then stop after arrival.")
++                self.supervised_crossing.clicked.connect(self.configure_supervised_crossing)
++                column.addWidget(self.supervised_crossing)
+                 limits = QLabel(
+                     "The supervised measurement saves relative speed/turn observations and finishes stopped. "
+                     "Open ground is your confirmation; this does not independently check obstacles or certify a route. "
+@@ -859,6 +864,35 @@
+             if dialog.exec() == QDialog.DialogCode.Accepted and confirmation.isChecked():
+                 self.post("supervised_destination_travel", {"open_flat_clear": True})
+ 
++        def configure_supervised_crossing(self):
++            if not measurement_only:
++                return
++            dialog = QDialog(self)
++            dialog.setWindowTitle("Supervised travel into Crushbone")
++            layout = QVBoxLayout(dialog)
++            text = QLabel("This starts in Greater Faydark, follows a checked route into the expected Crushbone zone line, "
++                          "then stops after two fresh arrival positions. It does not fight, loot or level. "
++                          "Actual crossing is not yet verified.\n\n"
++                          "First open the map and use Test /location hotbutton in this helper to recognize your current zone. "
++                          "Close the map and chat, clear your target and turn melee off. Start on clear, flat, open ground. "
++                          "After a four-second focus countdown, seven short calibration presses precede the route.\n\n"
++                          "Stay present. F9/F11 or Stop measurement cancels. A failed check stops the action without restarting. "
++                          "Travel is limited to 25 minutes, followed by at most 90 seconds to observe arrival.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            confirmation = QCheckBox("I will supervise; the starting calibration area is clear, flat and open.")
++            layout.addWidget(confirmation)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Start travel into Crushbone")
++            ok.setEnabled(False)
++            confirmation.toggled.connect(ok.setEnabled)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if dialog.exec() == QDialog.DialogCode.Accepted and confirmation.isChecked():
++                self.post("supervised_crushbone_crossing", {"open_flat_clear": True})
++
+         def configure_supervised_motion(self):
+             if not measurement_only:
+                 return
+@@ -1085,6 +1119,8 @@
+                     "supervised_route_trial_enabled": measurement_only and window.supervised_route_trial.isEnabled(),
+                     "supervised_destination_visible": measurement_only and window.supervised_destination.isVisible(),
+                     "supervised_destination_enabled": measurement_only and window.supervised_destination.isEnabled(),
++                    "supervised_crossing_visible": measurement_only and window.supervised_crossing.isVisible(),
++                    "supervised_crossing_enabled": measurement_only and window.supervised_crossing.isEnabled(),
+                     "supervised_motion_visible": measurement_only and window.supervised_motion.isVisible(),
+                     "supervised_motion_enabled": measurement_only and window.supervised_motion.isEnabled(),
+                 }, indent=2) + "\n")
