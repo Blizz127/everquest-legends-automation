@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.55 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.56 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,9 +19,21 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.55 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.55/source`; the runnable
+Source tools 0.41.56 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.56/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.56 adds explicit offline diagnostics for reciprocal tile overlaps
+and two-step float32 gaps. Every original overlap must belong to the named
+portal strip, and full corrected ground/source checks must pass. Defaults
+remain one-step, gap-only, with the existing 0.6 source-height diagnostic
+limit. The two-step/overlap sensitivity replay reaches segment 65, where a
+further overlap is refused. Fifty focused precision/source-query tests pass.
+The source-profile tool checked all 2,399 full-width corridor cells: 2,155
+passed and 244 were refused for precision, source layers/materials or slopes.
+It does not publish a whole-region maximum for this failed profile. These are copied-data
+tools; no live route, F11 movement or level progress is accepted. Assist 0.39.6
+and G0 candidate 0.39.7 are unchanged; no new owner command is needed.
 
 Source 0.41.55 separates source terrain, baked navigation height and raw
 character height in the G2/follower observations. It requires independently
@@ -554,7 +566,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.55/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.56/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 

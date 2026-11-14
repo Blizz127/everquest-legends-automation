@@ -34,11 +34,12 @@ def fixture(x=32.,steps=1):
 
 
 def retry(data,*,links=None,sources=None,original=None,areas=None,components=None,limit=.6,
-          allow_overlap=False,polygons=(1,1,2,2)):
+          allow_overlap=False,polygons=(1,1,2,2),maximum_ulp_steps=1):
     faces,default_links,footprint,default_sources,reference,default_original=data
     seams=collect_seams(default_links if links is None else links,
                         {1:63,2:63} if areas is None else areas,
-                        {1:2,2:2} if components is None else components)
+                        {1:2,2:2} if components is None else components,
+                        maximum_ulp_steps=maximum_ulp_steps)
     return retry_precision_gap(default_original if original is None else original,footprint,faces,polygons,
         seams,default_sources if sources is None else sources,reference=reference,component=2,
         vertical_window=3.,maximum_source_z_difference=limit,allow_overlap=allow_overlap)
@@ -245,3 +246,28 @@ def test_y_axis_overlap_uses_exact_portal_strip_after_frame_swap():
 def test_nonoverlap_failure_is_never_retried_even_with_overlap_option():
     for reason in ('steep_detail_plane','discontinuous_ground_seam','forbidden_area_or_other_component'):
         assert not retry(fixture(steps=-1),allow_overlap=True,original=GroundCoverage(False,reason)).candidate
+
+
+@pytest.mark.parametrize('x,steps',((32.,2),(1300.4439697265625,2),(-653.4124755859375,-2)))
+def test_explicit_two_ulp_gap_uses_representable_midpoint(x,steps):
+    data=fixture(x,steps=steps)
+    assert not retry(data).candidate
+    result=retry(data,maximum_ulp_steps=2)
+    assert result.candidate
+    seam=result.seams[0]
+    assert seam.maximum_ulp_steps==2
+    assert struct.unpack('<f',struct.pack('<f',seam.midpoint))[0]==seam.midpoint
+
+
+def test_two_ulp_opt_in_never_accepts_three_steps_or_endpoint_changes():
+    assert not retry(fixture(steps=3),maximum_ulp_steps=2).candidate
+    data=fixture(steps=2);a,b=data[1]
+    changed=replace(b,edge=tuple((x,y,z+.001) for x,y,z in b.edge))
+    assert not retry(data,links=(a,changed),maximum_ulp_steps=2).candidate
+
+
+def test_explicit_two_ulp_overlap_still_needs_overlap_attribution():
+    data=fixture(steps=-2)
+    assert not retry(data,maximum_ulp_steps=2).candidate
+    result=retry(data,maximum_ulp_steps=2,allow_overlap=True)
+    assert result.candidate and result.overlap_attribution.candidate

@@ -1,7 +1,27 @@
 # STATUS
 
-Updated 2026-11-14 02:03 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 02:15 UTC for coordinator task `829a00229b29`.
 
+- Source **0.41.56** adds explicit overlap attribution and two-ULP portal
+  diagnostics. **VERIFIED:** 43 precision tests and seven source-query tests
+  pass. The segment-38 overlap and segment-52 two-ULP gap both reproduce from
+  pinned data and pass source-supported local corrections; stored data stays
+  unchanged. Defaults remain one-ULP/gap-only with the 0.6 diagnostic Z limit.
+- **VERIFIED replay:** explicit overlap/two-ULP and 2.0-height sensitivity
+  reaches segment 65, step 773, then refuses another overlap. No game input.
+  Artifact SHA `65b7560c62b41ae6af69dc9d95138ff275fc8e7ce9acd35e4300a6ed800f29f7`.
+- **VERIFIED whole-corridor scan:** all 2,399 radius-1.2 cells checked; 2,155
+  pass and 244 refuse (45 portal precision; 154 source reference/layering;
+  18 source overlaps; 16 source flag/material; one missing/over-budget source;
+  three source slopes; seven baked slopes). Max measured difference on
+  passing cells: 1.123134. No complete-region bound is accepted. Artifact SHA
+  `be99450b900f29f736185a21204a4889af78cefe5abf7cb7b73c63a5e68a3be8`.
+- Next: derive portal rounding from retained bake provenance, then classify
+  source layers/materials and route around genuine geometry problems using
+  the complete profile. Real movement still needs fresh scene/calibration,
+  full body/hazard checks and sender integration. Level, XP, XP/hour, deaths
+  and camp remain unknown beyond Legira 7 GFay; G0 visible stop passed, no
+  accepted 1–20 route or automated XP. Assist 0.39.6/G0 0.39.7 are unchanged.
 - Private source **0.41.55**, commit `2d94ede`, is staged at Alienware
   `~/.local/share/eql-automation/owner-tools/0.41.55/source`. Archive SHA
   `9955a1493c1413317d370fb97ab618f7d60322c37290dc710b7643f4140460e7`

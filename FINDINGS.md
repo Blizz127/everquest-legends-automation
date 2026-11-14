@@ -1,5 +1,83 @@
 # FINDINGS
 
+## Source-supported overlaps, explicit two-ULP cases and full corridor profile — 2026-11-14 02:15 UTC
+
+**VERIFIED implementation:** Source 0.41.56 keeps the existing precision defaults
+and adds explicit offline overlap attribution and maximum-two-ULP diagnostics.
+Every meaningful original overlap must be between uniquely linked reciprocal
+polygons, within their exact coordinate strip and span, with triangle interiors
+on opposite portal sides and ground heights agreeing within 0.01. Original
+steep, forbidden or partial-height-window faces cannot be hidden. Both original
+and corrected full ground checks run; source coverage runs over the complete
+expanded footprint with all source heights. Same-polygon/extra overlaps,
+layers, wider gaps, altered endpoints and other failure kinds refuse.
+
+`--maximum-portal-ulp-steps 2` permits exactly one or two representable float32
+steps with unchanged other-axis and Z endpoints, absolute difference at most
+0.001. `--precision-overlaps` separately opts into the attributed overlap path.
+Both require `--precision-portals`; defaults remain one-ULP/gap-only and the
+0.6 source-height diagnostic limit. Forty-three analytic precision tests and
+seven source-point/footprint lookup tests pass. The latter include outer-margin
+and all-height enumeration without candidate truncation. CLI startup and
+invalid combinations refuse as expected. No input device is opened.
+
+**VERIFIED pinned segment-38 overlap:** Reproduced against the copied mesh
+and source. Detail232871/poly29697 and detail224903/poly28757 overlap by
+0.00010231455221615393 square units. Their maximum height difference across
+the sliver is 0.00002369795806. Seven boundary vertices move ephemerally to
+the reciprocal midpoint, leaving Z unchanged. Corrected overlap is zero and
+full source support passes (max source/baked delta0.3553916111). The default
+gap-only control refuses. Private artifact
+`~/.local/share/eql-automation/nav-candidates/gfay-source-supported-overlap-0.41.56.json`,
+SHA `f1f2ecf4f26c59bba885e8f13f9f55c307c6488a57114cb0f4db97ba3eb15ff2`.
+Its exact implementation/pins are retained in local commit `21b4f64`.
+
+The one-ULP overlap replay reaches segment52/step659, then refuses a gap.
+Artifact `gfay-overlap-replay-0.41.56.json`, SHA
+`91d595ae5307544b24e4265ce8d1636a62f8c988fa913557beaf383e7c753a6a`.
+
+**VERIFIED pinned segment-52 gap:** The two reciprocal Y coordinates are
+-653.4124755859375 and -653.412353515625: exactly two float32 steps, with
+matching endpoint X/Z and a representable midpoint -653.4124145507812.
+Six local boundary vertices shift to that midpoint. The original uncovered
+area0.000084311394038 becomes ~1.0e-14 after correction; source support passes
+with max source/baked delta0.7006225861. The one-ULP control refuses. Artifact
+`gfay-source-supported-two-ulp-gap-0.41.56.json`, SHA
+`526a6dfb1682dff4982b05a0f62b15a564fcca696fa9488562cecb3c8adf58b1`.
+
+**VERIFIED replay with explicit two-ULP/overlap and 2.0 height sensitivities:**
+28 successful local retries; segment65/step773 then refuses another overlap
+with no supported seam classification. Artifact `gfay-two-ulp-replay-0.41.56.json`,
+SHA `65b7560c62b41ae6af69dc9d95138ff275fc8e7ce9acd35e4300a6ed800f29f7`.
+Defaults are unchanged and no stored source/mesh is modified.
+
+**VERIFIED complete corridor scan:** `audit_route_source_profile.py` partitions
+the repaired route's 4654.7114 XY units into 2,399 convex cells, each covering
+at most two units of travel with the full radius1.2 corridor. It checks complete
+local baked footprints and all source XY candidates at all heights. A coarse
+measurement envelope comes from all source/detail vertex Z extrema, rather
+than choosing another arbitrary height acceptance cap. Tight reported maxima
+come from source/baked plane differences at all clipped intersection vertices.
+This uses float64 clipping, not outward-rounded exact certification, and cannot
+issue a live height calibration or input permit.
+
+All 2,399 cells were checked in168.38seconds; 2,155 pass and244 refuse. Reasons:
+45 unsupported portal precision;154 source reference missing/layered;
+18 overlapping source ground;16 source flag/material;one source missing/over
+budget;three source slopes;seven baked slopes. The first refusal is segment65,
+partition36. Maximum measured difference on passing cells is1.1231339241 at
+segment143/partition13 (source fragment1577 faces13/35). The whole-region value
+is null because some cells failed. These classifications do not imply every
+refusal is a physical obstacle; source layers need supporting-floor/overhead
+classification and slopes/materials need source-aware detours. Private artifact
+`gfay-source-profile-0.41.56.json`, SHA
+`be99450b900f29f736185a21204a4889af78cefe5abf7cb7b73c63a5e68a3be8`.
+
+Next: explain portal error from retained bake provenance rather than increasing
+ULP counts with coordinate magnitude, classify the source layers, and use the
+complete failure profile for route repairs. No accepted 1–20 route, real G2/F11
+movement or XP gain follows. Assist0.39.6/G0candidate0.39.7 are unchanged.
+
 ## Private 0.41.55 staging — 2026-11-14 02:03 UTC
 
 **VERIFIED:** Source commit `2d94ede`, archive SHA

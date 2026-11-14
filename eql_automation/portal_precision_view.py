@@ -14,7 +14,7 @@ from .wld_inventory import WLDInventory
 
 
 class PortalPrecisionView:
-    def __init__(self, ground_view, mesh_path: Path, archive_path: Path, *, zone):
+    def __init__(self, ground_view, mesh_path: Path, archive_path: Path, *, zone, maximum_ulp_steps=1):
         self.ground = ground_view
         with np.load(mesh_path,allow_pickle=False) as data:
             a = np.asarray(data['link_a'],dtype=np.int64).reshape(-1)
@@ -26,7 +26,10 @@ class PortalPrecisionView:
             raise ValueError('Invalid copied precision portal arrays')
         links = (PortalLink(int(x),int(y),tuple(tuple(float(n) for n in p) for p in edge))
                  for x,y,edge in zip(a,b,edges))
-        self.seams = collect_seams(links,ground_view.areas,ground_view.components)
+        if type(maximum_ulp_steps) is not int or maximum_ulp_steps not in (1,2):
+            raise ValueError('Only explicit one- or two-ULP diagnostics are supported')
+        self.seams = collect_seams(links,ground_view.areas,ground_view.components,
+                                  maximum_ulp_steps=maximum_ulp_steps)
         self.by_polygon = {}
         for index,seam in enumerate(self.seams):
             for poly in (seam.source,seam.target):
@@ -73,6 +76,15 @@ class PortalPrecisionView:
             raise ValueError('Copied source floor missing or layered at exact XY')
         return hits[0][0], tuple(h[1] for h in hits)
 
+    def source_faces_for_footprint(self,footprint):
+        """All XY source candidates across every height, including margin."""
+        left,right = np.min(footprint,axis=0)-.002,np.max(footprint,axis=0)+.002
+        local = np.flatnonzero((self.source_minimum[:,0] <= right[0]) & (self.source_maximum[:,0] >= left[0])
+                              & (self.source_minimum[:,1] <= right[1]) & (self.source_maximum[:,1] >= left[1]))
+        if len(local)>128:
+            raise ValueError('Source projection candidate budget exceeded')
+        return tuple(self.sources[i] for i in local)
+
     def retry(self,original,footprint,detail_ids,*,reference,component,vertical_window,
               maximum_source_z_difference,allow_overlap=False):
         allowed = ('uncovered_ground_area','overlapping_ground_faces') if allow_overlap is True else ('uncovered_ground_area',)
@@ -86,12 +98,10 @@ class PortalPrecisionView:
         if not 1 <= len(seams) <= 8:
             return PrecisionCheck(False,'no_bounded_reciprocal_seam_set')
         # Include all source XY boxes in the expanded margin, at every height.
-        left,right = np.min(footprint,axis=0)-.002,np.max(footprint,axis=0)+.002
-        local = np.flatnonzero((self.source_minimum[:,0] <= right[0]) & (self.source_maximum[:,0] >= left[0])
-                              & (self.source_minimum[:,1] <= right[1]) & (self.source_maximum[:,1] >= left[1]))
-        if len(local) > 128:
+        try:
+            sources = self.source_faces_for_footprint(footprint)
+        except ValueError:
             return PrecisionCheck(False,'source_projection_candidate_budget_exceeded')
-        sources = tuple(self.sources[i] for i in local)
         faces = tuple(GroundFace(tuple(tuple(float(v) for v in p) for p in self.ground.triangles[i]),
                                 int(self.ground.areas[poly]),int(self.ground.components[poly]))
                       for i,poly in zip(detail_ids,polygons))

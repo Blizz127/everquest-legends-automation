@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reproduce the retained GFay overlap and its scoped offline correction."""
+"""Reproduce retained GFay precision failures and scoped offline corrections."""
 from __future__ import annotations
 
 import argparse
@@ -23,11 +23,16 @@ PINS = {
 }
 
 
-def run(output):
+def run(output, *, two_ulp_gap=False):
     sys.path.insert(0,str(PROJECT))
     from eql_automation.ground_sweep_view import GroundSweepView
     from eql_automation.portal_precision_view import PortalPrecisionView
     pins = dict(PINS)
+    replay_path = REPLAY
+    if two_ulp_gap:
+        del pins[REPLAY]
+        replay_path=STORE/'nav-candidates/gfay-overlap-replay-0.41.56.json'
+        pins[replay_path]='91d595ae5307544b24e4265ce8d1636a62f8c988fa913557beaf383e7c753a6a'
     for name in ('ground_sweep','ground_sweep_view','portal_precision','portal_precision_view',
                  'map_alignment','pfs_archive','wld_inventory','mesh_geometry','material_audit'):
         p=PROJECT/'eql_automation'/(name+'.py'); pins[p]=sha256(p.read_bytes()).hexdigest()
@@ -36,27 +41,33 @@ def run(output):
         if any(p.is_symlink() or sha256(p.read_bytes()).hexdigest()!=h for p,h in pins.items()):
             raise ValueError('Pinned overlap input changed')
     verify()
-    replay=json.loads(REPLAY.read_text())
+    replay=json.loads(replay_path.read_text())
     failure=replay['sweep_failure']
-    if failure['segment']!=38 or failure['result']['reason']!='overlapping_ground_faces':
+    expected_reason='uncovered_ground_area' if two_ulp_gap else 'overlapping_ground_faces'
+    if failure['segment']!=(52 if two_ulp_gap else 38) or failure['result']['reason']!=expected_reason:
         raise ValueError('Unexpected retained overlap')
     footprint=tuple(tuple(p) for p in failure['footprint'])
     reference=tuple(failure['reference'])
     window=max(math.dist(reference[:2],p) for p in footprint)+.05
     ground=GroundSweepView.load(MESH,zone='gfaydark')
-    view=PortalPrecisionView(ground,MESH,SOURCE,zone='gfaydark')
+    view=PortalPrecisionView(ground,MESH,SOURCE,zone='gfaydark',maximum_ulp_steps=2 if two_ulp_gap else 1)
     original,ids=ground.check(footprint,reference=reference,component=2,vertical_window=window)
-    if original.reason!='overlapping_ground_faces' or tuple(failure['detail_ids'])!=ids:
+    if original.reason!=expected_reason or tuple(failure['detail_ids'])!=ids:
         raise ValueError('Copied overlap did not reproduce')
-    args=dict(reference=reference,component=2,vertical_window=window,maximum_source_z_difference=.6)
-    control=view.retry(original,footprint,ids,**args)
+    args=dict(reference=reference,component=2,vertical_window=window,maximum_source_z_difference=.9 if two_ulp_gap else .6)
+    if two_ulp_gap:
+        control_view=PortalPrecisionView(ground,MESH,SOURCE,zone='gfaydark')
+    else:
+        control_view=view
+    control=control_view.retry(original,footprint,ids,**args)
     result=view.retry(original,footprint,ids,allow_overlap=True,**args)
-    if control.candidate or not result.candidate or not result.overlap_attribution.candidate:
+    if control.candidate or not result.candidate or (not two_ulp_gap and not result.overlap_attribution.candidate):
         raise ValueError('Scoped overlap correction or unchanged default did not reproduce')
-    pairs=[{'detail_ids':[ids[p.first_face],ids[p.second_face]],**asdict(p)}
-           for p in result.overlap_attribution.pairs]
+    pairs=[] if result.overlap_attribution is None else [
+        {'detail_ids':[ids[p.first_face],ids[p.second_face]],**asdict(p)} for p in result.overlap_attribution.pairs]
     verify()
     report={'format':'eql-source-supported-overlap-diagnostic-v1',
+        'case':'two_ulp_gap' if two_ulp_gap else 'one_ulp_overlap',
         'offline_only':True,'game_input_sent':False,'input_authorized':False,
         'real_client_accepted':False,'route_accepted':False,'source_or_mesh_modified':False,
         'reference':reference,'footprint':footprint,'detail_ids':ids,'vertical_window':window,
@@ -66,6 +77,8 @@ def run(output):
     with output.open('x') as out:json.dump(report,out,indent=2);out.write('\n')
     print(json.dumps({'artifact':str(output),'sha256':sha256(output.read_bytes()).hexdigest(),
         'overlap_before':original.overlap_area,'overlap_after':result.coverage.overlap_area,
+        'uncovered_before':original.footprint_area-original.covered_area,
+        'uncovered_after':result.coverage.footprint_area-result.coverage.covered_area,
         'source_baked_delta':result.source_support.maximum_source_baked_z_difference,
         'pairs':pairs,'shifted_vertices':result.shifted_vertices}))
 
@@ -73,11 +86,12 @@ def run(output):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output',required=True,type=Path)
+    parser.add_argument('--two-ulp-gap',action='store_true',help='Reproduce the separate segment52 two-ULP gap')
     args=parser.parse_args();output=args.output.expanduser()
     if (output.parent.resolve()!=(STORE/'nav-candidates').resolve() or output.exists()
             or output.is_symlink() or output.suffix!='.json'):
         parser.error('Use a new private nav-candidates JSON')
-    os.umask(0o077);os.nice(15);run(output)
+    os.umask(0o077);os.nice(15);run(output,two_ulp_gap=args.two_ulp_gap)
 
 
 if __name__=='__main__':main()

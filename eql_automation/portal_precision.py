@@ -28,13 +28,15 @@ class QuantizedSeam:
     source_coordinate: float
     target_coordinate: float
     span: tuple[float, float]
+    maximum_ulp_steps: int = 1
 
     def __post_init__(self):
         if (self.axis not in (0,1) or isinstance(self.axis,bool)
                 or any(not isinstance(p,int) or isinstance(p,bool) or p < 0 for p in (self.source,self.target))
                 or self.source == self.target or len(self.span) != 2
                 or not all(finite(v) for v in self.span) or self.span[0] >= self.span[1]
-                or not adjacent_float32(self.source_coordinate,self.target_coordinate)):
+                or type(self.maximum_ulp_steps) is not int or self.maximum_ulp_steps not in (1,2)
+                or float32_steps(self.source_coordinate,self.target_coordinate) not in range(1,self.maximum_ulp_steps+1)):
             raise ValueError('Invalid one-ULP reciprocal seam')
 
     @property
@@ -93,21 +95,26 @@ class PrecisionCheck:
     overlap_attribution: OverlapAttribution | None = None
 
 
-def adjacent_float32(a, b):
+def float32_steps(a, b):
     if not finite(a) or not finite(b) or not 0 < abs(a-b) <= .001:
-        return False
+        return None
     try:
         pa, pb = struct.pack('<f', a), struct.pack('<f', b)
     except (OverflowError, struct.error):
-        return False
+        return None
     if struct.unpack('<f', pa)[0] != a or struct.unpack('<f', pb)[0] != b:
-        return False
+        return None
     ia, ib = struct.unpack('<I', pa)[0], struct.unpack('<I', pb)[0]
-    return ia >> 31 == ib >> 31 and abs(ia-ib) == 1
+    return abs(ia-ib) if ia >> 31 == ib >> 31 else None
 
 
-def derive_seam(first, second, areas, components):
+def adjacent_float32(a, b):
+    return float32_steps(a,b)==1
+
+
+def derive_seam(first, second, areas, components, *, maximum_ulp_steps=1):
     if (not isinstance(first, PortalLink) or not isinstance(second, PortalLink)
+            or type(maximum_ulp_steps) is not int or maximum_ulp_steps not in (1,2)
             or first.source != second.target or first.target != second.source
             or first.source == first.target):
         return None
@@ -124,15 +131,15 @@ def derive_seam(first, second, areas, components):
         other = 1-axis
         ea, eb = sorted(first.edge, key=lambda p:p[other]), sorted(second.edge, key=lambda p:p[other])
         if (ea[0][axis] != ea[1][axis] or eb[0][axis] != eb[1][axis]
-                or not adjacent_float32(ea[0][axis], eb[0][axis])
+                or float32_steps(ea[0][axis], eb[0][axis]) not in range(1,maximum_ulp_steps+1)
                 or ea[0][other] >= ea[1][other]
                 or any(pa[other] != pb[other] or pa[2] != pb[2] for pa,pb in zip(ea,eb))):
             continue
-        return QuantizedSeam(a,b,axis,ea[0][axis],eb[0][axis],(ea[0][other],ea[1][other]))
+        return QuantizedSeam(a,b,axis,ea[0][axis],eb[0][axis],(ea[0][other],ea[1][other]),maximum_ulp_steps)
     return None
 
 
-def collect_seams(links, areas, components):
+def collect_seams(links, areas, components, *, maximum_ulp_steps=1):
     """Duplicate or nonreciprocal links never supply a correction."""
     directed = {}
     for link in links:
@@ -141,7 +148,7 @@ def collect_seams(links, areas, components):
     for (a,b), forward in directed.items():
         reverse = directed.get((b,a),())
         if a < b and len(forward) == len(reverse) == 1:
-            seam = derive_seam(forward[0],reverse[0],areas,components)
+            seam = derive_seam(forward[0],reverse[0],areas,components,maximum_ulp_steps=maximum_ulp_steps)
             if seam is not None:
                 seams.append(seam)
     return tuple(seams)

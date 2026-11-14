@@ -232,3 +232,23 @@ proofs or live tolerances. No playable 1–20 leg, G2/F11 acceptance or automate
 XP follows from these results. Next: derive a source-supported regional height
 bound and reconcile the identified reciprocal overlap, then complete the
 remaining route, scene/calibration and sender checks.
+
+Source 0.41.56 reproduces the segment-38 reciprocal overlap and the segment-52
+two-float32-step gap against the copied source terrain. Explicit local midpoint
+corrections remove those precision failures without changing the stored mesh.
+The diagnostic replay advances to segment 65/step 773 and refuses another
+overlap. Its 2.0 source-height and two-step portal settings are separately
+labelled sensitivities; defaults are unchanged. Full-width corridor profiling
+uses 2,399 cells over the 155-segment route and never calls a failed or partial
+profile a complete regional bound. These results do not enable F11 or prove
+live 1–20 leveling.
+
+The first full source profile completed all 2,399 cells in 168.38 seconds:
+2,155 passed, 244 refused. First failure is segment65/partition36. Of the
+refusals, 45 concern unrecognized portal precision, 154 source reference or
+layering, 18 source overlap, 16 flag/material, one missing/over-budget source,
+three source slopes and seven baked slopes. These are classification results,
+not proof that every refused cell is a physical obstacle. Maximum measured
+source/bake difference on passing cells is 1.123134; the complete-region value
+is deliberately null because some cells failed. Numerical extrema use float64
+clipping and are not an outward-rounded certified live bound.

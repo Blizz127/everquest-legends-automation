@@ -47,3 +47,16 @@ class SourceFloorObservationTests(unittest.TestCase):
     def test_candidate_budget_never_truncates_a_layer(self):
         with self.assertRaisesRegex(ValueError, 'budget'):
             view(*(face(index=i) for i in range(129))).source_floor_at((.1, .2))
+
+    def test_footprint_query_keeps_all_heights_and_outer_margin(self):
+        near=SourceFace(((1.001,0.,0.),(2.,0.,0.),(1.001,1.,0.)),0,'Diffuse',7,3)
+        sources=view(face(),face(100.,index=2),near)
+        # Input uses helper XY; the extra triangle is within the .002 margin
+        # beyond raw X=1 even though it misses the unexpanded footprint.
+        found=sources.source_faces_for_footprint(((.1,.1),(.8,.1),(.8,1.),(.1,1.)))
+        self.assertEqual(tuple(f.face for f in found),(1,2,3))
+
+    def test_footprint_candidate_budget_is_exhaustive(self):
+        with self.assertRaisesRegex(ValueError,'budget'):
+            view(*(face(index=i) for i in range(129))).source_faces_for_footprint(
+                ((.1,.1),(.3,.1),(.3,.3),(.1,.3)))
