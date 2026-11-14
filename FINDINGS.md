@@ -1,5 +1,29 @@
 # FINDINGS
 
+## Private 0.41.55 staging — 2026-11-14 02:03 UTC
+
+**VERIFIED:** Source commit `2d94ede`, archive SHA
+`9955a1493c1413317d370fb97ab618f7d60322c37290dc710b7643f4140460e7`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.55/source`.
+The remote archive matched its SHA; extraction allowed only regular files and
+directories under `source/`. Eight pure checks passed, including G2 package
+frame/snap, source-height separation, rejection of a self-reported large bound,
+and malformed integer time. Replay CLI startup passed. Evidence is
+`~/.local/share/eql-automation/owner-tools/0.41.55/smoke.json` on Alienware.
+No device or game input occurred; runnable assist/G0 packages are unchanged.
+
+**OBSERVED helper diagnostic for next work:** A read-only current-store check
+reported that the segment-38 overlap is between detail 224903/poly28757 and
+232871/poly29697. Their reciprocal link Xs are 1300.4439697265625 and
+1300.44384765625, exactly one float32 ULP apart, with shared Y range
+[-1114.21240234375,-960.6124267578125], area63/component2. Midpoint X is
+1300.4439086914062. Source fragment657/face4, flag0/Diffuse, was the sole
+projected source covering the expanded footprint. A virtual midpoint shift
+reportedly removed the overlap and passed source coverage with max Z delta
+0.355391611. This investigation has no retained standalone proof artifact yet;
+root must reproduce and pin it before extending the precision retry. It is
+not route acceptance and does not justify raising overlap tolerance.
+
 ## Separate ground observation binding — 2026-11-14 02:03 UTC
 
 **VERIFIED implementation:** Source 0.41.55 replaces the ambiguous aligned

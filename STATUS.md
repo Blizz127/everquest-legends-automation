@@ -2,6 +2,11 @@
 
 Updated 2026-11-14 02:03 UTC for coordinator task `829a00229b29`.
 
+- Private source **0.41.55**, commit `2d94ede`, is staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.55/source`. Archive SHA
+  `9955a1493c1413317d370fb97ab618f7d60322c37290dc710b7643f4140460e7`
+  matched remotely. Eight pure G2/ground binding smokes and CLI startup passed;
+  no input device or client was opened. Staging evidence is `../smoke.json`.
 - Source **0.41.55** separates physical source floor, baked projection and
   calibrated character height. G2/follower now require independent expected
   geometry evidence and current height calibration; endpoint 0.25 and G2 snap
