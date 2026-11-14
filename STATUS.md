@@ -1,7 +1,26 @@
 # STATUS
 
-Updated 2026-11-14 00:50 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 00:59 UTC for coordinator task `829a00229b29`.
 
+- Source **0.41.48** adds a G2 safety-provider boundary using fresh input
+  scans around independent UI evidence, bound to window/process, calibration,
+  mode and cancel generation. Twenty-seven focused tests passed, including
+  the existing location-log scene observer. UI evidence was simulated; the
+  live classifier and owner-helper integration are still missing.
+- The copied GFay route now exports **155 fixed 3D segments**, retaining the
+  audited portals and terrain heights. Offline artifact SHA
+  `145679ec15111cf2d319ca630c66da693cc69863bdef594f67a46989c18592a4`.
+  No route is accepted and the historic G0 start is not a current position.
+- The actual retained helper reproduces a corner shortcut outside the
+  checked strip and predicted arrival before its raw fix reaches the portal.
+  One-segment following avoids the shortcut fixture; the production adapter,
+  bounded movement and stopped raw-fix advancement remain to implement.
+  Probe SHA `c22363c8f0aa12731434b45c124181b6366bbd62d4967c92eac19c99c2e8a013`.
+- Current level/XP/XP-hour/deaths/camp remain unobserved beyond Legira7 GFay.
+  G0's owner-confirmed visible stop remains passed; no playable 1–20 leg or
+  automated level gain. Next: current-zone/idle UI capture when owner-ready,
+  live alignment/speed and the fixed-segment controller. Assist remains
+  0.39.6, separate G0 candidate 0.39.7. No new owner test is requested.
 - Private source **0.41.47**, commit `b6df01d`, is staged at Alienware
   `~/.local/share/eql-automation/owner-tools/0.41.47/source`. Archive SHA
   `a6a079824b57520f8564f58bfd194707cfc0e603d0656166cb111eaf02b11aa2`

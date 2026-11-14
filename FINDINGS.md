@@ -1,5 +1,66 @@
 # FINDINGS
 
+## Scene integration and fixed GFay segment export — 2026-11-14 00:59 UTC
+
+**VERIFIED focused tests:** `g2_safety_provider.py` joins the existing
+read-only owner-input observer to `G2ReadOnlySceneObserver`. A new UI frame
+must be captured between two complete, clear input scans with matching
+input topology. Both ends verify the exact focused window/process/start
+identity, measurement mode and cancellation generation. The frame must match
+the bound calibration, report every independent scene check, and fit the
+existing 0.10-second freshness bound. The returned time is the oldest check,
+not completion time. Twenty-seven focused tests passed, including connection
+to real `LocationLogReader` parsing of new fixture zone/location lines.
+Tests cover F9/mode/session/focus changes, input contacts/activity, unknown
+or stale frames, slow clocks and failed callbacks. UI/device evidence in
+these tests is simulated. The actual calibrated UI classifier and owner
+preview caller are not implemented; this library does not send game input.
+
+**VERIFIED copied-data execution:** `tools/prepare_gfay_segment_plan.py`
+exports the pinned 155-polygon GFay corridor using the accepted offline
+portal selection and corrected-frame BSP evidence. Both endpoints of each
+segment get their polygon's detail-surface height; no zero-height default,
+new path search, averaged seam or shortcut is substituted. All polygons are
+ground, all segments have length, and maximum adjacent height disagreement
+is 0.0000993064 unit. Source/input hashes are checked before and after.
+Execution took 3.79 seconds. Private artifact:
+`nav-candidates/gfay-fixed-segment-plan-0.41.48.json`, SHA-256
+`145679ec15111cf2d319ca630c66da693cc69863bdef594f67a46989c18592a4`.
+Its origin is the historical G0 position, its goal an unverified guide marker,
+and its frame is `(WLD Y, WLD X, Z)`. It is not current route acceptance.
+
+**VERIFIED retained-code behavior:** `tools/probe_legacy_follower.py` uses
+hash-pinned `eqnav/steer.py` and `eqnav/mesh.py` from owner-assist/0.39.4,
+without input devices. On an L-shaped fixture the whole-route lookahead sends
+forward along a shortcut whose midpoint is 2.5 units from the selected path,
+outside the audited 1.2-unit half-width. Supplying only the first segment
+instead requests a turn with no forward input. A delayed-location fixture
+also reports `arrived` at predicted Y10 while the raw fix is still Y9.
+Private probe `nav-candidates/legacy-follower-corner-arrival-0.41.48-v3.json`,
+SHA-256 `c22363c8f0aa12731434b45c124181b6366bbd62d4967c92eac19c99c2e8a013`.
+
+**VERIFIED additional short-segment defect:** The default three-unit arrival
+radius marks a 0.6-unit fixture arrived after an unchanged raw fix, with no
+forward request. Radius0.25 requests forward and remains running on that
+same unchanged fix. This is an offline tuning example, not calibrated live
+precision. The actual 155-segment export has 35 segments no longer than three
+units and a minimum of 0.599976 unit. The final v3 probe retains the corner,
+delayed-arrival, short-segment and tuned-control cases; v1/v2 remain private
+history. Live movement granularity may require separately audited traversal
+across several short portals, rather than assuming a stop within 0.25 unit
+is achievable. No portal skipping or route acceptance is enabled.
+
+**INFERRED implementation requirement:** Reuse the old helper's pose and
+single-segment follower behind a bounded swept-motion guard; do not call its
+Navigator, which replans independently of the audited route. Unknown heading,
+probe/turn-test/back/jump and rejected controls must terminate that follower;
+continuing it would predict unsent controls. Advance only with a new raw fix
+after keys are released and motion settled. These runtime constraints are
+recorded by the exporter, not implemented by it. Live scene, current start,
+alignment/speed, controller and actual camp acceptance remain open. The
+owner's old G0 stop confirmation is preserved; no further G0 test is asked.
+
+
 ## Source 0.41.47 private publication — 2026-11-14 00:52 UTC
 
 **VERIFIED:** Source commit `b6df01d` is staged on Alienware at

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.47 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.48 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,9 +19,24 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.47 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.47/source`; the runnable
+Source tools 0.41.48 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.48/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.48 connects the read-only input observer to the future G2 scene
+provider. It brackets a fresh UI observation with input scans and rejects
+cancellation, assist mode, focus/session changes, stale frames or unknown UI
+states. Its 27 focused tests use simulated UI evidence; the actual calibrated
+UI classifier and owner-helper wiring are still missing. It sends no input.
+
+The copied GFay route now has 155 explicit 3D segments preserving selected
+portals and terrain heights. A probe of the existing helper reproduced a
+corner shortcut and an arrival based on predicted rather than measured
+position. Reusing one segment at a time avoids that fixture's shortcut;
+the production follower still needs bounded movement and stopped raw-position
+checks at each portal. These source tools do not enable F11 or a playable
+1–20 route. No repeat G0 test is requested; the owner's earlier visible-stop
+confirmation remains recorded.
 
 Preview 0.39.6 builds on the existing rotation bot and proposes its HP crop
 from the client's saved UI layout. **Find / calibrate HP** opens the captured

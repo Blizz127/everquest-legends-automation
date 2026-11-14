@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 00:50 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 00:59 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -56,6 +56,18 @@ for event-history claims. No intentional held-finger/quick-key acceptance was
 run, and the observer is not connected to movement. The current-zone map label
 is now included in read-only capture, pending an owner-selected Current Zone
 view. UI scene checks, fresh live alignment/speed and a follower remain open.
+Source 0.41.48 adds the input/UI safety-provider integration boundary: 27
+focused tests passed with simulated UI evidence, but no calibrated live UI
+classifier or owner-helper wiring exists yet. The copied GFay corridor is
+exported as 155 fixed 3D segments, preserving the selected portal coordinates
+and each polygon's terrain height. The largest adjacent height discrepancy
+is under 0.0001 unit. An offline probe of the actual retained helper confirms
+its whole-route lookahead can shortcut beyond the audited walking strip, and
+its predicted pose can report arrival before the raw location reaches a
+portal. The future controller must feed one segment at a time, guard every
+motion pulse, and advance only on a fresh stopped raw fix. Exporting the plan
+does not implement those runtime constraints or accept the historic start
+as the character's current position.
 The Crushbone alternatives let the planner compare same-zone options before
 committing to the unresolved Cauldron→Unrest crossing; they do not authorize
 F11 or a pull. The helper's protected-target rules must still exclude
