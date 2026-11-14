@@ -1,5 +1,35 @@
 # FINDINGS
 
+## Private source 0.41.79 staged — 2026-11-14 06:20 UTC
+
+**VERIFIED:** commit `68844ef020609e962a1daa6184a523d6bbd13baf`, archive SHA
+`7dae6f43cbb7fec8ae5329d6fc818ff95ce49581f4fc9468c71ad84dd4aa0237`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.79/source`.
+Eleven remote checks pass, including complete deterministic feature-report
+equality against the published 0.41.78 benchmark. Time fields and the private
+version directory names were normalized; every candidate, score, tie, source
+hash, frame hash, gauge value and remaining deterministic field matched.
+The existing Alienware NumPy version is 2.5.1; no dependency was installed there.
+
+**OBSERVED timing:** warm median falls from 248.2 ms to 53.9 ms, about 4.6×
+faster. Nine of ten synthetic frames meet the 100 ms budget. The cold first
+call is 199.3 ms and still fails it; initialization must be accounted for before
+arming a future measurement. The benchmark excludes real capture, real layout
+loading and input/log scans, so it does not verify the whole live scene budget.
+Remote detailed artifact `../synthetic-frame-features.json` SHA:
+`cbb662dfce23d0710e0f8d46ccb426019e053a0ce175bd6e87e3aa7005252a04`.
+Local staging evidence is `releases/eql-automation-0.41.79-staging.json`;
+remote `../smoke.json` retains checks and timings. Three installed UI assets
+were read/pinned and copied only into the private benchmark folder. No game
+capture, login, input or protected-install mutation occurred.
+
+The read-only listing still found zero saved owner position pairs. Assist
+0.39.6 and observation candidate 0.39.10 remain unchanged. G0 is passed with
+no repeat. Current live chat/player/target/position evidence, motion/height
+calibration, initial spatial envelope and accepted route execution are still
+missing. Level, XP/hour, deaths and camp remain unknown; no 1–20 route or
+fresh-character hands-off 1–50 run is accepted.
+
 ## Exact NumPy matching 0.41.79 — 2026-11-14 06:19 UTC
 
 **VERIFIED implementation:** the existing combat matcher's bounded batches

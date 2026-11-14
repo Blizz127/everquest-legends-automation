@@ -28,6 +28,9 @@ available, with an exact Pillow fallback. Sixty-one focused checks plus 31
 fallback checks pass; the complete deterministic outputs match 0.41.78 in ten
 large synthetic frames with copied client sprites. This changes processing
 speed only. It enables no movement and establishes no live scene acceptance.
+On Alienware, the same synthetic pass falls from 248 ms to 53.9 ms warm
+median. The cold first call is 199.3 ms; real capture/layout/input/log work is
+not included. The complete live observation budget remains unverified.
 
 Source 0.41.78 reads HP/mana candidates and combat-icon matches from one
 in-memory frame using the existing gauge reader. The saved-capture flow shares
