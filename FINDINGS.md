@@ -1,5 +1,108 @@
 # FINDINGS
 
+## Complete conditional GFay source-floor chain — 2026-11-14 02:44 UTC
+
+**VERIFIED source 0.41.58:** The ordered source-floor tracker carries exact
+source identity through overlapping full-width route cells. New triangles
+must join through exact positive-length 3D edges with opposite XY interiors;
+vertex-only links, branches, changed identities and unsupported materials
+refuse. Every cell must have an exact floor partition and pass all-height
+occupancy. The selected floors must agree as exact affine planes throughout
+the entire overlap with the prior cell. Refusal latches the tracker; it cannot
+reseed itself. `floor_at` is confined to the accepted cell, preserves the raw
+WLD/package XY conversion and requires exact same-height agreement on shared
+edges. It never chooses a nearest height. This is an offline source model,
+not a trusted live geometry producer or a game input permit.
+
+The seed is fragment698/face65 from the unambiguous first cell of the pinned
+0.41.57 source profile. Its hash pins the explicit copied-data hypothesis;
+it does not prove the character currently occupies that surface. The body
+height is an explicit hypothetical 8 units. Source inventory includes every
+local terrain-WLD face at all heights; placed objects/dynamics are still
+absent. Both limitations remain explicit in every accepted cell/report.
+
+**VERIFIED complete scan:** All 2,399 cells pass the conditional source-floor
+chain in 141.55 seconds: 266 distinct selected source faces, 268 edge-join
+events and 1,806 overhead classification events. All prior 204 failed profile
+cells have a valid terrain-source chain under this hypothesis; their separate
+baked-ground failures are not thereby repaired or accepted. Cell87/49 retains
+source1208/9, agreeing with the earlier local diagnostic. No partial-edge
+matching or T-junction relaxation was needed. The ordered chain has a hashed
+link per cell and samples its source plane at each cell reference.
+
+Artifact `~/.local/share/eql-automation/nav-candidates/gfay-source-floor-chain-fast-0.41.58.json`,
+SHA `06c0a1d0818826ca0913e94a05b26912f9be05b994fa328230857b42dd04a497`.
+Its source implementation is preserved in commit `01a253d`; all 19 pinned
+inputs were rechecked after completion. The earlier exact implementation in
+`7cda362` reached 1,147 cells before its 240-second budget, with no geometric
+refusal: artifact `gfay-source-floor-chain-0.41.58.json`, SHA
+`7cc91bde204f8f8afd6ce3f820af46a16c032f01c1f67e112f9cd69d83d0441f`.
+That prefix was not mistaken for a complete chain. The completed run computes
+the same exact intersections more cheaply: clip the footprint by source
+triangles, use exact separating axes for overlap, and avoid comparing equal
+planes or constructing intersections outside common source patches.
+
+**VERIFIED focused checks:** 27 source-chain/occupancy tests passed, including
+edge/point-only contact, a tiny positive overlap, crossed convex strips,
+identity changes, disconnected cells, three-face branches, unsupported floor
+material, low platforms, vertical walls, floor gaps, same-edge point samples
+and failure latching. The CLI starts without reading data on `--help`.
+No game input/device or client launch occurred.
+
+**Next:** Integrate this pinned conditional source selection into offline
+follower replay and measure source/baked differences without dropping other
+occupancy faces. Recheck the remaining baked slope refusals. Extend collision
+queries with correctly transformed, uniquely identified static placements.
+The log also supplies explicit XP-gain percentages for a future gross gain
+rate reader. Fresh UI/position/speed observations and sender integration still
+gate real route acceptance. G0 remains passed; no repeat is requested. Assist
+0.39.6/G0candidate0.39.7 are unchanged, F11 stays disabled, no real level gain
+is claimed and the full 1–50 goal remains incomplete.
+
+## Read-only owner progress and static-object coverage — 2026-11-14 02:42 UTC
+
+**VERIFIED read-only log snapshot:** The exact owner file
+`<game root>/Logs/eqlog_Legira_freeport.txt` was stable at 1,896,925 bytes,
+SHA `974341d7328c77235ca1dc06c0508d3b7d980893f3b95826843970881af90375`.
+Its mtime is 2026-11-13 22:10:46 UTC; the last written log timestamp is
+Nov13 16:10:46 (log timezone not independently verified). The latest logged
+level gain is level7 on Oct18, and latest zone entry is Greater Faydark on
+Nov13 15:17:07. Six historical deaths were counted, latest Oct20. These are
+historical events, not a current run's level, death total or camp.
+
+The actual log contains `You gain experience! (<decimal>%)`: 174 matching
+historical events, most recent Nov13 09:27:56 reporting 2.574%. There are no
+such events in the final hour of that stale log. Current XP and XP/hour remain
+unknown. This format can support a future explicitly labelled gross logged
+percentage-gain rate; it must not be treated as raw XP, current XP fraction,
+net XP after losses, or a rate across different levels. The initial narrow
+pattern omitted percentage suffixes and found zero; that count is superseded
+by `owner-traces/owner-progress-20261114T024123Z.json`, SHA
+`dd8ee20410c984585e8e83bb1d19d9733acbc6b3f6ae3e63e298ace3b25cd43d`.
+No raw chat was copied or printed, no screenshot was attempted, and no game
+input, process focus or install modification occurred.
+
+**OBSERVED read-only static-source investigation:** The retained GFay bake
+manifest pins both terrain and object archives and records 130,423 triangles.
+Terrain has 72,694 flag-zero triangles. Copied objects metadata has 2,829
+placements: 30 parked sentinels and 2,799 eligible placements, with 84 exact
+static model links and no unmatched actors. Original bake therefore included
+eligible placed-object geometry, while current source-floor checks cover
+terrain WLD only. Helper `eqnav.zonegeom.place_vertices(..., convention='model')`
+uses center-before rotation/-Y tilt and matches the retained bake path; the
+project's Lantern-style `projected_vertex` uses a different transform. Do not
+mix them without reconciliation. Static collision faces need identity including
+object archive/member, placement fragment, model fragment and face index;
+`SourceFace(fragment,face)` alone collides between repeated instances.
+
+Retained member hashes: `objects.wld`
+`b15dbe0df01eb2276e70a783ae067f65f5abb4ec18649481f6c1d867c89913e6`;
+`gfaydark_obj.wld`
+`4e0eef9ccb436c8abc2859aeed6d8e333918f3b814a92bcb2bb5ad1248830735`.
+The existing `read_object_locations`, `combine_model_links`, `read_meshes`
+and `mesh_face_materials` APIs provide provenance for a future local placed-
+face query. No new object geometry scan, bake or client test was run here.
+
 ## Private 0.41.57 staging — 2026-11-14 02:31 UTC
 
 **VERIFIED private staging:** Source 0.41.57, commit `c6ac9ee`, is available

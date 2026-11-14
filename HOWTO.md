@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.57 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.58 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,21 +19,18 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.57 are staged at the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.57/source`; the runnable
+Source tools 0.41.58 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.58/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
-Source 0.41.57 models the copied baker's float32 tile boundaries from its
-pinned manifest. The exact predictions match all 2,771 examined mismatched
-reciprocal ground links; arbitrary nearby coordinates remain refused. With
-this explicit diagnostic enabled, the replay reaches segment 87 of 155,
-then stops on overlapping terrain layers. A separate occupancy diagnostic
-checks all supplied surfaces against an explicitly selected floor, preserving
-vertical walls and rejecting even tiny uncovered floor gaps. Its three copied
-cases pass hypothetical body heights of 6 and 8; floor selection and body
-size remain unverified. Sixty-seven focused tests pass. These source tools
-send no game input and do not enable F11. Assist 0.39.6 and G0 0.39.7 remain
-unchanged; your G0 visible-stop result is retained and no repeat is needed.
+Source 0.41.58 follows an explicitly selected ground layer across the complete
+copied GFay corridor. All 2,399 cells pass this conditional terrain check,
+including the high-platform section; 27 focused tests pass. It uses exact
+source-face identity, shared 3D edges and complete occupancy checks. The body
+height is hypothetical, placed objects are not yet included, and separate
+baked-slope and real-client checks remain. The chain is not yet connected to
+live movement. F11 stays unavailable. Your G0 stop remains passed, the assist
+build is unchanged, and no repeat or new owner command is needed.
 
 Detailed source-release history and hashes are in [FINDINGS.md](FINDINGS.md).
 The current playable-route status is in [LEVEL_1_20.md](LEVEL_1_20.md).
@@ -174,7 +171,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.57/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.58/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -182,7 +179,7 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.57/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.58/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 
