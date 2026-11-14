@@ -25,7 +25,8 @@ def make_motion_collection_engine(base_engine, *, output_root=None):
             epoch = self.motion_collection_epoch
             if (not isinstance(driver, MotionExperimentDriver)
                     or self.motion_collection_driver is not None
-                    or not self._motion_idle() or not self.jobs.empty()):
+                    or not self._motion_idle() or not self.jobs.empty()
+                    or driver.session.lock is not getattr(self, 'g0_stop_lock', None)):
                 raise ValueError('A stopped measurement helper and explicit checked driver are required')
             driver.session._check()
             self.motion_collection_driver = driver

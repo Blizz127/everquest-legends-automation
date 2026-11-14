@@ -73,7 +73,7 @@ class MotionExperimentSession:
     def __init__(self, reader, *, zone_id, zone_display_name, zone_short_name,
                  generation, generation_reader, mode_reader, binding_reader,
                  record_id, horizontal_error, legacy,
-                 clock=time.monotonic, local_wall_clock=datetime.now):
+                 clock=time.monotonic, local_wall_clock=datetime.now, stop_lock=None):
         if (not isinstance(reader, LocationLogReader) or not integer(zone_id)
                 or not zone_display_name or not zone_short_name
                 or not integer(generation) or not isinstance(record_id, str) or not record_id
@@ -81,7 +81,9 @@ class MotionExperimentSession:
                 or not all(callable(f) for f in (generation_reader, mode_reader, binding_reader,
                                                 clock, local_wall_clock))):
             raise ValueError("Bound reader, identity, generation and explicit error assumption required")
-        self.lock = threading.RLock()
+        self.lock = threading.RLock() if stop_lock is None else stop_lock
+        if not all(callable(getattr(self.lock, name, None)) for name in ('acquire','release','__enter__','__exit__')):
+            raise ValueError('A shared stop lock must be a context-manageable lock')
         self.reader, self.zone = reader, zone_short_name
         self.generation, self.generation_reader = generation, generation_reader
         self.mode_reader, self.binding_reader = mode_reader, binding_reader
@@ -97,6 +99,7 @@ class MotionExperimentSession:
         self.pairs, self.receipts, self.requests, self.releases, self.raw_fixes = [], [], [], [], []
         self.legs, self.turns = [], []
         self.release_attempts = []
+        self.executor_events = []
         self.first = self.pending = self.result = None
         self.due, self.deadline = self.started, self.started + 2.5
         self.last_seq = reader.log_line_seq
@@ -293,6 +296,7 @@ class MotionExperimentSession:
                 raw_fixes=list(self.raw_fixes), command_requests=list(self.requests),
                 final_releases=list(self.releases), owner_binding=self.binding,
                 release_attempts=list(self.release_attempts),
+                executor_events=list(self.executor_events),
                 log_binding=self.log_binding, cancel_generation=self.generation,
                 started_monotonic=self.started, last_checked_monotonic=self.last_at,
                 estimate=self.result, input_authorized=False, real_client_accepted=False,

@@ -1,9 +1,16 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 05:55 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 06:07 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.77 implements the collector's command/pulse executors on the
+existing bot's sender. Fifty-six focused checks pass, including F9 during a
+real pipe pulse, failed releases after device replacement, interrupted chat
+commands and the complete finite experiment with synthetic positions.
+Independent live scene/envelope providers are still missing; no owner movement
+control is enabled and no real route has been accepted. G0 remains passed.
 
 Source 0.41.76 adds the finite collector and retained-helper tick integration.
 Sixty-four focused checks pass. Actual watchdog pipe writes plus synthetic log

@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.76 / assist 0.39.6 / observation candidate 0.39.10
+# EverQuest Legends automation — project 0.41.77 / assist 0.39.6 / observation candidate 0.39.10
 
 ## Current availability
 
@@ -19,9 +19,20 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.76 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.76/source`; the runnable
+Source tools 0.41.77 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.77/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.77 supplies concrete location-command and short-pulse executors
+using the existing rotation bot's sender and release watchdog. It creates no
+new input device, pins cleanup to the original descriptor and stops on changed
+ownership, cancelled requests or uncertain command delivery. Fifty-six focused
+checks pass; the full pipe run completed 16 commands and seven pulses with
+synthetic scene/position feedback. No game input was sent.
+
+The executors still require independent current-scene and initial-travel
+checks; no live provider or owner control is enabled. The existing **Observe
+current position** capture remains pending. G0 passed and needs no repeat.
 
 Source 0.41.76 connects the finite motion collector to the retained helper's
 tick loop through an internal adapter. It preserves request times, raw log

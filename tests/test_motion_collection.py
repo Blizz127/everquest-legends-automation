@@ -64,7 +64,8 @@ def setup(tmp_path, retained, *, real=False):
     session=MotionExperimentSession(reader,zone_id=1,zone_display_name='Fixture Zone',zone_short_name='fixture',
         generation=e.cancel_generation,generation_reader=lambda:e.cancel_generation,mode_reader=lambda:h.mode,
         binding_reader=lambda:(h.window,e.settings.character,e.settings.server,e.settings.level),
-        record_id='synthetic-engine-ticks',horizontal_error=.01,legacy=legacy,clock=h.clock,local_wall_clock=h.wall)
+        record_id='synthetic-engine-ticks',horizontal_error=.01,legacy=legacy,clock=h.clock,local_wall_clock=h.wall,
+        stop_lock=e.g0_stop_lock)
     h.session=session
     h.command_hook=h.release_hook=lambda:None
     def location(request):

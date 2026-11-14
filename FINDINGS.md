@@ -1,5 +1,51 @@
 # FINDINGS
 
+## Concrete measurement executors 0.41.77 — 2026-11-14 06:07 UTC
+
+**VERIFIED implementation:** the finite collector can now use the retained
+`KeySender.command`, `character` and `tap` code for exactly `/location`, plus
+the existing selected-pulse watchdog. The command view bypasses the sender
+constructor and uses a duplicate of its existing descriptor. Engine sender
+identity remains unchanged. A common operation marker and the existing G0
+stop lock exclude competing sends; request deadlines are never refreshed to
+accommodate delayed child startup.
+
+Command delivery is marked uncertain before the first DOWN attempt, including
+the slash. Per-key evidence distinguishes closed chat before the first slash
+from the helper draft during later keys. Interrupted commands retain the draft
+flag and send neither Escape nor a retry. Cleanup tracks pending releases
+independently of the sender's mutable held-key set, so a replacement-device
+stop cannot suppress a failed original-descriptor release retry. Final and
+per-key callbacks are followed by ownership checks. Child receipts, final
+release times, remaining keys and cleanup failures are preserved in the
+collector's completed/partial record.
+
+**VERIFIED focused validation:** 56 executor/collector checks passed in
+24.73 seconds, composing the actual retained Engine wrappers and constructor-
+free retained sender with ordinary pipes. Checks include F9 while a watchdog
+pulse is held, shared-lock attachment, cancelled/expired requests, wrong-request
+evidence, first-slash delivery failure, device replacement with cleared shared
+bookkeeping, interrupted chat and final callback mutation. The complete run
+produced 16 commands, seven pulses, eight stopped pairs and 696 input events.
+Its private record is `evidence/motion-executors-0.41.77.json`, SHA
+`803f19f60bd4c1433ba35ebd7f45f0c768ee1c2b7d8f23500e1c85f6bb127747`.
+All scene/position observations were synthetic. No real device, client input,
+capture or login was used. Compile and whitespace checks pass; no full suite ran.
+The first focused run had one test-fixture field-name error (`index` instead
+of `serial`), corrected before the passing run. Its full pipe record also
+completed and remains retained. Evidence copying initially found both pytest's
+real directory and its alias; resolved-path deduplication preserved the single
+record without overwriting anything.
+
+**Still missing:** independent live observations during command drafting and
+movement, an initial spatial envelope, current zone/frame/height binding and
+real route acceptance. The required provider callback is not a substitute for
+these observations; no default live provider or new owner control exists.
+G0 is passed, including the owner's visible-stop confirmation, and is never
+repeated. Assist stays 0.39.6; the existing stationary capture uses 0.39.10.
+No accepted real-client 1–20 route or hands-off 1–50 run exists. Current level,
+XP/hour, deaths and camp remain unknown.
+
 ## Private source 0.41.76 staged — 2026-11-14 05:56 UTC
 
 **VERIFIED:** commit `cb5dbc49876cb1d9191ae41c0eea2b3205b79b78`, archive SHA
