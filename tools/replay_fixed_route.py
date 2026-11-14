@@ -73,6 +73,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         source_z_limit=.6, wall_budget=35., precision_overlaps=False, maximum_portal_ulp_steps=1,
         tile_rounding=False,source_floor_chain=False):
     began = time.monotonic()
+    began_cpu = time.process_time()
     sys.path[:0] = [str(PROJECT), str(HELPER)]
     from eql_automation.fixed_route_follower import FixedRoute, FixedRouteFollower, RouteHalt
     from eql_automation.bsp_detail_view import BspDetailMeshView
@@ -397,6 +398,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
               "wall_budget":wall_budget,"budget_exhausted":error=='Offline replay wall-clock budget exceeded',
               "total_segments": len(route.segments), "steps": runner.steps,
               "simulated_seconds": clock - 100., "wall_seconds": time.monotonic() - began,
+              "cpu_seconds": time.process_time() - began_cpu,
               "position": position, "history": history, "recent": recent,
               "ground_observations":ground_observations,
               "ground_binding_fixture":proof,
@@ -455,7 +457,7 @@ def main():
     parser.add_argument('--source-z-limit',type=float,default=.6,
                         help='Diagnostic source/baked height-difference limit, not live calibration (default .6)')
     parser.add_argument('--wall-budget',type=float,default=35.,
-                        help='Bounded offline wall-clock budget in seconds (default 35; maximum 300)')
+                        help='Bounded offline wall-clock budget in seconds (default 35; maximum 600)')
     parser.add_argument('--shorten-ground-step', action='store_true',
                         help='Offline only: recheck successively shorter forward holds down to --min-hold')
     args = parser.parse_args()
@@ -486,7 +488,7 @@ def main():
             or not math.isfinite(args.speed) or not 0 < args.speed <= 100
             or not math.isfinite(args.min_hold) or not 0 < args.min_hold <= .1
             or not math.isfinite(args.source_z_limit) or not 0 < args.source_z_limit <= 2
-            or not math.isfinite(args.wall_budget) or not 1 <= args.wall_budget <= 300):
+            or not math.isfinite(args.wall_budget) or not 1 <= args.wall_budget <= 600):
         parser.error("use a new private nav-candidates JSON and finite bounded motion parameters")
     os.umask(0o077)
     os.nice(15)
