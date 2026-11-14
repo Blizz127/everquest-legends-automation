@@ -1,5 +1,29 @@
 # FINDINGS
 
+## Compiled layout dependency checks 0.41.83 — 2026-11-14 06:45 UTC
+
+**VERIFIED implementation:** the prepared layout now compiles the exact file/
+candidate/directory/INI-selection dependency plan after its bracketed parse.
+Each frame still verifies every source file's complete content, existing source
+identity and higher-priority candidate presence. It verifies directory fallback
+and suffix-INI selection as well. Unchanged INI/include bytes already prove
+that their parsed selection rules are unchanged, so those rules are not parsed
+again inside the observation. Existing sources are resolved once before their
+content is read. Missing candidates cannot replace a selected file while their
+`is_file` result remains false; their existence is still checked each time.
+The full plan runs before and after the feature pass. No budget was widened,
+all source-content/selection dependencies retained, and no modified sources
+are silently reloaded.
+
+**VERIFIED focused checks:** 31 prepared-layout/chat-frame checks pass in 1.07
+seconds. Added cases forbid INI/manifest parsing during a frame and reject a
+same-content source symlink redirected to a different target. Existing cases
+still reject all content/selection changes, absent overlays appearing, late
+manifest changes and inconsistent input regions. This addresses the measured
+0.41.82 snapshot bottleneck; new Alienware timing is still to be measured.
+Owner helpers, live-state acceptance and movement controls remain unchanged.
+G0 remains passed. No accepted real route or automated XP is claimed.
+
 ## Source 0.41.82 staged with full layout measurement — 2026-11-14 06:43 UTC
 
 **VERIFIED:** `a345da0fc748bbb6832039d3b9a079cb6aa23c62`, archive SHA

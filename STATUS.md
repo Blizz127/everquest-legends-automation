@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:41 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:45 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,12 @@ Updated 2026-11-14 06:41 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.83:** unchanged layout selection rules are compiled once;
+  complete content, source identity, overlay/directory and INI-selection checks
+  still bracket each frame. Thirty-one focused checks pass, including no
+  reparsing and rejection of same-content symlink replacement. This targets
+  the measured snapshot overhead; Alienware timing is next. No live input or
+  owner helper changes.
 - **Source 0.41.82:** optional chat regions now come from the same frame as
   gauge/combat features, with crop/source identity and unknown focus retained.
   Actual Alienware layout loading measured 150 ms alone; a prepared layout now

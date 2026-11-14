@@ -1,7 +1,7 @@
 """Prepare the retained UI parser once; recheck all inputs for each frame.
 
 The include manifest and losing/empty includes are dependencies too. File
-selection is resolved again on each check, so newly added skin/variant files
+selection dependencies are checked each time, so newly added skin/variant files
 cannot silently reuse an old parse. No display, input or filesystem writes.
 """
 from configparser import RawConfigParser
@@ -54,6 +54,20 @@ class PreparedUiLayout:
         if any(str(p) not in after['files'] for p in self._template.sources.values()):
             raise RuntimeError('Layout parser used an untracked source file')
         self._fingerprint=after
+        # INI/manifest bytes are pinned. If they remain unchanged, reparsing
+        # their selection rules cannot add information. Compile the exact
+        # candidate/dependency plan and still check every file's content.
+        probes={}
+        for path,resolved,present in after['candidates']:
+            if path in probes and probes[path]!=present:
+                raise RuntimeError('UI candidate changed during dependency enumeration')
+            probes[path]=present
+            if present and path not in after['files']:
+                raise RuntimeError('Resolved UI candidate lacks content provenance')
+        self._probes=tuple((Path(path),present) for path,present in probes.items())
+        self._files=tuple((Path(path),digest,after['resolved_files'][path])
+                          for path,digest in after['files'].items())
+        self._directories=(self.game/'uifiles/default',self.game/'uifiles'/after['skin'])
         finished=clock()
         if not all(type(v) in (int,float) and math.isfinite(v) for v in (began,finished)) or finished<began:
             raise ValueError('Invalid layout preparation clock')
@@ -64,6 +78,7 @@ class PreparedUiLayout:
 
     def _snapshot(self):
         files={}
+        resolved_files={}
         candidates=[]
         def safe(path):
             resolved=path.resolve()
@@ -76,7 +91,7 @@ class PreparedUiLayout:
             candidates.append((str(path),str(resolved),is_file))
             return is_file
         def read(path):
-            safe(path)
+            resolved_files[str(path)]=str(safe(path))
             data=path.read_bytes()
             files[str(path)]=sha256(data).hexdigest()
             return data
@@ -132,14 +147,35 @@ class PreparedUiLayout:
                 if chosen is not None:break
             selections.append((name,None if chosen is None else str(chosen)))
             if chosen is not None:read(chosen)
-        return dict(files=files,candidates=candidates,suffix_matches=suffixes,
+        return dict(files=files,resolved_files=resolved_files,candidates=candidates,suffix_matches=suffixes,
                     directories=directory_state,skin=skin,includes=includes,selections=selections)
 
     def verify_sources(self):
-        current=self._snapshot()
-        if current!=self._fingerprint:
-            raise RuntimeError('Prepared client UI source selection or content changed')
-        return dict(current['files'])
+        expected=self._fingerprint
+        default,selected=self._directories
+        directories=(str(default.resolve()),default.is_dir(),str(selected.resolve()),selected.is_dir())
+        if directories!=expected['directories']:
+            raise RuntimeError('Prepared client UI source directory selection changed')
+        for path,present in self._probes:
+            if path.is_file()!=present:
+                raise RuntimeError('Prepared client UI source candidate selection changed')
+        if expected['suffix_matches']:
+            suffixes=tuple(str(p) for p in sorted(self.game.glob(
+                f'UI_{self.character}_{self.server}_*.ini')))
+            if suffixes!=expected['suffix_matches']:
+                raise RuntimeError('Prepared client UI INI selection changed')
+        current={}
+        for path,digest,resolved in self._files:
+            # Existing source identities are checked once, before reading.
+            # Missing candidates need only their is_file result: until they
+            # exist they cannot replace a loaded include or manifest.
+            if not path.is_file() or str(path.resolve())!=resolved:
+                raise RuntimeError('Prepared client UI source identity changed')
+            observed=sha256(path.read_bytes()).hexdigest()
+            if observed!=digest:
+                raise RuntimeError('Prepared client UI source content changed')
+            current[str(path)]=observed
+        return current
 
     def __call__(self, game, character, server, *, width, height):
         if (Path(game).resolve(),character,server,width,height)!=(

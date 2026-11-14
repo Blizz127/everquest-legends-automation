@@ -117,3 +117,23 @@ def test_source_change_during_initial_parse_is_not_cached(inputs):
 def test_no_source_outside_bound_client_directory_is_read(inputs):
     h=inputs;h.manifest.write_text('<XML><Include>../../../outside.dat</Include></XML>')
     with pytest.raises(ValueError,match='leaves'):h.prepare()
+
+
+def test_compiled_verification_never_reparses_unchanged_ini_or_manifest(inputs,monkeypatch):
+    import eql_automation.prepared_ui_layout as prepared
+    h=inputs;cache=h.prepare()
+    monkeypatch.setattr(cache,'_snapshot',lambda:pytest.fail('Selection plan rebuilt inside observation'))
+    monkeypatch.setattr(prepared.RawConfigParser,'read_string',lambda *a,**k:pytest.fail('INI reparsed'))
+    monkeypatch.setattr(prepared.ET,'fromstring',lambda *a,**k:pytest.fail('Manifest reparsed'))
+    assert h.read(cache).source_verifier()==cache._fingerprint['files']
+    assert h.calls==1
+
+
+def test_same_content_symlink_replacement_invalidates_cached_source_identity(inputs):
+    h=inputs
+    first=h.default/'first.xml';second=h.default/'second.xml'
+    first.write_bytes(h.xml.read_bytes());second.write_bytes(first.read_bytes())
+    h.xml.unlink();h.xml.symlink_to(first.name)
+    cache=h.prepare();view=h.read(cache)
+    h.xml.unlink();h.xml.symlink_to(second.name)
+    with pytest.raises(RuntimeError,match='identity changed'):view.source_verifier()

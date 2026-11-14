@@ -1,9 +1,14 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 06:41 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 06:45 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.83 compiles the unchanged layout selection plan while retaining
+complete source-content/identity and candidate checks around each frame.
+Thirty-one focused checks pass. It addresses the measured overhead of repeated
+INI/manifest parsing and path checks; live capture/input timing remains unverified.
 
 Source 0.41.82 connects optional chat-input geometry/crops to the same frame
 as HP/mana/combat features, retaining unknown focus and no saved chat pixels.
