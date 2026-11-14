@@ -21,7 +21,10 @@ Updated 2026-11-14 14:15 UTC for coordinator task `829a00229b29`.
   floor Z -17, in 138.15s. Full metadata flags are zero; original BSP results remain.
   Final implementation-pinned repeat passes in 84.25s; report SHA
   `09c4cf3d6e69245249f8df9ef66a8f1914c7fc5038bb3dd8b5b1c01dee98bb28`.
-  Private source startup is next.
+  Source `e28f5f7` staged at Alienware `owner-tools/0.42.28/source`;
+  all 54 selected startup checks pass without skips, imports/CLI pass and copied
+  data pins match. No worker/device/game input. Startup SHA
+  `408b4dbfa81e9687ba4f58e4b5756061465844f660045200dc928f17965c009a`.
   **Next:** source-only stopped observations and receipt/landing acknowledgment,
   then the mixed-route movement driver. No real route, XP or leveling acceptance.
   Assist 0.39.13 and owner movement 0.39.20 remain unchanged; G0 remains passed.

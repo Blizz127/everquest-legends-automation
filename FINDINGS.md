@@ -43,6 +43,15 @@ and the probe code were pinned before and after the run. Final report
 `nav-candidates/crushbone-source-itinerary-0.42.28-final.json`, SHA
 `09c4cf3d6e69245249f8df9ef66a8f1914c7fc5038bb3dd8b5b1c01dee98bb28`.
 
+**VERIFIED private source publication:** commit `e28f5f7` staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.28/source`. All 54 focused startup
+checks pass there without skips; imports, CLI startup and copied data pins pass.
+Archive SHA `c8d4f2414948311f6d3cfdc77815272a8c6b4fa8b21e75e869039a68340e51e0`;
+startup SHA `408b4dbfa81e9687ba4f58e4b5756061465844f660045200dc928f17965c009a`;
+test output SHA `08cfdbe16a64414eb314f9ec2efaf79a2ccdde836b272283bead8d55cb99dbe7`.
+No worker/device, game input, character action or prefix write. The full copied
+itinerary run was on Devbox; it was not repeated on the owner's laptop.
+
 **Remaining:** source-only stopped observations, receipt acknowledgment and
 conditional step landing must be connected to the owner movement runtime.
 Seven source transfers are not verified client auto-steps. Current level,
