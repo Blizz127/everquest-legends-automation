@@ -30,6 +30,9 @@ Updated 2026-11-14 15:05 UTC for coordinator task `829a00229b29`.
   acceptance using the new HOWTO command. Route/camp safety, actual movement,
   combat integration and automated leveling remain unverified/unfinished.
   Assist 0.39.13 unchanged; current level/XP/hour/deaths/camp unknown.
+  Source `7658f33` is also staged at `owner-tools/0.42.32/source`; seven focused
+  no-input startup checks pass, plus imports/CLI/private data checks. Startup SHA
+  `1a4b54535d0b88336d6bae5b95db5742326f10a42841bd93340236bda74e4872`.
 - **Source 0.42.31:** receipt-bound step controller now uses the existing sender,
   observer and stop lock. Actual approach caps can commit; partial steps retain
   the old ordinary floor and cannot masquerade as grounded observations.

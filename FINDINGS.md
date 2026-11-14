@@ -63,6 +63,13 @@ Real traversal, step capability, live scene/position acceptance and camp safety
 remain unverified. This preview neither fights nor levels. Current metrics
 unknown; no accepted 1–20 or fresh hands-off 1–50 run.
 
+**VERIFIED private source publication:** source commit `7658f33` is staged at
+`owner-tools/0.42.32/source`. Seven focused no-input startup checks pass without
+failures/errors/skips, plus imports, CLI, copied-data pins and private guide.
+Archive SHA `8c0353c9f80cab72559f6ffb3582f0382450ff3b43b8e4e034525b7289896a1f`;
+startup SHA `1a4b54535d0b88336d6bae5b95db5742326f10a42841bd93340236bda74e4872`;
+test-output SHA `7592dd9382ea668fa3587360143f5cbaf23ee05533ece7b27713f672c627b7a2`.
+
 ## Receipt-bound source step progression — 2026-11-14 14:55 UTC
 
 **VERIFIED implementation:** source 0.42.31 connects the conditional approach
