@@ -79,3 +79,25 @@ def test_shortcut_context_and_budget_failures_never_publish_a_partial_guide(kind
         shortcut_walks(prefix, guide, terrain, static, check_context=check,
                        maximum_queries=1 if kind == 'query_budget' else 1000)
     assert _chain_snapshot(prefix) == before
+
+
+def test_explicit_walk_gap_detours_around_static_wall_and_fully_rebuilds():
+    _,guide,terrain,static,bsp,policy=fixture()
+    sources=rectangle(-5.,5.,0.,0)
+    terrain.source_faces_for_footprint=lambda _:sources
+    static.faces_for_footprint=lambda _:(face(((0.,-.5,-1.),(0.,.5,-1.),(0.,0.,8.)),0,7),)
+    prefix=SourceFloorChain(inventory_sha256='a'*64,seed_evidence_sha256='b'*64,
+        seed_ids=((1,1),),body_height=6.)
+    assert prefix.advance(swept_square((-2.,0.),(-2.,0.),.25),sources).candidate
+    guide=replace(guide,radius=.25,goal=(2.,0.),operations=(SourceWalkHint((-2.,0.),(2.,0.)),))
+    before=_chain_snapshot(prefix)
+    short,evidence=shortcut_walks(prefix,guide,terrain,static,check_context=lambda:None,detour_rejoin=(0,0))
+    assert len(short.operations)>1 and evidence['accepted_proposals'][0]['kind']=='walk_detour'
+    result=plan_source_itinerary(prefix,(-2.,0.),short,terrain,static,bsp,policy,check_context=lambda:None).record()
+    assert result['goal']==[2.,0.] and _chain_snapshot(prefix)==before
+
+
+def test_walk_gap_repair_cannot_skip_a_step():
+    prefix,guide,terrain,static,_,_=fixture()
+    with pytest.raises(ValueError,match='walk-only detour range'):
+        shortcut_walks(prefix,guide,terrain,static,check_context=lambda:None,detour_rejoin=(0,2))

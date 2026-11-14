@@ -16,6 +16,7 @@ STORE = Path.home()/'.local/share/eql-automation'
 sys.path[:0] = [str(PROJECT), str(STORE/'owner-assist/0.39.4')]
 
 from eql_automation.crushbone_assets import DATA_NAME, DATA_PINS, load_crushbone_assets
+from eql_automation.bsp_floor_guard import outward_float
 from eql_automation.ground_sweep import area, clip
 from eql_automation.native_region_policy import encoded
 from eql_automation.owner_route_assets import checked_bytes
@@ -24,6 +25,7 @@ from eql_automation.source_floor_chain import rational
 from eql_automation.source_floor_components import SourceFloorComponents
 from eql_automation.source_step import expanded
 from tools.source_stair_topology import audit_stair_topology
+from tools.source_stair_flight import audit_stair_flight, stair_body_footprint
 
 
 def main():
@@ -33,20 +35,23 @@ def main():
     parser.add_argument('--first-step', type=int, required=True)
     parser.add_argument('--last-step', type=int, required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--flight', action='store_true',
+                        help='Also check bounded body phases, static objects and native regions')
     args = parser.parse_args()
     if (args.output.exists() or args.output.is_symlink()
             or args.output.parent.resolve() != (STORE/'nav-candidates').resolve()
             or not 0 <= args.first_step < args.last_step < 32):
         parser.error('New private output and explicit bounded step range required')
     os.umask(0o077); os.nice(19)
-    resource.setrlimit(resource.RLIMIT_CPU, (20, 25))
+    resource.setrlimit(resource.RLIMIT_CPU, (40, 45))
     began = time.monotonic()
     def timeout(*_):
         raise TimeoutError('Offline staircase topology budget exhausted')
     signal.signal(signal.SIGALRM, timeout); signal.signal(signal.SIGXCPU, timeout)
-    signal.alarm(90)
+    signal.alarm(180)
     pins = {str(p.relative_to(PROJECT)):sha256(p.read_bytes()).hexdigest()
             for p in (Path(__file__).resolve(), PROJECT/'tools/source_stair_topology.py',
+                      PROJECT/'tools/source_stair_flight.py',
                       *sorted((PROJECT/'eql_automation').glob('*.py')))}
     record = dict(format='eql-offline-stair-topology-v1', data_sha256=DATA_PINS,
         code_sha256=pins, prior_sha256=args.prior_sha256,
@@ -71,9 +76,11 @@ def main():
             components.append(graph.components[tuple(edge['destination'])])
         start = tuple(chosen[0]['step']['start']); end = tuple(chosen[-1]['step']['end'])
         radius = float(prior['guide']['radius'])
-        boundary = expanded(swept_square(start, end, radius))
-        low = tuple(min(p[k] for p in boundary) for k in range(2))
-        high = tuple(max(p[k] for p in boundary) for k in range(2))
+        boundary = (stair_body_footprint(start,end,radius) if args.flight else
+                    expanded(swept_square(start,end,radius)))
+        low = tuple(outward_float(min(p[k] for p in boundary),lower=True) for k in range(2))
+        high = tuple(outward_float(max(p[k] for p in boundary),lower=False) for k in range(2))
+        query_box = ((low[0],low[1]),(high[0],low[1]),(high[0],high[1]),(low[0],high[1]))
         # Explicit all-height inventory from the already loaded client source.
         # This is a separate bounded topology analysis, never a runtime query.
         local = tuple(s for s, minimum, maximum in zip(source.sources, source.source_minimum,
@@ -84,10 +91,28 @@ def main():
                              and area(clip(boundary, rational(polygon))) > 0)
                        for component in components)
         record.update(start=start, end=end, radius=radius, source_count=len(local),
-            components=components, group_counts=[len(group) for group in groups])
+            components=components, group_counts=[len(group) for group in groups],
+            inventory_enclosure_exact=[[str(v) for v in p] for p in boundary],
+            outward_inventory_query_box=query_box, all_height_inventory_reselected=True)
         result = audit_stair_topology(local, groups, start=start, end=end, radius=radius)
         record.update(topology=result, topology_sha256=sha256(encoded(result)).hexdigest(),
                       source_faces=[asdict(s) for s in local])
+        if args.flight and result['topology_candidate']:
+            def progress(evidence):
+                record['flight'] = evidence
+                if len(evidence['phases']) % 8 == 0:
+                    print(json.dumps(dict(checked_phases=len(evidence['phases']),
+                        seconds=time.monotonic()-began)), flush=True)
+            # Reselect static faces with the same outward enclosure as terrain.
+            # The retained earlier topology inventory is not sufficient here.
+            static = assets.planner.static.faces_for_footprint(query_box)
+            flight = audit_stair_flight(local, static, groups, start=start, end=end,
+                radius=radius, body_height=6., source_wld_sha256=source.wld_sha256,
+                static_inventory_sha256=assets.planner.static.inventory_sha256,
+                bsp=assets.planner.bsp, region_policy=assets.planner.region_policy,
+                progress=progress)
+            record.update(flight=flight, flight_sha256=sha256(encoded(flight)).hexdigest(),
+                          static_faces=[asdict(s) for s in static])
     except (ValueError, TimeoutError) as error:
         record['refusal'] = str(error)
     signal.alarm(0)
@@ -100,9 +125,10 @@ def main():
     with args.output.open('xb') as stream:
         stream.write(encoded(record))
     print(json.dumps(dict(output=str(args.output), sha256=sha256(args.output.read_bytes()).hexdigest(),
-        reason=record.get('refusal', record.get('topology', {}).get('reason')),
+        reason=record.get('refusal', record.get('flight', record.get('topology', {})).get('reason')),
         treads=len(record.get('topology', {}).get('treads', [])),
         risers=len(record.get('topology', {}).get('risers', [])),
+        checked_phases=len(record.get('flight', {}).get('phases', [])),
         seconds=record['seconds'])), flush=True)
 
 

@@ -18,7 +18,8 @@ from eql_automation.static_floor_guard import check_source_static_floor
 
 
 def shortcut_walks(prefix, guide, terrain, static, *, check_context,
-                   maximum_distance=40., maximum_queries=1000, progress=lambda _: None):
+                   maximum_distance=40., maximum_queries=1000, progress=lambda _: None,
+                   detour_rejoin=None):
     guide.validate()
     if (not callable(check_context) or not callable(progress)
             or type(maximum_distance) not in (float, int) or not 1 <= maximum_distance <= 40
@@ -28,6 +29,13 @@ def shortcut_walks(prefix, guide, terrain, static, *, check_context,
             or static.inventory_sha256 != guide.static_inventory_sha256
             or prefix.body_height != guide.body_height):
         raise ValueError('Explicit bounded shortcut context required')
+    if detour_rejoin is not None:
+        if (type(detour_rejoin) is not tuple or len(detour_rejoin)!=2
+                or any(type(i) is not int for i in detour_rejoin)
+                or not 0<=detour_rejoin[0]<=detour_rejoin[1]<len(guide.operations)
+                or any(type(op) is not SourceWalkHint for op in
+                       guide.operations[detour_rejoin[0]:detour_rejoin[1]+1])):
+            raise ValueError('Explicit walk-only detour range required')
     original = _chain_snapshot(prefix)
     guide_state = _guide_snapshot(guide)
     prefix.floor_at(guide.operations[0].start)
@@ -44,8 +52,9 @@ def shortcut_walks(prefix, guide, terrain, static, *, check_context,
 
     def report():
         return dict(kind='offline_source_walk_shortcuts', queries=queries,
-            query_scope='walking footprint proposals; step validation has its own bounded source queries',
+            query_scope='direct walking proposals; steps and optional detour have separate bounded queries',
             maximum_distance=maximum_distance, maximum_queries=maximum_queries,
+            detour_rejoin=detour_rejoin,
             source_guide_sha256=sha256(encoded(guide.record())).hexdigest(),
             accepted_proposals=rows, refusal_counts=dict(refusals),
             source_prefix_unchanged=True, original_steps_preserved=True,
@@ -119,6 +128,22 @@ def shortcut_walks(prefix, guide, terrain, static, *, check_context,
                     chosen = end, goal, branch
                     break
             if chosen is None:
+                if detour_rejoin is not None and index==detour_rejoin[0]:
+                    from eql_automation.source_detour import find_source_detour
+                    end=detour_rejoin[1];goal=guide.operations[end].end
+                    check()
+                    detour,branch=find_source_detour(chain,position,goal,terrain,static,
+                        radius=guide.radius,max_seconds=45.,max_expansions=128)
+                    check()
+                    rows.append(dict(kind='walk_detour',first_origin=index,last_origin=end,
+                        detour=asdict(detour),requires_full_rebuild=True))
+                    if not detour.candidate:
+                        progress(report())
+                        raise ValueError('Local walking repair: '+detour.reason)
+                    operations.extend(SourceWalkHint(a,b) for a,b in zip(detour.points,detour.points[1:]))
+                    chain,position,index=branch,goal,end+1
+                    progress(report())
+                    continue
                 progress(report())
                 raise ValueError('No checked walking shortcut or original endpoint at '+str(index))
             end, goal, chain = chosen

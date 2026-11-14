@@ -1,11 +1,23 @@
 # STATUS
 
-Updated 2026-11-14 20:50 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 21:03 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source tools 0.42.63 built locally; owner preview remains 0.39.32.**
+  VERIFIED 21 focused checks. Corrected copied-data flight passes 33 full body,
+  static and region phases; complete independent local queries and a checked
+  final landing link only the planning clone to its original floor.
+  Composed approach + staircase pass, but the exit near (103.96875,100.96875)
+  remains refused: bounded repair explored 13 states / 102 edges without a path.
+  Artifact SHA `acfc5d9699dafaafc0e986a653225eab746599a6a951254fd267dc5d8df933d1`.
+  No complete Throne route or live stair executor was published. Next: inspect
+  the exit obstruction, finish the route and add an explicit provisional stair
+  controller with measured envelope and stop/receipt checks. Hypothetical
+  vertical phases are not client movement evidence. Owner trace is unchanged
+  at 19:31; G0 passed, current real run metrics unknown. No game input.
 - **Source tools 0.42.62 privately published; owner preview remains 0.39.32.**
   Installed at `owner-tools/0.42.62/source`; all 518 pinned files match. Imports
   and both auditor startup checks pass on Alienware. Bundle SHA

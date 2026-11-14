@@ -1,5 +1,83 @@
 # FINDINGS
 
+## 2026-11-14 21:03 UTC — source 0.42.63: checked stair flight and composed route boundary
+
+VERIFIED the copied Crushbone flight now passes **33 complete body/region
+phases** across the 16 retained treads and 15 one-unit rises. The new
+`tools/source_stair_flight.py` keeps flat parallel risers in exact order and
+constructs distinct grounded lift, bounded transfer, raise/lower and grounded
+settle phases. Every intermediate tread/riser remains collision geometry.
+Only the two full outer floor caps get ground-contact treatment. Local lift is
+bounded against the lowest actual support beneath the entire phase footprint;
+horizontal transfers are limited to four units. The individual rise, radius
+1.2 and body-height-6 hypotheses remain explicit. This is a conditional motion
+model, **not evidence that the client follows its vertical phases**.
+
+The exact footprint encloses the old float-expanded endpoint caps. The caller
+reselects all-height terrain/static geometry using outward bounds for that exact
+corridor. The initial run `f5a2c17167e2faf25887c2cb4bf98021496bce2b6a2081d6b2ee3bef2e191fa5`
+used the earlier topology inventory and is **superseded**, not final completeness
+evidence. Corrected artifact `nav-candidates/crushbone-throne-stair-flight-0.42.63-enclosed.json`,
+SHA `a1cae104121d732cc2fff603287c97e0cc9e53933c52815ddacb9aed8ab6f23c`,
+passes all 33 phases in 16.10 seconds. BSP results are retained; only the existing
+explicit native-zero policy handles missing children. Nonzero metadata/hazards
+remain refused. No input authority or ordinary floor adoption is claimed.
+
+`tools/source_stair_plan.py` now ties the flight to the original checked floor.
+It rechecks the full departure cap, independently queries every complete phase,
+checks the final cap against the flight's exact identities (including changed
+same-ID geometry), and snapshots static sources when available. Only the final
+**planning clone** links to the parent proof. The original prefix stays unchanged;
+there is no intermediate reseed or live floor commit. The plan has a canonical
+byte seal and is a separate type that the owner executor cannot consume yet.
+
+VERIFIED composed approach + flight in
+`nav-candidates/crushbone-throne-composed-flight-0.42.63-repair.json`, SHA
+`acfc5d9699dafaafc0e986a653225eab746599a6a951254fd267dc5d8df933d1`.
+The approach has 16 fully checked cells. The stair plan has all 33 independent
+phase queries and reaches the planned floor at Z16. The exit search reaches
+(103.96875,100.96875), then refuses. An explicit walk-only repair toward the
+retained hint (115.84375,134.01041666666666) exhausted the reachable grid in its
+bounded box: **13 states / 102 edges**, with terrain, static and query-budget
+refusals. Result: `no_source_detour_in_search_box`, not physical disconnection.
+Total 140.40s wall / 19.16s CPU on a heavily loaded devbox (316 runnable processes,
+0% idle in the sampled interval). No repeated heavy bake or Alienware load.
+The earlier composed artifact `b7cb1dc297815213e0ce20c49a5b1abc173807f9550e50b3ae8ce7185f6c59cd`
+preceded the final landing identity guard and is superseded by this run.
+
+The walk helper's optional explicit repair range cannot contain a step, and
+its detour always requires the final complete itinerary rebuild. Default
+shortcut behavior is unchanged. No Throne guide was added, and the composed
+route's overall `source_candidate` remains false.
+
+VERIFIED **21 focused checks pass**:
+
+| Check | Result / private JUnit SHA-256 |
+| --- | --- |
+| `test_source_stair_flight.py` | 8 passed in 1.64s; `cc9a0501f296d16003a291c53a8b829d2a8d0c490fa4252926fd47c83c14aec4` |
+| `test_source_stair_plan.py` | 5 passed in 4.16s; `e0aa3e34a4ee2cca00382951e8467f8d1416c2bc312b737e96a58ba5104a6278` |
+| `test_source_walk_shortcuts.py` | 8 passed in 1.65s; `e439fe69497d11aa0e1077a77f963522d6aaaab133edf152d81bb515179a420c` |
+
+Coverage includes ascent/descent, whole-body ceiling/static/BSP/native failures,
+missing support/riser, bounded lift/transfer, exact corridor enclosure, upstairs
+prefix refusal, missing inventory, changed final geometry, unchanged original
+floor and sealed result. The new composed auditor command-line startup passes.
+
+OBSERVED read-only owner trace remains 17,821 bytes, last modified
+2026-11-14 19:31:12.111509 UTC. There is no new route/level acceptance. G0 remains
+passed and must not repeat. Real level, XP, XP/hour, deaths and camp are unknown.
+Existing assist preview remains **0.39.32 / runtime source 0.42.61**. No helper
+restart, game input, character mutation or install/prefix write occurred.
+
+Next: inspect the exact terrain/static obstruction at the exit crossing, then
+finish the composed route. For execution, add an explicit stair-flight hint,
+boundary, support reader and provisional controller; never relabel it as a
+walk/single step. Rebuild the actual measured movement envelope, keep ordinary
+floor state frozen until a fresh full outer cap, and preserve receipts, original
+deadlines, F8/F9, input/focus/hazard stops and assist's manual movement. The
+hypothetical vertical phases require owner-run observation, not an acceptance
+inference from successful arrival. Full 1–20 and fresh 1–50 remain unfinished.
+
 ## 2026-11-14 20:50 UTC — source tools 0.42.62 privately published
 
 VERIFIED installed `~/.local/share/eql-automation/owner-tools/0.42.62/source`
