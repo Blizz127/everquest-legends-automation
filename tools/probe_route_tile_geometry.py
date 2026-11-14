@@ -41,6 +41,7 @@ def run(output):
     q=RouteGeometryPreparer.__new__(RouteGeometryPreparer)
     q.ground,q.source,q.static,q.bsp=p.ground,p.source,p.static,p.bsp
     q.vertical_window=3.;q.maximum_source_z_difference=2.;q.precision_policy=p.precision_policy
+    q.expected_zone_line=None
     records=[]
     for index in (39,54,58):
         a,b=segments[index]['points'];length=math.dist(a[:2],b[:2])

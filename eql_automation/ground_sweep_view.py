@@ -34,7 +34,13 @@ class GroundSweepView:
         view.mesh_sha256 = sha256(raw).hexdigest()
         return view
 
-    def check(self, footprint, *, reference, component, vertical_window, max_faces=96):
+    def polygons_for_area(self, area_id):
+        """Read the complete current inventory without a Python per-face loop."""
+        return tuple(int(i) for i in np.flatnonzero(self.areas==area_id))
+
+    def check(self, footprint, *, reference, component, vertical_window, max_faces=96, expected_zone_line=None):
+        if expected_zone_line is not None and expected_zone_line.mesh_sha256!=self.mesh_sha256:
+            raise ValueError('Zone-line footprint belongs to another mesh')
         left, right = np.min(footprint, axis=0), np.max(footprint, axis=0)
         local = np.flatnonzero((self.minimum[:, 0] <= right[0]) & (self.maximum[:, 0] >= left[0])
                               & (self.minimum[:, 1] <= right[1]) & (self.maximum[:, 1] >= left[1]))
@@ -44,5 +50,6 @@ class GroundSweepView:
         faces = tuple(GroundFace(tuple(tuple(float(v) for v in p) for p in self.triangles[i]),
                                 int(self.areas[self.polys[i]]), int(self.components[self.polys[i]])) for i in local)
         result = check_ground_coverage(footprint, faces, reference=reference,
-                                       component=component, vertical_window=vertical_window, max_faces=max_faces)
+            component=component, vertical_window=vertical_window, max_faces=max_faces,
+            expected_zone_line=expected_zone_line,polygon_ids=tuple(int(self.polys[i]) for i in local))
         return result, tuple(int(i) for i in local)

@@ -81,7 +81,8 @@ def reference_gap_seams(faces,seams,reference,vertical_window):
 
 
 def check_floor_trial(view, chain, original, footprint, detail_ids, *, reference,
-                      component,vertical_window,maximum_source_z_difference,allow_overlap=False):
+                      component,vertical_window,maximum_source_z_difference,allow_overlap=False,
+                      expected_zone_line=None):
     """Return (proposed chain or None, complete conditional trial evidence)."""
     allowed=('uncovered_ground_area','reference_ground_not_supported')
     if allow_overlap is True:allowed+=('overlapping_ground_faces',)
@@ -139,7 +140,8 @@ def check_floor_trial(view, chain, original, footprint, detail_ids, *, reference
         else:
             precision=retry_precision_gap(retry_basis,footprint,faces,polygons,seams,selected,
                 reference=reference,component=component,vertical_window=vertical_window,
-                maximum_source_z_difference=maximum_source_z_difference,allow_overlap=allow_overlap)
+                maximum_source_z_difference=maximum_source_z_difference,allow_overlap=allow_overlap,
+                expected_zone_line=expected_zone_line)
         if not precision.candidate:
             return None,FloorTrial(False,precision.reason,original,step,precision.source_support,precision,excluded,reference_gaps)
         coverage=precision.coverage;support=precision.source_support

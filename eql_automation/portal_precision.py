@@ -256,7 +256,8 @@ def source_support(footprint, sources, baked_faces, *, maximum_z_difference, edg
         grade=source_check.max_grade,maximum_source_baked_z_difference=delta,source_faces=identifiers)
 
 
-def attribute_seam_overlaps(footprint, faces, polygon_ids, seams, *, reference, component, vertical_window):
+def attribute_seam_overlaps(footprint, faces, polygon_ids, seams, *, reference, component, vertical_window,
+                            expected_zone_line=None):
     """Attribute EVERY meaningful original overlap to a named rounding strip.
 
     Both triangle interiors must lie on opposite sides of their own portal
@@ -282,7 +283,9 @@ def attribute_seam_overlaps(footprint, faces, polygon_ids, seams, *, reference, 
         low,high = reference[2]-vertical_window,reference[2]+vertical_window
         if max(heights)<low or min(heights)>high:
             continue
-        if (min(heights)<low or max(heights)>high or face.area_id!=63 or face.component!=component
+        if (min(heights)<low or max(heights)>high or face.component!=component
+                or (face.area_id!=63 and (expected_zone_line is None
+                    or not expected_zone_line.allows_face(poly,face.area_id)))
                 or math.hypot(*surface[:2])>1.):
             return OverlapAttribution(False,'original_overlap_surface_not_safe_ground')
         patches.append((index,poly,face,patch,surface))
@@ -324,7 +327,7 @@ def attribute_seam_overlaps(footprint, faces, polygon_ids, seams, *, reference, 
 
 def retry_precision_gap(original, footprint, faces, polygon_ids, seams, sources, *,
                         reference, component, vertical_window, maximum_source_z_difference,
-                        allow_overlap=False):
+                        allow_overlap=False,expected_zone_line=None):
     allowed = ('uncovered_ground_area','overlapping_ground_faces') if allow_overlap is True else ('uncovered_ground_area',)
     if not isinstance(original,GroundCoverage) or original.candidate or original.reason not in allowed:
         return PrecisionCheck(False,'original_failure_is_not_a_coverage_gap')
@@ -342,11 +345,13 @@ def retry_precision_gap(original, footprint, faces, polygon_ids, seams, sources,
     attribution = None
     if original.reason=='overlapping_ground_faces':
         repeated = check_ground_coverage(footprint,faces,reference=reference,
-            component=component,vertical_window=vertical_window)
+            component=component,vertical_window=vertical_window,
+            expected_zone_line=expected_zone_line,polygon_ids=polygon_ids)
         if repeated.candidate or repeated.reason!=original.reason:
             return PrecisionCheck(False,'original_overlap_failure_did_not_reproduce')
         attribution = attribute_seam_overlaps(footprint,faces,polygon_ids,seams,
-            reference=reference,component=component,vertical_window=vertical_window)
+            reference=reference,component=component,vertical_window=vertical_window,
+            expected_zone_line=expected_zone_line)
         if not attribution.candidate:
             return PrecisionCheck(False,attribution.reason,overlap_attribution=attribution)
     corrected, shifted = [], 0
@@ -374,7 +379,8 @@ def retry_precision_gap(original, footprint, faces, polygon_ids, seams, sources,
         return PrecisionCheck(False,'both_local_boundary_edges_required')
     corrected = tuple(corrected)
     coverage = check_ground_coverage(footprint,corrected,reference=reference,
-                                     component=component,vertical_window=vertical_window)
+        component=component,vertical_window=vertical_window,
+        expected_zone_line=expected_zone_line,polygon_ids=polygon_ids)
     if not coverage.candidate:
         return PrecisionCheck(False,'corrected_footprint_'+coverage.reason,coverage,seams=seams,
                               shifted_vertices=shifted,overlap_attribution=attribution)

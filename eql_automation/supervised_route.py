@@ -80,6 +80,8 @@ class SupervisedRoutePolicy:
                 or not callable(check_current) or not callable(getattr(owner_input, 'sample', None))):
             raise ValueError('Explicit supervised scope, real observation providers and geometry required')
         d, r, b = declaration, geometry.ledger.runner, geometry.bounds
+        if geometry.expected_zone_line is not None:
+            raise ValueError('Ordinary route trials cannot authorize a zone crossing')
         seconds, steps, distance, hold = scope_limits(d.scope)
         if (not all(isinstance(v, str) and v for v in
                     (d.record_id, d.route_sha256, d.motion_record_id, d.planning_bounds_record_id))

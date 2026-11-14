@@ -76,7 +76,7 @@ class BspVolumeView:
         from .bsp_probe import BspPointLookup
         return cls(BspPointLookup(wld), region_count=wld.bsp_region_count, wld_sha256=wld.sha256)
 
-    def check_prism(self, xy_wld, z_bounds, *, max_visits=4096, max_depth=256):
+    def check_prism(self, xy_wld, z_bounds, *, max_visits=4096, max_depth=256, expected_zone_line=None):
         if (not isinstance(xy_wld, tuple) or not 3 <= len(xy_wld) <= 128
                 or any(not isinstance(p, tuple) or len(p) != 2 for p in xy_wld)
                 or not isinstance(z_bounds, tuple) or len(z_bounds) != 2
@@ -89,9 +89,10 @@ class BspVolumeView:
         if len(boundary) != len(xy) or area(boundary) <= 0 or low >= high:
             raise ValueError("BSP prism must have a convex nonzero footprint and height")
         vertices = tuple((x, y, z) for x, y in boundary for z in (low, high))
-        return self.check_convex_volume(vertices, max_visits=max_visits, max_depth=max_depth)
+        return self.check_convex_volume(vertices, max_visits=max_visits, max_depth=max_depth,
+                                        expected_zone_line=expected_zone_line)
 
-    def check_convex_volume(self, vertices_wld, *, max_visits=4096, max_depth=256):
+    def check_convex_volume(self, vertices_wld, *, max_visits=4096, max_depth=256, expected_zone_line=None):
         """Conservatively classify the closed convex hull of exact 3D vertices.
 
         Affine extrema occur at vertices. Every branch still sees the entire
@@ -104,6 +105,11 @@ class BspVolumeView:
                 or type(max_visits) is not int or not 1 <= max_visits <= 4096
                 or type(max_depth) is not int or not 1 <= max_depth <= 256):
             raise ValueError('Invalid convex BSP volume or traversal budget')
+        if expected_zone_line is not None:
+            from .zone_line import ExpectedZoneLine
+            if not isinstance(expected_zone_line,ExpectedZoneLine):
+                raise ValueError('Typed expected zone-line geometry required')
+            expected_zone_line.check_bsp(self)
         vertices = tuple(tuple(rational_number(v) for v in p) for p in vertices_wld)
         # Exact rank check: a point/line/plane is not a body volume.
         basis = {}
@@ -148,7 +154,8 @@ class BspVolumeView:
                 regions.add(region)
                 if self.labels[region]:
                     labelled.append((region, self.labels[region]))
-                    return result(False, 'labelled_bsp_volume')
+                    if expected_zone_line is None or not expected_zone_line.allows_region(region,self.labels[region]):
+                        return result(False, 'labelled_bsp_volume')
                 continue
             values = tuple(nx*x + ny*y + nz*z + split for x,y,z in vertices)
             minimum, maximum = min(values), max(values)
@@ -161,4 +168,5 @@ class BspVolumeView:
                 # Touching is deliberately inclusive on both sides.
                 stack.append((right, next_ancestry))
                 stack.append((left, next_ancestry))
-        return result(True, 'copied_bsp_prism_candidate_only')
+        return result(True, 'conditional_expected_zone_line_volume' if labelled
+                      else 'copied_bsp_prism_candidate_only')

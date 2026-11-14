@@ -68,6 +68,7 @@ class RouteGeometryRecord:
     static: object
     bsp: object
     precision_policy: object = None
+    expected_zone_line: object = None
     input_authorized: bool = field(default=False, init=False)
     real_client_accepted: bool = field(default=False, init=False)
 
@@ -82,7 +83,7 @@ class RouteGeometryPreparer:
     """
     def __init__(self, ledger, *, ground, source, static, bsp, bounds,
                  static_inventory_sha256, vertical_window,
-                 maximum_source_z_difference, precision_policy=None):
+                 maximum_source_z_difference, precision_policy=None, expected_zone_line=None):
         if (not isinstance(ledger, RouteFloorCommit)
                 or not isinstance(bounds, RouteMotionBounds)
                 or not finite(vertical_window) or not 0 < vertical_window <= 100
@@ -96,12 +97,27 @@ class RouteGeometryPreparer:
         self.vertical_window = vertical_window
         self.maximum_source_z_difference = maximum_source_z_difference
         self.precision_policy = precision_policy
+        self.expected_zone_line = expected_zone_line
+        self._zone_line = self._zone_line_binding()
         self._precision = self._precision_binding()
         validate_precision_seams(source, precision_policy)
         self._record = None
         self._record_context = None
         self._cache = None
         self._bindings()
+
+    def _zone_line_binding(self):
+        line=self.expected_zone_line
+        if line is None:return None
+        from .zone_line import ExpectedZoneLine
+        if not isinstance(line,ExpectedZoneLine):
+            raise ValueError('Explicit expected zone-line geometry required')
+        r=self.ledger.runner;g=r.geometry_evidence
+        line.check_geometry(zone=r.route.zone,mesh_sha256=r.route.mesh_sha256,
+            archive_sha256=g.source_archive_sha256,wld_sha256=g.source_wld_sha256,bsp=self.bsp)
+        if self.ground.polygons_for_area(line.area_id)!=line.polygon_ids:
+            raise ValueError('Zone-line polygon inventory changed')
+        return line.sha256
 
     def _precision_binding(self):
         r = self.ledger.runner
@@ -124,6 +140,7 @@ class RouteGeometryPreparer:
                 or any(c not in '0123456789abcdef' for c in self.static_inventory_sha256)
                 or self.static.inventory_sha256 != self.static_inventory_sha256
                 or self._precision_binding() != self._precision
+                or self._zone_line_binding() != self._zone_line
                 or self.maximum_source_z_difference > g.maximum_source_baked_z_difference):
             raise ValueError('Route geometry source or inventory binding differs')
 
@@ -145,7 +162,7 @@ class RouteGeometryPreparer:
                 self.bounds, self.vertical_window, self.maximum_source_z_difference,
                 id(self.ground), id(self.source), id(self.static), id(self.bsp),
                 self.static_inventory_sha256, self.bsp.inventory_sha256,
-                self._precision_binding())
+                self._precision_binding(),self._zone_line_binding())
 
     def _trial(self, kind, position, heading, component, chain, bounds):
         b = bounds
@@ -154,19 +171,20 @@ class RouteGeometryPreparer:
         footprint = motion_footprint(position[:2], heading, reach,
             position_error=b.position_error, heading_error_degrees=b.heading_error_degrees,
             post_release_drift=b.post_release_drift, extra_radius=b.body_radius + pivot_radius)
+        crossing={} if self.expected_zone_line is None else dict(expected_zone_line=self.expected_zone_line)
         original, detail_ids = self.ground.check(footprint, reference=position,
-            component=component, vertical_window=self.vertical_window)
+            component=component, vertical_window=self.vertical_window,**crossing)
         sources = self.source.source_faces_for_footprint(footprint)
         fork, trial = check_floor_trial(self.source, chain, original, footprint, detail_ids,
             reference=position, component=component, vertical_window=self.vertical_window,
             maximum_source_z_difference=self.maximum_source_z_difference,
-            allow_overlap=self.precision_policy.allow_overlap if self.precision_policy else False)
+            allow_overlap=self.precision_policy.allow_overlap if self.precision_policy else False,**crossing)
         if not trial.candidate:
             return 'Terrain: ' + trial.reason
         static = check_static_floor(trial, footprint, sources, self.static)
         if not static.candidate:
             return 'Static geometry: ' + static.reason
-        bsp = check_bsp_floor(trial, footprint, sources, self.bsp)
+        bsp = check_bsp_floor(trial, footprint, sources, self.bsp,**crossing)
         if not bsp.candidate:
             return 'BSP volume: ' + bsp.reason
         return (footprint, sources, fork, trial, static, bsp, _chain_snapshot(fork))
@@ -258,7 +276,7 @@ class RouteGeometryPreparer:
                     footprint=footprint, sources=sources, requested_seconds=seconds,
                     maximum_actual_hold=b.maximum_actual_hold, movement_key=key,
                     motion_bounds_record_id=b.record_id, check_geometry=evaluate)
-                self._record = RouteGeometryRecord(ticket, trial, static, bsp, self.precision_policy)
+                self._record = RouteGeometryRecord(ticket, trial, static, bsp, self.precision_policy,self.expected_zone_line)
                 self._record_context = self._context()
                 return ticket
             except BaseException:

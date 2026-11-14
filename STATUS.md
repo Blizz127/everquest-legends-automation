@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 12:17 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 12:29 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,18 @@ Updated 2026-11-14 12:17 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.17:** exact pinned zone-line geometry now propagates through
+  terrain/precision/static/BSP preparation and cache identity. The copied GFay
+  synthetic footprint passes with polygon 19256 / native region 2884, while
+  permission-off refuses. The actual area stays 4; ordinary travel policy
+  rejects crossing preparation. 205 focused checks pass, followed by 93 checks
+  after speeding up complete polygon-inventory rechecks. Copied probe SHA
+  `cb0094eb72189b3f4e7172f2eb7993dc01bbb2742791133f88c1bccef311a322`.
+  No live crossing/input is enabled. **Next:** connect a distinct checked
+  crossing pulse to the loading/arrival flow, carrying the existing source
+  floor through the layered entrance; then destination geometry/camps. Owner
+  0.39.18 map/travel evidence remains pending. G0 passed, assist 0.39.13 unchanged;
+  current level, XP/hour, deaths and camp unknown; no real route/XP acceptance.
 - **Source 0.42.16:** expected-zone arrival now releases on loading, requires
   exact entry/current readiness, then obtains two fresh stopped destination
   positions on the same exclusive reader. Logging-reset pairing and reentrant

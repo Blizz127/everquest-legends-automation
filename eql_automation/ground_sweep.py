@@ -115,7 +115,7 @@ class GroundCoverage:
 def check_ground_coverage(footprint, faces, *, reference, component,
                           maximum_grade=1., vertical_window=3.,
                           height_tolerance=.01, area_tolerance=1e-7,
-                          max_faces=96):
+                          max_faces=96, expected_zone_line=None, polygon_ids=None):
     """Check complete local face coverage, including clipped-face overlaps.
 
     Face triangles outside the explicit height window are ignored, so this
@@ -131,6 +131,11 @@ def check_ground_coverage(footprint, faces, *, reference, component,
             or not isinstance(faces, tuple) or len(faces) > max_faces):
         return GroundCoverage(False, "invalid_footprint_or_face_budget")
     boundary = hull(footprint)
+    if expected_zone_line is not None:
+        from .zone_line import ExpectedZoneLine
+        if (not isinstance(expected_zone_line,ExpectedZoneLine) or not isinstance(polygon_ids,tuple)
+                or len(polygon_ids)!=len(faces)):
+            return GroundCoverage(False,'expected_zone_line_needs_exact_polygon_ids')
     if len(boundary) != len(footprint) or area(boundary) <= area_tolerance:
         return GroundCoverage(False, "footprint_must_be_convex_and_nondegenerate")
     if any(cross(boundary[i], boundary[(i + 1) % len(boundary)], reference[:2]) < -1e-10 for i in range(len(boundary))):
@@ -172,7 +177,9 @@ def check_ground_coverage(footprint, faces, *, reference, component,
             continue
         if min(heights) < low or max(heights) > high:
             return result(False, "surface_crosses_height_window")
-        if face.area_id != 63 or face.component != component:
+        if (face.component != component or (face.area_id != 63 and
+                (expected_zone_line is None or
+                 not expected_zone_line.allows_face(polygon_ids[current],face.area_id)))):
             return result(False, "forbidden_area_or_other_component")
         grade = math.hypot(dx, dy)
         highest = max(highest, grade)

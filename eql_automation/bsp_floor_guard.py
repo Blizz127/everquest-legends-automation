@@ -36,7 +36,7 @@ class BspFloorCheck:
     real_client_accepted: bool = False
 
 
-def check_bsp_floor(floor_trial, footprint, terrain_sources, bsp_view):
+def check_bsp_floor(floor_trial, footprint, terrain_sources, bsp_view, *, expected_zone_line=None):
     """Test the full expanded footprint from lowest floor to highest head.
 
 The Z band deliberately overestimates a sloping/multi-patch floor. Exact
@@ -48,10 +48,11 @@ The .1 below-floor and .01 numeric margins match the occupancy guard defaults.
             or floor_trial.floor_step.occupancy is None
             or not floor_trial.floor_step.occupancy.candidate):
         return BspFloorCheck(False, 'accepted_terrain_trial_required')
-    return check_source_bsp_floor(floor_trial.floor_step, footprint, terrain_sources, bsp_view)
+    return check_source_bsp_floor(floor_trial.floor_step, footprint, terrain_sources, bsp_view,
+                                   expected_zone_line=expected_zone_line)
 
 
-def check_source_bsp_floor(step, footprint, terrain_sources, bsp_view):
+def check_source_bsp_floor(step, footprint, terrain_sources, bsp_view, *, expected_zone_line=None):
     """Classify the full prism of a source cell; makes no baked-mesh claim."""
     if (not isinstance(step, FloorChainStep) or not step.candidate
             or step.occupancy is None or not step.occupancy.candidate):
@@ -99,7 +100,7 @@ def check_source_bsp_floor(step, footprint, terrain_sources, bsp_view):
         prism = {'xy_wld': [[str(n) for n in p] for p in xy_wld],
                  'z_bounds': [str(low), str(high)]}
         prism_sha = sha256(json.dumps(prism, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
-        traversal = bsp_view.check_prism(xy_wld, (low, high))
+        traversal = bsp_view.check_prism(xy_wld, (low, high),expected_zone_line=expected_zone_line)
     except (TypeError, ValueError, ZeroDivisionError, OverflowError):
         return BspFloorCheck(False, 'invalid_selected_floor_prism')
     return BspFloorCheck(traversal.candidate, traversal.reason, geometry,

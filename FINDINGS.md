@@ -1,5 +1,64 @@
 # FINDINGS
 
+## Exact expected zone-line geometry — 2026-11-14 12:29 UTC
+
+**VERIFIED implementation:** source 0.42.17 introduces immutable
+`ExpectedZoneLine`, binding crossing identity, zone, mesh/archive/WLD/BSP and
+manifest hashes, the exact native label, actual area and polygon/region IDs.
+The source factory resolves effective native region labels, then checks the
+conservative BSP classifications. Terrain and precision retries retain actual
+area 4; only the named polygon can pass. BSP traversal retains the labelled
+region in its result and continues checking every other branch. Water, unknown
+labels, other transitions, missing children, source terrain and static collision
+still refuse. The same permission enters route records and cache identity.
+Ordinary `SupervisedRoutePolicy` rejects any crossing preparer; this update
+creates no movement, sender or live crossing action. New area63↔4 precision
+seam derivation remains unsupported and refuses; existing explicit retry paths
+carry the permission without broadening seam derivation.
+
+**VERIFIED copied source result:** `tools/probe_zone_line_geometry.py` uses the
+pinned GFay manifest
+`ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82`
+and existing complete terrain/static/BSP loader. The exact label
+`DRNTP00255000004_ZONE` maps to polygon **19256**, area **4**, native region
+**2884** with only `zoneline` classification. At synthetic package XY
+`(-51,2612)`, ordinary starting polygon 19254 has baked Z=16.068756103515625.
+The probe explicitly hypothesizes source face `(1707,28)`, floor Z=15.84375,
+heading 0, body height 6, radius 1.2 and the recorded motion envelope. It does
+not infer a current character position or select a live floor from nearest Z.
+
+The earlier all-layer point query correctly refused: source surfaces include
+the floor, ceiling at Z=57.84375 and Boundary surface near Z=801.8125. The
+conditional chain keeps all layers in occupancy. Ceiling clearance is 42 units;
+the forward footprint crosses into source faces `(1708,6)` and `(1708,7)` and
+native region 2884. Terrain/static/BSP pass; permission-off returns
+`Terrain: forbidden_area_or_other_component`. The original floor chain stays
+at index 1; the uncommitted fork reaches 2. No precision correction is needed.
+Forward geometry took 0.080632 seconds in this run, outside any live sender.
+No timing deadline was changed. Probe artifact:
+`~/.local/share/eql-automation/nav-candidates/gfay-zone-line-0.42.17/probe.json`,
+SHA `cb0094eb72189b3f4e7172f2eb7993dc01bbb2742791133f88c1bccef311a322`.
+The expected destination remains a guide hint until the live arrival log;
+no server destination/spawn acceptance follows from this offline result.
+
+**VERIFIED focused checks:** 205 pass across exact-label/source/polygon binding,
+default refusal, other labels/missing children, static collisions, precision
+retry propagation, route-cache invalidation and ordinary-policy refusal.
+An inventory timing probe on the real 38,587-polygon array measured 8.51 ms
+per Python enumeration. The complete recheck now uses the existing NumPy
+array operation (0.0881 ms in a separate probe), preserving mutation detection
+and the original deadlines. 93 focused route/zone-line/policy checks pass after
+that change. Read-only review found no concrete correctness defect and recorded
+the unsupported new zone-line precision-seam limit above.
+
+**Next and live gate:** wire a distinct checked crossing pulse and the existing
+loading/arrival handoff, with the source floor carried continuously through the
+layered entrance. Then plan from fresh Crushbone positions. Existing owner
+preview **0.39.18** and assist **0.39.13** remain unchanged; pending live map/
+travel evidence is still needed. G0 is passed and must not be repeated.
+Current level, XP/hour, deaths and camp are unknown. No real route, automated
+XP, 1–20 or fresh hands-off 1–50 run is accepted.
+
 ## Expected zone-arrival handoff — 2026-11-14 12:17 UTC
 
 **VERIFIED implementation:** source 0.42.16 adds `ZoneArrivalHandoff` over the
