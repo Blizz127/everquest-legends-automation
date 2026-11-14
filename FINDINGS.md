@@ -56,6 +56,14 @@ Then carry the lease into fresh Crushbone geometry/camps. Owner preview 0.39.18,
 assist 0.39.13 and passed G0 remain unchanged; no new G0 or owner test is requested.
 Current level, XP/hour, deaths and camp unknown. Real 1–20/1–50 remain unaccepted.
 
+**VERIFIED private publication:** commit
+`259a468029849c1d324d76175ca714d75eb336bb` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.42.19/source`. Imports and synthetic
+exact-area/raw-XY observation pass; ordinary context, area relabeling and missing
+line hash refuse. No worker, device, game input or client/prefix change occurs.
+Archive SHA `5b04df2d2d3da672ac70b438b215c6307a471f2696a53af8ee53bd019bd65b43`;
+startup SHA `54f7852d40d21627b4cd8e03d402d6ac605b93009d15828ae19b535af94191b9`.
+
 ## Checked crossing pulse and arrival integration — 2026-11-14 12:39 UTC
 
 **VERIFIED implementation:** source 0.42.18 adds `SupervisedCrossingPolicy`,

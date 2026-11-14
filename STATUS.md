@@ -20,6 +20,9 @@ Updated 2026-11-14 12:51 UTC for coordinator task `829a00229b29`.
   169 focused checks passed plus one test-fixture failure; all 21 destination
   cases pass after correcting that fixture. Search-time label/inventory changes
   now refuse. This is planning/observation support, not a new owner action.
+  Commit `259a468` is staged at Alienware `owner-tools/0.42.19/source`;
+  no-input exact-area/default-refusal startup passes, SHA
+  `54f7852d40d21627b4cd8e03d402d6ac605b93009d15828ae19b535af94191b9`.
   **Next:** seal completed movement receipts before waiting for loading, then
   commit the source floor only after fresh source positions or discard it on
   loading; connect that exclusive-reader flow to owner travel. Owner preview
