@@ -23,6 +23,7 @@ from .ground_observer import RouteGroundObserver, exact_detail_support
 from .ground_sweep import GroundFace, check_ground_coverage, hull, motion_footprint
 from .location_log import LocationLogReader, RawLocationFix
 from .motion_collection import immutable_binding
+from .native_region_policy import NativeZeroRegionTrialPolicy, NativeRegionPlanningEvidence
 from .route_geometry import RouteMotionBounds
 from .route_precision import RoutePrecisionPolicy, precision_binding, validate_precision_seams
 from .source_floor_chain import SourceFloorChain
@@ -52,6 +53,8 @@ class CurrentStartPlan:
     requires_fresh_start_pair: bool = True
     real_client_accepted: bool = False
     input_authorized: bool = False
+    region_policy: NativeZeroRegionTrialPolicy | None = None
+    native_region_evidence: NativeRegionPlanningEvidence | None = None
 
 
 class CurrentStartPlanner:
@@ -65,7 +68,7 @@ class CurrentStartPlanner:
     def __init__(self, *, mesh, ground, source, static, bsp, zone_short_name,
                  expected_zone_id, expected_zone_name, mesh_sha256,
                  source_archive_sha256, source_wld_sha256,
-                 static_inventory_sha256, precision_policy=None):
+                 static_inventory_sha256, precision_policy=None, region_policy=None):
         pins = (mesh_sha256, source_archive_sha256, source_wld_sha256, static_inventory_sha256)
         if (not all(digest(v) for v in pins) or not isinstance(bsp, BspVolumeView)
                 or not isinstance(zone_short_name, str) or not zone_short_name
@@ -77,6 +80,11 @@ class CurrentStartPlanner:
         self.pins = pins
         self.bsp_pin = bsp.inventory_sha256
         self._views = (mesh, ground, source, static, bsp)
+        if region_policy is not None and type(region_policy) is not NativeZeroRegionTrialPolicy:
+            raise ValueError('Explicit native planning policy required')
+        self.region_policy = region_policy
+        self._region_policy = region_policy
+        self._region_classifier = region_policy.classifier if region_policy else None
         self.precision_policy = precision_policy
         self._precision = self._precision_binding()
         validate_precision_seams(source, precision_policy)
@@ -88,6 +96,12 @@ class CurrentStartPlanner:
 
     def _check_views(self):
         mesh, archive, wld, static = self.pins
+        if self.region_policy is not self._region_policy:
+            raise ValueError('Current-start region policy changed')
+        if self.region_policy is not None:
+            if self.zone_id != 58 or self.region_policy.classifier is not self._region_classifier:
+                raise ValueError('Current-start native classifier or catalog identity changed')
+            self.region_policy.check_context(zone=self.zone, pins=self.pins, bsp=self.bsp)
         if (any(a is not b for a, b in zip(self._views,
                     (self.mesh, self.ground, self.source, self.static, self.bsp)))
                 or getattr(self.mesh, 'mesh_sha256', None) != mesh
@@ -251,6 +265,8 @@ class CurrentStartPlanner:
             selected_ids=seeds, planning_bounds=asdict(bounds), footprint=footprint,
             precision_policy=self.precision_policy.record() if self.precision_policy else None,
             released_at=released_at, began=began)
+        if self.region_policy is not None:
+            seed_record['native_region_policy'] = self.region_policy.record()
         chain = SourceFloorChain(inventory_sha256=self.pins[2],
             seed_evidence_sha256=sha256(encoded(seed_record)).hexdigest(),
             seed_ids=tuple(seeds), body_height=bounds.body_height)
@@ -265,10 +281,17 @@ class CurrentStartPlanner:
         if not static.candidate:
             raise ValueError('Current-start static geometry refused: '+static.reason)
         bsp = check_bsp_floor(terrain, footprint, sources, self.bsp)
-        if not bsp.candidate:
+        native_evidence = None
+        if self.region_policy is not None:
+            native_evidence, static = self.region_policy.evaluate(
+                terrain, footprint, sources, self.static, bsp)
+        elif not bsp.candidate:
             raise ValueError('Current-start BSP refused: '+bsp.reason)
         finished = check()
-        evidence = encoded(dict(format='eql-current-start-geometry-v1', seed=seed_record,
+        native_fields = {} if native_evidence is None else dict(
+            native_region=native_evidence.record(), native_region_sha256=native_evidence.sha256)
+        evidence = encoded(dict(format='eql-current-start-geometry-v2' if native_evidence else
+            'eql-current-start-geometry-v1', seed=seed_record, **native_fields,
             selected_polygon=polygon, selected_coverage=asdict(selected), exact_partition=True,
             terrain=asdict(terrain), static=asdict(static), bsp=asdict(bsp),
             maximum_source_baked_z_difference=maximum_source_z_difference,
@@ -289,4 +312,5 @@ class CurrentStartPlanner:
                            (FixedSegment(polygon, start, end),))
         observer = RouteGroundObserver(mesh=self.mesh, ground=self.ground, source=self.source,
             geometry_evidence=geometry, reciprocal_links=())
-        return CurrentStartPlan(route, observer, chain, bounds, plan_bytes, evidence, self.precision_policy)
+        return CurrentStartPlan(route, observer, chain, bounds, plan_bytes, evidence, self.precision_policy,
+            region_policy=self.region_policy, native_region_evidence=native_evidence)

@@ -91,6 +91,8 @@ def plan_destination(planner, navigation_mesh, reader, first, second, *, goal_xy
             or not integer(max_polygons) or not 1<=max_polygons<=4096
             or not callable(clock) or 'length' in start_options):
         raise ValueError('Exact destination, current-start options and bounded planning required')
+    if planner.region_policy is not None:
+        raise ValueError('Native region planning is limited to initial floor/height; destination execution is not wired')
     began=clock();last=began
     mesh_pin=planner.pins[0]
     owner=start_options.get('owner_binding');binding=start_options.get('binding_reader')

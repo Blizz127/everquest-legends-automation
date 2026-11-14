@@ -141,6 +141,8 @@ def _bound_initial_floor(plan, observer, route, reader, owner_binding, segment_i
     geometry = observer.geometry
     source, mesh, ground = observer.source, observer.mesh, observer.ground
     plan_bytes, evidence_bytes, bounds = plan.plan_bytes, plan.evidence_bytes, plan.planning_bounds
+    region_policy, native_evidence = plan.region_policy, plan.native_region_evidence
+    classifier = region_policy.classifier if region_policy is not None else None
     if (sha256(plan_bytes).hexdigest() != route.artifact_sha256
             or sha256(evidence_bytes).hexdigest() != geometry.same_floor_evidence_sha256
             or chain.index != 1 or chain.inventory_sha256 != geometry.source_wld_sha256
@@ -155,9 +157,29 @@ def _bound_initial_floor(plan, observer, route, reader, owner_binding, segment_i
             evidence = evidence['initial_geometry']
         seed = evidence['seed']
         seed_fix = seed['observations'][-1]
-        if (evidence['format'] != 'eql-current-start-geometry-v1'
-                or any(evidence[key]['candidate'] is not True for key in ('terrain', 'static', 'bsp'))
-                or encoded(evidence['terrain']['floor_step']) != encoded(asdict(chain.previous))
+        if evidence['format'] == 'eql-current-start-geometry-v1':
+            if region_policy is not None or native_evidence is not None:
+                raise ValueError('Legacy floor cannot claim native policy evidence')
+            if any(evidence[key]['candidate'] is not True for key in ('terrain', 'static', 'bsp')):
+                raise ValueError('Initial terrain/static/BSP evidence refused')
+        elif evidence['format'] == 'eql-current-start-geometry-v2':
+            from .native_region_policy import (NativeZeroRegionTrialPolicy,
+                NativeRegionPlanningEvidence, encoded as native_encoded)
+            if (type(region_policy) is not NativeZeroRegionTrialPolicy
+                    or type(native_evidence) is not NativeRegionPlanningEvidence
+                    or route.zone != 'crushbone' or reader.zone_id != 58
+                    or region_policy.wld_sha256 != chain.inventory_sha256
+                    or region_policy.mesh_sha256 != geometry.mesh_sha256
+                    or region_policy.archive_sha256 != geometry.source_archive_sha256
+                    or seed['native_region_policy'] != region_policy.record()
+                    or native_encoded(evidence['native_region']) != native_evidence.payload
+                    or evidence['native_region_sha256'] != native_evidence.sha256):
+                raise ValueError('Initial native floor context differs')
+            region_policy.validate(native_evidence, **{k:evidence[k] for k in ('terrain', 'static', 'bsp')})
+        else:
+            raise ValueError('Unknown initial floor evidence format')
+        if (
+                encoded(evidence['terrain']['floor_step']) != encoded(asdict(chain.previous))
                 or sha256(encoded(seed)).hexdigest() != chain.seed_evidence_sha256
                 or seed['pins'][2] != chain.inventory_sha256
                 or encoded(seed['owner_binding']) != encoded(owner_binding)
@@ -174,8 +196,13 @@ def _bound_initial_floor(plan, observer, route, reader, owner_binding, segment_i
                 or plan.observer is not observer or observer.geometry is not geometry
                 or observer.source is not source or observer.mesh is not mesh or observer.ground is not ground
                 or plan.plan_bytes is not plan_bytes or plan.evidence_bytes is not evidence_bytes
-                or plan.planning_bounds is not bounds or _chain_snapshot(chain) != snapshot):
+                or plan.planning_bounds is not bounds or _chain_snapshot(chain) != snapshot
+                or plan.region_policy is not region_policy or plan.native_region_evidence is not native_evidence):
             raise ValueError('Initial floor plan changed during height measurement')
+        if region_policy is not None:
+            if region_policy.classifier is not classifier:
+                raise ValueError('Initial native classifier changed during height measurement')
+            region_policy.validate(native_evidence, **{k:evidence[k] for k in ('terrain', 'static', 'bsp')})
     return chain, check
 
 
@@ -223,10 +250,10 @@ def measure_current_height(observer, reader, first, second, *, route, segment_in
         binding = binding_reader()
         wall = local_wall_clock()
         # Scope callbacks may pump events or take time. Judge freshness only
-        # after they finish, then check floor/reader values without callbacks.
-        now = clock()
+        # after they finish, including the native evidence validation work.
         if check_floor is not None:
             check_floor()
+        now = clock()
         if (binding != owner_binding or not finite(now)
                 or not finite(second.received_monotonic)
                 or not 0 <= now-second.received_monotonic <= .5

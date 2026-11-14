@@ -1,5 +1,50 @@
 # FINDINGS
 
+## Explicit native-zero planning and fresh height — 2026-11-14 13:54 UTC
+
+**VERIFIED implementation:** source 0.42.26 adds a separate typed Crushbone
+planning policy. The default loader and v1 planning behavior remain unchanged.
+Opt-in v2 plans retain the original BSP result; only a passing result or exact
+`missing_bsp_child` is eligible. Terrain and static geometry still must pass.
+Every selected floor patch needs complete, nonempty native metadata with full
+integer flags exactly zero. Water, mixed flags, high-bit transitions, empty
+pieces and unresolved classification refuse. The policy pins the native
+classifier, source/mesh/static/BSP inventories and copied executable model.
+Installed binary matching and actual movement remain unverified.
+
+The complete nested policy/classification record is sealed as canonical bytes.
+Fresh height requires this exact evidence, the initial floor chain, source,
+owner/log/zone identities and newer stopped samples. Snapshot checks include the
+policy and classifier. A returned dictionary cannot mutate the sealed record.
+Default/assist/full-auto height behavior remains unchanged; native plans are
+explicitly refused by destination planning and the owner movement driver until
+per-move authorization is connected. Nothing in this increment sends input.
+
+**VERIFIED focused checks:** 145 pass across native policy, current planning,
+floor bootstrap, destination planning, copied-data loader and observed height.
+A new delayed final native-validation test reproduced a stale-sample bug;
+freshness now includes that validation time, and the regression passes.
+Ten actual owner-wrapper checks also pass with OS-pipe input and synthetic game
+feedback, including local arrival, cancellation and complete expected-zone
+crossing. These checks send no input to EverQuest.
+
+**VERIFIED copied-data comparison:** `tools/probe_crushbone_start.py` uses an
+explicitly synthetic log and clock, supplied coordinates and body hypotheses.
+At retained historical package XY `(274.06,-424.04)`, radius 1.2, height 6 and
+heading 0, the default path retains `missing_bsp_child`. Explicit native
+planning produces a conditional initial plan and a fresh synthetic height
+correspondence, retaining full terrain/static evidence and native flags `[0]`.
+These are not the owner's current coordinates or actual motion observations.
+Final report `nav-candidates/crushbone-native-start-0.42.26-final.json` SHA
+`459978e5a09d1cfd7ee53dfe97c34743793f407afefb922c8d1c9915082f9e7c`.
+
+**Next:** propagate the explicit model into per-move preparation/cache records
+and supervised authorization, checking installed binary identity before any
+owner use; then source-step execution and fresh camp routing. Owner crossing
+0.39.19 and existing-bot assist 0.39.13 stay current. G0 passed. Current level,
+XP/hour, deaths and camp unknown. No live crossing/camp acceptance, automated
+XP, accepted 1–20 or fresh hands-off 1–50 run.
+
 ## Native region enclosure and complete Crushbone replay — 2026-11-14 13:46 UTC
 
 **VERIFIED implementation:** source 0.42.25 composes the audited native

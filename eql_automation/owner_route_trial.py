@@ -319,6 +319,8 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
         def _attach_trial_driver(self,p,pair):
             from eqnav import steer
             plan=p['plan'];self._trial_current(p)
+            if plan.region_policy is not None:
+                raise ValueError('Native region planning is not connected to owner movement yet')
             scope=p['continuation']['scope']
             seconds,steps,distance,hold=scope_limits(scope)
             if scope=='local_trial':distance=3.

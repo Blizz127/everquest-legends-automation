@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 13:49 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 13:54 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,17 @@ Updated 2026-11-14 13:49 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.26:** explicit native-zero policy now supports copied Crushbone
+  initial planning and fresh height while retaining terrain/static checks and
+  the old BSP result. Evidence is sealed; only full flags zero qualifies.
+  145 focused checks pass, including a reproduced/fixed late-validation freshness
+  bug; 10 owner-wrapper checks pass with OS pipes and synthetic game feedback.
+  The retained entrance comparison produces an initial plan and synthetic
+  height only with opt-in; default still refuses. Report SHA
+  `459978e5a09d1cfd7ee53dfe97c34743793f407afefb922c8d1c9915082f9e7c`.
+  Destination and owner execution remain explicitly unwired for this new policy.
+  **Next:** per-move policy integration and installed executable verification,
+  then source steps and camp routes. No game input; current metrics unknown.
 - **Source 0.42.25:** native float32 region metadata now preserves default 0,
   label precedence and full transition flags independently from collision.
   A reproduced tiny-result/FTZ edge case is corrected. 84 focused checks pass

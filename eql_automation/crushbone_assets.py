@@ -14,6 +14,7 @@ from .client_region_classification import ClientBspClassificationView
 from .current_route_start import CurrentStartPlanner
 from .ground_sweep_view import GroundSweepView
 from .location_log import unique_zone_ids_from_text
+from .native_region_policy import NativeZeroRegionTrialPolicy
 from .owner_route_assets import checked_bytes, TRANSFORM_PIN
 from .pfs_archive import PFSArchive
 from .portal_precision_view import PortalPrecisionView
@@ -86,9 +87,11 @@ class CrushboneAssets:
             route_accepted=False, real_client_accepted=False)
 
 
-def load_crushbone_assets(root):
+def load_crushbone_assets(root, *, native_planning=False):
     """Load full private copied views, verifying pins before and after parsing."""
     from eqnav import zonegeom
+    if type(native_planning) is not bool:
+        raise ValueError('Native planning opt-in must be explicit')
     root = Path(root)
     if root.is_symlink() or not root.is_dir():
         raise ValueError('Missing private Crushbone data: '+str(root))
@@ -144,6 +147,9 @@ def load_crushbone_assets(root):
         static=static, bsp=bsp, zone_short_name='crushbone', expected_zone_id=58,
         expected_zone_name=names[0], mesh_sha256=DATA_PINS['crushbone.npz'],
         source_archive_sha256=DATA_PINS['crushbone.s3d'], source_wld_sha256=WLD_PIN,
-        static_inventory_sha256=STATIC_PIN)
+        static_inventory_sha256=STATIC_PIN,
+        region_policy=(NativeZeroRegionTrialPolicy(DATA_PINS['crushbone.npz'],
+            DATA_PINS['crushbone.s3d'], WLD_PIN, STATIC_PIN, BSP_PIN, CLASSIFICATION_PIN,
+            classification) if native_planning else None))
     verify()
     return CrushboneAssets(planner, annotations, classification)
