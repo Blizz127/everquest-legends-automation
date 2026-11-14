@@ -1,11 +1,22 @@
 # STATUS
 
-Updated 2026-11-14 17:01 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 17:11 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.41 candidate / owner preview stays 0.39.28:** continuous
+  all-heading probe area checks fresh stopped positions and full copied
+  geometry without sending input. **122 focused checks pass locally**. Three
+  regressions confirmed and fixed missed slope/seam/source-height checks on
+  tiny detail strips. Both copied camp probes still refuse: Slave Mines has
+  layered source floors; North Wall has overlap or unresolved seam coverage.
+  These are synthetic offline coordinates and explicit motion hypotheses,
+  not live movement. Publication pending. Next: exact retained arrival-floor
+  provenance plus fresh positions, and North Wall seam analysis. G0 remains
+  passed. Actual level, XP, XP/hour, deaths and camp unknown; no journey trace
+  exists on Alienware. No accepted 1–20 or 1–50 run.
 - **Source 0.42.40 / published preview 0.39.28:** preserve the same read-only
   input monitor across travel→camp, reject brief released turns and coverage/
   binding loss, and close it before assist. Final arrival heading/motion/bounds

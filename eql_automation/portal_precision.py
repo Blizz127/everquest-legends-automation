@@ -325,6 +325,38 @@ def attribute_seam_overlaps(footprint, faces, polygon_ids, seams, *, reference, 
     return OverlapAttribution(True,'all_original_overlaps_attributed_to_reciprocal_ulps',tuple(pairs))
 
 
+def correct_precision_faces(faces, polygon_ids, seams):
+    """Apply only an explicit reciprocal seam set; no coverage claim."""
+    if (not 1<=len(seams)<=8 or len(faces)!=len(polygon_ids) or len(faces)>96 or
+            any(not isinstance(s,QuantizedSeam) for s in seams)):
+        raise ValueError('no_bounded_reciprocal_seam_set')
+    corrected, shifted = [], 0
+    touches = {(i,p):set() for i,s in enumerate(seams) for p in (s.source,s.target)}
+    for face,poly in zip(faces,polygon_ids):
+        vertices = []
+        for point in face.vertices:
+            adjusted = list(point)
+            assignments = {}
+            for i,seam in enumerate(seams):
+                coordinate = seam.source_coordinate if poly == seam.source else seam.target_coordinate if poly == seam.target else None
+                if (coordinate is None or point[seam.axis] != coordinate
+                        or not seam.span[0] <= point[1-seam.axis] <= seam.span[1]):
+                    continue
+                if seam.axis in assignments and assignments[seam.axis] != seam.midpoint:
+                    raise ValueError('conflicting_local_seam_corrections')
+                assignments[seam.axis] = seam.midpoint
+                touches[i,poly].add(point[1-seam.axis])
+            for axis,value in assignments.items():
+                adjusted[axis] = value
+            shifted += bool(assignments)
+            vertices.append(tuple(adjusted))
+        corrected.append(GroundFace(tuple(vertices),face.area_id,face.component))
+    if not shifted or any(len(points)<2 for points in touches.values()):
+        raise ValueError('both_local_boundary_edges_required')
+    corrected = tuple(corrected)
+    return corrected, shifted
+
+
 def retry_precision_gap(original, footprint, faces, polygon_ids, seams, sources, *,
                         reference, component, vertical_window, maximum_source_z_difference,
                         allow_overlap=False,expected_zone_line=None):
@@ -354,30 +386,10 @@ def retry_precision_gap(original, footprint, faces, polygon_ids, seams, sources,
             expected_zone_line=expected_zone_line)
         if not attribution.candidate:
             return PrecisionCheck(False,attribution.reason,overlap_attribution=attribution)
-    corrected, shifted = [], 0
-    touches = {(i,p):set() for i,s in enumerate(seams) for p in (s.source,s.target)}
-    for face,poly in zip(faces,polygon_ids):
-        vertices = []
-        for point in face.vertices:
-            adjusted = list(point)
-            assignments = {}
-            for i,seam in enumerate(seams):
-                coordinate = seam.source_coordinate if poly == seam.source else seam.target_coordinate if poly == seam.target else None
-                if (coordinate is None or point[seam.axis] != coordinate
-                        or not seam.span[0] <= point[1-seam.axis] <= seam.span[1]):
-                    continue
-                if seam.axis in assignments and assignments[seam.axis] != seam.midpoint:
-                    return PrecisionCheck(False,'conflicting_local_seam_corrections')
-                assignments[seam.axis] = seam.midpoint
-                touches[i,poly].add(point[1-seam.axis])
-            for axis,value in assignments.items():
-                adjusted[axis] = value
-            shifted += bool(assignments)
-            vertices.append(tuple(adjusted))
-        corrected.append(GroundFace(tuple(vertices),face.area_id,face.component))
-    if not shifted or any(len(points)<2 for points in touches.values()):
-        return PrecisionCheck(False,'both_local_boundary_edges_required')
-    corrected = tuple(corrected)
+    try:
+        corrected,shifted=correct_precision_faces(faces,polygon_ids,seams)
+    except ValueError as error:
+        return PrecisionCheck(False,str(error))
     coverage = check_ground_coverage(footprint,corrected,reference=reference,
         component=component,vertical_window=vertical_window,
         expected_zone_line=expected_zone_line,polygon_ids=polygon_ids)

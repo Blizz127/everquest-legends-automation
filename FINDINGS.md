@@ -1,5 +1,81 @@
 # FINDINGS
 
+## 2026-11-14 17:11 UTC — source 0.42.41, unknown-heading probe area
+
+VERIFIED locally: 122 focused checks pass in 16.01 seconds across the new
+probe envelope, existing current-position route, precision-seam and native
+region checks. The new library validates a fresh stopped location pair, then
+checks a circumscribed disk covering every possible forward heading (or pivot
+displacement) under explicit motion/body hypotheses. It uses complete local
+detail/source/static/BSP inventories and the existing native region policy.
+It produces conditional geometry evidence, no movement ticket or route. No
+input is sent and no current heading/speed or independent scene is asserted.
+
+Shared current-floor validation preserves the existing route contract. A
+read-only review identified an area-tolerance gap: tiny detail strips could
+complete exact XY coverage without slope, seam-height or source-height checks.
+Three new regression cases reproduced the gap. Every positive patch now gets
+those checks; a harmless flat strip still passes. All 122 checks passed after
+the fix. These are synthetic fixtures, not client acceptance.
+
+VERIFIED copied-data diagnostics with synthetic observations at map destination
+XY, not a character position:
+
+- `nav-candidates/crushbone-probe-envelope-0.42.41.json`, SHA
+  `8c5b96b205d18db150dfcc4c420cf9fdd9915ca6a1dbf33e3199b8512118faff`:
+  speed ceiling 40, maximum hold .1, body radius 1.2, height 6 were hypotheses.
+  Slave Mines refuses its layered Diffuse floor; North Wall refuses
+  `overlapping_ground_faces`. This first diagnostic preceded the tiny-strip fix.
+- `nav-candidates/crushbone-probe-envelope-0.42.41-short.json`, SHA
+  `968198472623e230f59081897dc035c82a726bc95bf164b9d5759f123a8d023d`:
+  same hypotheses except maximum hold .02; includes complete code/data hashes
+  and motion/body parameters. Slave Mines again refuses layered floors; North
+  Wall refuses `no_bounded_reciprocal_seam_set`. This runs the corrected helper.
+  Shorter hypothetical duration is diagnostic, not an accepted live pulse.
+
+Both reports are outside git in the private store. Source 0.42.41 publication
+is pending; owner preview remains 0.39.28. Next: reuse exact retained arrival
+floor provenance with fresh stopped observations rather than selecting a layer
+from map Z, and reconcile North Wall detail seams. No automatic relocation,
+real route/camp acceptance, level gain or fresh 1–20/1–50 run. G0 stays passed,
+including the owner's visible-stop confirmation; no repeat. Actual level, XP,
+XP/hour, deaths and camp are unknown. A read-only Alienware check found no
+`~/eql-journey-trace.jsonl`; load 2.25/24 CPUs, available memory ~12.4 GiB.
+
+## 2026-11-14 17:11 UTC — installed compass evidence (read-only helper)
+
+VERIFIED read-only against the owner's installed client: default compass XML
+defines a 98×32 window, two 180×24 scrolling compass strips and a 98×24 overlay.
+The active default_light artwork was visually inspected: E, SE, S, SW, W, NW,
+N, NE and a fixed red center marker. Saved `[CompassWindow] Show=0` is saved
+layout evidence, not current window visibility. No live frame or input was
+captured/sent. No verified compass-toggle key or command was found; do not
+assume Alt+D. Client strings mention compass/Sense Heading but do not establish
+a usable numeric heading observation. Actor-versus-camera orientation and
+angular accuracy are unverified. True North exists in client spell data but
+was absent from the retained learned-spell list; no spell was cast.
+
+Paths relative to the protected installed game directory:
+
+- `uifiles/default/EQUI_CompassWindow.xml`: SHA
+  `9a216cec7c43387a3dd6ee1a659a8de31e564876f2df1075efe2d89ae0a1b043`.
+- `uifiles/default/EQUI_Animations.xml`: SHA
+  `c1b787f5b6e5aa6a556c4aa236377494303a96a184b67ffe470c76ade1c3ac35`.
+- `uifiles/default_light/window_pieces04.tga`: SHA
+  `ca1191753025f8bf11cda7593be2198b13efcc87bef2c51947816af23f76b319`.
+- `UI_Legira_freeport_LO1.ini`: SHA
+  `5876a4136283b692263bc2826ffc2b12cd7328f4faa320c5f4071f2092fbc76b`.
+- `eqclient.ini`: SHA
+  `a10560ba3301c411f1b9eb05b5ad2627b4577222b430a7acf59687341356c7fc`.
+- Retained `eqstr_us.txt`: SHA
+  `0dd0117a23092cb195d0e62d6b03a49bf1aaf8dbfb843dd629e38ca950732fde`.
+- Retained 18-row spellbook: SHA
+  `ee7147598c13c6bcd1d1fa17de8e889d436b53608187ab9ce37d1c097ce8df92`.
+
+A future read-only observer can resolve the compass overlay and match this
+artwork, refusing hidden/occluded/ambiguous frames. This is a possible route
+to heading observation, not implemented current-state evidence.
+
 ## 2026-11-14 17:01 UTC — 0.39.28 published; camp observer remains continuous
 
 VERIFIED: source 0.42.40 revision `ea6d335e9142dffec958619bf8e5acf2f92b1258` and preview 0.39.28

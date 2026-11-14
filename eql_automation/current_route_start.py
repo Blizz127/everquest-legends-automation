@@ -20,7 +20,7 @@ from .fixed_route_follower import FixedRoute, FixedSegment
 from .floor_replay import check_floor_trial
 from .ground_binding import GroundGeometryEvidence, digest, finite, integer, point
 from .ground_observer import RouteGroundObserver, exact_detail_support
-from .ground_sweep import GroundFace, check_ground_coverage, hull, motion_footprint
+from .ground_sweep import GroundFace, check_ground_coverage, hull, motion_footprint, clip, area
 from .location_log import LocationLogReader, RawLocationFix
 from .motion_collection import immutable_binding
 from .native_region_policy import NativeZeroRegionTrialPolicy, NativeRegionPlanningEvidence
@@ -29,6 +29,7 @@ from .route_precision import RoutePrecisionPolicy, precision_binding, validate_p
 from .source_floor_chain import SourceFloorChain
 from .source_occupancy import exact_floor_partition
 from .static_floor_guard import check_static_floor
+from .portal_precision import correct_precision_faces, plane
 
 
 def encoded(record):
@@ -39,6 +40,52 @@ def raw_record(raw):
     result = asdict(raw)
     result['log_local_time'] = raw.log_local_time.isoformat()
     return result
+
+
+def _exact_probe_partition(footprint,faces,*,reference,component,vertical_window,
+                           selected_sources,maximum_source_z_difference):
+    """Check every positive patch, including strips below the area tolerance.
+
+    The source chain has already checked the selected source floor's exact
+    partition and occupancy against ALL source heights. Here that same floor
+    also bounds each detail patch, even when the area-based checks skipped it.
+    """
+    supporting=[];patches=[];low=reference[2]-vertical_window;high=reference[2]+vertical_window
+    sources=[]
+    for source in selected_sources:
+        vertices=tuple((y,x,z) for x,y,z in source.vertices_wld)
+        surface=plane(vertices)
+        if surface is None:raise ValueError('Probe envelope detail source plane missing')
+        sources.append((hull(p[:2] for p in vertices),surface))
+    for face in faces:
+        boundary=hull(p[:2] for p in face.vertices)
+        surface=plane(face.vertices)
+        if len(boundary)!=3 or surface is None:continue
+        patch=clip(boundary,footprint)
+        if not patch or area(patch)==0:continue
+        heights=[surface[2](p) for p in patch]
+        if max(heights)<low or min(heights)>high:continue
+        if (min(heights)<low or max(heights)>high or face.area_id!=63 or face.component!=component):
+            raise ValueError('Probe envelope has a crossing height, forbidden area or component')
+        if math.hypot(*surface[:2])>1.:
+            raise ValueError('Probe envelope detail plane is steep')
+        for previous,previous_surface in patches:
+            intersection=clip(patch,previous)
+            if any(abs(surface[2](p)-previous_surface[2](p))>.01 for p in intersection):
+                raise ValueError('Probe envelope detail seam is discontinuous')
+        compared=False
+        for source_boundary,source_surface in sources:
+            intersection=clip(patch,source_boundary)
+            if not intersection:continue
+            compared=True
+            differences=[abs(surface[2](p)-source_surface[2](p)) for p in intersection]
+            if any(not finite(v) or v>maximum_source_z_difference for v in differences):
+                raise ValueError('Probe envelope detail/source height mismatch')
+        if not compared:raise ValueError('Probe envelope detail has no source comparison')
+        patches.append((patch,surface))
+        supporting.append(boundary)
+    if not exact_floor_partition(footprint,tuple(supporting)):
+        raise ValueError('Probe envelope exact detail partition failed')
 
 
 @dataclass(frozen=True)
@@ -55,6 +102,36 @@ class CurrentStartPlan:
     input_authorized: bool = False
     region_policy: NativeZeroRegionTrialPolicy | None = None
     native_region_evidence: NativeRegionPlanningEvidence | None = None
+
+
+@dataclass(frozen=True)
+class _CurrentFloorStart:
+    xy: tuple
+    polygon: int
+    z: float
+    source_z: float
+    seeds: tuple
+    proposal: object
+    began: float
+    identity: tuple
+    check: object
+
+
+@dataclass(frozen=True)
+class CurrentProbeEnvelope:
+    """Conditional whole-area proof, not a route or a movement ticket."""
+    probe_kind: str
+    footprint: tuple
+    reference: tuple
+    source_reference: tuple
+    floor_chain: SourceFloorChain
+    planning_bounds: RouteMotionBounds
+    evidence_bytes: bytes
+    evidence_sha256: str
+    requires_fresh_start_pair: bool = True
+    current_motion_verified: bool = False
+    input_authorized: bool = False
+    real_client_accepted: bool = False
 
 
 class CurrentStartPlanner:
@@ -148,25 +225,19 @@ class CurrentStartPlanner:
             raise ValueError('Current polygon is not dry connected ground')
         return poly, height
 
-    def plan(self, reader, first, second, *, heading, motion_record_id, bounds,
-             length, half_width, vertical_window, maximum_source_z_difference,
-             owner_binding, binding_reader, released_at, record_id,
-             clock=time.monotonic, local_wall_clock=datetime.now, maximum_seconds=10.,
-             allow_overhead_boundary=False):
-        """Check a short capsule from the second exact stopped fix, not old data.
-
-        Planning can outlast the input fix lifetime. This never retimestamps
-        samples: a later height/startup stage must collect another stopped pair
-        at the resulting start. The complete plan remains conditional geometry.
-        """
+    def _current_floor(self, reader, first, second, *, motion_record_id, bounds,
+                       vertical_window, maximum_source_z_difference,
+                       owner_binding, binding_reader, released_at, record_id,
+                       clock, local_wall_clock, maximum_seconds,
+                       allow_overhead_boundary):
+        """Shared fresh-pair validation and exact source seed, independent of heading."""
         if (not isinstance(reader, LocationLogReader)
                 or not all(isinstance(f, RawLocationFix) for f in (first, second))
                 or not isinstance(bounds, RouteMotionBounds)
-                or not all(finite(v) for v in (heading, length, half_width, vertical_window,
+                or not all(finite(v) for v in (vertical_window,
                     maximum_source_z_difference, released_at, maximum_seconds))
-                or not 0 <= heading < 360 or not .5 < length <= 3
                 or type(allow_overhead_boundary) is not bool
-                or not .25 < half_width <= 2 or not 0 < vertical_window <= 3
+                or not 0 < vertical_window <= 3
                 or not 0 < maximum_source_z_difference <= 3
                 or released_at < 0 or not 0 < maximum_seconds <= 30
                 or not isinstance(record_id, str) or not record_id
@@ -215,11 +286,6 @@ class CurrentStartPlanner:
         polygon, z = self._support(xy)
         if self._support(first_xy)[0] != polygon:
             raise ValueError('Stopped pair crosses a polygon boundary')
-        angle = math.radians(heading)
-        end_xy = (xy[0]+length*math.sin(angle), xy[1]+length*math.cos(angle))
-        end_polygon, end_z = self._support(end_xy)
-        if end_polygon != polygon:
-            raise ValueError('First local trial must remain in its starting polygon')
         proposal = None
         if allow_overhead_boundary:
             proposal = self.source.propose_unique_diffuse_floor(xy, body_height=bounds.body_height)
@@ -236,6 +302,119 @@ class CurrentStartPlanner:
         if (not finite(source_z) or abs(source_z-z) > maximum_source_z_difference
                 or not 1 <= len(seeds) <= 32 or len(set(seeds)) != len(seeds)):
             raise ValueError('Current source floor or complete seed inventory unavailable')
+        return _CurrentFloorStart(xy, polygon, z, source_z, tuple(seeds), proposal,
+                                  began, identity, check)
+
+    def plan_probe_envelope(self,reader,first,second,*,probe_kind,motion_record_id,bounds,
+                            vertical_window,maximum_source_z_difference,
+                            owner_binding,binding_reader,released_at,record_id,
+                            clock=time.monotonic,local_wall_clock=datetime.now,
+                            maximum_seconds=10.,allow_overhead_boundary=False):
+        """Check a complete all-heading pulse area at fresh current XY.
+
+        Speed, drift, hold and body values are explicit hypotheses. This proves
+        only the static area under those bounds. It sends no input and does not
+        assert a known heading, current speed or an owner open-ground declaration.
+        A future executor must collect a fresh start pair and bind a live scene.
+        """
+        if probe_kind not in ('forward','left','right'):
+            raise ValueError('Expected a bounded forward or turn probe')
+        floor=self._current_floor(reader,first,second,motion_record_id=motion_record_id,bounds=bounds,
+            vertical_window=vertical_window,maximum_source_z_difference=maximum_source_z_difference,
+            owner_binding=owner_binding,binding_reader=binding_reader,released_at=released_at,
+            record_id=record_id,clock=clock,local_wall_clock=local_wall_clock,
+            maximum_seconds=maximum_seconds,allow_overhead_boundary=allow_overhead_boundary)
+        travel=(bounds.forward_speed_upper_bound*bounds.maximum_actual_hold if probe_kind=='forward'
+                else bounds.pivot_displacement_upper_bound)
+        # Zero nominal reach yields a circumscribed disk, not sampled radial
+        # rays. Include every possible heading and every intermediate position.
+        footprint=motion_footprint(floor.xy,0.,0.,position_error=bounds.position_error,
+            heading_error_degrees=0.,post_release_drift=bounds.post_release_drift,
+            extra_radius=bounds.body_radius+travel)
+        reference=(*floor.xy,floor.z)
+        component=int(self.ground.components[floor.polygon])
+        original,detail_ids=self.ground.check(footprint,reference=reference,
+            component=component,vertical_window=vertical_window)
+        floor.check()
+        seed_record=dict(format='eql-current-probe-seed-v1',record_id=record_id,
+            pins=self.pins,bsp_inventory_sha256=self.bsp_pin,owner_binding=owner_binding,
+            log_identity=floor.identity,observations=[raw_record(first),raw_record(second)],
+            motion_record_id=motion_record_id,heading=None,source_z=floor.source_z,
+            source_floor_proposal=asdict(floor.proposal) if floor.proposal is not None else None,
+            selected_ids=floor.seeds,planning_bounds=asdict(bounds),footprint=footprint,
+            probe_kind=probe_kind,maximum_center_travel=travel,
+            precision_policy=self.precision_policy.record() if self.precision_policy else None,
+            released_at=released_at,began=floor.began)
+        if self.region_policy is not None:seed_record['native_region_policy']=self.region_policy.record()
+        chain=SourceFloorChain(inventory_sha256=self.pins[2],
+            seed_evidence_sha256=sha256(encoded(seed_record)).hexdigest(),
+            seed_ids=floor.seeds,body_height=bounds.body_height)
+        chain,terrain=check_floor_trial(self.source,chain,original,footprint,detail_ids,
+            reference=reference,component=component,vertical_window=vertical_window,
+            maximum_source_z_difference=maximum_source_z_difference,
+            allow_overlap=self.precision_policy.allow_overlap if self.precision_policy else False)
+        if not terrain.candidate:
+            raise ValueError('Probe envelope terrain refused: '+terrain.reason)
+        kept=tuple(i for i in detail_ids if i not in terrain.excluded_baked_detail_ids)
+        polygons=tuple(int(self.ground.polys[i]) for i in kept)
+        faces=tuple(GroundFace(tuple(tuple(float(v) for v in p) for p in self.ground.triangles[i]),
+                    int(self.ground.areas[poly]),int(self.ground.components[poly]))
+                    for i,poly in zip(kept,polygons))
+        if terrain.precision_retry is not None:
+            faces,_=correct_precision_faces(faces,polygons,terrain.precision_retry.seams)
+        sources=self.source.source_faces_for_footprint(footprint)
+        selected_sources=tuple(s for s in sources if (s.fragment,s.face) in terrain.floor_step.selected_ids)
+        _exact_probe_partition(footprint,faces,reference=reference,component=component,
+            vertical_window=vertical_window,selected_sources=selected_sources,
+            maximum_source_z_difference=maximum_source_z_difference)
+        static=check_static_floor(terrain,footprint,sources,self.static)
+        if not static.candidate:
+            raise ValueError('Probe envelope static refused: '+static.reason)
+        bsp=check_bsp_floor(terrain,footprint,sources,self.bsp)
+        native=None
+        if self.region_policy is not None:
+            native,static=self.region_policy.evaluate(terrain,footprint,sources,self.static,bsp)
+        elif not bsp.candidate:
+            raise ValueError('Probe envelope BSP refused: '+bsp.reason)
+        finished=floor.check()
+        evidence=encoded(dict(format='eql-current-probe-envelope-v1',seed=seed_record,
+            terrain=asdict(terrain),static=asdict(static),bsp=asdict(bsp),
+            native_region=native.record() if native is not None else None,
+            native_region_sha256=native.sha256 if native is not None else None,
+            exact_detail_partition=True,
+            maximum_source_baked_z_difference=maximum_source_z_difference,
+            vertical_window=vertical_window,started=floor.began,finished=finished,
+            all_headings=True,motion_bounds_verified=False,independent_scene_verified=False,
+            requires_fresh_start_pair=True,input_authorized=False,real_client_accepted=False))
+        return CurrentProbeEnvelope(probe_kind,footprint,reference,(*floor.xy,floor.source_z),
+            chain,bounds,evidence,sha256(evidence).hexdigest())
+
+    def plan(self, reader, first, second, *, heading, motion_record_id, bounds,
+             length, half_width, vertical_window, maximum_source_z_difference,
+             owner_binding, binding_reader, released_at, record_id,
+             clock=time.monotonic, local_wall_clock=datetime.now, maximum_seconds=10.,
+             allow_overhead_boundary=False):
+        """Check a short capsule from the second exact stopped fix, not old data.
+
+        Planning can outlast the input fix lifetime. This never retimestamps
+        samples: a later height/startup stage must collect another stopped pair
+        at the resulting start. The complete plan remains conditional geometry.
+        """
+        if (not all(finite(v) for v in (heading,length,half_width)) or
+                not 0<=heading<360 or not .5<length<=3 or not .25<half_width<=2):
+            raise ValueError('Current stopped pair, bounded local trial and explicit hypotheses required')
+        floor=self._current_floor(reader,first,second,motion_record_id=motion_record_id,bounds=bounds,
+            vertical_window=vertical_window,maximum_source_z_difference=maximum_source_z_difference,
+            owner_binding=owner_binding,binding_reader=binding_reader,released_at=released_at,
+            record_id=record_id,clock=clock,local_wall_clock=local_wall_clock,
+            maximum_seconds=maximum_seconds,allow_overhead_boundary=allow_overhead_boundary)
+        xy,polygon,z,source_z=floor.xy,floor.polygon,floor.z,floor.source_z
+        seeds,proposal,began,identity,check=floor.seeds,floor.proposal,floor.began,floor.identity,floor.check
+        angle = math.radians(heading)
+        end_xy = (xy[0]+length*math.sin(angle), xy[1]+length*math.cos(angle))
+        end_polygon, end_z = self._support(end_xy)
+        if end_polygon != polygon:
+            raise ValueError('First local trial must remain in its starting polygon')
         footprint = motion_footprint(xy, heading, length, position_error=bounds.position_error,
             heading_error_degrees=bounds.heading_error_degrees,
             post_release_drift=bounds.post_release_drift,

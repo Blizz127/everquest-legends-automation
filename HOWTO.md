@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.40** · travel/camp test **0.39.28** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.41** · travel/camp test **0.39.28** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
 **The complete 1–20 autopilot is not ready. Preview 0.39.28 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -625,14 +625,24 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
-The latest private source is staged on Alienware at:
+Source 0.42.41 is being staged at the following private Alienware path:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.38/source
+~/.local/share/eql-automation/owner-tools/0.42.41/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.42.38 adds bounded near-straight proposal compaction and the
+above. Source 0.42.41 adds a continuous area check for a possible short pulse
+when heading is unknown. It requires fresh stopped observations and checks all
+possible directions against copied terrain, objects and region data. It does
+not send input or enable automatic camp relocation. The diagnostic
+`tools/audit_camp_probe_envelopes.py --help` describes its explicit hypothetical
+motion/body parameters; results stay in the private data store. Both copied
+camp points currently refuse this probe: Slave Mines needs retained floor
+provenance and North Wall needs further mesh-seam analysis. G0 stays passed.
+Use preview **0.39.28** above for owner-run assist/travel/camp tests.
+
+Source 0.42.38 adds bounded near-straight proposal compaction and the
 pinned North Wall/Castle guide. Its complete copied-data check passes; the
 owner preview still rebuilds a fresh route before any travel. The diagnostic
 accepts `--compact`; its longer offline audit budget does not change runtime
@@ -643,8 +653,8 @@ guides and the copied-data diagnostic `tools/audit_crushbone_camp_transit.py`.
 Its `--strategy graph|reverse` options never send input. The initial North Wall
 graph failed ground coverage; the original reverse-corridor check exhausted
 its work budget. Those attempts remain refused; the compacted 0.42.38 check
-supersedes them for North Wall. Owner preview is 0.39.26 and
-G0 remains passed. Use the owner launch commands above for game testing.
+supersedes them for North Wall. That source increment shipped with preview 0.39.26; the current preview is
+0.39.28 above. G0 remains passed. Use the owner launch commands above for game testing.
 
 Source 0.41.97 additionally wires a finite, owner-supervised relative
 motion experiment into candidate 0.39.12; it preserves the stationary setup
