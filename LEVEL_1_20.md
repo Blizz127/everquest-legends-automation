@@ -15,6 +15,8 @@ hotbutton configuration/testing and launcher wiring remain to be implemented;
 no default key or live input was used. A read-only Alienware check found no
 game window and no saved stationary pair. G0 remains passed; no live leg is
 accepted, and current position/zone/motion observations are still missing.
+Source `34cdcd1` is staged at Alienware `owner-tools/0.41.95/source`;
+no-input startup and absent-setup/reserved-key refusal checks pass there.
 
 Source 0.41.94 joins corrected glyph/caret placement with conditional
 bilinear alpha sampling and prefix comparison. Unknown atlas-edge pixels

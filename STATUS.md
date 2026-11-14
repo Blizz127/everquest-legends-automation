@@ -26,6 +26,9 @@ Updated 2026-11-14 08:36 UTC for coordinator task `829a00229b29`.
   Per-character caret/selection checks are an optional engineering approach,
   not an owner restriction. Read-only observation is authorized; no live window
   was available. G0 remains passed; real level/XP/hour/deaths/camp are unknown.
+  Source `34cdcd1` is privately staged at `owner-tools/0.41.95/source`; remote
+  startup and missing-setup/reserved-key checks pass without input or capture.
+  Startup SHA `8bd80d09c65aa7fc20443a7acde15165e6ed4786319276dd7fe5650fdcf60fb5`.
 - **Source 0.41.94:** corrected per-glyph/caret geometry now feeds a
   conditional pixel sampler and the existing prefix matcher. Atlas/DIB edge
   samples outside known glyph extents remain explicitly unknown; all prefix

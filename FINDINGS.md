@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Private source 0.41.95 staged — 2026-11-14 08:37 UTC
+
+**VERIFIED:** source `34cdcd110e8f6cb05aed338aa33c8457ad60e54f` is staged at
+Alienware `owner-tools/0.41.95/source`; archive SHA-256
+`fe1a5af676699981de33d44dcd64e2f3e9055a67b74696d7550f2699eef8e6b7`.
+Remote imports and refusal of a helper-reserved key, absent owner setup and
+absent route pass. No engine/device was constructed and no input/capture ran.
+Startup artifact SHA-256
+`8bd80d09c65aa7fc20443a7acde15165e6ed4786319276dd7fe5650fdcf60fb5`.
+Staging record is in the private `releases/eql-automation-0.41.95-staging.json`.
+Assist 0.39.6, stationary observation 0.39.10 and F11-off remain unchanged.
+
 ## Hotbutton route-position option and access reconciliation — 2026-11-14 08:36 UTC
 
 **VERIFIED implementation:** source 0.41.95 adds
