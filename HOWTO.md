@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.63 / assist 0.39.6 / observation candidate 0.39.8
+# EverQuest Legends automation — project 0.41.64 / assist 0.39.6 / observation candidate 0.39.9
 
 ## Current availability
 
@@ -19,9 +19,17 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.63 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.63/source`; the runnable
+Source tools 0.41.64 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.64/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.64 adds **Observe current position** to separate candidate 0.39.9.
+This integrates the existing manual `/location` and private UI collector into
+the helper without sending input. Waiting and settling happen across normal
+engine ticks. Ninety-eight local focused checks pass, and the actual helper's
+synthetic key dispatch and offscreen GUI smoke pass on Alienware. No live pair
+or route acceptance is claimed. The existing 0.41.61 terminal collector stays
+valid; 0.39.9 is an alternative way to collect that same pending evidence.
 
 Source 0.41.63 connects read-only input observation to the existing helper's
 job and cancellation lifecycle in separate candidate 0.39.8. It observes the
@@ -171,6 +179,40 @@ hold. An over-0.20-second reported hold or cancellation is not a pass.
 Assist's movement path refuses immediately; this adds no turn, targeting,
 combat, camp or route action. The candidate keeps the same assist controls
 and HP calibration, but its movement implementation is not client-accepted.
+
+## Observe current position from the helper: candidate 0.39.9
+
+This is an alternative to the pending 0.41.61 terminal collector below, not
+another G0 test. No repeat of the completed movement pulse is needed.
+Close other helpers, then launch on Alienware:
+
+```bash
+cd ~/.local/share/eql-automation/owner-assist/0.39.9
+EQL_ROTATION_TRACE="$HOME/eql-position-observation.jsonl" ./launch.sh --measure-navigation
+```
+
+Choose the correct character and level in the helper. Stand still in the game
+with logging enabled and the map set to **Current Zone**. Click **Observe
+current position first**, then focus EverQuest and type `/location` **once**
+within 60 seconds. Press Enter, close chat and leave the game focused and map
+visible. The helper waits two seconds after the new log line, then saves
+player/target/map crops and `unbound-location.json` to its private observation
+store. The measurement tab displays the saved directory or refusal reason.
+Report that path when available. It saves no chat crop and sends no commands,
+keys or clicks. Ordinary chat entry keeps rotation stopped while this explicitly
+requested diagnostic waits; F9, F11, **Stop measurement**, settings changes or
+closing the helper cancel it. Start a fresh measurement helper for collection
+if it has previously created an input sender for another test.
+
+The record remains unbound: it does not verify character/zone identity, map
+alignment, standing still, log flush latency or movement safety. It cannot
+enable G2, F11 or leveling. **Check movement stop** is a separate pulse button;
+do not click it for this observation. The 0.39.9 key-dispatch smoke used synthetic
+events and log bytes, and its GUI smoke used an empty game directory. Actual
+game capture in this new integrated path still needs owner-run evidence.
+
+Assist 0.39.6 remains the current rotation test. Both the 0.41.61 standalone
+collector and this GUI collector produce the same private pair format; use one.
 
 ## Separate read-only navigation candidate: 0.39.8
 

@@ -1,9 +1,16 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 03:58 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 04:06 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.64 adds an owner-started position/UI collection button to
+candidate 0.39.9 of the existing helper. It accepts the manual `/location`
+entry while keeping rotation stopped, uses the existing window gate, and
+saves an unbound diagnostic pair without input. Ninety-eight local focused
+checks and Alienware actual-engine synthetic/GUI smokes pass. No live paired
+record or movement acceptance exists yet; G0 and assist 0.39.6 are unchanged.
 
 Source 0.41.63 wires the read-only input observer into the existing helper
 in separate candidate 0.39.8. Eighty-three focused checks and synthetic

@@ -15,7 +15,6 @@ import re
 import stat
 import time
 
-from .client_ingest import parse_zone_names
 
 
 _TIMESTAMPED = re.compile(r"^\[([^\]]+)\] (.+)$")
@@ -48,6 +47,7 @@ def parse_raw_location(body: str) -> tuple[float, float, float] | None:
 
 def unique_client_zone_ids(zone_names_path: Path) -> tuple[dict[str, int], set[str]]:
     """Resolve only exact, unambiguous display names from copied client data."""
+    from .client_ingest import parse_zone_names
     by_name: dict[str, set[int]] = defaultdict(set)
     rows = parse_zone_names(zone_names_path.read_text(encoding="latin-1"))
     for row in rows:

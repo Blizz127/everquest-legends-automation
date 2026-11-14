@@ -1,0 +1,60 @@
+--- a/rotation_engine.py
++++ b/rotation_engine.py
+@@ -828,6 +828,9 @@
+         self.hotkey_releases[code] = now
+         return now - previous >= 0.35
+ 
++    def chat_input_opened(self):
++        self.stop_action("Stopped because chat input opened. Press F8 after closing chat.")
++
+     def input_events(self):
+         from evdev import ecodes as e
+         keys = key_sets()
+@@ -868,10 +871,10 @@
+                     if event.code in keys.disarm:
+                         if self.sender and event.code in keys.enter:
+                             self.sender.unfinished = False
+-                        reason = ("Stopped by F9. Press F8 when you are ready again."
+-                                  if event.code == e.KEY_F9 else
+-                                  "Stopped because chat input opened. Press F8 after closing chat.")
+-                        self.stop_action(reason)
++                        if event.code == e.KEY_F9:
++                            self.stop_action("Stopped by F9. Press F8 when you are ready again.")
++                        else:
++                            self.chat_input_opened()
+                     elif event.code == e.KEY_ESC:
+                         if self.sender and self.sender.unfinished:
+                             self.sender.unfinished = False
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -382,7 +382,7 @@
+             self.ap_state.setObjectName("state")
+             column.addWidget(self.ap_state)
+             self.ap_default_status = (
+-                "Read-only check observes input. G0 separately requests one 0.15-second pulse. F9/F11 cancel."
++                "Click Observe current position, THEN type /location once. No input is sent. G0 is a separate pulse."
+                 if measurement_only else
+                 "Travel is unavailable in this assist preview. Movement and targeting stay manual.")
+             self.ap_status = QLabel(self.ap_default_status)
+@@ -421,6 +421,12 @@
+                                              "Sends no commands, keys or movement; F9/F11 cancel.")
+                 self.nav_preflight.clicked.connect(lambda: self.post("nav_preflight_later"))
+                 row.addWidget(self.nav_preflight)
++                self.observe_position = QPushButton("Observe current position")
++                self.observe_position.setObjectName("observePositionButton")
++                self.observe_position.setToolTip("Stand still, select Current Zone, then type /location once. "
++                                                "Saves player, target and map crops; no chat crop or input.")
++                self.observe_position.clicked.connect(lambda: self.post("observe_position"))
++                row.addWidget(self.observe_position)
+                 check_stop = QPushButton("Check movement stop")
+                 check_stop.setToolTip("Stand on clear, flat ground. Requests one 0.15-second forward pulse, "
+                                       "releases it, then checks for continued movement. "
+@@ -916,6 +922,8 @@
+                     "chat_recovery_enabled": window.chat_recovery.isEnabled(),
+                     "navigation_preflight_visible": measurement_only and window.nav_preflight.isVisible(),
+                     "navigation_preflight_enabled": measurement_only and window.nav_preflight.isEnabled(),
++                    "position_observation_visible": measurement_only and window.observe_position.isVisible(),
++                    "position_observation_enabled": measurement_only and window.observe_position.isEnabled(),
+                 }, indent=2) + "\n")
+             app.quit()
+         QTimer.singleShot(400, render)

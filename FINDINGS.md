@@ -1,5 +1,54 @@
 # FINDINGS
 
+## Position/UI collection in the existing helper — 2026-11-14 04:06 UTC
+
+**VERIFIED source 0.41.64 / candidate 0.39.9:** `Observe current position`
+now starts a tick-driven session in the retained November helper. It opens the
+exact character log at its end, waits for one newly appended owner-typed
+`/location`, settles for two seconds across normal engine ticks, and reuses
+the engine's existing gate for one capture. The shared crop writer sends no
+input, sleeps nowhere and never closes the borrowed gate. It writes only
+player/target/map crops and the existing unbound pair format to private storage.
+The standalone 0.41.61 command remains valid and is not replaced.
+
+The pinned helper's Slash/Enter dispatch now uses an explicit chat-open hook.
+The inherited rotation-stop chain still runs and increments its generation.
+Only an active, disarmed, sender-free diagnostic in its waiting/settling phase
+may rebind to that exact synchronous chat stop. F9/F11, other stops/jobs,
+settings/session changes and exit still cancel. A matching reason string
+alone cannot preserve a session. Ordinary typing is allowed during the wait;
+it is not treated as proof that the owner held still. No sender is created.
+
+Ninety-eight local focused checks pass for the collector, unbound reader,
+shared crop writer, location log and existing preflight. They cover ambiguous
+extra locations, transitions/resets, focus/process changes, cancellation while
+capturing, borrowed-gate ownership, chat omission and stopped-state behavior.
+An actual retained-engine smoke on Alienware fed synthetic Slash/letter/Enter
+and F9/F11 events plus temporary log bytes; collection completed or cancelled
+as expected without devices, real capture or input. An offscreen GUI smoke
+with an empty game directory shows the new button; worker/input/settings
+writes are false. The final rendered instruction was inspected and says to
+click the button BEFORE typing the command. The unpublished earlier text
+snapshot is preserved under a `before-instruction-fix` suffix.
+
+Candidate `~/.local/share/eql-automation/owner-assist/0.39.9` is privately staged.
+Archive SHA `4dc6022f36b0dd434a88335147ccda82b6eb8622d9652b5322d835f9f9c6fbd6`;
+engine SHA `48c6dd7cf6676284d8aafc1221a66ad71f1861cca82f6c9af56446504599848b`;
+GUI SHA `776fca6816302a97dcdcd7fdf6f0b30f502076fa78c356b1d6f9f37f0c2f930d`;
+render SHA `b0413ac5802165d7f9bbf4790a21ea69fcc82150325b3a0a2a3495823719c999`.
+Private `releases/owner-assist-0.39.9-staging.json` records the smoke scope.
+The pair retains unknown character/zone identity, alignment, log flush delay,
+continuous focus and standing-still claims; it carries no movement permit.
+
+**OBSERVED:** A read-only Alienware listing at 04:04 UTC found zero retained
+`g2-ui-observations/*/unbound-location.json` records. No actual capture was
+initiated by the lead. The next runtime work is source-ground observation
+with externally supplied live height calibration, then UI/zone/speed providers
+and checked movement. No live 1–20 route, automated XP or level 50 acceptance
+is claimed. G0 stays passed; current owner assist stays 0.39.6. HOWTO provides
+this GUI alternative to the same pending collection, not another G0 test.
+No game input/login, client-install/access change, public release or git push.
+
 ## Private source 0.41.63 staging — 2026-11-14 03:58 UTC
 
 **VERIFIED:** Source commit `6cc87d1469c17a3b1eb74e144bf564c4e47042e6`, archive SHA

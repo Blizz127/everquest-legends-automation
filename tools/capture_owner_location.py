@@ -6,9 +6,7 @@ zone or navigation frame and cannot authorize movement. No chat crop is saved.
 from __future__ import annotations
 
 import argparse
-from dataclasses import asdict
 import json
-from math import isfinite
 from pathlib import Path
 import re
 import sys
@@ -19,42 +17,9 @@ from eql_automation.unbound_location_log import UnboundLocationReader
 from tools.capture_owner_ui import (
     DEFAULT_GAME, DEFAULT_OUTPUT, DEFAULT_PREVIEW, capture, checked_preview, file_sha,
 )
-
-
-def identity(gate):
-    windows = gate.windows()
-    session = gate.game_session()
-    focus = gate.focused_window()
-    if len(windows) != 1 or session is None:
-        raise ValueError("Exactly one EverQuest window and process are required")
-    return {"window_id": windows[0].id, "game_session": session}, (
-        focus is not None and focus.id == windows[0].id)
-
-
-def require_identity(gate, expected, *, focused=False):
-    actual, has_focus = identity(gate)
-    if actual != expected or (focused and not has_focus):
-        raise ValueError("Game window, process or required focus changed")
-    return has_focus
-
-
-def validate_pair(fix, expected, metadata, checked_at):
-    if (metadata.get("game_session") != expected["game_session"] or
-            metadata.get("focused_window_id") != expected["window_id"]):
-        raise ValueError("Captured window/process differs from the location observation")
-    start = metadata.get("capture_started_monotonic")
-    end = metadata.get("capture_ended_monotonic")
-    if not all(isinstance(n, (float, int)) and not isinstance(n, bool) and isfinite(n)
-               for n in (start, end, checked_at, fix.received_monotonic)):
-        raise ValueError("Capture timing is missing or invalid")
-    if not fix.received_monotonic <= start <= end <= checked_at:
-        raise ValueError("Location/capture timing order changed")
-    if checked_at - fix.received_monotonic > 10:
-        raise ValueError("Location receipt is too old for this diagnostic pair")
-    if (metadata.get("game_input_sent") is not False or
-            metadata.get("chat_crop_included") is not False or
-            "MainChat" in metadata.get("crops", {})):
-        raise ValueError("Capture does not satisfy the input-free, no-chat-crop contract")
+from eql_automation.position_observation import (
+    identity, require_identity, validate_pair, save_pair,
+)
 
 
 def collect(*, label, timeout, settle, preview, game, character, server, output,
@@ -109,26 +74,9 @@ def collect(*, label, timeout, settle, preview, game, character, server, output,
         metadata_path = dest / "metadata.json"
         metadata = json.loads(metadata_path.read_text())
         validate_pair(fix, expected, metadata, checked_at)
-        raw = asdict(fix)
-        raw["log_local_time"] = fix.log_local_time.isoformat()
-        record = {
-            "format": "eql-unbound-location-ui-v1",
-            "location": raw,
-            "expected_character": character, "expected_server": server,
-            "character_identity_verified": False,
-            "source_log_identity": list(reader.tail.identity),
-            "observation_started_monotonic": started,
-            "post_capture_checked_monotonic": checked_at,
-            "ui_metadata_sha256": file_sha(metadata_path),
-            "game_input_sent": False,
-            "owner_held_still_verified": False,
-            "log_flush_delay_verified": False,
-            "continuous_focus_verified": False,
-            "live_route_accepted": False,
-            "note": "Newly appended log bytes and sampled focus only; no zone, alignment or command correlation proof.",
-        }
-        with (dest / "unbound-location.json").open("x") as target:
-            target.write(json.dumps(record, indent=2, sort_keys=True) + "\n")
+        save_pair(fix=fix, expected=expected, metadata=metadata, dest=dest,
+                  checked_at=checked_at, started=started, log_identity=reader.tail.identity,
+                  character=character, server=server)
         print(f"Unbound location/UI diagnostic saved: {dest}. Movement remains disabled.", flush=True)
         return dest
     finally:
