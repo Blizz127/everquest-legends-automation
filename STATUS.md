@@ -151,7 +151,9 @@ Updated 2026-11-14 06:34 UTC for coordinator task `829a00229b29`.
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
   turn (2026-11-14 06:29 UTC) found zero paired records. No lead capture was initiated.
-- **Next / real-client gate:** validate the new selected-skin chat geometry and source-derived scene templates against the
+- **Next / real-client gate:** integrate the source-derived input geometry
+  and focus evidence into the scene reader (caret is a positive-focus candidate
+  only; its absence cannot establish closed chat); validate the new selected-skin chat geometry and source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported
   initial travel envelope and current scene, then supply the checked sender
   with measured whole-motion bounds; obtain the

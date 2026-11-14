@@ -1,5 +1,27 @@
 # FINDINGS
 
+## Chat focus cue — bounded static finding, 2026-11-14 06:34 UTC
+
+**VERIFIED static:** in copied binary `fe41a8db…7146bf36`, Editbox vtable
+`0x140b6fa70` slot `+0x40` calls caret renderer `0x1406297e0`. It requires the
+caret-enable byte `+0x423`, font pointer `+0x160`, and UI-manager focus pointer
+(manager `+0x90`, retrieved at `0x14062984e`) equal to this Editbox. At
+`0x14062985c–866`, `GetTickCount` bit 9 gates a nominal 512 ms on/off blink.
+It draws literal `|` (VA `0x1408a3ee4`) through font routine `0x140624ed0` at
+`0x1406298f2`. ChatWindow sets the caret color to `0xffffffff` at
+`0x1403d7cd6`. Chat enable/disable at `0x1403d6b50` reaches input focus-clear
+`0x1405e81d0` or focus-set `0x1405eee30`; no direct hide/show or background
+replacement was established in these inspected paths.
+
+**INFERRED candidate:** a correctly located blinking pipe could supply a
+positive-focus veto after visual validation. A pipe may also be draft text.
+Absence cannot establish chat-clear because of blink phase, configuration,
+font, clipping, occlusion and alignment. No reliable negative-focus visual
+signal was established. No classifier or owner control is enabled from this
+finding; current live observation and input-state integration remain required.
+This was bounded read-only static analysis, with no execution, attach, capture,
+remote operation or game input.
+
 ## Private source 0.41.81 staged — 2026-11-14 06:34 UTC
 
 **VERIFIED:** source commit `55b89f86132faaac7d6282e6bc03a1f3b77f3f71`, archive
