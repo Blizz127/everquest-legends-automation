@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.60 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.61 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,21 +19,25 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.60 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.60/source`; the runnable
+Source tools 0.41.61 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.61/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
-Source 0.41.60 completes the revised copied GFay terrain replay: all 155
-segments arrive in 2,191 idealized steps. Four relocated crossings avoid narrow
-steep baked triangles, and exact tile-gap correction preserves the ground and
-source-height checks. This is an offline result under hypothetical movement
-and body bounds. The new static-instance adapter reproduces all 57,751 solid
-object triangles used by the retained bake; its separate occupancy guard is
-prepared but has not yet been connected to the full follower replay. Dynamics,
-fresh scene/position/speed and real movement remain unverified. 88 focused
-checks pass. F11 stays unavailable; no live 1–20 leveling is claimed.
-Your G0 stop remains passed. Assist 0.39.6 is unchanged and no new owner command
-is requested. The source XP-gain metric is still separate from the assist GUI.
+Source 0.41.61 connects the parity-checked static-object inventory to every
+accepted terrain trial in the copied GFay follower replay. A refused object
+check cannot commit a new terrain-floor cell or advance simulated movement.
+All source face flags and heights are retained; no dense query is truncated.
+The combined replay now completes all 155 segments in 2,191 steps, with
+1,014 queries containing static faces and no failed occupancy check.
+Dynamics, fresh scene/position/speed and real movement remain unverified;
+F11 stays unavailable and no live 1–20 leveling is claimed.
+
+This source release also includes a read-only location/map collector, described
+below. It lets you supply a fresh stationary observation without a zone change
+or another G0 pulse. Your G0 stop remains passed. Assist 0.39.6 is unchanged;
+the source XP-gain metric is still separate from its GUI. Forty-eight focused
+fixture/geometry checks pass; the new collector has not been run against the
+live client.
 
 Detailed source-release history and hashes are in [FINDINGS.md](FINDINGS.md).
 The current playable-route status is in [LEVEL_1_20.md](LEVEL_1_20.md).
@@ -174,7 +178,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.58/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.61/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -182,7 +186,7 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.58/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.61/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 
@@ -207,7 +211,36 @@ image time is separate from later metadata writing, and the saved UI layout
 is still not verified as the active live arrangement. No extra owner test is
 required until we request those pairs.
 
-After the check, the owner can send `~/eql-g0-trace.jsonl` or summarize it
+## Fresh location and current-zone map observation (no movement)
+
+Source 0.41.61 adds a stationary diagnostic that pairs one newly appended
+`/location` result with player/target/map crops. It sends no keys, commands
+or clicks and saves no chat crop. It does not repeat G0 or enable F11.
+
+On Alienware, close the helper, leave game logging enabled, stand still and
+select **Current Zone** in the map. Start this from a terminal:
+
+```bash
+cd ~/.local/share/eql-automation/owner-tools/0.41.61/source
+python3 tools/capture_owner_location.py --character Legira --server freeport
+```
+
+Within 60 seconds, focus EverQuest, type `/location` **once**, press Enter,
+then close chat and leave the map visible. The tool waits two seconds after
+the new log line before capturing. Stay still until it finishes. It prints a
+private directory containing `metadata.json`, `unbound-location.json` and the
+crops; report that directory or the refusal text. If testing another character,
+use its exact log character/server names in the command.
+
+The tool skips historical log bytes and refuses a changed game process/window,
+log reset, observed zone transition, ambiguous extra location or stale capture.
+It records sampled focus and receipt timing, not continuous focus, log-flush
+latency or command correlation. Current character, zone, coordinate alignment
+and all movement safety checks remain unverified until the evidence is reviewed.
+This collector has fixture/startup verification only; no live paired capture
+is claimed. Do not send screenshots publicly; the directory is private.
+
+After the G0 check, the owner can send `~/eql-g0-trace.jsonl` or summarize it
 without printing the `/location` coordinates from the trace:
 
 ```bash

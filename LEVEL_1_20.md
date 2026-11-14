@@ -1,22 +1,21 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 03:20 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 03:32 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
-Source 0.41.60 completes the revised same-zone GFay terrain follower replay:
-all 155 segments, 2,191 steps, no geometry refusal or exhausted budget. The
-repaired crossings avoid both narrow steep baked triangles while retaining
-width/grade checks. Exact tile-gap attribution also repairs the missing
-reference at a rounded boundary. All 2,192 source-floor cells (including the
-initial seed) pass conditional terrain occupancy. This does not include static
-objects or dynamics in the follower yet, or establish current live calibration.
-The separate static adapter matches the retained bake's 57,751 solid object
-triangles, and its cell-bound guard passes focused checks; integrating it into
-the full replay is next. No live route/F11 or automated XP is accepted. Your G0
-stop remains passed, and no repeat/new owner command is needed. Detailed hashes
-are in [FINDINGS.md](FINDINGS.md).
+Source 0.41.61 completes the revised same-zone GFay replay with both terrain
+and static-object occupancy: all 155 segments, 2,191 steps and 2,191 passing
+combined checks. 1,014 queries contain static faces; all source flags and
+heights are retained. The terrain sequence matches the previous terrain-only
+run exactly. Body, speed and drift remain hypotheses; this does not establish
+whole-volume BSP hazard clearance, dynamic objects or current live calibration.
+No live route/F11 or automated XP is accepted. Your G0 stop remains passed.
+A new read-only owner-run collector pairs a manual fresh `/location` with the
+current map view without a movement pulse; see [HOWTO.md](HOWTO.md). It has
+fixture/startup verification only and cannot authorize navigation. Detailed
+hashes are in [FINDINGS.md](FINDINGS.md).
 
 | Levels | Planned camp | Route needed | Current evidence |
 | --- | --- | --- | --- |

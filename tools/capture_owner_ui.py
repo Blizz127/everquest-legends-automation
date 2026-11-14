@@ -66,11 +66,14 @@ def box_of(rect, image) -> tuple[int, int, int, int] | None:
 
 
 def capture(*, label: str, delay: float, preview: Path, game: Path,
-            character: str, server: str, output: Path) -> Path:
+            character: str, server: str, output: Path, include_chat: bool = True) -> Path:
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,40}", label):
         raise ValueError("Label must contain only letters, numbers, _ or -")
     if not 0 <= delay <= 15:
         raise ValueError("Delay must be between 0 and 15 seconds")
+    if not all(re.fullmatch(r"[A-Za-z0-9_-]{1,64}", value)
+               for value in (character, server)):
+        raise ValueError("Character/server must contain only letters, numbers, _ or -")
     private_root = DEFAULT_OUTPUT.resolve()
     protected_prefix = (Path.home() / "Games/everquest-legends").resolve()
     if (private_root.is_relative_to(protected_prefix) or
@@ -95,7 +98,8 @@ def capture(*, label: str, delay: float, preview: Path, game: Path,
         image = gate.capture()
         capture_ended_monotonic = time.monotonic()
         capture_ended_utc = datetime.now(timezone.utc).isoformat()
-        if (gate.focused_window() is None or gate.focused_window().id != focused.id or
+        final_focus = gate.focused_window()
+        if (final_focus is None or final_focus.id != focused.id or
                 gate.game_session() != session):
             raise RuntimeError("Game focus or process changed during capture")
     finally:
@@ -105,12 +109,14 @@ def capture(*, label: str, delay: float, preview: Path, game: Path,
                            width=image.width, height=image.height)
     crops = {}
     for name in WINDOWS:
+        if name == "MainChat" and not include_chat:
+            continue
         crops[name] = box_of(layout.window(name), image)
     for window, control in CONTROLS:
         crops[f"{window}__{control}"] = box_of(layout.control(window, control), image)
     if crops["PlayerWindow__Player_HP"] is None:
         raise RuntimeError("Current client files did not resolve the player HP rectangle")
-    if not any(crops[name] is not None for name in WINDOWS):
+    if not any(crops.get(name) is not None for name in WINDOWS):
         raise RuntimeError("Current client files did not resolve an on-screen window")
 
     ini_exact = game / f"UI_{character}_{server}.ini"
@@ -137,10 +143,13 @@ def capture(*, label: str, delay: float, preview: Path, game: Path,
         "format": "eql-owner-ui-observation-v1",
         "capture_started_utc": capture_started_utc,
         "capture_ended_utc": capture_ended_utc,
+        "capture_started_monotonic": capture_started_monotonic,
+        "capture_ended_monotonic": capture_ended_monotonic,
         "capture_duration_monotonic_seconds": capture_ended_monotonic - capture_started_monotonic,
         "metadata_written_at_utc": datetime.now(timezone.utc).isoformat(),
         "owner_label_unverified": label,
         "game_input_sent": False,
+        "chat_crop_included": include_chat,
         "g2_safety_flags": {name: "unknown" for name in
                             ("chat_clear", "target_absent", "combat_clear",
                              "native_melee_off", "no_incoming_attack")},

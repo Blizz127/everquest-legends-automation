@@ -1,5 +1,51 @@
 # FINDINGS
 
+## Static-inclusive GFay replay and stationary capture tool — 2026-11-14 03:32 UTC
+
+**VERIFIED source 0.41.61:** The revised GFay route completes all 155 segments
+in 2,191 simulated steps with the parity-checked static inventory connected to
+every accepted terrain trial. All 2,191 combined occupancy checks pass;
+1,014 queries contain static faces, with at most 32 static faces per query.
+The combined classifications include 1,781 overhead and 8,907 outside-footprint
+face observations. All 109,932 source faces/flags remain in the inventory;
+queries are not height-filtered, discarded or truncated to obtain this result.
+
+The full terrain-trial sequence is byte-structure identical to the preceding
+terrain-only run. It commits the same 2,192 terrain cells including the seed;
+static objects only obstruct and never become a selected terrain floor. A
+failed static check discards the proposed floor fork before shortening/rechecking
+or halting. The initial seed is terrain-only; all actual motion footprints
+are then checked for static occupancy. This is conditional copied-source
+occupancy under hypothetical body height 8, speed and drift, not actual client
+collision, complete BSP hazards, dynamics or route acceptance.
+
+Artifact `nav-candidates/gfay-static-tracked-replay-0.41.61.json`, SHA
+`359a0caf5257c0eb96669a7a59bad4fbba4de7e580b93601f8b49ac69183c5ef`.
+Elapsed 477.44 wall/103.18 CPU seconds, no refusal or budget exhaustion.
+All 39 code/data pins rechecked after completion. Plan SHA remains
+`5ea1024a8196a96f07e6cb73e259bd4e55cdb47e7a982e559a2c5eb60476743b`;
+static inventory SHA remains
+`dc489aff256243b2a84ad3979c2222d5011bbdc2865afa78534d0d43df99dcd4`.
+
+**VERIFIED fixtures, not live:** A new owner-run collector pairs one newly
+appended manually requested `/location` with a timestamped UI capture. It skips
+existing log bytes, refuses resets/transitions/process replacement, brackets
+sampled focus, and refuses additional locations or stale timing during capture.
+It writes an explicitly UNBOUND location record, not a navigation fix. No
+current zone, alignment, character identity, command correlation or continuous
+focus is inferred. It sends no input and omits the chat crop. Existing trusted
+location-reader behavior is unchanged. Capture now includes monotonic start/end
+times, validates character/server identifiers and avoids a repeated-focus-call
+race. Forty-eight focused fixture/geometry tests and fourteen local startup/
+guard smoke checks pass. No actual capture was performed.
+
+**Next:** stage the collector for the owner, then add bounded whole-footprint
+BSP hazard checks and integrate independently observed live scene/position/
+speed with the checked sender. Existing BSP centerline evidence cannot prove
+a filled walking volume. G0 remains owner-confirmed; no repeat is requested.
+Assist 0.39.6/G0 candidate 0.39.7 remain separate and unchanged. F11/F12 stay
+disabled; no live 1–20 route, automated XP or hands-off level 50 is accepted.
+
 ## Private 0.41.60 staging — 2026-11-14 03:21 UTC
 
 **VERIFIED:** Commit `d8f8f41`, archive SHA

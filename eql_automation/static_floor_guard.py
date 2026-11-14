@@ -13,7 +13,7 @@ class StaticFloorCheck:
     candidate: bool
     reason: str
     static_inventory_sha256: str | None = None
-    static_faces: int = 0
+    static_faces: int | None = None
     occupancy: SourceOccupancy | None = None
     input_authorized: bool = False
     real_client_accepted: bool = False

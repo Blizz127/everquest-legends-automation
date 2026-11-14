@@ -30,6 +30,8 @@ FLOOR_CHAIN = STORE/'nav-candidates/gfay-source-floor-chain-fast-0.41.58.json'
 FLOOR_CHAIN_SHA = '06c0a1d0818826ca0913e94a05b26912f9be05b994fa328230857b42dd04a497'
 SOURCE_PROFILE = STORE/'nav-candidates/gfay-tile-source-profile-0.41.57.json'
 FLOOR_SEED_PLAN = STORE/'nav-candidates/gfay-west-portal-plan-0.41.53.json'
+STATIC_EVIDENCE = STORE/'nav-candidates/gfay-static-source-inventory-0.41.60.json'
+STATIC_EVIDENCE_SHA = '2fe5feee285285c36245d5fe96d4fc9e2e63b7bf25f94aceee71007c9014037a'
 PINS = {
     PLAN: PLAN_SHA, MESH: MESH_SHA,
     MESH.with_suffix(".json"): "ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82",
@@ -71,7 +73,7 @@ def local_seam_diagnostic(view, footprint, reference, component, window, detail_
 def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=False,
         shorten_ground_step=False, plan=PLAN, plan_sha256=PLAN_SHA, precision_portals=False,
         source_z_limit=.6, wall_budget=35., precision_overlaps=False, maximum_portal_ulp_steps=1,
-        tile_rounding=False,source_floor_chain=False):
+        tile_rounding=False,source_floor_chain=False,static_objects=False):
     began = time.monotonic()
     began_cpu = time.process_time()
     sys.path[:0] = [str(PROJECT), str(HELPER)]
@@ -84,6 +86,7 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     from eql_automation.portal_precision_view import PortalPrecisionView
     from eql_automation.source_floor_chain import SourceFloorChain
     from eql_automation.floor_replay import bind_floor_replay_seed,check_floor_trial
+    from eql_automation.static_floor_guard import check_static_floor
     from eql_automation.location_log import RawLocationFix
     import numpy as np
     from eqnav import steer
@@ -95,6 +98,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         raise ValueError('Tile rounding requires precision portals and excludes ULP overrides')
     if source_floor_chain and not tile_rounding:
         raise ValueError('Conditional source floor requires the explicit tile diagnostic')
+    if static_objects and not source_floor_chain:
+        raise ValueError('Static occupancy requires a checked source-floor chain')
     pins = dict(PINS)
     pins[plan] = plan_sha256
     for path in (Path(__file__), PROJECT / "eql_automation/fixed_route_follower.py",
@@ -127,6 +132,17 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
         pins.update({Path(p):h for p,h in floor_evidence['pins'].items()})
         pins[FLOOR_CHAIN]=FLOOR_CHAIN_SHA
         path=PROJECT/'eql_automation/floor_replay.py';pins[path]=sha256(path.read_bytes()).hexdigest()
+    static_evidence=None;static_view=None;static_trials=[]
+    if static_objects:
+        if STATIC_EVIDENCE.is_symlink() or sha256(STATIC_EVIDENCE.read_bytes()).hexdigest()!=STATIC_EVIDENCE_SHA:
+            raise ValueError('Static parity evidence changed')
+        static_evidence=json.loads(STATIC_EVIDENCE.read_text())
+        if (static_evidence['exact_transformed_solid_multiset_matches_retained_baker'] is not True
+                or static_evidence['missing_from_adapter']!=0 or static_evidence['extra_in_adapter']!=0):
+            raise ValueError('Static inventory has no complete retained-bake parity')
+        pins.update({Path(p):h for p,h in static_evidence['pins'].items()})
+        pins[STATIC_EVIDENCE]=STATIC_EVIDENCE_SHA
+        path=PROJECT/'eql_automation/static_floor_guard.py';pins[path]=sha256(path.read_bytes()).hexdigest()
     seam_evidence = None
     if local_seam_experiment:
         pins[SEAM_EXPERIMENT] = SEAM_EXPERIMENT_SHA
@@ -151,6 +167,21 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
     ground_view = GroundSweepView.load(MESH, zone=route.zone)
     source_view = PortalPrecisionView(ground_view,MESH,source_archive,zone=route.zone,
                                       maximum_ulp_steps=maximum_portal_ulp_steps,tile_rounding=tile_rounding)
+    if static_evidence is not None:
+        from eql_automation.static_source_view import StaticSourceView
+        from eql_automation.pfs_archive import PFSArchive
+        from eql_automation.wld_inventory import WLDInventory
+        from eqnav import zonegeom
+        archive=PFSArchive(source_archive)
+        terrain=WLDInventory(archive.read_member('gfaydark.wld'))
+        objects=WLDInventory(archive.read_member('objects.wld'))
+        library=WLDInventory(PFSArchive(source_archive.with_name('gfaydark_obj.s3d')).read_member('gfaydark_obj.wld'))
+        static_view=StaticSourceView.from_wld(objects,(library,),
+            terrain_fragment_max=max(f.index for f in terrain.fragments),
+            transform=zonegeom.place_vertices,transform_sha256=pins[HELPER/'eqnav/zonegeom.py'])
+        if (static_view.inventory_sha256!=static_evidence['inventory_sha256']
+                or len(static_view.sources)!=static_evidence['static_source_faces']):
+            raise ValueError('Complete static inventory did not reproduce')
     # Check all selected route adjacencies against actual reciprocal links,
     # area and component arrays, independently of each synthetic observation.
     with np.load(MESH, allow_pickle=False) as data:
@@ -297,6 +328,14 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                             allow_overlap=precision_overlaps)
                         precision_last=check.precision_retry
                         floor_trials.append({'step':step,'segment':index,'hold':seconds,'trial':asdict(check)})
+                        if check.candidate and static_view is not None:
+                            static_check=check_static_floor(check,footprint,
+                                source_view.source_faces_for_footprint(footprint),static_view)
+                            static_trials.append({'step':step,'segment':index,'hold':seconds,
+                                'footprint':footprint,'trial':asdict(static_check)})
+                            if not static_check.candidate:
+                                next_floor_chain=None
+                                check=static_check
                     elif (check.reason == 'uncovered_ground_area' or
                             (precision_overlaps and check.reason == 'overlapping_ground_faces')) and precision_view is not None:
                         precision_last = precision_view.retry(check,footprint,detail_ids,
@@ -389,7 +428,8 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                               "source_ground_sampled_independently_from_copied_terrain",
                               "synthetic_character_height_above_source_2.564",
                               "mesh_detail_edge_projection_up_to_0.0005",
-                              ("continuous_detail_ground_only_no_wall_BSP_dynamic_guard" if ground_sweep else
+                              ("conditional_terrain_and_static_occupancy_no_BSP_dynamic_guard" if static_objects else
+                               "continuous_detail_ground_only_no_wall_BSP_dynamic_guard" if ground_sweep else
                                "endpoint_detail_sample_only_not_swept_guard")],
               "ground_sweep_assumptions": ({"speed_upper": speed * 1.2, "release_overrun_seconds": .02,
                     "heading_error_degrees": 2., "position_error": .05, "post_release_drift": .05,
@@ -418,6 +458,12 @@ def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=Fa
                   'committed_cells':floor_chain.index,'last_proof_sha256':floor_chain.previous.proof_sha256 if floor_chain.previous else None,
                   'terrain_only':True,'live_verified':False},
               "source_floor_trials":floor_trials,
+              "static_source":None if static_evidence is None else {
+                  'parity_evidence_sha256':STATIC_EVIDENCE_SHA,
+                  'inventory_sha256':static_view.inventory_sha256,
+                  'source_faces':len(static_view.sources),'placements':len(static_view.identities),
+                  'all_flags_retained':True,'dynamics_included':False,'live_collision_verified':False},
+              "static_floor_trials":static_trials,
               "maximum_portal_ulp_steps":maximum_portal_ulp_steps,
               "tile_rounding":None if source_view.tile_grid is None else asdict(source_view.tile_grid),
               "precision_limits":({"maximum_source_baked_z_difference":source_z_limit,"source_boundary_margin":.002,
@@ -454,6 +500,8 @@ def main():
                         help='Offline only: require exact predicted adjacent float32 tile-side coordinates')
     parser.add_argument('--source-floor-chain',action='store_true',
                         help='Offline only: seed from pinned source-floor proof and recheck every proposed footprint')
+    parser.add_argument('--static-objects',action='store_true',
+                        help='Offline only: add parity-checked all-flag static occupancy to every accepted terrain trial')
     parser.add_argument('--source-z-limit',type=float,default=.6,
                         help='Diagnostic source/baked height-difference limit, not live calibration (default .6)')
     parser.add_argument('--wall-budget',type=float,default=35.,
@@ -482,6 +530,8 @@ def main():
         parser.error('--tile-rounding requires --precision-portals and excludes ULP overrides')
     if args.source_floor_chain and not args.tile_rounding:
         parser.error('--source-floor-chain requires --tile-rounding')
+    if args.static_objects and not args.source_floor_chain:
+        parser.error('--static-objects requires --source-floor-chain')
     output = args.output.expanduser()
     if (output.parent.resolve() != (STORE / "nav-candidates").resolve() or output.exists()
             or output.is_symlink() or output.suffix != ".json"
@@ -497,7 +547,8 @@ def main():
         plan=plan, plan_sha256=plan_sha256,precision_portals=args.precision_portals,
         source_z_limit=args.source_z_limit,wall_budget=args.wall_budget,
         precision_overlaps=args.precision_overlaps,maximum_portal_ulp_steps=args.maximum_portal_ulp_steps,
-        tile_rounding=args.tile_rounding,source_floor_chain=args.source_floor_chain)
+        tile_rounding=args.tile_rounding,source_floor_chain=args.source_floor_chain,
+        static_objects=args.static_objects)
 
 
 if __name__ == "__main__":
