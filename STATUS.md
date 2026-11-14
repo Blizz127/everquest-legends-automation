@@ -1,11 +1,23 @@
 # STATUS
 
-Updated 2026-11-14 17:52 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 18:00 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.47 validated; private publication pending.** Added an
+  input-free single-probe receipt/endpoint transaction. It consumes the exact
+  fresh start once, binds the movement kind/key and timing, validates the whole
+  endpoint body inside the checked envelope, then requires another fresh pair
+  after geometry finishes. Stop or changed scope discards the candidate. No
+  sender-origin, live-motion or input authority is inferred from typed receipts.
+  56 focused checks pass locally and on Alienware (3.40 seconds), output SHA
+  `2a70ce27b8e3ae3215a4fb0b7824af734c4f09a35861ea844c334dccf52b688e`.
+  Preview stays 0.39.30. Next:
+  reached-reference continuation and actual sender/current-scene integration;
+  automatic camp remeasurement/relocation is still unfinished. G0 passed; no
+  new owner check. Actual current level/XP/hour/deaths/camp remain unknown.
 - **Source 0.42.46 privately published; owner preview stays 0.39.30.**
   The actual copied client has extra velocity and post-integration position
   terms, plus an unresolved clock callback. A normal forward-speed sample

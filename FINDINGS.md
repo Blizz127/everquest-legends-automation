@@ -1,5 +1,39 @@
 # FINDINGS
 
+## 2026-11-14 18:01 UTC — source 0.42.47, single camp-probe transaction
+
+VERIFIED `CampProbeTransaction` binds an exact consumed `CampProbeStart` to
+one movement kind/key and matching receipt. It checks elapsed completion,
+positive requested hold, maximum actual hold and fresh release timing. The
+post-release pair is resolved on the prepared probe floor, including positions
+outside the original camp arrival cap. The entire endpoint body must remain
+inside the exact prepared envelope and pass terrain/static/BSP/native checks.
+Geometry runs outside the shared stop lock. A new matching stopped pair after
+geometry finishes is required; the planning pair's timestamps are never renewed.
+Cancellation, stale observations, changed lease/binding or altered retained
+records discard the transaction. Original checkpoint and calibration remain
+unchanged. A returned floor fork is historical evidence, not a new checkpoint;
+it must be obtained while the original reader lease is still active.
+
+VERIFIED final focused checks: **56 passed locally in 29.94 seconds** and
+**56 passed on Alienware in 3.40 seconds**, including 39 new transaction cases.
+The remote final candidate is `owner-tools/0.42.47-validation-1`; output SHA
+`2a70ce27b8e3ae3215a4fb0b7824af734c4f09a35861ea844c334dccf52b688e`.
+Cases cover moved endpoints, full-body containment, one-use starts, wrong keys,
+interrupted/short/overlong receipts, stale/moving/wrong-floor replies, F9 during
+geometry or context callbacks, and retained-evidence changes. Synthetic game
+receipts/positions and copied-geometry fixtures only; no game input or device.
+
+No typed receipt authenticates its sender. Input, current motion/heading,
+sender origin and real-client acceptance remain false. This is a single-probe
+source component, not a measurement executor: next-reference production,
+actual sender integration, current independent scene evidence and supported
+motion bounds remain necessary. Automatic camp relocation and full 1–20/1–50
+remain unfinished. Source publication pending; owner preview stays 0.39.30.
+G0 passed, including visible stop; no repeat or new owner check. Current level,
+XP, XP/hour, deaths and camp remain unknown. No character, login or prefix
+change was attempted.
+
 ## 2026-11-14 17:52 UTC — source 0.42.46 privately published
 
 VERIFIED Alienware `owner-tools/0.42.46/source`, revision

@@ -89,6 +89,7 @@ class CampProbePreparation:
         self.phase='new';self.reason='';self.last_at=None
         self._envelope=self._envelope_state=self._start=None
         self._prepared_record=None
+        self._consume_pending=False
         self.payload=None;self.sha256=None
         _check_height_record(height,checkpoint,owner_binding)
         self.check(fresh=height)
@@ -191,7 +192,25 @@ class CampProbePreparation:
                 or start.observed_at!=start.height.observed_at or start.expires_at!=start.height.expires_at):
             raise ValueError('Exact active camp probe start required')
         self.check(fresh=start.height)
+        if self.phase!='ready' or self._start is not start:
+            raise ValueError('Camp probe start changed during its final check')
         return self._envelope
+
+    def consume_start(self,start):
+        """Transfer this exact start once to a receipt ledger; no input permit.
+
+        The owning controller holds its shared stop lock across this operation.
+        The preparation remains available for context/geometry integrity checks.
+        """
+        if self._consume_pending:
+            raise ValueError('Camp probe start transfer already pending')
+        self._consume_pending=True
+        try:
+            envelope=self.check_start(start)
+            self.phase='consumed'
+            return envelope
+        finally:
+            self._consume_pending=False
 
     def snapshot(self):
         return dict(phase=self.phase,reason=self.reason,sha256=self.sha256,
