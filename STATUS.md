@@ -27,6 +27,10 @@ Updated 2026-11-14 08:14 UTC for coordinator task `829a00229b29`.
   command-chat, zone/height and measured motion/body evidence remain missing.
   The pending stationary observation store still had zero pairs at 08:09 UTC.
   Assist 0.39.6 and observation 0.39.10 remain unchanged; G0 needs no repeat.
+  Source `b991438` is privately staged at `owner-tools/0.41.92/source`;
+  remote import/required-bounds/missing-dependency checks pass without any
+  engine or device creation. Startup evidence SHA
+  `03316f59681d8cac9f3536d24543f7d7591235e83bcaf7ed648c35ade706574a`.
 - **Source 0.41.91:** the route loop now uses the retained bot's actual
   `/location` sender through the shared checked command implementation.
   Driver-specific bindings preserve the original descriptor, command journal,

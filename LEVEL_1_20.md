@@ -16,6 +16,8 @@ The copied GFay first cell recomputed successfully (52.8 ms preparation,
 `03f4b8c9babd4ea3d9dd0f20a368339e918613f32115ce62877bdc6863813c2d`.
 Current real scene/zone/height/motion/body and chat evidence are still needed;
 no owner route control is enabled and no leg has live acceptance.
+Source `b991438` is staged privately at `owner-tools/0.41.92/source` on
+Alienware. No-input module startup and missing-dependency checks pass.
 
 Source 0.41.91 supplies the actual checked `/location` executor for that loop,
 sharing the measurement command implementation and retained bot's key code.

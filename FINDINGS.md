@@ -1,5 +1,17 @@
 # FINDINGS
 
+## Private source 0.41.92 staged — 2026-11-14 08:15 UTC
+
+**VERIFIED:** source `b9914381b5d233d47dc98cdc806e2b3964cbaf58`, archive SHA
+`75a798e9e873daecf7441da0c3873e1e45a1de610089f23d28dcd4fb8c7eb2bf`,
+is staged at Alienware `owner-tools/0.41.92/source`. Remote startup imports
+pass, external bounds remain mandatory, missing dependencies refuse, and the
+route location executor still has no movement method. No engine/device was
+constructed and no client capture/input occurred. Startup artifact SHA
+`03316f59681d8cac9f3536d24543f7d7591235e83bcaf7ed648c35ade706574a`.
+Local staging record: `releases/eql-automation-0.41.92-staging.json` under the
+private store. Owner launchers and the existing pending observation are unchanged.
+
 ## Route geometry preparation 0.41.92 — 2026-11-14 08:14 UTC
 
 **VERIFIED implementation:** `RouteGeometryPreparer` now supplies the concrete
