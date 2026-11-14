@@ -1,5 +1,23 @@
 # FINDINGS
 
+## 2026-11-14 18:27 UTC — source 0.42.51 privately published
+
+VERIFIED Alienware `owner-tools/0.42.51/source`, revision
+`89c2ce08157bf2cae88d7c75f3b2a3b5cbd5b8f7`. Runtime/tests/tools match the
+58-pass final calibration/retained-handler candidate. Imports, diagnostic CLI
+startup and copied-data pins pass. Archive SHA
+`599af8aa8d966231bc4d4b176d75e528930048f5d513f55867566e63de9f0fea`;
+startup SHA `a320dd5ee6a16ce8aa609cb8308ac470d7808b3eaf3112b11ccead9864f389cf`.
+Publication record: `releases/eql-automation-0.42.51-staging.json`.
+
+The existing rotation tool's fitter now receives actual distinct camp probe
+pairs. Completion retains a conditional estimate or explicit refusal; it never
+loads a live calibration or authorizes a route. Preview stays 0.39.30 with no
+default camp-probe plan/policy. No game input, device creation, character action
+or protected-prefix edits. Current movement admission and reached-reference
+adoption remain unfinished. G0 passed; no repeat/new owner test. Current level,
+XP/hour, deaths and camp unknown; no real 1–20/1–50 acceptance.
+
 ## 2026-11-14 18:26 UTC — source 0.42.51, conditional camp calibration
 
 Implemented a separate-leg reducer which retains all 14 actual immediate

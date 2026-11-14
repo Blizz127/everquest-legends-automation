@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 18:26 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 18:27 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.51 validated; publication pending, preview stays 0.39.30.** Completed
+- **Source 0.42.51 privately published; preview stays 0.39.30.** Completed
   camp probes now feed the retained rotation fitter using each actual immediate
   before/after pair. Confirmation/planning readings and source identities remain
   separate. Stationary gaps, transaction ancestry and fit-time cancellation are
@@ -15,7 +15,11 @@ Updated 2026-11-14 18:26 UTC for coordinator task `829a00229b29`.
   run: 46 passed, one zone-format mismatch found and fixed. Final Alienware
   calibration/retained-handler checks: **58 passed in 19.09 seconds**, output SHA
   `85b139a2c149785140de2cf08616a0e4034751d9e7e993cb81ba47aa2eb30514`. No game input or new
-  owner test; G0 remains passed. Next: reached-reference adoption and explicit
+  owner test; G0 remains passed. Published at Alienware
+  `owner-tools/0.42.51/source`, revision `89c2ce0`. Runtime/tests/tools
+  match the checked candidate; imports/CLI/copied-data pins pass. Startup SHA
+  `a320dd5ee6a16ce8aa609cb8308ac470d7808b3eaf3112b11ccead9864f389cf`.
+  Next: reached-reference adoption and explicit
   current movement admission. Current level/XP/hour/deaths/camp unknown.
 - **Source 0.42.50 privately published; preview stays 0.39.30.** Optional
   camp-position→probe handoff now preserves the exact reader/sender/monitor.
