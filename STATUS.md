@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 10:41 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 10:43 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -22,6 +22,10 @@ Updated 2026-11-14 10:41 UTC for coordinator task `829a00229b29`.
   assembly using current motion results. Assist 0.39.13, pending motion 0.39.12
   and passed G0 are unchanged. No new owner action, real route or XP accepted;
   current level, XP/hour, deaths and camp unknown.
+  Source `b5d2be3` is privately staged at Alienware `owner-tools/0.42.7/source`.
+  Its actual retained 0.39.12 engine startup/log/handoff/stop smoke passes with
+  synthetic logs and no worker, device or game input. Startup SHA
+  `fdaf9e5f130863363c1e858de30f9fa03f5e6776b4b9b37abaf53d421cade103`.
 - **Source 0.42.6:** current stopped-height startup now derives its offset from
   two fresh log positions and independently sampled source terrain. The typed
   record retains live_verified=false and works through measurement-mode ground

@@ -57,6 +57,19 @@ enable the route. Assist 0.39.13 and passed G0 are unchanged; no new test or
 G0 repeat was requested. Current level, XP/hour, deaths and camp remain unknown;
 no real 1–20 route, automated level gain or fresh hands-off 1–50 run is accepted.
 
+Source `b5d2be3` is privately staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.7/source`. The remote startup
+smoke imports the actual retained **0.39.12** engine and verifies live-format
+synthetic zone tracking, level stability, inherited log delivery, exclusive
+reader handoff, stop revocation and process replacement. No engine worker,
+device, game input or client/prefix change occurred. Archive SHA
+`a06c9de121add8243adbf94ef9d29cc04c958059170def12f84074f19974f0db`;
+startup SHA `fdaf9e5f130863363c1e858de30f9fa03f5e6776b4b9b37abaf53d421cade103`.
+The first startup attempt stopped before engine import because the smoke used
+the measurement engine hash against the 0.39.13 assist package. Read-only checks
+confirmed both packages match their own entry manifests; the corrected smoke
+uses 0.39.12, matching the local route-test base. No helper files were replaced.
+
 ## Observed ground-height startup — 2026-11-14 10:29 UTC
 
 **VERIFIED implementation:** source 0.42.6 adds `observed_height.py`, which
