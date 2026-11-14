@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:20 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:28 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,16 @@ Updated 2026-11-14 06:20 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.80:** explicit frame-reader preparation compiles copied-source
+  templates and initializes numerical work before observation. Each call still
+  takes a fresh frame and retains all observation time. Sixty-seven focused
+  checks pass. Local synthetic preparation took 1.811 seconds; first observation
+  369 ms, warm median 310 ms, maximum 524 ms. These exceed 100 ms and exclude
+  real capture/layout/input/log work. Deterministic candidate reports match
+  0.41.79; evidence SHA
+  `71aca508483faa07c3b91eafaf5a4e180092be4bd7c92ab60b544d14cc14966d`.
+  HOWTO now leads with current owner commands; older development commands are
+  preserved separately. Owner helpers and live acceptance remain unchanged.
 - **Source 0.41.79:** exact NumPy batches replace Python pixel summation when
   NumPy is available; Pillow remains the fallback. Sixty-one focused checks
   and 31 fallback checks pass. Ten synthetic full-frame outputs match 0.41.78
@@ -126,7 +136,7 @@ Updated 2026-11-14 06:20 UTC for coordinator task `829a00229b29`.
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
   turn (2026-11-14 06:20 UTC) found zero paired records. No lead capture was initiated.
-- **Next / real-client gate:** account for reader initialization before arming;
+- **Next / real-client gate:** measure prepared-reader startup on Alienware;
   implement selected-skin dynamic chat-page resolution and validate the source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported
   initial travel envelope and current scene, then supply the checked sender

@@ -1,9 +1,16 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 06:19 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 06:28 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.80 prepares the source templates and numerical backend before a
+new observation. Sixty-seven focused checks pass, and deterministic candidate
+reports match 0.41.79. Preparation is recorded separately; every frame retains
+its complete timing and neither preparation nor a matching sprite authorizes
+movement. The owner guide now puts current commands first and preserves older
+development material in a separate historical reference.
 
 Source 0.41.79 addresses the measured frame-reading bottleneck with exact
 NumPy batches and the prior Pillow fallback. Sixty-one focused checks plus

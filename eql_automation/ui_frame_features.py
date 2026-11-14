@@ -9,9 +9,68 @@ import math
 from pathlib import Path
 import time
 
-from .combat_ui_match import CONTROL, rank_combat_sprites
+from .combat_ui_match import (CONTROL, rank_combat_sprites, decal_sizes,
+                              _numpy_backend, _compile_template, _score_positions)
 from .combat_ui_atlas import CombatUiAtlas
 from .owner_ui_observation import UiFrameSample, sample_focused_ui
+
+
+class PreparedUiFrameReader:
+    """Initialize numerical work before an observation scope begins.
+
+    Construction reads no display or input device. It compiles source sprite
+    bounds and exercises one synthetic numerical batch, discarding its result.
+    Every invocation still captures a new frame and reports its actual timing.
+    Preparation is neither a previous scene nor a latency/authorization claim.
+    """
+    def __init__(self, *, gate, layout_loader, game, character, server, atlas,
+                 gauge_reader, saved_scale, still_current=lambda:None, clock=time.monotonic):
+        if (not isinstance(atlas,CombatUiAtlas) or not callable(layout_loader)
+                or not callable(gauge_reader) or not callable(clock) or not callable(still_current)):
+            raise ValueError('Source atlas, layout and gauge readers required')
+        began=clock()
+        if type(began) not in (int,float) or not math.isfinite(began):
+            raise ValueError('Invalid preparation clock')
+        self.atlas,self.scale,self.clock=atlas,saved_scale,clock
+        self.sizes=decal_sizes(atlas,saved_scale)
+        frames=[f for f in atlas.frames if f.animation.startswith('A_PWCS')]
+        if not frames or not self.sizes:raise ValueError('Source combat templates unavailable')
+        np=_numpy_backend()
+        count=0
+        for frame in frames:
+            for width,height in self.sizes:
+                for resize in ('nearest','bilinear'):
+                    _compile_template(frame,width,height,resize)
+                    count+=1
+        from PIL import Image
+        width,height=self.sizes[0]
+        lo,hi,*_=_compile_template(frames[0],width,height,'nearest')
+        # Trigger the chosen backend's lazy setup without a game frame.
+        for _ in _score_positions(Image.new('I',(3*width,height)),width,height,lo,hi):pass
+        finished=clock()
+        if type(finished) not in (int,float) or not math.isfinite(finished) or finished<began:
+            raise ValueError('Invalid preparation clock')
+        self.preparation=dict(started_at=began,finished_at=finished,seconds=finished-began,
+            backend='pillow' if np is None else 'numpy',compiled_templates=count,
+            atlas_manifest_sha256=atlas.manifest_sha256,saved_scale=saved_scale,
+            game_capture_used=False,game_input_sent=False,contains_scene_observation=False,
+            input_authorized=False,observation_latency_guaranteed=False)
+        def bound_layout(*args,**kwargs):
+            layout=layout_loader(*args,**kwargs)
+            if layout.skin!=atlas.saved_skin or layout.ui_scale!=saved_scale:
+                raise ValueError('Saved skin/scale changed after reader preparation')
+            return layout
+        self.arguments=dict(gate=gate,layout_loader=bound_layout,game=game,character=character,
+            server=server,atlas=atlas,gauge_reader=gauge_reader,still_current=still_current,clock=clock)
+
+    def __call__(self):
+        if decal_sizes(self.atlas,self.scale)!=self.sizes:
+            raise ValueError('Template dimensions changed after reader preparation')
+        result=read_focused_ui_features(**self.arguments)
+        if result['sample_started_at']<self.preparation['finished_at']:
+            raise ValueError('Frame observation predates reader preparation')
+        result['reader_preparation']=dict(self.preparation)
+        return result
 
 
 def _crop(sample, name):

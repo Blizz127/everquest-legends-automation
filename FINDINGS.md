@@ -1,5 +1,41 @@
 # FINDINGS
 
+## Prepared frame reader 0.41.80 — 2026-11-14 06:28 UTC
+
+**VERIFIED implementation:** `PreparedUiFrameReader` compiles the source sprite
+bounds and exercises a synthetic numerical batch before the caller starts its
+observation. Construction captures no game frame, creates no input device and
+sends no input. Each invocation captures a new frame through the existing
+reader. Changed skin/scale/template dimensions and pre-preparation timestamps
+are refused. Preparation time and backend are retained in separate metadata;
+no old frame is refreshed, no observed latency is hidden, and no permission or
+latency guarantee is created. The existing live helpers are not wired to it.
+
+**VERIFIED focused checks:** 67 frame-reader/matcher checks pass in 1.75 seconds
+under private NumPy/Pillow. New cases cover zero capture during preparation,
+new pixels on each invocation, layout/decal changes, later capture latency and
+cancellation before capture. No full suite ran. The current owner HOWTO is
+shortened to current launchers, controls and limitations; all prior material is
+preserved in `HOWTO_REFERENCE_04179.md` as historical development reference.
+
+**OBSERVED local timing:** ten synthetic 2560×1600 frames using copied client
+sprites and the actual retained gauge reader preserve the deterministic
+0.41.79 candidate reports. Preparation took 1.811 seconds, first observation
+369 ms, warm median 310 ms and maximum 524 ms on the loaded devbox. This is
+not an overall startup improvement or proof of the 100 ms live budget.
+Real capture, layout loading and input/log scans are excluded. Evidence:
+`evidence/ui-frame-features-0.41.80.json`, SHA
+`71aca508483faa07c3b91eafaf5a4e180092be4bd7c92ab60b544d14cc14966d`.
+
+**OBSERVED tool limitation:** the REA binary-session inventory returned a
+provider timeout while probing unrelated apktool: `inspect_apktool_client`,
+20,000 ms deadline, stdout `3.0.3`, exit code 0. No retry, tool repair,
+settings/session change or attach occurred. Bounded local static disassembly
+of the already copied client continues; this tool error is not live evidence.
+G0 remains passed, with no repeat. Current scene evidence, motion/height
+calibration and live route acceptance remain missing; no automated level gain
+or hands-off 1–50 run is claimed.
+
 ## Private source 0.41.79 staged — 2026-11-14 06:20 UTC
 
 **VERIFIED:** commit `68844ef020609e962a1daa6184a523d6bbd13baf`, archive SHA

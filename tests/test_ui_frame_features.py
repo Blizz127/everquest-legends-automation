@@ -12,7 +12,8 @@ import pytest
 from test_combat_ui_match import atlas, render
 from eql_automation.combat_ui_match import analyze_saved_combat_crop
 from eql_automation.owner_ui_observation import capture_focused_ui, sample_focused_ui
-from eql_automation.ui_frame_features import analyze_ui_frame, read_focused_ui_features
+from eql_automation.ui_frame_features import analyze_ui_frame, read_focused_ui_features, PreparedUiFrameReader
+import eql_automation.ui_frame_features as features
 
 
 @pytest.fixture(scope='module')
@@ -139,3 +140,47 @@ def test_mutating_frame_inside_gauge_reader_is_detected(h):
     sample=sample_focused_ui(**h.args)
     def mutate(image,channel):sample.image.putpixel((0,0),(3,4,5));return .5
     with pytest.raises(ValueError,match='changed'):analyze_ui_frame(sample,atlas=h.a,gauge_reader=mutate,clock=lambda:h.now)
+
+
+def test_preparation_happens_without_capture_and_each_read_is_a_new_frame(h,monkeypatch):
+    original=features._numpy_backend
+    def slow_setup():h.now+=.25;return original()
+    monkeypatch.setattr(features,'_numpy_backend',slow_setup)
+    reader=PreparedUiFrameReader(**h.args,atlas=h.a,gauge_reader=h.reader,saved_scale=1)
+    assert h.captures==0 and reader.preparation['seconds']==.25
+    first=reader()
+    assert h.captures==1 and first['sample_started_at']==100.25
+    assert first['total_seconds']==0 and first['reader_preparation']['seconds']==.25
+    h.now+=1;h.frame.paste((200,0,0),(20,30,100,40))
+    second=reader()
+    assert h.captures==2 and second['sample_started_at']==101.25
+    assert second['gauges']['hp']['fraction_candidate']==.8
+    assert first['frame_rgb_sha256']!=second['frame_rgb_sha256']
+    assert not any(second['reader_preparation'][k] for k in
+        ('contains_scene_observation','game_capture_used','game_input_sent','input_authorized','observation_latency_guaranteed'))
+
+
+@pytest.mark.parametrize('change',['skin','scale','decal'])
+def test_prepared_reader_refuses_changed_layout_or_decal(h,change):
+    reader=PreparedUiFrameReader(**h.args,atlas=h.a,gauge_reader=h.reader,saved_scale=1)
+    if change=='skin':h.layout.skin='different'
+    elif change=='scale':h.layout.ui_scale=1.5
+    else:h.a.widget_definitions[0]['decal_size']=(6,6)
+    with pytest.raises(ValueError,match='changed'):reader()
+
+
+def test_prepared_reader_does_not_hide_later_capture_delay(h):
+    reader=PreparedUiFrameReader(**h.args,atlas=h.a,gauge_reader=h.reader,saved_scale=1)
+    original=h.gate.capture
+    def slow_capture():h.now+=.2;return original()
+    h.gate.capture=slow_capture
+    result=reader()
+    assert result['total_seconds']==pytest.approx(.2) and not result['within_100ms_sample_budget']
+
+
+def test_prepared_reader_checks_cancellation_before_capturing(h):
+    def stopped():raise RuntimeError('cancelled')
+    reader=PreparedUiFrameReader(**h.args,atlas=h.a,gauge_reader=h.reader,saved_scale=1,still_current=stopped)
+    assert h.captures==0
+    with pytest.raises(RuntimeError,match='cancelled'):reader()
+    assert h.captures==0
