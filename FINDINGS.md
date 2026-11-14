@@ -36,7 +36,36 @@ run had three early timing/refusal failures (watchdog arm, interrupted pulse and
 expired stopped geometry) and one stale test expectation for label capitalization.
 The expectation was corrected. A focused retry passed movement cancellation,
 then stopped early on missing watchdog DOWN acknowledgment. Timing limits remain
-unchanged. Further focused checks and private staging are pending.
+unchanged.
+
+**VERIFIED final source startup on Alienware:** all five selected checks pass
+without skips: complete owner crossing, wrong-destination stop, no location DOWN
+after known loading, original local-route completion and countdown-zone display.
+They use synthetic game files/feedback and OS pipes, without a helper worker,
+device or game input. This confirms the cases which devbox timing refusals had
+prevented from reaching their intended assertions. It does not demonstrate a
+real-client route or live timing margin.
+Commit `b4415076f22d6a89363c389550cb1775db45f4c3` is staged at
+Alienware `~/.local/share/eql-automation/owner-tools/0.42.22/source`.
+Archive SHA `48368ce3cc80dd14c591b7a86bdb6463593c1ed55ab02da6cfbbce064ce124fb`;
+startup SHA `c26a63d203e652d2e1e38dcee396687a90989bc6eb871d13092c502aed24250e`;
+test-output SHA `02799ac6c9506d3e7ebf714322c622358a6274a45c8ebcca6c4cd1a490b3c8db`.
+
+**VERIFIED owner preview publication:** 0.39.19 is staged at Alienware
+`~/.local/share/eql-automation/owner-assist/0.39.19`. All 148 package modules
+match source 0.42.22. Entry and source-manifest checks pass. Offscreen GUI
+startup shows the new crossing button and the retained approach/short-route
+buttons; `worker_started`, `game_input_sent` and `settings_saved` are false.
+The new loader reads the installed archives/catalog, matches the copied pins,
+loads the complete source geometry in 1.99 seconds and selects native polygon
+19256 / region 2884 with manifest XY `(-51.0242595, 2618.9152375)`.
+Loader identity is synthetic; this is not a live zone or traversal observation.
+Launching without explicit `--measure-navigation` refuses. No device creation,
+game launch/input, prefix modification or other session interruption occurred.
+Preview archive SHA `ab4d1ef1f858584a10e170e7586d78188db05dd1f8e5aaf78555439cd022acb3`;
+source-manifest SHA `27d84332e291b19351650585b9284ab2dae516015f8e0b859bc1176f0bd472b2`;
+startup SHA `df8cc72be5d18e56c861e8f109d53578fbf32b248c7d9458d2ee7a26d2261c6d`.
+HOWTO contains the exact launch command and separate action/stop controls.
 
 **Remaining real-client gate:** owner-run current-map/hotbutton recognition and
 actual route/crossing acceptance. Next build fresh Crushbone arrival geometry and
