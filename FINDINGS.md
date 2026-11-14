@@ -1,5 +1,23 @@
 # FINDINGS
 
+## 2026-11-14 19:19 UTC — source 0.42.55 privately published
+
+VERIFIED Alienware `owner-tools/0.42.55/source`, revision
+`cc73151ea368ea02f0392f9c9af7854ae52aaab0`. Runtime/tests/tools byte-match the final
+270-pass candidate. Imports, diagnostic CLI startup and copied-data pins pass.
+Archive SHA `33f4d5ec3ee916dc5589a2b4ce44dc880fb0af7e9984ce36b261c08a43c8c35b`;
+startup SHA `b93940a709f003296f75892a4db8e3d57983ad028e224934eaafcb82913f572a`.
+Publication record: `releases/eql-automation-0.42.55-staging.json`.
+
+The full standard seven-probe sequence now feeds its fresh fitted motion into
+source travel and stopped arrival in the no-game harness. Shared ancestry and
+value checks preserve cancellation and all original deadlines. No device was
+created, worker/client started, game input sent, character changed or prefix
+edited. Owner preview stays 0.39.30 and assist stays 0.39.13. G0 passed; no new
+owner test is requested. Next: concrete shared supervised probe policy and
+continuation provider, then new-camp entry. The real 1–20 and fresh hands-off
+1–50 goals are not met; current level, XP/hour, deaths and camp remain unknown.
+
 ## 2026-11-14 19:19 UTC — standard seven-probe to source-route integration
 
 VERIFIED candidate `0.42.55-validation-7` on Alienware: **1 passed in 70.15
@@ -34,7 +52,7 @@ different binding context still takes the recursive path. VERIFIED final
 Alienware candidate `0.42.55-validation-8`: **270 passed in 279.56 seconds**,
 output SHA `d932716e6adde266b02e618f77642542fe10b6a62e3b9c490b504cc57986f92e`.
 It covers standard probes/fit/travel, F8/F9 cleanup, source transfer and
-ancestor/stale-observation regressions. Publication is next. Owner preview
+ancestor/stale-observation regressions. Publication is recorded above. Owner preview
 remains 0.39.30, G0 passed, and real 1–20/1–50 acceptance
 and level/XP/hour/deaths/camp remain unknown.
 
