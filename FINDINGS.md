@@ -1,5 +1,51 @@
 # FINDINGS
 
+## 2026-11-14 17:39 UTC — source 0.42.44, automatic post-recovery position collection
+
+Implemented in the same owner helper: after the first matching kill and
+completed recovery at a camp reached by travel, acquire an exclusive lease on
+the same log reader and collect two new stopped replies through the exact
+same-session configured location hotbutton. The pure source-height validator
+checks those replies on the retained floor before the lease is released.
+Successful collection records evidence and resumes the same camp. Initial
+spell-preparation recovery and later ordinary fights do not repeat the check.
+Standalone F11 camps and owner-targeted assist retain their existing behavior.
+No movement, target change or chat typing is added by position collection.
+
+The final stand-command completion time is now explicitly retained as a
+settling reference; it does not prove posture. Stop revokes the lease immediately
+but waits for in-flight hotbutton release before returning the reader. F8's
+queued assist request survives that same cancellation's cleanup. This avoids
+an extra stop generation discarding F8. Failed collections preserve their
+request/release diagnostics. The fresh height record keeps its original short
+expiry and cannot authorize a later trip.
+
+VERIFIED first Alienware snapshot: 13 focused checks pass in 3.73 seconds,
+output SHA `2871d060c92d624d75af98a774e5d1a38fdef8d0a4631846a077f7ed71aae231`.
+The next snapshot adds F8 cleanup coverage and passes 14 checks in 4.14 seconds,
+SHA `c8ae9a8430f5b5c4a56b747d313052764d5effc4619bb6f200316bea43c54e4a`.
+The initial local test fixture lacked a rotation object after skipping synthetic
+preparation; fixed the fixture. Its next attempt hit the original watchdog
+key-down deadline under Devbox load 218/48 CPUs. No timing limit was relaxed;
+Alienware load was 1.98/24 CPUs. VERIFIED final snapshot `owner-tools/0.42.44-validation-3`: all 50 checks
+pass in 90.99 seconds, including actual full travel handoff→new collection
+and focused existing recovery/continuity cases. Output SHA
+`8e6e5437350b022af9ebebc8086130bfb1ba5acb92a0d7636de65e9e852bb895`. All game feedback is synthetic; senders write to OS pipes only.
+
+Preview 0.39.30 builds locally; manifest and every runtime module match source.
+Private publication is pending. No device creation, game input, prefix edit,
+login or character action. Actual level, XP, XP/hour, deaths and camp unknown;
+no accepted full 1–20 or fresh hands-off 1–50. G0 remains passed.
+
+Next implementation detail from read-only source review: the unknown-heading
+probe needs a route-independent session over the actual checkpoint, fresh
+height, checked source envelope and release receipt. Existing source walking
+objects require already measured heading/turn motion and an original route;
+recreating those with guesses would be invalid. Post-pulse replies must use the
+exact checked envelope branch, not the old arrival cap or an arbitrary supplied
+floor. Current scene and supported motion bounds are still required before
+movement; neither historical arrival speed nor quiet logs supplies those facts.
+
 ## 2026-11-14 17:32 UTC — source 0.42.43 and preview 0.39.29 published
 
 VERIFIED private publication on Alienware: `owner-assist/0.39.29` and

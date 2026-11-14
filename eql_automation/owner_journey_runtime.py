@@ -17,6 +17,7 @@ from .source_walk_driver import SourceWalkFinished
 from .crushbone_source_guide import destination_spec
 from .camp_motion_continuity import CampInputContinuity, arrival_motion_basis
 from .camp_floor_checkpoint import CampFloorCheckpoint
+from .owner_camp_position import make_camp_position_engine
 
 
 @dataclass
@@ -29,6 +30,8 @@ class Journey:
     destination_assets: object = None
     camp_motion: object = None
     arrival_floor: object = None
+    location_binding: object = None
+    height_check_done: bool = False
 
 
 @dataclass(frozen=True)
@@ -327,13 +330,19 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
 
         def _camp_motion_binding(self):
             tracker=self.live_zone_tracker
-            if tracker is None or tracker.lease is not None or self.sender is None:
+            lease=self._camp_location_lease()
+            if (tracker is None or self.sender is None or
+                    tracker.lease is not None and tracker.lease is not lease):
                 raise ValueError('Camp cannot retain navigation ownership')
+            if lease is not None:lease.check()
             tracker.poll()
             window=window_identity(self.gate,require_focus=True)
             return (self.sender,self.sender.ui,self.gate,tracker,tracker.reader,self.camp_session,
                 self.cancel_generation,settings_identity(self.settings)[:4],
                 zone_binding(tracker.reader),window)
+
+        def _camp_location_lease(self):
+            return None
 
         def _retain_camp_input(self,token):
             j=token.journey
@@ -345,6 +354,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                 raise ValueError('Arrival input monitor lost its camp owner')
             j.camp_motion=CampInputContinuity(token.pending['observer'],topology=token.pending['topology'],
                 basis=token.motion_basis,binding=binding,clock=clock,floor=token.floor_checkpoint)
+            j.location_binding=token.pending['binding']
 
         def _camp_current(self,*,allow_pending_level=False):
             if not super()._camp_current(allow_pending_level=allow_pending_level):return False
@@ -389,4 +399,4 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                     super().handle_job('arm', pending[0])
             return result
 
-    return OwnerJourneyEngine
+    return make_camp_position_engine(OwnerJourneyEngine,clock=clock)

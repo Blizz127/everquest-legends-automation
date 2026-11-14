@@ -238,13 +238,16 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 try:self.read_log()  # Same reader, before each next key/Enter.
                 finally:self._camp_reading_during_input=False
             if self._camp_command is None:
-                return allowed and self.camp_session is None
+                return allowed and (self.camp_session is None or self._camp_location_input_permitted())
             camp = self.camp_session
             if not allowed or camp is None or not self._camp_current():
                 return False
             if self._camp_command.startswith('/cast ') or self._camp_command == '/alt activate 6001':
                 return self._camp_can_cast()
             return self.owner_extra_command_permitted(self._camp_command)
+
+        def _camp_location_input_permitted(self):
+            return False  # Only the journey's exact pending location request may opt in.
 
         def send(self, command):
             camp = self.camp_session
@@ -467,11 +470,15 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                     camp.record('recovery_complete',hp=self.hp,mana=self.mana,posture_observed=None)
                     self.trace('camp_recovery_complete',hp=self.hp,mana=self.mana,posture_observed=None)
                     if self.camp_session is not camp or not self._camp_current():return
-                    camp.reset_round()
-                    self.reset_target(False,forget=True,clear_seen=True,clear_role=True)
-                    self.native_attack_off_pending=False
+                    self._camp_recovery_complete(camp,clock())
             except (OSError,ValueError) as error:
                 if self.camp_session is camp:self.stop_action('Recovery stopped: '+str(error))
+
+        def _camp_recovery_complete(self,camp,now):
+            if self.camp_session is not camp or not self._camp_current():return
+            camp.reset_round()
+            self.reset_target(False,forget=True,clear_seen=True,clear_role=True)
+            self.native_attack_off_pending=False
 
         def stop_action(self, reason, *, keep_autopilot=False):
             camp = self.camp_session

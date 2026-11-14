@@ -10,6 +10,7 @@ from eql_automation.camp_session import StationaryCamp,NpcCandidate
 def test_gauge_samples_predating_posture_settle_never_count():
     r=CampRecovery(0.,phase='stand_after_rest')
     r.submitted('/stand',1.)
+    assert r.last_stand_completed_at==1. and r.posture_observed is None
     r.sample(1.6,1.1,1.,1.);r.sample(1.7,1.2,1.,1.)
     assert r.good_samples==0 and r.phase=='stand_settle'
     r.sample(1.8,1.6,1.,1.);r.sample(1.9,1.6,1.,1.)

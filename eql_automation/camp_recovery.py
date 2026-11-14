@@ -38,6 +38,7 @@ class CampRecovery:
     best_hp: float=0.
     best_mana: float=0.
     progress_at: float | None=None
+    last_stand_completed_at: float | None=None
 
     def command(self,now):
         if now<self.wait_until:return None
@@ -54,6 +55,7 @@ class CampRecovery:
             self.phase='recovering';self.posture_requested='sit_toggle';self.wait_until=now+.5
         else:
             self.phase='stand_settle';self.posture_requested='standing';self.wait_until=now+.5
+            self.last_stand_completed_at=now
 
     def sample(self,now,sampled_at,hp,mana):
         if self.phase not in {'recovering','stand_settle'}:return
