@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.69 / assist 0.39.6 / observation candidate 0.39.9
+# EverQuest Legends automation — project 0.41.70 / assist 0.39.6 / observation candidate 0.39.9
 
 ## Current availability
 
@@ -19,9 +19,21 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.69 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.69/source`; the runnable
+Source tools 0.41.70 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.70/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.70 extracts exact combat/attack visual templates from the installed
+client's XML and textures. Thirteen focused tests pass; 11 real client frames
+are retained privately. Static inspection of the updated executable links the
+five combat icons to the player widget. It also selects Standing when its
+player/global object is missing, so that icon alone cannot establish a safe
+scene. No live image classifier or safety flag is enabled by these tools.
+
+A current-data check found updated executable and spell files. The seven checked
+GFay/Butcherblock/Crushbone archives still match. The new spell file changes no
+Paladin/Cleric level 1–20 row or candidate helper rotation. The existing assist
+and pending 0.39.9 position-observation instructions remain unchanged.
 
 Source 0.41.69 connects one checked step to the existing release watchdog in
 an isolated library adapter. It requires independent scene and whole-motion

@@ -1,5 +1,112 @@
 # FINDINGS
 
+## Current client UI templates and patch reconciliation — 2026-11-14 05:06 UTC
+
+**VERIFIED source 0.41.70:** `combat_ui_atlas.py` reads a hash-pinned private
+manifest, XML and textures, retaining exact source coordinates, frame ordering,
+durations, optional fields and RGBA bytes. It refuses changed inputs, symlinks,
+missing textures, ambiguous definitions and invalid bounds. It preserves absent
+XML fields as unknown rather than inventing defaults. The extraction CLI writes
+only to a new private directory, never the install/prefix. Thirteen focused tests
+pass; after replacing a deprecated Pillow test accessor, that specific test also
+passes. Actual client extraction and CLI/compile smoke pass. No full suite ran.
+
+**VERIFIED read-only current assets:** saved skin is `default_light`; active
+live skin is still unverified. Its `EQUI_PlayerWindow.xml` has SHA
+`2ebd1af9bb330606c4b604c02b78c6f40fab39f316b1bc7edd839c1568125869`,
+`AttackIndicator.tga` has SHA
+`d0bb709872f3c647474ab863008348c03ad47856df37680760d6c071df3ec0b6`,
+and `window_pieces06.tga` has SHA
+`3fc79c8f70b6195091a54ab29e9380f53133c261f0909db7967f0102e3d164ec`.
+Copies and source paths are retained under private
+`client-data/ui-combat-assets-20261114T045805Z/`; manifest SHA
+`7d7a98dd3055c76bac46bdb7adc7b9b34820cd6549e1666c67ead1130a92df21`.
+The extracted 11-frame atlas is
+`ui-templates/combat-atlas-0.41.70/atlas.json`, SHA
+`b998545568dd7642f647a1b2d435a1d99e0f4c4da0ded88fa0b12d867effc77f`.
+Five combat sprites are 40×40 at x=200, y=0/40/80/120/160. Attack indicators
+include duplicate source regions; several StaticAnimation controls explicitly
+have AutoDraw=false. No live classifier or G2 safety flag is produced. Initial
+read-only copies of default EQUI_Animations.xml/MapViewWnd.xml are separately
+retained in `client-data/ui-scene-20261114T045729Z/manifest.json`.
+
+**VERIFIED installed executable changed:** at 05:02:40 UTC its SHA was
+`fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36`
+(15,714,424 bytes), differing from the earlier `65b8a28b…` copy. A matching fresh
+copy is `client-data/runtime-20261114T0503Z/eqgame.exe`; the prior copy was kept.
+The initial old-binary analysis remains historical, and its current-build
+assertion correctly failed. No old addresses were adopted for the new build.
+
+**OBSERVED static mapping on the new copy, not execution:** bounded PE/RIP
+reference inspection and GNU objdump show the constructor loading
+`PW_CombatStateAnim` at `0x1404dcd50`, storing its lookup at `this+0x430` at
+`0x1404dcd70`. Selector `0x1404df5d0` uses that field, caches state at +0x474,
+and assigns its animation result to widget+0x368 at `0x1404df861`:
+
+| State | Client animation | Branch | Client tooltip ID |
+|---|---|---|---|
+| 0 | A_PWCSInCombat | 0x1404df803 | 9172 |
+| 1 | A_PWCSDebuff | 0x1404df7c5 | 9173 |
+| 2 | A_PWCSTimer | 0x1404df787 | 9177 |
+| 3 | A_PWCSStanding | 0x1404df746 | 9175 |
+| 4 | A_PWCSRegen | 0x1404df6fb | 9176 |
+
+**Critical limit:** null global `0x140f37db8` also selects Standing. A Standing
+match cannot establish a valid in-world player, combat safety or no incoming
+attack. The virtual +0x138/+0x140 calls and entry-field semantics remain unknown.
+The five names and branch structure persist, but old widget/cache/animation
+fields were +0x420/+0x464/+0x358. A separate selector using these same assets
+belongs to an unproven widget and was not merged into the player mapping.
+Read-only independent review confirmed the new disassembly hashes and mapping.
+Current static probe SHA
+`98ab0ec9a9061f8f996fa4ab0d09f963e8f1f9615aab4085d1eae0f277ff83bc`,
+binding record SHA
+`056e9678ec2cf054c853bab7a819169a81cb21b23c4ea730fe0222df3818cddc`,
+in `evidence/combat-ui-static-20261114T0503Z/`. Client tooltip strings were read
+from installed `eqstr_us.txt`, SHA
+`0dd0117a23092cb195d0e62d6b03a49bf1aaf8dbfb843dd629e38ca950732fde`;
+selected-string record SHA
+`17c395849e936c0039c405ab2dd39aef81eece291fff2b8dc21590b3dc301d20`
+is retained in the preceding `…T0500Z/` directory.
+
+The reverse-engineer-anything skill was applied. REA deep providers remain
+unavailable (Ghidra JDK missing); no access/configuration changes were made.
+Its portable objdump call reached a 10-second provider deadline with a partial
+header record `ev_1c4bbd508e72fbe4aaf92370cd2b9932ae1730fb3a01b4c99db72a75617da3c1`.
+That was preserved, not retried as completed evidence. The exported/reset bundle
+`evidence/combat-ui-rea-20261114T0500Z.json` has SHA
+`ff2beb4b9bc05fee3f1fd7f6d72f70a1eb188c6e8ebbadbce2f7587c213f651b`.
+Successful bounded shell objdump runs above are labelled shell evidence, not
+REA decompilation. No binary was executed or running process attached.
+
+**VERIFIED selected data reconciliation:** all seven checked GFay/Butcherblock/
+Crushbone terrain/object archives still match copied inputs. `spells_us.txt`
+changed from `8db55486…` to
+`c179a57fe444a65838c3728895e57161912eb527e77d92859ecb007a3236c8e9`.
+The eight-file read-only comparison took 0.055 seconds remotely; artifact
+`evidence/selected-client-data-20261114T0504Z.json`, SHA
+`f22877de12a9d095cd141a2fe51e4c20ffb0fc4084977e64fcb5bd298ed7a065`.
+Current spells and complete dbstr were copied to the new runtime snapshot;
+class-source SHA `5a1a4d496e01c256ab32114b1a6ea5d699fafec08b17cfaa88684dd6746b1e53`.
+The 174-field parser and retained helper Catalog both accept the new file:
+74,021→74,023 rows, two added, none removed, 18 changed. No changed row is a
+Paladin/Cleric level 1–20 spell; candidate helper profiles for all levels 1–20
+are identical. This does not establish ownership, scribing, server availability
+or live casting. Audit SHA
+`28bec61a75828b99883dc100ae2b6cb72aa24d8e68966596f80369af1c3cfdb4`,
+`evidence/spell-update-20261114T0505Z.json`. The refreshed 16-class index is
+`map-store/indices/spell-levels-c179a57fe444a658-5a1a4d496e01c256.json.gz`, SHA
+`61c320963702a41b96d588aca593fae83a76f64a4d49a65f267e3f000b31e4fd`.
+An initial 25 MiB transfer bound refused the 38,381,991-byte spell file before
+writing; the corrected 64 MiB bounded read completed with the expected hash.
+
+**Live gate unchanged:** one read-only listing this turn found zero paired
+position records. No game capture/input/login occurred. Current level, XP,
+XP/hour, deaths and camp remain unknown. G0 needs no repeat. Assist 0.39.6,
+observation candidate 0.39.9 and F11/F12 disabled state remain unchanged. The
+next scene work needs actual current capture/placement/calibration and complete
+independent safety evidence; source templates alone do not enable movement.
+
 ## Private source 0.41.69 staging — 2026-11-14 04:56 UTC
 
 **VERIFIED:** Commit `e9e687477844906892ffdba12f5438c7ac04cb00`, archive SHA

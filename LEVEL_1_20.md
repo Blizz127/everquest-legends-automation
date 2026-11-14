@@ -1,9 +1,16 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 04:54 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 05:05 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.70 supplies 11 exact client combat/attack templates for the pending
+scene reader. Thirteen focused checks pass. Seven current navigation archives
+still match the copied route inputs; the executable and spell table changed.
+The refreshed spell audit finds no Paladin/Cleric 1–20 row or candidate-profile
+changes. Static icon mapping was repeated against the new executable; live
+placement, rendering and current scene evidence remain missing.
 
 Source 0.41.69 adds the isolated checked-step sender bridge. Sixty-seven focused
 pipe/transaction checks pass, including cancellation, final-release failure and

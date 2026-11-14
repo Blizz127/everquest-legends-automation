@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 04:56 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 05:06 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,15 +11,20 @@ Updated 2026-11-14 04:56 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
-- **Source 0.41.69:** **VERIFIED** isolated checked-step sender joins watchdog
-  release and floor commit. It binds fresh scenes/exact stopped references,
-  requires explicit external whole-motion authorization, pins cleanup to the
-  original descriptor, and commits only after final UP/SYN succeeds. **67 focused
-  checks pass**, including cancellation and descriptor-reuse pipe checks.
-  Not imported by owner controls; no live motion provider/acceptance is claimed.
-  Source `e9e6874` is privately staged at `owner-tools/0.41.69/source`; six
-  no-input remote startup checks pass. Archive SHA
-  `68838c535e6b3680b572977a750849deb38d7f3940afd8d3dcb805d1e0dd202b` matched.
+- **Source 0.41.70:** **VERIFIED** client-derived combat/attack atlas: 11
+  frames extracted from fresh default_light assets; 13 focused tests pass.
+  The updated installed executable was copied read-only and its icon selector
+  inspected statically. Standing also appears on a null-player fallback;
+  that match alone cannot establish scene safety. No live classifier enabled.
+  Private source staging is next; current assist remains unchanged.
+- **Client update reconciled:** executable is now `fe41a8db…7146bf36` and
+  spell file `c179a57f…236c8e9`. Seven checked navigation archives still match.
+  The new spell file has two added and 18 changed rows; Paladin/Cleric 1–20
+  rows and candidate rotations are unchanged. Refreshed 16-class private
+  index built. No owned-spell/server/casting or movement acceptance claimed.
+- **Checked sender 0.41.69:** 67 focused checks passed previously. It requires
+  current scenes, measured whole-motion authorization and final release before
+  committing a step. It remains separate from owner runtime controls.
 - **Completed printed-feedback replay:** **VERIFIED** all 155 segments and
   2,323 simulated steps arrive with all terrain/static/BSP trials passing.
   All 2,324 stopped observation pairs pass; 48 pins rechecked. Artifact SHA
@@ -31,10 +36,11 @@ Updated 2026-11-14 04:56 UTC for coordinator task `829a00229b29`.
   position** button is an alternative to the 0.41.61 terminal collector. It
   sends no input and saves private player/target/map crops plus an unbound
   location record. Its 98 local checks and actual-helper synthetic/GUI smokes
-  passed; live capture remains unrun. Read-only listing at 04:46 UTC found zero
+  passed; live capture remains unrun. Read-only listing at 04:57 UTC found zero
   paired records. No lead capture was initiated.
-- **Next / real-client gate:** supply the checked route sender with current
-  scene and measured whole-motion bounds; obtain the
+- **Next / real-client gate:** validate the source-derived scene templates against the
+  pending owner capture; supply the checked sender with current scene and
+  measured whole-motion bounds; obtain the
   pending owner scene/position evidence and current zone/frame/height/speed
   calibration. Source-ground production, checked-step adapter and receipt bookkeeping exist;
   live providers and owner runtime wiring remain incomplete. No new owner test
