@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 03:45 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 03:46 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No real-client 1–20 route, automated level gain
   or fresh-character hands-off 1–50 run is accepted.
@@ -19,7 +19,11 @@ Updated 2026-11-14 03:45 UTC for coordinator task `829a00229b29`.
   `ff21dfa92e8dbd391002512ed7d5950280655ac066b3967b0e0d8b9ee4af6319`.
   This is copied geometry under hypothetical movement/body bounds, not live
   dryness, dynamic obstacles or movement acceptance. 50 focused tests and
-  11 local no-input startup/guard checks pass. Private staging is next.
+  11 local and remote no-input startup/guard checks pass. Source commit
+  `8ddde9b` is privately staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.62/source`; archive SHA
+  `e6fb63e2d9a417bc3d5f51276b0133f53e308f45e8eca4a8e65e40b9656e8ebd`
+  matched.
 - The owner-run location/map collector remains at source **0.41.61** on
   Alienware. It sends no input and records explicitly unknown zone/alignment/
   character identity. The pending command in HOWTO is unchanged. A read-only

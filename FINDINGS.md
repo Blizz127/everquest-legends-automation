@@ -1,5 +1,18 @@
 # FINDINGS
 
+## Private 0.41.62 staging — 2026-11-14 03:46 UTC
+
+**VERIFIED:** Commit `8ddde9bec83ae906784e0066767f313f074a6738`, archive SHA
+`e6fb63e2d9a417bc3d5f51276b0133f53e308f45e8eca4a8e65e40b9656e8ebd`, matched at
+Alienware `~/.local/share/eql-automation/owner-tools/0.41.62/source`. Eleven
+synthetic/startup checks passed: interior water, upper-body plane contact,
+exact arithmetic, cycle/budget refusal, terrain-cell binding, axis swap,
+changed-cell refusal, outward report bounds, CLI starts and required flags.
+No client assets, game input or UI capture were opened. Remote `../smoke.json`
+and local `releases/eql-automation-0.41.62-staging.json` retain the scope.
+The owner's pending collector command remains on 0.41.61; assist 0.39.6 and
+G0 candidate 0.39.7 remain unchanged. No repeated/new owner test is requested.
+
 ## Complete GFay replay with copied BSP volumes — 2026-11-14 03:45 UTC
 
 **VERIFIED source 0.41.62:** All 155 segments and 2,191 simulated steps arrive
