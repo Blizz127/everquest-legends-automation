@@ -13,6 +13,7 @@ from .fixed_route_follower import finite
 from .floor_replay import check_floor_trial
 from .ground_sweep import motion_footprint
 from .route_floor_commit import RouteFloorCommit, _binding_snapshot, _chain_snapshot
+from .route_precision import precision_binding, validate_precision_seams
 from .static_floor_guard import check_static_floor
 
 
@@ -66,6 +67,7 @@ class RouteGeometryRecord:
     terrain: object
     static: object
     bsp: object
+    precision_policy: object = None
     input_authorized: bool = field(default=False, init=False)
     real_client_accepted: bool = field(default=False, init=False)
 
@@ -80,7 +82,7 @@ class RouteGeometryPreparer:
     """
     def __init__(self, ledger, *, ground, source, static, bsp, bounds,
                  static_inventory_sha256, vertical_window,
-                 maximum_source_z_difference):
+                 maximum_source_z_difference, precision_policy=None):
         if (not isinstance(ledger, RouteFloorCommit)
                 or not isinstance(bounds, RouteMotionBounds)
                 or not finite(vertical_window) or not 0 < vertical_window <= 100
@@ -93,10 +95,19 @@ class RouteGeometryPreparer:
         self.static_inventory_sha256 = static_inventory_sha256
         self.vertical_window = vertical_window
         self.maximum_source_z_difference = maximum_source_z_difference
+        self.precision_policy = precision_policy
+        self._precision = self._precision_binding()
+        validate_precision_seams(source, precision_policy)
         self._record = None
         self._record_context = None
         self._cache = None
         self._bindings()
+
+    def _precision_binding(self):
+        r = self.ledger.runner
+        return precision_binding(self.source, self.precision_policy,
+            zone=r.route.zone, mesh_sha256=r.route.mesh_sha256,
+            archive_sha256=r.geometry_evidence.source_archive_sha256)
 
     def _bindings(self):
         r = self.ledger.runner
@@ -112,6 +123,7 @@ class RouteGeometryPreparer:
                 or len(self.static_inventory_sha256) != 64
                 or any(c not in '0123456789abcdef' for c in self.static_inventory_sha256)
                 or self.static.inventory_sha256 != self.static_inventory_sha256
+                or self._precision_binding() != self._precision
                 or self.maximum_source_z_difference > g.maximum_source_baked_z_difference):
             raise ValueError('Route geometry source or inventory binding differs')
 
@@ -132,7 +144,8 @@ class RouteGeometryPreparer:
                 r.no_progress_steps, id(r.pose), deepcopy(vars(r.pose)),
                 self.bounds, self.vertical_window, self.maximum_source_z_difference,
                 id(self.ground), id(self.source), id(self.static), id(self.bsp),
-                self.static_inventory_sha256, self.bsp.inventory_sha256)
+                self.static_inventory_sha256, self.bsp.inventory_sha256,
+                self._precision_binding())
 
     def _trial(self, kind, position, heading, component, chain, bounds):
         b = bounds
@@ -146,7 +159,8 @@ class RouteGeometryPreparer:
         sources = self.source.source_faces_for_footprint(footprint)
         fork, trial = check_floor_trial(self.source, chain, original, footprint, detail_ids,
             reference=position, component=component, vertical_window=self.vertical_window,
-            maximum_source_z_difference=self.maximum_source_z_difference, allow_overlap=False)
+            maximum_source_z_difference=self.maximum_source_z_difference,
+            allow_overlap=self.precision_policy.allow_overlap if self.precision_policy else False)
         if not trial.candidate:
             return 'Terrain: ' + trial.reason
         static = check_static_floor(trial, footprint, sources, self.static)
@@ -244,7 +258,7 @@ class RouteGeometryPreparer:
                     footprint=footprint, sources=sources, requested_seconds=seconds,
                     maximum_actual_hold=b.maximum_actual_hold, movement_key=key,
                     motion_bounds_record_id=b.record_id, check_geometry=evaluate)
-                self._record = RouteGeometryRecord(ticket, trial, static, bsp)
+                self._record = RouteGeometryRecord(ticket, trial, static, bsp, self.precision_policy)
                 self._record_context = self._context()
                 return ticket
             except BaseException:

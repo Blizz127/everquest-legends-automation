@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 11:31 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 11:42 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,18 @@ Updated 2026-11-14 11:31 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.12:** explicit pinned tile/overlap policy now follows fresh
+  plans into per-movement terrain/static/BSP preparation. Copied five- and
+  forty-ULP GFay seams pass all three checks and refuse without overlap
+  permission; the source-floor chain is unchanged until receipt commit.
+  Tile-enabled planning still produces the 197-segment Crushbone approach.
+  94 focused cases and three owner-runtime regressions pass. Pipe seam cases
+  have individual positive results, but combined execution is unstable under
+  measured heavy CPU pressure; watchdog/freshness refusals remain enforced.
+  No real-client acceptance follows from these tests. **Next:** explicit full
+  destination owner scope/runtime, then real traversal and camps; retain the
+  pending 0.39.15 short trial and assist 0.39.13. No new G0/test request.
+  Current level, XP/hour, deaths and camp remain unknown; 1–20 and 1–50 are not met.
 - **Source 0.42.11:** a fresh-start destination planner now
   emits multi-polygon routes using the retained navmesh search. It independently
   checks exact endpoint floors/XY, reciprocal portal geometry and initial

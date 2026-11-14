@@ -14,10 +14,13 @@ from .ground_sweep_view import GroundSweepView
 from .location_log import unique_zone_ids_from_text
 from .pfs_archive import PFSArchive
 from .portal_precision_view import PortalPrecisionView
+from .route_precision import RoutePrecisionPolicy
 from .static_source_view import StaticSourceView
 from .wld_inventory import WLDInventory
 
 DATA_NAME = 'gfay-trial-20261114-current'
+TILE_DATA_NAME = 'gfay-destination-20261114-tiles'
+TILE_MANIFEST_PIN = 'ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82'
 DATA_PINS = {
     'gfaydark.npz': '5f8e16c5bcd2221ba273f681750ca480349780524d23609c059a3e817df6abd9',
     'gfaydark.s3d': 'ea95f51a2d4645410223d24cc7da9eb0e7095310c6e9f8756e8c51d67df13d9f',
@@ -42,16 +45,20 @@ def checked_bytes(path, expected):
     return data
 
 
-def load_gfay_planner(root):
+def load_gfay_planner(root, *, tile_rounding=False):
     """Load complete views, checking both before and after path-based parsers."""
     from eqnav import zonegeom
     root = Path(root)
+    if type(tile_rounding) is not bool:
+        raise ValueError('Tile rounding must be explicitly selected')
     if root.is_symlink() or not root.is_dir():
         raise ValueError('Missing private GFay trial data: '+str(root))
     def verify():
         for name, pin in DATA_PINS.items():
             checked_bytes(root/name, pin)
         checked_bytes(Path(zonegeom.__file__), TRANSFORM_PIN)
+        if tile_rounding:
+            checked_bytes(root/'gfaydark.json', TILE_MANIFEST_PIN)
     verify()
     catalog = checked_bytes(root/'ZoneNames.txt', DATA_PINS['ZoneNames.txt'])
     unique, _ = unique_zone_ids_from_text(catalog.decode('latin-1'))
@@ -74,7 +81,9 @@ def load_gfay_planner(root):
     mesh_path = root/'gfaydark.npz'
     mesh = BspDetailMeshView.load(mesh_path, zone='gfaydark')
     ground = GroundSweepView.load(mesh_path, zone='gfaydark')
-    source = PortalPrecisionView(ground, mesh_path, root/'gfaydark.s3d', zone='gfaydark')
+    source = PortalPrecisionView(ground, mesh_path, root/'gfaydark.s3d', zone='gfaydark',
+                                 tile_rounding=tile_rounding)
+    precision = RoutePrecisionPolicy(source.tile_grid, allow_overlap=True) if tile_rounding else None
     bsp = BspVolumeView.from_wld(terrain)
     if bsp.inventory_sha256 != BSP_PIN:
         raise ValueError('Loaded BSP differs from pinned inventory')
@@ -82,12 +91,12 @@ def load_gfay_planner(root):
         static=static, bsp=bsp, zone_short_name='gfaydark',
         expected_zone_id=54, expected_zone_name=names[0],
         mesh_sha256=DATA_PINS['gfaydark.npz'], source_archive_sha256=DATA_PINS['gfaydark.s3d'],
-        source_wld_sha256=WLD_PIN, static_inventory_sha256=STATIC_PIN)
+        source_wld_sha256=WLD_PIN, static_inventory_sha256=STATIC_PIN, precision_policy=precision)
     verify()
     return planner
 
 
-def load_owner_planner(engine):
+def load_owner_planner(engine, *, tile_rounding=False):
     tracker = engine.live_zone_tracker
     if tracker is None or tracker.reader.zone_id != 54:
         raise ValueError('This finite trial currently supports Greater Faydark only')
@@ -96,7 +105,9 @@ def load_owner_planner(engine):
         path = game/'Resources'/name if name == 'ZoneNames.txt' else game/name
         checked_bytes(path, DATA_PINS[name])
     engine.emit('Loading copied GFay terrain and objects; no movement yet.')
-    planner = load_gfay_planner(Path.home()/'.local/share/eql-automation/owner-route-data'/DATA_NAME)
+    name = TILE_DATA_NAME if tile_rounding else DATA_NAME
+    planner = load_gfay_planner(Path.home()/'.local/share/eql-automation/owner-route-data'/name,
+                               tile_rounding=tile_rounding)
     tracker.check_binding()
     unique, _ = unique_zone_ids_from_text(checked_bytes(
         game/'Resources/ZoneNames.txt', DATA_PINS['ZoneNames.txt']).decode('latin-1'))

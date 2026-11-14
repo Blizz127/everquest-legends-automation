@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.11** · rotation preview **0.39.13** · short route trial **0.39.15** · motion-only **0.39.12**.
+Source **0.42.12** · rotation preview **0.39.13** · short route trial **0.39.15** · motion-only **0.39.12**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -69,13 +69,21 @@ Pipe completion/cancellation checks and copied geometry loading do not prove
 that real-client traversal works. Current level, XP/hour, deaths and camp are
 unknown; no automated level gain has been verified.
 
-The next development increment (source 0.42.11) can plan a complete path from
+The development backend can plan a complete path from
 fresh current coordinates to the copied client map's Crushbone approach marker.
 A copied-data probe produced 197 segments. It retains the starting floor and
 checks each later movement through the existing collision guards; it does not
 claim the entire path is clear. This backend change does not extend the owner
 trial's distance or enable full auto. Keep using 0.39.15 for the pending short
 traversal check; no new G0 or separate test is requested.
+
+Source 0.42.12 additionally carries the pinned tile-seam model into each
+movement check, retaining terrain, object, BSP and release requirements.
+Copied-data checks pass at two real map overlaps. Synthetic pipe tests have
+also crossed seams, but strict timing checks still stop runs under heavy
+CPU pressure. This is development evidence, not real-client route acceptance.
+The full approach still needs its own bounded owner travel action; the short
+trial limits have not changed.
 
 ## Motion-only option on Alienware: 0.39.12
 

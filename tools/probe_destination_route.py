@@ -18,13 +18,13 @@ STORE=Path.home()/'.local/share/eql-automation'
 HELPER=STORE/'owner-assist/0.39.15'
 sys.path[:0]=[str(PROJECT),str(HELPER)]
 from eql_automation.destination_route import plan_destination
-from eql_automation.owner_route_assets import load_gfay_planner,DATA_NAME,DATA_PINS
+from eql_automation.owner_route_assets import load_gfay_planner,DATA_NAME,DATA_PINS,TILE_DATA_NAME,TILE_MANIFEST_PIN
 from eql_automation.owner_zone_tracker import LiveZoneTracker
 from eql_automation.route_geometry import RouteMotionBounds
 from eqnav.mesh import NavMesh
 
 
-def run(output,xy,heading):
+def run(output,xy,heading,*,tile_rounding=False):
     if output.exists() or output.is_symlink() or not output.resolve().is_relative_to((STORE/'nav-candidates').resolve()):
         raise ValueError('Use a new private nav-candidates directory')
     labels=STORE/'client-data/retail-full/maps/gfaydark_1.txt'
@@ -38,6 +38,8 @@ def run(output,xy,heading):
     def verify():
         if any(p.is_symlink() or sha256(p.read_bytes()).hexdigest()!=h for p,h in pins.items()):
             raise ValueError('Copied destination evidence changed')
+    root=STORE/'owner-route-data'/(TILE_DATA_NAME if tile_rounding else DATA_NAME)
+    if tile_rounding:pins[root/'gfaydark.json']=TILE_MANIFEST_PIN
     verify();context=json.loads(alignment.read_text())
     if (context['best_map_to_wld_xy_transform']!='-y,-x'
             or context['label_map_sha256']!=pins[labels]
@@ -52,8 +54,7 @@ def run(output,xy,heading):
             found.append((line_no,tuple(map(float,fields[:3]))))
     if len(found)!=1:raise ValueError('No unique client Crushbone approach label')
     line_no,map_xyz=found[0];goal=(-map_xyz[0],-map_xyz[1])
-    root=STORE/'owner-route-data'/DATA_NAME
-    planner=load_gfay_planner(root)
+    planner=load_gfay_planner(root,tile_rounding=tile_rounding)
     mesh=NavMesh.load(root/'gfaydark.npz',expected_sha256=DATA_PINS['gfaydark.npz'])
     offset=[0.];clock=lambda:time.monotonic()+offset[0]
     wall=lambda:datetime.now()+timedelta(seconds=offset[0])
@@ -88,6 +89,8 @@ def run(output,xy,heading):
         (output/'geometry.json').write_bytes(result.evidence_bytes)
     record=dict(format='eql-copied-destination-probe-v1',simulation_only=True,
         fixture_xy=xy,fixture_heading=heading,goal_client_label='to_Clan_Crushbone',
+        precision_policy=planner.precision_policy.record() if planner.precision_policy else None,
+        tile_seams=len(planner.source.seams) if tile_rounding else None,
         goal_map_xyz=map_xyz,goal_package_xy=goal,label_line=line_no,pins={str(p):h for p,h in pins.items()},
         goal_is_verified_zone_trigger=False,current_plan_produced=result is not None,error=error,
         segments=0 if result is None else len(result.route.segments),
@@ -108,5 +111,7 @@ if __name__=='__main__':
     parser.add_argument('--output',required=True,type=Path)
     parser.add_argument('--fixture-xy',required=True,type=float,nargs=2)
     parser.add_argument('--fixture-heading',required=True,type=float)
+    parser.add_argument('--tile-rounding',action='store_true')
     args=parser.parse_args()
-    print(json.dumps(run(args.output,tuple(args.fixture_xy),args.fixture_heading),indent=2))
+    print(json.dumps(run(args.output,tuple(args.fixture_xy),args.fixture_heading,
+                         tile_rounding=args.tile_rounding),indent=2))

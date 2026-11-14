@@ -24,6 +24,7 @@ from .ground_sweep import GroundFace, check_ground_coverage, hull, motion_footpr
 from .location_log import LocationLogReader, RawLocationFix
 from .motion_collection import immutable_binding
 from .route_geometry import RouteMotionBounds
+from .route_precision import RoutePrecisionPolicy, precision_binding, validate_precision_seams
 from .source_floor_chain import SourceFloorChain
 from .source_occupancy import exact_floor_partition
 from .static_floor_guard import check_static_floor
@@ -47,6 +48,7 @@ class CurrentStartPlan:
     planning_bounds: RouteMotionBounds
     plan_bytes: bytes
     evidence_bytes: bytes
+    precision_policy: RoutePrecisionPolicy | None = None
     requires_fresh_start_pair: bool = True
     real_client_accepted: bool = False
     input_authorized: bool = False
@@ -63,7 +65,7 @@ class CurrentStartPlanner:
     def __init__(self, *, mesh, ground, source, static, bsp, zone_short_name,
                  expected_zone_id, expected_zone_name, mesh_sha256,
                  source_archive_sha256, source_wld_sha256,
-                 static_inventory_sha256):
+                 static_inventory_sha256, precision_policy=None):
         pins = (mesh_sha256, source_archive_sha256, source_wld_sha256, static_inventory_sha256)
         if (not all(digest(v) for v in pins) or not isinstance(bsp, BspVolumeView)
                 or not isinstance(zone_short_name, str) or not zone_short_name
@@ -75,7 +77,14 @@ class CurrentStartPlanner:
         self.pins = pins
         self.bsp_pin = bsp.inventory_sha256
         self._views = (mesh, ground, source, static, bsp)
+        self.precision_policy = precision_policy
+        self._precision = self._precision_binding()
+        validate_precision_seams(source, precision_policy)
         self._check_views()
+
+    def _precision_binding(self):
+        return precision_binding(self.source, self.precision_policy, zone=self.zone,
+            mesh_sha256=self.pins[0], archive_sha256=self.pins[1])
 
     def _check_views(self):
         mesh, archive, wld, static = self.pins
@@ -87,6 +96,7 @@ class CurrentStartPlanner:
                 or self.source.archive_sha256 != archive or self.source.wld_sha256 != wld
                 or self.static.inventory_sha256 != static or self.bsp.wld_sha256 != wld
                 or self.bsp.inventory_sha256 != self.bsp_pin
+                or self._precision_binding() != self._precision
                 or len(self.mesh.area) != len(self.ground.areas)
                 or len(self.ground.areas) != len(self.ground.components)):
             raise ValueError('Current-start geometry identities changed')
@@ -221,13 +231,15 @@ class CurrentStartPlanner:
             log_identity=identity, observations=[raw_record(first), raw_record(second)],
             motion_record_id=motion_record_id, heading=heading, source_z=source_z,
             selected_ids=seeds, planning_bounds=asdict(bounds), footprint=footprint,
+            precision_policy=self.precision_policy.record() if self.precision_policy else None,
             released_at=released_at, began=began)
         chain = SourceFloorChain(inventory_sha256=self.pins[2],
             seed_evidence_sha256=sha256(encoded(seed_record)).hexdigest(),
             seed_ids=tuple(seeds), body_height=bounds.body_height)
         chain, terrain = check_floor_trial(self.source, chain, original, footprint, detail_ids,
             reference=reference, component=component,
-            vertical_window=vertical_window, maximum_source_z_difference=maximum_source_z_difference)
+            vertical_window=vertical_window, maximum_source_z_difference=maximum_source_z_difference,
+            allow_overlap=self.precision_policy.allow_overlap if self.precision_policy else False)
         if not terrain.candidate:
             raise ValueError('Current-start terrain refused: '+terrain.reason)
         sources = self.source.source_faces_for_footprint(footprint)
@@ -259,4 +271,4 @@ class CurrentStartPlanner:
                            (FixedSegment(polygon, start, end),))
         observer = RouteGroundObserver(mesh=self.mesh, ground=self.ground, source=self.source,
             geometry_evidence=geometry, reciprocal_links=())
-        return CurrentStartPlan(route, observer, chain, bounds, plan_bytes, evidence)
+        return CurrentStartPlan(route, observer, chain, bounds, plan_bytes, evidence, self.precision_policy)

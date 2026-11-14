@@ -261,7 +261,8 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader,
             planner=p['continuation']['planner']
             geometry=RouteGeometryPreparer(ledger,ground=planner.ground,source=planner.source,
                 static=planner.static,bsp=planner.bsp,bounds=p['bounds'],
-                static_inventory_sha256=planner.pins[3],vertical_window=3.,maximum_source_z_difference=2.)
+                static_inventory_sha256=planner.pins[3],vertical_window=3.,maximum_source_z_difference=2.,
+                precision_policy=plan.precision_policy)
             session=RouteSession(ledger,p['lease'].reader,plan.observer,
                 initial_release_at=p['last_release'],binding_reader=lambda:self._trial_binding(p),
                 record_id=p['trial_id'],max_seconds=120.,local_wall_clock=local_wall_clock,zone_lease=p['lease'])

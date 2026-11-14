@@ -35,7 +35,10 @@ def positive_overlap(first,second):
         center=tuple(sum(p[k] for p in polygon)/len(polygon) for k in range(2))
         if inside(center,other,strict=True):return True
     # Separating-axis theorem: equality is only a line/point contact.
-    return all(max(cross(a,polygon[(i+1)%len(polygon)],p) for p in other)>0
+    # Only the sign matters. Stop at the first point on the positive side;
+    # computing the maximum needlessly evaluates every exact rational cross
+    # product in the (often 16–24 vertex) motion footprint.
+    return all(any(cross(a,polygon[(i+1)%len(polygon)],p)>0 for p in other)
                for polygon,other in ((first,second),(second,first)) for i,a in enumerate(polygon))
 
 

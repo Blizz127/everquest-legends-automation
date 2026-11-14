@@ -197,4 +197,5 @@ def plan_destination(planner, navigation_mesh, reader, first, second, *, goal_xy
     observer=RouteGroundObserver(mesh=planner.mesh,ground=planner.ground,source=planner.source,
         geometry_evidence=geometry,reciprocal_links=tuple(links))
     check()
-    return CurrentStartPlan(route,observer,initial.floor_chain,initial.planning_bounds,plan_bytes,evidence)
+    return CurrentStartPlan(route,observer,initial.floor_chain,initial.planning_bounds,plan_bytes,evidence,
+                            initial.precision_policy)

@@ -17,7 +17,7 @@ from eql_automation.route_floor_commit import RouteFloorCommit
 from eql_automation.route_geometry import RouteGeometryPreparer
 from eql_automation.route_session import RouteSession,RouteSessionDriver
 from eql_automation.route_step_sender import RouteStepAuthorization
-from eql_automation.uinput_watchdog import _EVENT
+from eql_automation.uinput_watchdog import _EVENT, PulseError
 from test_destination_route import f,nav_module
 from test_route_floor_commit import legacy
 from test_route_step_sender import PipeSender
@@ -25,18 +25,23 @@ from test_route_step_sender import PipeSender
 
 @pytest.mark.parametrize('wall',[False,True])
 def test_destination_runtime_crosses_portal_or_stops_before_suffix_wall(f,legacy,wall):
+    exercise_destination(f,legacy,wall=wall)
+
+
+def exercise_destination(f,legacy,*,wall=False,refusal=None):
+    start=getattr(f,'start',(4.,4.)); wall_x=getattr(f,'wall_x',12.)
     f.clock=time.monotonic;f.wall=datetime.now
     log=f.reader.tail.path
     f.reader=LocationLogReader(log,log.parent/'ZoneNames.txt',expected_character='Probe',expected_server='private')
     f.append('You have entered Fixture.');f.reader.poll(now=f.clock())
     def position():
         f.now=time.monotonic()
-        f.append('Your Location is 4.00, 4.00, 2.70')
+        f.append(f'Your Location is {start[1]:.2f}, {start[0]:.2f}, 2.70')
         return f.reader.poll(now=f.now)[0]
     f.a=position();time.sleep(.41);f.b=position()
     f.destination_options.update(clock=f.clock,local_wall_clock=f.wall,released_at=f.a.received_monotonic-.2)
-    barrier=SourceFace(((0.,12.,0.),(8.,12.,0.),(4.,12.,8.)),0,'Diffuse',20,0)
-    f.planner.static.faces_for_footprint=lambda footprint:(barrier,) if wall and max(x for x,y in footprint)>=12 else ()
+    barrier=SourceFace(((0.,wall_x,0.),(8.,wall_x,0.),(4.,wall_x,8.)),0,'Diffuse',20,0)
+    f.planner.static.faces_for_footprint=lambda footprint:(barrier,) if wall and max(x for x,y in footprint)>=wall_x else ()
     plan=f.plan_destination()
     released=f.clock();time.sleep(.13);a=position();time.sleep(.41);b=position()
     height=measure_current_height(plan.observer,f.reader,a,b,route=plan.route,segment_index=0,
@@ -50,10 +55,17 @@ def test_destination_runtime_crosses_portal_or_stops_before_suffix_wall(f,legacy
     ledger=RouteFloorCommit(runner,plan.floor_chain,stop_lock=threading.RLock(),clock=f.clock)
     p=f.planner
     prepare=RouteGeometryPreparer(ledger,ground=p.ground,source=p.source,static=p.static,bsp=p.bsp,
-        bounds=plan.planning_bounds,static_inventory_sha256=p.pins[3],vertical_window=1.,maximum_source_z_difference=1.)
+        bounds=plan.planning_bounds,static_inventory_sha256=p.pins[3],vertical_window=1.,maximum_source_z_difference=1.,
+        precision_policy=plan.precision_policy)
+    timing=[];precompute=prepare.precompute
+    def timed_precompute(observed):
+        began=f.clock();cpu=time.process_time()
+        try:return precompute(observed)
+        finally:timing.append((f.clock()-began,time.process_time()-cpu))
+    prepare.precompute=timed_precompute
     session=RouteSession(ledger,f.reader,plan.observer,initial_release_at=f.clock(),
         binding_reader=lambda:f.owner,record_id='synthetic-destination-route',local_wall_clock=f.wall)
-    rd,wr=os.pipe();sender=PipeSender(wr);point=[4.,4.,.6];error=None;events=[]
+    rd,wr=os.pipe();sender=PipeSender(wr);point=[*start,.6];error=None;events=[]
     def location(request):
         began=f.clock()
         f.append(f'Your Location is {point[1]:.2f}, {point[0]:.2f}, 2.70')
@@ -74,6 +86,10 @@ def test_destination_runtime_crosses_portal_or_stops_before_suffix_wall(f,legacy
             count=len(session.steps)
             try:driver.tick()
             except (ValueError,RouteHalt) as exc:error=str(exc);break
+            except PulseError as exc:
+                exc.add_note(f'Follower reason: {runner.reason}; last-fix age: {f.clock()-runner.last_fix_at:.3f}s; '
+                             f'geometry wall/cpu: {timing[-2:]}; committed steps: {len(session.steps)}')
+                raise
             if len(session.steps)>count:
                 receipt=session.steps[-1]['receipt']
                 assert receipt['key_code']==103
@@ -83,9 +99,9 @@ def test_destination_runtime_crosses_portal_or_stops_before_suffix_wall(f,legacy
             time.sleep(.01)
         assert not sender.held
         assert ledger.chain.index==1+len(session.steps)
-        if wall:
-            assert error and 'Static geometry' in error,error
-            assert point[0]<12.-plan.planning_bounds.body_radius
+        if wall or refusal:
+            assert error and (refusal or 'Static geometry') in error,error
+            assert point[0]<wall_x-plan.planning_bounds.body_radius
             assert ledger._pending is None
         else:
             assert session.phase=='arrived',(session.phase,error,runner.reason,point)
@@ -102,3 +118,4 @@ def test_destination_runtime_crosses_portal_or_stops_before_suffix_wall(f,legacy
     downs=[v for v in events if v==(1,103,1)]
     assert len(downs)==len(session.steps)>0
     assert events[-2:]==[(1,103,0),(0,0,0)]
+    return session

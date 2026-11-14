@@ -1,5 +1,65 @@
 # FINDINGS
 
+## Pinned tile policy in route geometry — 2026-11-14 11:43 UTC
+
+**VERIFIED implementation:** source 0.42.12 carries an immutable, explicit
+`RoutePrecisionPolicy` from the opted-in GFay loader into the current-start and
+destination plan, then into `RouteGeometryPreparer`. It binds the exact grid,
+manifest/mesh/archive/zone and retained seam tuple. Changing the policy, grid,
+manifest or seam inventory invalidates prepared checks. Tile seams cannot be
+used by hiding the grid or omitting the policy. Default loading and the staged
+owner preview remain unchanged. Actual terrain/source, static objects, BSP,
+freshness, watchdog and receipt-bound floor commits remain required.
+
+The private copied bundle `owner-route-data/gfay-destination-20261114-tiles/`
+adds the retained `gfaydark.json` manifest SHA
+`ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82`
+to the same four pinned files used by owner trial 0.39.15. Old bundles were not
+modified. The model is numerical provenance, not measured character clearance.
+
+**VERIFIED copied-data probe:** actual per-movement `_trial` geometry passes
+terrain/static/BSP at route segments 39 and 58, covering five- and forty-ULP
+baked overlaps. Each refuses `overlapping_ground_faces` with overlap permission
+off. Original source chains remain index 1; successful results are uncommitted
+index-2 forks. Segment 54 retains its unrelated `surface_crosses_height_window`
+refusal at the same six-unit envelope. This isolated probe constructs no
+sender/ledger and does not assert route traversal. Radius 1.2, height 6 and
+motion bounds remain explicit hypotheses. Probe SHA
+`5a13fbc1c0127e1b98752299247115186e0e56b88b06e8b67a7ea360b16d2392`
+at `nav-candidates/gfay-route-tile-geometry-0.42.12/probe.json`; executed code
+and full source hashes are retained beside it. Positive probe wall times were
+0.1112s and 0.0804s (CPU 0.1054s and 0.0774s).
+
+The new tile-enabled destination probe still produces 197 segments / 4,995.95
+units, retaining the initial chain and all future runtime checks, in 10.80s
+after loading. It uses synthetic observations, not current character state.
+Private `nav-candidates/gfay-crushbone-destination-tiles-0.42.12/probe.json`
+SHA `f615e7676eac49f6b03d2a427188203b67ff76b1ddeae7d2c73ee031100d0b60`.
+
+**VERIFIED validation and limitation:** 94 focused policy/source-floor/geometry/
+current-start/destination cases pass; three owner-runtime loading/handoff
+regressions pass. The pipe fixtures exercise actual watchdog processes with
+synthetic log/motion feedback. The gap, overlap, permission-off and wall cases
+have each passed across focused runs, but the combined run remains unstable
+under measured devbox CPU pressure (CPU PSI approximately 72%; all allowed
+cores approximately 98–100% busy during a bounded sample). The last four-case
+run passed overlap traversal and permission-off refusal, while gap and wall
+runs stopped on watchdog scheduling deadlines. These failures are recorded,
+not counted as passing or waived. Deadlines and observations were not relaxed.
+An exact SAT sign test now short-circuits at the first positive vertex instead
+of computing an unnecessary maximum; its predicate and boundary behavior are
+unchanged. Profiling before this improvement identified rational cross-product
+work; later a 60ms CPU check consumed 344ms wall time under contention.
+
+**Remaining real-client gate:** owner-run short traversal remains unaccepted;
+0.39.15 still requires current-session GFay and hotbutton setup. The full
+destination needs an explicit bounded owner travel scope; short-trial limits
+are not silently enlarged. Zone entry, Crushbone source steps, suitable camps,
+combat/loot/vendor/recovery integration and 1–20 leveling remain unfinished.
+Current level, XP/hour, deaths and camp are unknown. G0 is passed including
+owner visible-stop confirmation; no repeat. Assist 0.39.13 and owner trial
+0.39.15 stay unchanged, with no new owner action or lead game input.
+
 ## Fresh current-position destination corridor — 2026-11-14 11:31 UTC
 
 **VERIFIED copied-data planning:** source 0.42.11 adds `plan_destination`,
