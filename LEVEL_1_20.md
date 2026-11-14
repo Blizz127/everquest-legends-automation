@@ -1,9 +1,20 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 01:25 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 02:30 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.57 gets the copied GFay replay to segment 87 of 155 by modelling
+exact float32 tile sides. It stops where source floors overlap in XY; the
+same supporting grass face remains present beneath overhead platforms.
+A separate full-footprint occupancy check classifies those overhead faces
+under explicit floor/body hypotheses. It does not yet establish a connected
+floor chain, body calibration or complete collision inventory. Sixty-seven
+focused tests pass. The full 2,399-cell profile now has 2,195 passing cells
+and 204 refusals; the first refusal is 87/49. Your visible G0 stop remains confirmed; there is no new
+owner test for this source release. Live scene/speed/follower checks and F11
+acceptance remain open. Evidence and hashes are in [FINDINGS.md](FINDINGS.md).
 
 | Levels | Planned camp | Route needed | Current evidence |
 | --- | --- | --- | --- |

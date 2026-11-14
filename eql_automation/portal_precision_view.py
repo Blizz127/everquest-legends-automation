@@ -59,8 +59,10 @@ class PortalPrecisionView:
                 good=True
                 for poly,coordinate in ((seam.source,seam.source_coordinate),(seam.target,seam.target_coordinate)):
                     side=-1 if coordinate==seam.tile_boundary.lower_tile_maximum else 1
-                    offsets=(rings[poly,:sizes[poly],seam.axis]-coordinate)*side
-                    if np.min(offsets)<0 or np.max(offsets)<=0:good=False
+                    ring=rings[poly,:sizes[poly]]
+                    offsets=(ring[:,seam.axis]-coordinate)*side
+                    contact=ring[offsets==0,1-seam.axis]
+                    if np.min(offsets)<0 or np.max(offsets)<=0 or len(set(contact))<2:good=False
                 if good:accepted.append(seam)
                 else:self.tile_orientation_refusals+=1
             self.seams=tuple(accepted)

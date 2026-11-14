@@ -6,7 +6,7 @@ This does not validate collision, headroom, BSP hazards or client movement.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass,field
 import math
 import struct
 
@@ -29,20 +29,25 @@ class QuantizedSeam:
     source_coordinate: float
     target_coordinate: float
     span: tuple[float, float]
-    maximum_ulp_steps: int = 1
+    maximum_ulp_steps: int | None = 1
     tile_boundary: TileBoundary | None = None
+    classifier: str = field(init=False)
+    actual_ulp_steps: int | None = field(init=False)
 
     def __post_init__(self):
         if (self.axis not in (0,1) or isinstance(self.axis,bool)
                 or any(not isinstance(p,int) or isinstance(p,bool) or p < 0 for p in (self.source,self.target))
                 or self.source == self.target or len(self.span) != 2
                 or not all(finite(v) for v in self.span) or self.span[0] >= self.span[1]
-                or type(self.maximum_ulp_steps) is not int or self.maximum_ulp_steps not in (1,2)
                 or (self.tile_boundary is None and
-                    float32_steps(self.source_coordinate,self.target_coordinate) not in range(1,self.maximum_ulp_steps+1))
+                    (type(self.maximum_ulp_steps) is not int or self.maximum_ulp_steps not in (1,2)
+                     or float32_steps(self.source_coordinate,self.target_coordinate) not in range(1,self.maximum_ulp_steps+1)))
                 or (self.tile_boundary is not None and (not isinstance(self.tile_boundary,TileBoundary)
+                    or self.maximum_ulp_steps is not None
                     or not self.tile_boundary.matches(self.axis,self.source_coordinate,self.target_coordinate)))):
             raise ValueError('Invalid explicitly bounded reciprocal seam')
+        object.__setattr__(self,'classifier','exact_tile_side' if self.tile_boundary is not None else 'float32_step_cap')
+        object.__setattr__(self,'actual_ulp_steps',float32_steps(self.source_coordinate,self.target_coordinate))
 
     @property
     def midpoint(self):
@@ -146,7 +151,8 @@ def derive_seam(first, second, areas, components, *, maximum_ulp_steps=1,tile_gr
             if boundary is None:continue
         elif float32_steps(ea[0][axis],eb[0][axis]) not in range(1,maximum_ulp_steps+1):
             continue
-        return QuantizedSeam(a,b,axis,ea[0][axis],eb[0][axis],(ea[0][other],ea[1][other]),maximum_ulp_steps,boundary)
+        return QuantizedSeam(a,b,axis,ea[0][axis],eb[0][axis],(ea[0][other],ea[1][other]),
+                             None if boundary is not None else maximum_ulp_steps,boundary)
     return None
 
 

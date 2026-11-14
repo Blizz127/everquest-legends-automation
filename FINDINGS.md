@@ -1,5 +1,81 @@
 # FINDINGS
 
+## Exact tile model and conditional source-floor occupancy — 2026-11-14 02:30 UTC
+
+**VERIFIED implementation:** Source 0.41.57 adds an explicit `--tile-rounding`
+diagnostic derived from the pinned manifest's float32 origin, cell size,
+radius, border and tile dimensions. Only exact predicted adjacent sides can
+match. Unique reciprocal links, unchanged other-axis/Z endpoints, dry common
+components, whole polygon interiors on the predicted sides, and two distinct
+ring boundary contacts are required. The absolute correction remains capped
+at 0.0005; source and mesh files remain unchanged. Default one-ULP/gap-only
+behavior and source-height limit 0.6 remain unchanged. The native baker
+wrapper source was not found; agreement with its output is an empirical
+model, not native-code verification or client collision acceptance.
+
+**VERIFIED copied-data evidence:** All 2,771 examined mismatched reciprocal
+ground links match the inferred tile model. The segment-65 overlap now passes
+the local source-supported correction: six boundary vertices move in XY,
+with no Z changes, and overlap falls from 0.0001142676 to zero. Its maximum
+source/baked difference is 0.8682792. The model explains a 40-ULP pair near
+coordinate -39 and a two-ULP pair of width 0.00048828125 near coordinate 2572;
+no arbitrary ULP-count expansion is used. Artifact:
+`~/.local/share/eql-automation/nav-candidates/gfay-tile-rounding-model-0.41.57.json`,
+SHA `1564253a51f0037e563f64b862d0f1ccd2ceaea6cc1bd05ca5cca85904955792`.
+This diagnostic and the occupancy artifact below pin baseline commit
+`b4b2c5e`. That earlier seam serialization retained a default
+`maximum_ulp_steps=1` field even for tile classification; it was not the
+classifier's limit. Current source explicitly records `exact_tile_side`,
+actual ULP steps and no ULP cap, and adds the ring-contact check.
+
+**VERIFIED replay after those refinements:** The 155-segment repaired GFay
+route reaches segment 87, step 1,151, in the explicit tile/overlap diagnostic
+with source-height limit 2.0. It stops on `Copied source floor missing or
+layered at exact XY`, rather than continuing under an assumed floor. The
+last successful stopped source is fragment1208/face9. This used synthetic
+motion/alignment and sends no input. Artifact
+`gfay-tile-rounding-replay-0.41.57.json`, SHA
+`c6234c0df3c94b906e150a9c0940857328b325364f24f6eade8b9b12db6486ff`.
+
+**VERIFIED separate occupancy diagnostic:** Three cells (87/49, 87/50, 89/0)
+conditionally pass explicit body-height hypotheses 6 and 8. All supplied
+terrain faces are retained, including vertical walls, masked materials and
+opposite winding. Nonselected faces are classified against a selected floor
+partition using XYZ clipping; surfaces touching or crossing the body band
+refuse. Exact rational partition coverage prevents even a 2e-8-wide floor
+gap from hiding an obstacle. The grass under the first two cells is the
+same source face as earlier locally passing cell87/48; the third selection
+is an explicit hypothesis. This does not yet prove a chain from G0, actual
+body size, placed-object inventory, dynamics or a full-route bound. Existing
+all-layer source support and input rules are unchanged. Artifact
+`gfay-selected-floor-occupancy-0.41.57.json`, SHA
+`31494c656ee0560a09f3333a3f4a60ec7eff2b1df0741fb345cb8f1c87b972c7`.
+
+**VERIFIED focused checks:** 67 analytic tests passed across tile rounding,
+portal precision and selected-floor occupancy, including wrong tile identity,
+unsupported reciprocity, vertical walls, body-band contact and the tiny-gap
+regression. No game data is committed. HOWTO now puts the current owner
+assist launch near the top and retains older release evidence here.
+
+**VERIFIED complete corridor profile with tile classification:** All 2,399
+radius-1.2 cells were checked in 112.63 seconds; 2,195 pass and 204 refuse,
+compared with 2,155/244 before the tile model. Every precision retry now has
+a supported seam classification; eleven still fail subsequent source-layer
+checks. Counting those nested reasons, remaining refusals are 177 source-layer
+ambiguities/overlaps, 16 source flag/material, one missing/over-budget source,
+three source slopes and seven baked slopes. The first failed cell is 87/49.
+The largest difference on passing cells is 1.1231339241; a complete-region
+maximum remains unset. Artifact `gfay-tile-source-profile-0.41.57.json`, SHA
+`e5dd717c1bd93770d3ec8419dc948efe0c1ebf3f789297533520bdeae0ed4fbd`.
+
+**Next:** Carry an explicitly identified source floor through the ordered
+route cells by exact shared 3D edges, complete floor coverage and all-height
+occupancy. Do not choose nearest Z. Real motion still requires fresh scene,
+height/speed calibration, full body/static/dynamic checks and sender wiring.
+Owner G0 visible stop is confirmed; no repeat is requested. Current level,
+XP/hour, deaths and camp are unobserved beyond owner-reported Legira7 GFay.
+Assist 0.39.6 and G0 candidate 0.39.7 remain unchanged; F11 is disabled.
+
 ## Private 0.41.56 staging and classified next issues — 2026-11-14 02:16 UTC
 
 **VERIFIED staging:** Commit `4dcdd1d`, archive SHA

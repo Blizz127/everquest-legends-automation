@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.56 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.57 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,417 +19,24 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.56 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.56/source`; the runnable
+Source tools 0.41.57 are prepared for the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.57/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
 
-Source 0.41.56 adds explicit offline diagnostics for reciprocal tile overlaps
-and two-step float32 gaps. Every original overlap must belong to the named
-portal strip, and full corrected ground/source checks must pass. Defaults
-remain one-step, gap-only, with the existing 0.6 source-height diagnostic
-limit. The two-step/overlap sensitivity replay reaches segment 65, where a
-further overlap is refused. Fifty focused precision/source-query tests pass.
-The source-profile tool checked all 2,399 full-width corridor cells: 2,155
-passed and 244 were refused for precision, source layers/materials or slopes.
-It does not publish a whole-region maximum for this failed profile. These are copied-data
-tools; no live route, F11 movement or level progress is accepted. Assist 0.39.6
-and G0 candidate 0.39.7 are unchanged; no new owner command is needed.
+Source 0.41.57 models the copied baker's float32 tile boundaries from its
+pinned manifest. The exact predictions match all 2,771 examined mismatched
+reciprocal ground links; arbitrary nearby coordinates remain refused. With
+this explicit diagnostic enabled, the replay reaches segment 87 of 155,
+then stops on overlapping terrain layers. A separate occupancy diagnostic
+checks all supplied surfaces against an explicitly selected floor, preserving
+vertical walls and rejecting even tiny uncovered floor gaps. Its three copied
+cases pass hypothetical body heights of 6 and 8; floor selection and body
+size remain unverified. Sixty-seven focused tests pass. These source tools
+send no game input and do not enable F11. Assist 0.39.6 and G0 0.39.7 remain
+unchanged; your G0 visible-stop result is retained and no repeat is needed.
 
-Source 0.41.55 separates source terrain, baked navigation height and raw
-character height in the G2/follower observations. It requires independently
-supplied height calibration and geometry evidence; an observation cannot set
-its own height tolerance or portal adjacency. Endpoint tolerance remains
-0.25 and G2 mesh snap remains 0.0005. Sixty-three focused checks pass, including
-the retained steering classes and actual watchdog child writing to a pipe.
-The copied-data replay now samples source terrain at every stopped position.
-This exposes bake offsets up to 0.925760 before segment 38; the default 0.6
-diagnostic bound stops earlier. A separate 2.0-bound diagnostic reaches the
-known segment-38 overlap. Neither is route acceptance or live calibration.
-Assist 0.39.6 and G0 0.39.7 are unchanged; no new owner command is required.
-
-Source 0.41.54 adds source-supported precision checks for reciprocal tile
-edges. Twenty-six focused tests pass, including competing floors, source
-holes/height steps and corrections outside a portal's span. Default diagnostic
-bounds take the repaired GFay replay to segment 20; a separately labelled
-height-bound comparison reaches segment 38 before the overlap check refuses.
-Neither is a completed route. The retained G0 comparison also shows why source
-ground and baked mesh height need separate observations; that binding change
-is next. Your G0 stop result remains valid. F11 and live route following stay
-unavailable; no new owner command is needed by this source release.
-
-Source 0.41.53 adds explicit portal relocation for offline route repairs.
-Moving two GFay crossings west passes all three affected 1.2-radius ground
-tubes, the existing strip/turn clearance checks, and the full route's 376 BSP
-spans. The follower replay then gets through the steep section and reaches
-segment 11, where a second one-ULP tile gap stops it. The unsafe midpoint
-control is rejected and exports no plan. These are copied-data diagnostics;
-no playable 1–20 leg or real movement is accepted. F11 remains unavailable,
-and this source release needs no new owner command.
-
-Source 0.41.52 reconciles the tiny GFay portal gap against the copied client
-terrain. The entire failed footprint lies inside one source path triangle.
-A local XY-only correction then passes three affected footprints in offline
-replay; it does not rewrite the navmesh or change terrain heights. Four
-focused tests confirm the correction stays within its source/portal scope.
-The replay now stops at segment 6 on a steep detail face. Shortening the
-forward holds allows two more steps but still reaches the same grade limit.
-This needs a source/route correction, not a relaxed limit. Live movement,
-level gains and a playable 1–20 route remain unverified; F11 stays unavailable.
-Assist 0.39.6 and the separate G0 candidate 0.39.7 remain unchanged.
-
-Source 0.41.51 checks ground coverage across a possible step footprint,
-including gaps, overlapping floors, steep detail faces and height seams.
-Twenty-three focused checks passed. Six copied-GFay footprints pass under
-hypothetical motion bounds, but the complete guarded replay stops at a
-0.000122-unit mismatch between two reciprocal navmesh portal edges. The
-0.41.52 source reconciliation above is limited to that local footprint.
-The earlier 155-segment motion replay did not include this ground check.
-These checks still omit source-wall/headroom, continuous BSP hazards, dynamic
-objects and live calibration. They do not authorize movement or enable F11.
-
-Source 0.41.50 adds child timing receipts and selection after watchdog
-readiness for one forward or turn key. The existing G0 duration API remains
-compatible. Fifty-eight focused watchdog/G0/G2 checks and two fixed-route
-integration checks passed using pipes, not input devices. Timing brackets
-descriptor writes; it does not prove when the game moved. The source APIs
-are not connected to owner-preview travel yet. Existing assist and G0
-packages are unchanged, F11 remains unavailable, and no new owner command
-is needed for this source release.
-
-Source 0.41.49 adds a fixed-route controller using the existing bot's steering
-classes. It proposes one segment at a time, integrates actual completed holds,
-and advances only after two new stopped position readings match the endpoint.
-Assist/OFF or cancellation invalidates pending proposals. Eighteen focused
-checks passed. An idealized replay completed all 155 copied GFay segments;
-it uses synthetic positions and exact timing, not the real client. Dynamic
-obstacles, the complete movement footprint, live UI/alignment/speed and the
-owner-preview timed-sender connection remain unverified or unimplemented.
-F11 stays unavailable. This source release needs no new owner command.
-
-Developer-only replay (devbox copied-data store required; sends no input):
-
-```bash
-~/.local/share/eql-automation/python-nav/bin/python tools/replay_fixed_route.py --help
-```
-
-Source 0.41.48 connects the read-only input observer to the future G2 scene
-provider. It brackets a fresh UI observation with input scans and rejects
-cancellation, assist mode, focus/session changes, stale frames or unknown UI
-states. Its 27 focused tests use simulated UI evidence; the actual calibrated
-UI classifier and owner-helper wiring are still missing. It sends no input.
-
-The copied GFay route now has 155 explicit 3D segments preserving selected
-portals and terrain heights. A probe of the existing helper reproduced a
-corner shortcut and an arrival based on predicted rather than measured
-position. Reusing one segment at a time avoids that fixture's shortcut;
-the production follower still needs bounded movement and stopped raw-position
-checks at each portal. These source tools do not enable F11 or a playable
-1–20 route. No repeat G0 test is requested; the owner's earlier visible-stop
-confirmation remains recorded.
-
-Preview 0.39.6 builds on the existing rotation bot and proposes its HP crop
-from the client's saved UI layout. **Find / calibrate HP** opens the captured
-game image with a highlighted rectangle. At full health, confirm the outline
-covers your inner red HP gauge and click **Save**. You can drag to correct it;
-Cancel preserves the previous calibration. Synthetic full/partial/blue-bar
-dialog checks passed on Alienware without starting the engine or changing
-settings. Live HP reading and smart healing remain unverified. References
-to 0.39.4 in the history below describe the retained earlier baseline.
-
-Preview 0.39.6 also fixes queued **Prepare spell bar** surviving F9. An
-interrupted chat draft can now be recovered explicitly: press F9, close the
-game chat entry yourself, click **Chat recovery…**, and confirm it is closed.
-Recovery sends no keys and leaves assist OFF; return to the game and press
-F8 when ready. Cancel preserves the paused state. The confirmation is refused
-while active, preparing, measuring movement or holding keys, or if a later
-stop made it stale. The banner shows ASSIST ON/OFF, and the unavailable travel
-tab is disabled. G0 remains available only in measurement mode. Previous
-previews remain retained; the original rotation tool is unchanged.
-
-Project 0.41.45 integrates the same-device release watchdog into the
-separate 0.39.7 G0 measurement candidate. It still allows only the existing
-single 0.15-second forward check, and refuses movement from assist. The
-ordinary assist recommendation remains 0.39.6 while its HP test is pending.
-The new watchdog path has passed pipe tests, not a real-client release test;
-the prior owner-confirmed G0 result belongs to the earlier sender.
-
-The bounded Crushbone `--comparison detail` experiment has now run. It
-reproduced the baseline exactly, then changed only sample distance 6→3.
-The suspect outer-ring grade worsened and warnings rose from 21 to 439.
-That candidate is not adopted; no route gains movement acceptance.
-
-Project 0.41.47 adds contact-state handling for the Alienware touchpad and
-its mouse volume control. It also corrects the new observer's key-event loss:
-Linux held-key queries clear queued key events for that descriptor, so state
-queries and event reads now use two independent read-only opens. Thirty-two
-focused checks passed. A brief read-only Alienware probe covered all 26 input
-devices, including the actual touchpad slot API; it sent no input. This is
-not a supervised held-finger/quick-key acceptance test and is not wired into
-movement yet. Unknown controllers and other absolute-axis layouts still refuse.
-
-The read-only capture now includes the map's zone label. When a current-zone
-observation is requested, open the game map, click **Current Zone**, and leave
-the game focused. The lead can then run the capture over SSH without typing
-into the game. The map can browse another zone, so a label by itself remains
-unverified. No new movement test is requested by this source release.
-
-Project 0.41.46 adds a read-only owner-input observer for future movement
-checks. It opens event devices read-only, counts held keys/buttons and recent
-activity, and rejects incomplete device coverage, topology changes, event
-loss and slow observations. Absolute axes remain unknown until their contact
-or neutral state can be interpreted. Thirteen focused tests passed; the
-observer is not yet connected to G2 or F11 and has not observed live devices.
-It does not supply chat, target or combat checks. The recommended assist
-version remains 0.39.6, with no new owner test requested by this source release.
-
-The Crushbone source-span diagnostic reproduced the elevated coarse corner:
-wall and floor merge during rasterization before the later filters. Reducing
-bake step height from 3.5 to 1.0 disconnects arrival from Slaver Caves. The
-baseline still has an 80-polygon graph route but fails its turn footprint at
-polygon 3244. Neither result enables travel; GFay remains the first same-zone
-movement candidate. Source-only diagnostics use the retained NumPy environment:
-
-```bash
-~/.local/share/eql-automation/python-nav/bin/python tools/query_crushbone_comparison.py --help
-python3 tools/probe_crushbone_spans.py --help
-```
-
-These commands run on the devbox source checkout with its retained private
-data. The source archive on Alienware does not include client meshes or the
-Recast toolchain. No client assets are committed or shipped with this release.
-
-The 0.40.6 project added a read-only GFay geometry preflight; 0.40.7 added a
-separate-process same-device release timer tested only with a pipe. Version
-0.40.8 also rejects location fixes after an observation-clock rollback.
-Version 0.40.9 added a recording-only short-pulse budget; 0.41.0 added a
-revocable permit and recorded a slope-filtered GFay route failure. Version
-0.41.1 adds a pipe-tested G2 input bridge using the helper's existing virtual
-keyboard descriptor. Version 0.41.2 adds an offline portal-local true-surface
-and seam audit. Version 0.41.3 corrects a false seam rejection caused by tiny
-mesh edge quantization. A few local Crushbone lines now pass the offline
-check. Version 0.41.4 adds a bounded audit of the historical 80-polygon
-Crushbone corridor; the sampled chain stops at a clearance bottleneck.
-The full route remains unverified.
-Version 0.41.5 finds an offline centerline candidate across that fixed
-corridor by sampling one additional portal position. It is not a live travel
-release. Version 0.41.6 samples lateral ground and rejects that candidate at
-Crushbone polygon 3146. Version 0.41.7 adds a route-wide strip scanner; one
-local adjustment moves the first rejection to polygon 3248, with no verified
-short local crossing there. Version 0.41.8 checks the longer copied-mesh
-bypass and finds a required portal with clearance below the current 3-unit
-diagnostic threshold. F11 stays disabled.
-Version 0.41.9 adds explicit Paladin+Cleric class-set eligibility to the
-offline strict rotation planner, gated by a verified spellbook and matching
-class observation. Owner preview 0.39.4 shows HP calibration failures in
-its window without changing input permissions.
-Version 0.41.10 checks the hybrid fixture against the copied client's actual
-Furor and Light Healing IDs and unlock levels. It adds no game input.
-Version 0.41.11 numbers new `/location` log lines and zone observations for
-offline G2 work. The client log has no echoed request ID, so those numbers
-do not prove a reply belongs to one command. G2 remains unavailable.
-Version 0.41.12 makes the offline G2 pulse policy reject a zone generation
-change even when the displayed zone name stays the same. Its full-auto camp
-planner now requires a caller-supplied verified reachable-camp set and pauses
-if none qualifies. This does not accept a real route or enable F11.
-Version 0.41.13 reads exact no-room and food/drink warnings from the client
-log into sticky offline supply state. A fresh verified inventory check is
-required to clear them. A planner snapshot carrying a warning pauses for
-supplies, and recording-only dispatch refuses loot if capacity is unknown or
-a warning arrived after planning. No live adapter connects these stages. It also
-widens the copied-mesh detail-edge tolerance to 0.0005 world units after a
-measured GFay float32 portal mismatch. All 214 ground portal midpoint seams
-and 215 midpoint centerline segments of one saved GFay corridor pass offline;
-only the first 37 lateral strips passed the bounded check. The remaining
-strip, zone transition and live follower are unverified, so the route is not
-available to F11. No purchases or game input were added to this build.
-Version 0.41.14 lets the offline strip audit use explicit bounded work limits
-for long paths. The complete saved GFay ground approach passed 215 sampled
-strip segments and 214 internal seams to a point 2 units before the copied
-Crushbone trigger. A new conservative turn-disk audit found local warnings
-at portal waypoints 170, 171 and 187. With three adjusted crossings, the
-complete approach passed 214 sampled turn disks and all 215 strips in
-separate whole-route offline runs. The actual zone transition, Crushbone
-arrival and client movement are unverified. F11 remains disabled. The
-owner-run preview remains 0.39.4.
-Version 0.41.15 chooses portal crossing fractions automatically for an offline
-ground corridor. On the copied GFay mesh it selected three adjusted crossings
-and passed its turn and whole-strip checks to a pre-trigger standoff. This
-does not supply a verified Crushbone arrival, current character position,
-dynamic obstacle check or live movement test. F11 remains disabled; the
-owner-run preview and launch steps below remain 0.39.4.
-Version 0.41.16 adds a read-only, non-replaying zone-transition log observer.
-It keeps a timely before/after `/location` pair when Blizz walks across a
-zone line himself. The after reading is not certified as an exact spawn
-point, and the log alone does not prove a walk rather than a teleport or
-relogin. No client input or F11 route was added; the owner-run preview remains
-0.39.4.
-Version 0.41.17 adds a read-only location-to-G2 scene observer. It accepts one
-fresh location line in an exact observed zone, requires a matching local log
-timestamp and separate current focus, key, chat, target and combat checks,
-and rejects batched lines or a same-zone reentry until new evidence arrives.
-It needs a new zone-entry message after launch because existing log history is
-skipped. The required independent checks and owner-confirmed G0/speed bound
-are not yet supplied by the owner preview; G2 and F11 remain unavailable.
-Version 0.41.18 adds an offline G2 start-area preflight. It refuses raw log
-positions without an independently live-calibrated WLD point tied to the same
-fix, copied-client zone ID/name and copied-mesh hash. It checks that the radial
-sample budget and radius cover the pulse's speed upper bound, then reports a
-sampled geometry candidate only. No live alignment record exists, so it cannot
-pass for the current character. It does not authorize G2, F11 or any game
-input.
-Version 0.41.19 adds a read-only owner-run destination watcher. It can capture
-the first timely Clan Crushbone `/location` after Blizz's manual crossing,
-even when started mid-zone in GFay. It writes only an observation file outside
-the game install and does not send client input or certify a route.
-Version 0.41.20 also retains an optional `/location` printed within 30 seconds
-before loading. It labels that coordinate as an unverified preloading point;
-the destination reading still has no certified spawn or route. The owner-run
-watcher command below uses 0.41.20.
-Version 0.41.21 retries bounded alternate portal crossings when an offline
-polygon strip fails even though its initial turn disks pass. It rechecks the
-entire selected ground route and never grants F11 travel. On the copied
-Crushbone Slaver corridor, the selector still stops at polygon 3248 because
-none of the checked portal fractions passed its turn-disk audit. A different
-corridor or verified clearance model is needed there.
-Version 0.41.22 treats a crowded copied-mesh surface at one portal fraction
-as a local rejection, so it can try another fraction under the same work
-budget. It also exposes an explicit grade limit consistently across turns,
-strips and the final whole-route audit for offline sensitivity checks. The
-sample budget now counts centerline, lateral-strip and turn-disk locations,
-including a final route recheck. Earlier reported strip-sample totals omit
-centerline samples and should be treated as historical counts. A copied GFay
-ground-corridor recheck passed the offline sampled geometry checks under
-corrected accounting; its zone crossing and client traversal are still
-unverified. Standalone strip audits also reject a result when the last
-geometry query runs beyond their time limit. The
-80-polygon Crushbone route still fails at polygon 3248; a 176-polygon bypass
-fails at later turn disks even with a more permissive diagnostic grade. These
-checks do not establish playable slopes or enable F11.
-Version 0.41.23 makes the standalone turn-disk and fixed-corridor audits
-reject a sampled candidate if their last geometry query exceeds the time
-limit. This is an offline diagnostic correction; it does not change the
-owner-run preview or enable F11.
-On the copied Crushbone ground graph, both available directed crossings
-through a two-edge cut fail sampled turn checks at diagnostic grade 1.2.
-There is no accepted alternate Slaver route under the current geometry audit.
-The copied WLD terrain at four rejected samples is flat grass at Z=0 while
-the included-Boundary bake's detail rises nearby. That discrepancy is under
-review; the client's traversability and the character's movement limits are
-still unknown.
-Version 0.41.24 records an offline rebake comparison using the original
-baker, original object placements and copied BSP classifier. Removing the
-Boundary sky faces did not change either Crushbone cut's rejected turn
-samples. A finer detail setting passed one cut's sampled turns, but still
-failed the other and produced Recast warnings. It does not add a runnable
-travel route; F11 remains disabled.
-Version 0.41.25 records a copied GFay ground approach to Butcherblock that
-passes bounded sampled turns and strips. Its original copied BSP scan used
-the wrong frame; a corrected 0.41.40 reissue found no copied hazards. It ends before the
-zone trigger, and the start came from
-a historical Legira log line. It is not a current or playable route. The
-owner trace summarizer now reports the G0 hold, displacement and post-release
-drift without printing character coordinates. F11 remains disabled.
-Version 0.41.26 adds a bounded, reusable offline BSP scan for selected ground
-corridors. It rejects missing detail heights, non-ground polygons, labelled
-water/zone spans, unknown or incomplete BSP intervals. The current helper's
-retained Butcherblock mesh was copied read-only into the private data store;
-its source archive hashes match the copied client. A dry Kaladim-yard → GFay
-path can avoid seven steep/narrow polygons. The old ground-prefix BSP
-no-label claim used the wrong frame and is withdrawn. Its lateral selector
-currently stops at polygon 37736 before a complete route; the mesh also has
-1,180 unclassified Recast warnings. This is not a playable path. F11 remains
-disabled.
-Version 0.41.27 caches repeated offline strip checks during bounded portal
-repair. It counts only newly sampled work, keeps the global time/sample
-limits, and still rechecks the final selected route. A different Butcherblock
-dry corridor avoids the first rejected turn, but its whole-route lateral
-pass reached a per-segment time limit; it has not passed. A same-zone GFay
-orc-camp dry path avoids two steep polygons and passes sampled turns, walking
-width, whole-route and copied static BSP checks. Its guide marker, current
-position and live movement are not accepted. This
-version does not change owner-run input.
-Version 0.41.28 makes the offline portal-turn time limit configurable while
-retaining the global work bound. It adds a hash-checked tool to rerun a saved
-copied-ground corridor and record its sampled result outside git. It does not
-send input or enable F11.
-Version 0.41.29 also rehashes the saved route and mesh sources after an
-offline selector run; a source changed during the check cannot be recorded
-as a candidate. If portal search finishes but the final whole-route check
-runs out of work, it preserves explicitly unverified diagnostic points for
-a separate, hash-bound full-strip recheck. Failed routes remain unavailable
-to F11. The 155-polygon GFay orc-camp approach passed copied static
-geometry and BSP checks, but its live position, camp and movement have not
-been accepted. Owner-run input and F11 availability are unchanged.
-Version 0.41.30 adds an explicit offline `--select-only` phase. It records
-portal choices as **unverified** diagnostic points without spending its
-remaining budget on the final strip. A separate hash-bound tool must recheck
-the entire strip before even an offline geometry candidate is reported. The
-loaded devbox stopped a Butcherblock rerun at its external timeout before it
-wrote evidence, so that route is still unaccepted. This release does not
-change the owner's assist controls.
-Version 0.41.31 adds a hash-pinned offline scene builder for the copied
-Cauldron and Unrest archives needed later in the 1–20 plan. The command
-reproduces provisional static geometry outside git and refuses changed
-archives until their source is audited again. It does not bake a navmesh,
-accept a route or change owner-run controls.
-Version 0.41.32 lets the copied-ground selector and its separate full-strip
-recheck read pinned Cauldron and Unrest meshes. The owner helper already had
-both meshes; their archive and mesh hashes now match the copied client store.
-A dry Cauldron graph path has steep/narrow polygons, and an Unrest
-entrance-to-yard selector stops at a narrow copied polygon. Optional bounded
-`--max-candidates-per-portal` (1–13) and `--max-strip-repair-rounds` (0–32)
-allow offline retries; a retry under loaded devbox conditions hit a local
-time limit before a route result. These are offline
-diagnostics, not F11 routes or owner-run input changes.
-Version 0.41.33 adds bounded `--repair-backtrack-depth` (1–8) to the
-offline selector. A synthetic connected-choice case now finds a route only
-when an earlier portal can be revisited. The copied Unrest corridor still
-fails its selector after bounded retries, and its BSP hazards remain
-unresolved. This release does not change the Alienware assist preview.
-Version 0.41.36 adds pinned, read-only low-level camp-ring inspection and a
-separate copied-client BSP check for a previously selected full-strip route.
-The Butcherblock camp→GFay 249-polygon sequence now passes separate offline
-whole-strip and copied-client BSP audits; live traversal is a distinct gate.
-A smaller
-12-unit Kaladim-yard ring has three local copied strip/BSP candidates. The
-guide marker, mobs and live movement remain unverified, so F11 stays disabled.
-The lateral-strip implementation reuses already checked centerline heights;
-12 saved GFay segments returned the same decisions and sample counts as the
-prior code. These additions do not change owner-run assist controls.
-Version 0.41.37 adds an optional offline `--audit-local` check to that camp
-ring tool. Five GFay orc-camp spokes and all 12 short Butcher yard spokes pass
-copied local strip/BSP checks. Their guide markers, mobs and live movement
-remain unverified, so this release does not enable F11 or change assist.
-Version 0.41.38 adds a read-only analyzer for the owner-created HP crop. It
-checks the saved crop and source hashes and reports an **unverified** red-bar
-fraction. It does not authorize smart heals or G2. The owner-run UI capture
-below is still needed; no live HP pixels have been observed.
-Version 0.41.39 adds pinned copied South and North Kaladim archives to the
-offline zone scene, map alignment and BSP region tools. Their map labels and
-nearby BSP zone-line regions are static exit candidates, not accepted
-movement or zone transitions. No owner-run controls change.
-Version 0.41.40 corrects the copied BSP scanner's frame conversion for the
-earlier helper's navmeshes: helper mesh XY must be swapped before querying
-raw client WLD regions. The old helper-mesh BSP artifacts are superseded.
-The corrected GFay and Butcherblock approach scans still find no labelled or
-unknown spans, now with pinned source/frame controls. This changes offline
-evidence only; F11 remains disabled.
-Version 0.41.41 applies the same raw-WLD-to-helper-mesh XY conversion to the
-future G2 start-area preflight. No production caller uses that gate yet;
-G2 remains disabled.
-Version 0.41.42 adds a bounded copied-client Crushbone bake comparison. Its
-repeated baseline reproduced 65 ground heights exactly. Halving horizontal
-cell size reduced the inner-ring height error, but the outer ring still
-failed the grade limit and warnings increased. It provides no playable route.
-Corrected Cauldron and Unrest funnel scans also have no copied water/unknown
-labels; the prior Unrest water claim was caused by the frame error. The
-Unrest route still fails its turn/strip selector. A corrected GFay→Butcher
-ground-prefix scan also has no copied labels or unknown intervals, but its
-historical start and untested zone trigger keep F11 closed.
-The navigation and strict class-set changes are not in the owner preview
-or accepted for real-client movement.
-F11 remains disabled.
-The owner launch steps below are for 0.39.6.
+Detailed source-release history and hashes are in [FINDINGS.md](FINDINGS.md).
+The current playable-route status is in [LEVEL_1_20.md](LEVEL_1_20.md).
 
 ## Owner-run rotation test on Alienware today: preview 0.39.6
 
@@ -495,10 +102,11 @@ source hash guard **refused** the changed November helper. It was moved to
 `~/.local/share/eql-automation/owner-assist/0.37.0-source-mismatch` and is
 not a runnable owner test. The active legacy helper source was not changed.
 
-## Owner-run G0 movement-stop check (optional after assist test)
+## Completed G0 movement-stop check
 
-Preview 0.39.4 also allows the **Check movement stop** button in measurement
-mode. This is the first supervised movement gate, not a route or F11 grind.
+Your G0 visible stop is confirmed; no repeat is currently requested. The
+following is the retained reproduction procedure. Preview 0.39.4 allows the
+**Check movement stop** button in measurement mode. This is the first supervised movement gate, not a route or F11 grind.
 Blizz first stops native melee with the game's own control, stands on open,
 flat, dry ground with full HP and no target, and enables `/log on`. Close any
 other helper, then launch:
@@ -566,7 +174,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.56/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.57/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 
@@ -574,7 +182,7 @@ After the tool prints its observation directory, the read-only HP analyzer
 can check that capture without opening chat or sending game input:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.47/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.57/source
 python3 tools/analyze_owner_hp_capture.py --capture-dir /path/printed/by/capture
 ```
 

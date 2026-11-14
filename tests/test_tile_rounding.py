@@ -76,6 +76,8 @@ def test_five_step_overlap_requires_model_and_actual_polygon_side_orientation():
     assert not collect_seams(links,{1:63,2:63},{1:2,2:2},maximum_ulp_steps=2)
     seams=collect_seams(links,{1:63,2:63},{1:2,2:2},tile_grid=model)
     assert len(seams)==1 and seams[0].tile_boundary is not None
+    assert seams[0].maximum_ulp_steps is None
+    assert seams[0].actual_ulp_steps==5 and seams[0].classifier=='exact_tile_side'
     kwargs=dict(reference=ref,component=2,vertical_window=3.,maximum_source_z_difference=.6,allow_overlap=True)
     result=retry_precision_gap(original,footprint,faces,(1,1,2,2),seams,sources,**kwargs)
     assert result.candidate and not result.input_authorized
