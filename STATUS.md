@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 10:29 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 10:31 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -20,6 +20,9 @@ Updated 2026-11-14 10:29 UTC for coordinator task `829a00229b29`.
   connect current-zone/session observation and the owner route/scene/motion
   assembly. Pending 0.39.12 results alone cannot activate the route. Assist
   0.39.13 and passed G0 are unchanged; no new owner test or current run metrics.
+  Source `345f5e9` is staged at Alienware `owner-tools/0.42.6/source`;
+  synthetic observed-height startup and scope/refusal checks pass without input.
+  Startup SHA `2f58596879eef3b0e1a95924084d87fb7ebff618ec3329a11d1fda01b6ec0443`.
 - **Source 0.42.5:** `/location` output order is now bound to the installed
   string resource and direct actor coordinate loads. The ground clamp's virtual
   offset is bound to two constructor-installed vtables; the downward query

@@ -58,6 +58,14 @@ G0 remains passed, measurement 0.39.12 and assist 0.39.13 remain unchanged.
 Current level, XP/hour, deaths and camp are unknown; real 1–20 and fresh 1–50
 acceptance remain absent.
 
+Source `345f5e9` is privately staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.6/source`. The remote no-input
+startup smoke passed observed-height creation, later ground consumption,
+stale-first-sample/owner mismatch refusal and full-auto refusal. Observations
+were synthetic; no engine or device was opened. Archive SHA
+`de04a95ba440b5fedef57502b376bc8aa760dd5fcaf1c92200cda8311003473d`;
+startup SHA `2f58596879eef3b0e1a95924084d87fb7ebff618ec3329a11d1fda01b6ec0443`.
+
 ## Actor Z, location text and downward collision query — 2026-11-14 10:17 UTC
 
 **VERIFIED static evidence:** the installed `eqstr_us.txt` was read over SSH
