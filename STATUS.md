@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 13:54 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 13:56 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -19,6 +19,9 @@ Updated 2026-11-14 13:54 UTC for coordinator task `829a00229b29`.
   The retained entrance comparison produces an initial plan and synthetic
   height only with opt-in; default still refuses. Report SHA
   `459978e5a09d1cfd7ee53dfe97c34743793f407afefb922c8d1c9915082f9e7c`.
+  Source `502fe13` staged at Alienware `owner-tools/0.42.26/source`;
+  102 selected startup checks and the copied native-start comparison pass.
+  Startup SHA `f899357e3e4a6f1bacdd5b05cd935c5897cc97fe6056c3b5f8b237285002d480`.
   Destination and owner execution remain explicitly unwired for this new policy.
   **Next:** per-move policy integration and installed executable verification,
   then source steps and camp routes. No game input; current metrics unknown.

@@ -38,6 +38,16 @@ These are not the owner's current coordinates or actual motion observations.
 Final report `nav-candidates/crushbone-native-start-0.42.26-final.json` SHA
 `459978e5a09d1cfd7ee53dfe97c34743793f407afefb922c8d1c9915082f9e7c`.
 
+**VERIFIED private startup:** source commit `502fe13` is staged on Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.26/source`. All 102 selected
+checks pass without skips, including the actual owner local/crossing wrappers
+with OS pipes and synthetic feedback. The copied native-start comparison also
+passes on Alienware; the default path refuses and opt-in planning/height pass.
+Archive SHA `79ff85be663aadfef55e46d146a2bfa13c629b40e2f8c33fe7dbe56afdd1b8f8`;
+startup SHA `f899357e3e4a6f1bacdd5b05cd935c5897cc97fe6056c3b5f8b237285002d480`;
+native-start report SHA `1ca6ad5fd50bbd0f01ccfa9002ce8c2f4b1d0745ca859fe4952d31d34b49362f`.
+No worker, device, game input, client launch or installed-prefix modification.
+
 **Next:** propagate the explicit model into per-move preparation/cache records
 and supervised authorization, checking installed binary identity before any
 owner use; then source-step execution and fresh camp routing. Owner crossing
