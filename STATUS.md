@@ -22,10 +22,12 @@ Updated 2026-11-14 07:28 UTC for coordinator task `829a00229b29`.
   devbox results exactly; remote artifact SHA
   `8e0a7b6c016985c0b985a680e3ff873dec277e206462a2940ba172c97afaa110`.
   The factory-interface mapping is resolved; the source default filter is
-  linear min/mag, point mip. Final GPU projection remains separate: the copied
-  shader text and native constant upload declare different buffer layouts, so
-  their combination is not assumed. Thirty-four small installed TS shaders
-  are now copied for static selection/reflection analysis. No game runtime,
+  linear min/mag, point mip. Two byte-identical installed vertex shader
+  candidates match the font layout and native constant upload; their decoded
+  projection cancels the glyph builder's half-pixel shift through the API
+  viewport offset. Selection of their actual shader key is still unverified.
+  Atlas cells have no gutter and blank/occupied cells differ, so final sampling
+  still needs the packing/state model. No game runtime,
   capture or input occurred.
   Owner controls remain unchanged. At 07:26 UTC no stationary observation
   pair was saved. Next: resolve the selected shader path and use the pending

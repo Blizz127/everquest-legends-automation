@@ -1,5 +1,33 @@
 # FINDINGS
 
+## Compiled shader candidates — 2026-11-14 07:29 UTC
+
+**VERIFIED static candidate evidence:** the two installed vertex shaders
+whose signatures match the font layout, `VertexShader_209776124.cso` and
+`VertexShader_750037918.cso`, are byte-identical (3,860 bytes), SHA
+`34cca2a5891206066202ab9792f97829b845479fdf1381fed8caeedfaaf42d68`.
+Their RDEF declares the native upload's b0, size 0x380, four matrices and
+viewport offset 0x100. Thus the earlier text-source/constant-layout mismatch
+is resolved for these compiled candidates; the copied General/State.hlsl
+is not their constant-buffer contract. Candidate/chunk evidence SHA
+`45c26807b5b898cea423afb8da3d51de0a16a59aa2255bdf2cb9afba111a7a22`
+(`evidence/font-shader-candidates-0.41.87.json`).
+
+Their manually decoded initial SHEX instructions subtract the original
+viewport origin, divide by its size, map to clip coordinates and invert Y.
+Together with the API viewport's +0.5 origin, this would cancel the glyph
+builder's -0.5 shift. The common SHEX payload SHA is
+`980ce04465783a0e3a7f0be12eac27d56ecd4cf05f1a162666e30e9c8013f9db`.
+This is conditional on selecting these shader keys; signature correspondence
+alone is not proof of active selection. No shader/game code was executed.
+
+**OBSERVED static atlas constraints:** cells use exactly tmMaxCharWidth by
+tmHeight, without a gutter. Unused initialized cells are transparent black;
+written cells use white RGB even at zero alpha. Linear samples near a cell
+edge can therefore depend on adjacent occupancy or texture-format fallback.
+The geometry-only build correctly leaves GPU projection/sampling and live
+equivalence false. Shader-key selection and final atlas sampling remain next.
+
 ## Private source 0.41.87 staged — 2026-11-14 07:28 UTC
 
 **VERIFIED:** source `b8e5c07db40c03543b5feccac2993a3946052925`, archive SHA
