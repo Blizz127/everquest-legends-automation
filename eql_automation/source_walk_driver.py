@@ -9,6 +9,7 @@ from .ground_sweep import motion_footprint
 from .source_motion import SourceReceiptLedger
 from .source_itinerary import SourceStepHint
 from .source_stair_hint import SourceStairHint
+from .source_contact_hint import SourceContactHint
 from .source_step_approach import plan_source_step_approach
 from .source_step_sender import run_checked_source_step
 
@@ -38,6 +39,11 @@ class SourceStepBoundary:
 @dataclass(frozen=True)
 class SourceStairBoundary(SourceStepBoundary):
     """An issued request for preflight, never a prepared pulse."""
+
+
+@dataclass(frozen=True)
+class SourceContactBoundary(SourceStepBoundary):
+    """Terminal thin-contact request; end Z describes reference terrain only."""
 
 
 @dataclass(frozen=True)
@@ -73,16 +79,20 @@ class SourceWalkDriver:
         self._stair_connector=None
         self._steps={}
         self._stairs={}
+        self._contacts={}
         targets=[]
         for row in cells:
-            if (row['kind'] not in ('walk','step','stair')
+            start_z=end_z=row.get('reference_floor_height')
+            if row['kind']!='contact':start_z,end_z=row['start_floor_height'],row['end_floor_height']
+            if (row['kind'] not in ('walk','step','stair','contact')
                     or not all(finite(v) for v in (*row['start'],*row['end'],
-                        row['start_floor_height'],row['end_floor_height']))):
+                        start_z,end_z))):
                 raise ValueError('Source itinerary needs explicit floor heights at every target')
-            targets.append(_Target(row['kind'],(*row['start'],row['start_floor_height']),
-                (*row['end'],row['end_floor_height']),
+            targets.append(_Target(row['kind'],(*row['start'],start_z),
+                (*row['end'],end_z),
                 (row['transfer']['transition_sha256'] if row['kind']=='step' else
-                 row['stair_plan_sha256'] if row['kind']=='stair' else None)))
+                 row['stair_plan_sha256'] if row['kind']=='stair' else
+                 row['contact_plan_sha256'] if row['kind']=='contact' else None)))
             if row['kind']=='step':
                 e=row['transfer']['evidence']
                 self._steps[len(targets)-1]=SourceStepHint(tuple(row['start']),tuple(row['end']),
@@ -93,16 +103,50 @@ class SourceWalkDriver:
                 self._stairs[len(targets)-1]=SourceStairHint(tuple(h['start']),tuple(h['end']),
                     tuple(tuple(tuple(k) for k in g) for g in h['tread_ids']),h['radius'],
                     h['max_rise'],h['max_lift'],h['vertical_model'])
+            elif row['kind']=='contact':
+                h=row['hint'];hint=SourceContactHint(tuple(tuple(p) for p in h['waypoints']),
+                    tuple(tuple(k) for k in h['face_ids']),h['radius'],h['max_rise'])
+                hint.validate()
+                if row is not cells[-1] or hint.end!=tuple(self.plan.record()['goal']):
+                    raise ValueError('Contact must terminate the source itinerary at its exact goal')
+                self._contacts[len(targets)-1]=hint
         self.targets=self._targets=tuple(targets)
         self._steps=MappingProxyType(self._steps)
         self._step_hints=self._steps
         self._stairs=MappingProxyType(self._stairs);self._stair_hints=self._stairs
+        self._contacts=MappingProxyType(self._contacts);self._contact_hints=self._contacts
 
     def _make_boundary(self,index,position,approach):
         row=self.targets[index]
-        cls=SourceStairBoundary if row.kind=='stair' else SourceStepBoundary
+        cls=SourceContactBoundary if row.kind=='contact' else SourceStairBoundary if row.kind=='stair' else SourceStepBoundary
         return cls(index,position,row.start,row.end,row.transition,self.ledger.reference,
             self.ledger.chain.previous.proof_sha256,tuple(approach))
+
+    def contact_hint(self,boundary):
+        """Retain the pending approach and all contact vertices from actual XY."""
+        l=self.ledger
+        with l.lock:
+            l._check();l.validate_reference()
+            if (type(boundary) is not SourceContactBoundary or boundary is not self._boundary
+                    or self.targets is not self._targets or self._contacts is not self._contact_hints
+                    or l.phase!='ready' or l._busy is not None
+                    or boundary.reference is not l.reference or boundary.start!=l.reference.package_xyz
+                    or boundary.floor_proof_sha256!=l.chain.previous.proof_sha256
+                    or not self.index<=boundary.cell_index==len(self.targets)-1
+                    or self.plan is not l.observer.itinerary or self.plan.payload is not self._payload
+                    or boundary.approach_cell_indices!=tuple(range(self.index,boundary.cell_index))):
+                raise RouteHalt('Exact current terminal contact boundary required')
+            hint=self._contacts[boundary.cell_index];row=self.targets[boundary.cell_index]
+            if (row.kind!='contact' or row.start!=boundary.planned_start or row.end!=boundary.end
+                    or row.transition!=boundary.transition_sha256 or hint.end!=boundary.end[:2]
+                    or any(self.targets[i].kind!='walk' for i in boundary.approach_cell_indices)):
+                raise RouteHalt('Contact hint no longer matches its issued boundary')
+            points=[boundary.start[:2]]
+            proposed=(() if self._stair_connector is None else (self._stair_connector.end[:2],))
+            proposed+=tuple(self.targets[i].end[:2] for i in boundary.approach_cell_indices)+hint.waypoints
+            for p in proposed:
+                if p!=points[-1]:points.append(p)
+            actual=replace(hint,waypoints=tuple(points));actual.validate();return actual
 
     def stair_hint(self,boundary):
         """Bind the issued boundary to the actual stopped departure."""
@@ -167,7 +211,7 @@ class SourceWalkDriver:
             previous=self._stair_connector.end[:2];distance=math.dist(position[:2],previous)
         for index in range(self.index,len(self.targets)):
             row=self.targets[index]
-            if row.kind in ('step','stair'):
+            if row.kind in ('step','stair','contact'):
                 distance+=math.dist(previous,row.start[:2])
                 if distance<=reserve:
                     return self._make_boundary(index,position,approach)
@@ -194,7 +238,7 @@ class SourceWalkDriver:
                 while self._stair_connector is not None or self.index<len(self.targets):
                     connector=self._stair_connector
                     row=connector if connector is not None else self.targets[self.index]
-                    if row.kind in ('step','stair'):
+                    if row.kind in ('step','stair','contact'):
                         start=row.start
                         if math.dist(p[:2],start[:2])>.25 or abs(p[2]-start[2])>.25:
                             raise RouteHalt('Source step departure is not the observed stopped endpoint')

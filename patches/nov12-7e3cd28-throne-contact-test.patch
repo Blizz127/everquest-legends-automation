@@ -1,0 +1,42 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -453,6 +453,7 @@
+             self.source_destination.addItem("Slave Mines  ·  map hint 7–10", "slave-mines")
+             self.source_destination.addItem("North Wall and Castle  ·  map hint 13–17", "north-wall")
+             self.source_destination.addItem("Throne stair landing  ·  movement test", "throne-stair-landing")
++            self.source_destination.addItem("Throne Room  ·  map hint 17–22", "throne-room")
+             column.addWidget(self.source_destination)
+             self.continue_camps = QCheckBox("After level-ups, travel to the next supported camp")
+             self.continue_camps.setObjectName("journeyContinueCampsBox")
+@@ -467,7 +468,9 @@
+                             "Travel measures motion on clear open ground, follows the source route and starts the camp "
+                             "only after a fresh stopped arrival. F8 switches to assist; F9 or F11 stops travel/camp. "
+                             "The stair landing movement test starts near North Wall and stops without combat. "
+-                            "North Wall travel starts from the Slave Mines area. Map level ranges are hints; live camp suitability is unverified. "
++                            "North Wall travel starts from the Slave Mines area; Throne Room travel starts near North Wall. "
++                            "Throne travel crosses stairs and rugs; actual movement and camp suitability are unverified. "
++                            "Map level ranges are hints. "
+                             "F11 camps where you stand; the destination applies to the Travel button. "
+                             "The first F11 after travel/setup is always OFF. Supervise every travel test.")
+             travel.setWordWrap(True)
+@@ -699,7 +702,7 @@
+                 label = {"running": "RUNNING", "paused": "PAUSED", "halted": "STOPPED"}.get(
+                     state, "IDLE" if measurement_only else "OFF")
+                 destination = autopilot.get("journey_destination_id")
+-                suffix = {"slave-mines": " · Slave Mines", "north-wall": " · North Wall and Castle", "throne-stair-landing": " · Stair landing"}.get(destination, "")
++                suffix = {"slave-mines": " · Slave Mines", "north-wall": " · North Wall and Castle", "throne-stair-landing": " · Stair landing", "throne-room": " · Throne Room"}.get(destination, "")
+                 self.ap_state.setText(f"●  {kind} {label}{suffix}")
+                 self.ap_state.setStyleSheet({"running": "color: #7addac;", "paused": "color: #f5ca72;",
+                                              "halted": "color: #ffb9c2;"}.get(state, "color: #a9b5c5;"))
+@@ -847,6 +850,11 @@
+                              "presses follow the four-second focus countdown.\n\n"
+                              "Stay present. F9/F11 stops; F8 returns to assist. The trip is limited to 25 minutes and stops "
+                              "on an observed attack or zone change.")
++            if identifier == "throne-room":
++                text.setText("Start near North Wall and Castle. This route climbs the stairs and crosses the rug corridor "
++                             "to the Throne Room map marker, then starts stationary camping after a fresh stopped arrival. "
++                             "The map suggests levels 17–22; real movement and camp suitability are unverified. "
++                             "Stay present. There is no automatic departure from this contact camp yet.\n\n" + text.text())
+             if continuation:
+                 text.setText(text.text() + "\n\nAfter a newly observed level-up and spell preparation, the helper may measure again and travel to a supported later camp. This additional trip is limited to 25 minutes. After stopped arrival, the helper prepares learned spells again and checks new targets before combat. Missing routes keep the current camp. Stay present throughout.")
+             text.setWordWrap(True)

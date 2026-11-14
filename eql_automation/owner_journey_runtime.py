@@ -17,6 +17,9 @@ from .source_walk_driver import SourceWalkFinished
 from .crushbone_source_guide import destination_spec
 from .camp_motion_continuity import CampInputContinuity, arrival_motion_basis
 from .camp_floor_checkpoint import CampFloorCheckpoint
+from .camp_contact_checkpoint import CampContactCheckpoint
+from .source_contact_controller import SourceContactArrival
+from .source_arrival import arrival_reference,arrival_itinerary,validate_contact_completion,assert_retained_arrival
 from .owner_camp_position import make_camp_position_engine
 
 
@@ -46,7 +49,7 @@ class Arrival:
     journey: Journey
     pending: dict
     runtime: object
-    receipt: SourceWalkFinished
+    receipt: object
     tracker: object
     zone: tuple
     window: tuple
@@ -57,7 +60,7 @@ class Arrival:
     destination: object
     source_evidence: bytes
     motion_basis: bytes
-    floor_checkpoint: CampFloorCheckpoint
+    floor_checkpoint: object
 
 
 def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
@@ -234,12 +237,15 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             if j is None or p['job'] != SOURCE_JOB or r is None or r.phase != 'complete': return None
             r.check_current()
             receipt = r.completed_arrival
-            if (type(receipt) is not SourceWalkFinished or receipt.reference is not r.ledger.reference
+            contact=type(receipt) is SourceContactArrival
+            if contact:
+                validate_contact_completion(r)
+            elif (type(receipt) is not SourceWalkFinished or receipt.reference is not r.ledger.reference
                     or receipt.itinerary_sha256 != r.driver.plan.sha256
                     or r.transfer is not None or r.collector is not None or r.seal is not None):
                 raise ValueError('No unchanged stopped source-arrival receipt')
-            final = r.driver.next_action()  # Revalidate endpoint/floor and original .5s deadline.
-            if (type(final) is not SourceWalkFinished or final.reference is not receipt.reference
+            final = receipt if contact else r.driver.next_action()
+            if ((not contact and (type(final) is not SourceWalkFinished or final.reference is not receipt.reference))
                     or p['busy'] or self.sender.held or self.sender.unfinished
                     or getattr(self.sender, '_eql_route_operation', None) is not None
                     or self.journey is not j or not navigation_active(self)):
@@ -250,19 +256,18 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             destination=p['continuation']['destination']
             if destination is not j.destination_assets or destination.destination_id!=j.destination_id:
                 raise ValueError('Source destination changed before arrival')
-            checkpoint=CampFloorCheckpoint(r.ledger)
+            checkpoint=CampContactCheckpoint(r.transfer,receipt) if contact else CampFloorCheckpoint(r.ledger)
             try:
-                basis=arrival_motion_basis(r,p)
+                basis=arrival_motion_basis(r,p,checkpoint)
                 checkpoint.check()
                 now=clock()
+                assert_retained_arrival(r,receipt,checkpoint,now)
                 if (self.journey is not j or j.phase!='travel' or j.generation!=self.cancel_generation
                         or j.settings!=settings_identity(self.settings) or not navigation_active(self)
-                        or r.completed_arrival is not receipt or r.ledger.reference is not receipt.reference
-                        or r.ledger.phase!='ready' or not checkpoint.valid
+                        or (not contact and r.ledger.phase!='ready') or not checkpoint.valid
                         or p['busy'] or self.sender.held or self.sender.unfinished
                         or self.live_zone_tracker is not tracker or tracker.reader is not r.reader
-                        or j.destination_assets is not destination
-                        or not 0<=now-receipt.reference.raw_fix.received_monotonic<=.5):
+                        or j.destination_assets is not destination):
                     raise ValueError('Arrival changed during floor checkpoint capture')
                 token = Arrival(j,p,r,receipt,tracker,r.zone,p['window'],self.sender,self.gate,now,
                     j.destination_id,destination,destination.source_evidence,basis,checkpoint)
@@ -279,6 +284,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             window = window_identity(self.gate, require_focus=True)
             token.floor_checkpoint.check()
             now = clock()
+            assert_retained_arrival(r,token.receipt,token.floor_checkpoint,now)
             if (self.journey is not j or j.phase != 'handoff' or j.generation != self.cancel_generation
                     or j.settings != settings_identity(self.settings) or self.route_trial is not None
                     or self._navigation_busy() or not self.jobs.empty() or self.stopping
@@ -291,9 +297,6 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                     or p['continuation']['destination'] is not token.destination
                     or token.destination.source_evidence is not token.source_evidence
                     or j.arrival_floor is not token.floor_checkpoint or not token.floor_checkpoint.valid
-                    or r.completed_arrival is not token.receipt or r.phase != 'complete'
-                    or r.ledger.reference is not token.receipt.reference
-                    or not 0 <= now-token.receipt.reference.raw_fix.received_monotonic <= .5
                     or not sample.clear_at(now) or sample.topology_generation != p['topology']
                     or not veto.continuity_available or veto.reason is not None):
                 raise ValueError('Fresh arrival, owner input or released navigation scope changed')
@@ -320,9 +323,9 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             self.zone = 'crushbone'  # From the fresh zone-bound arrival, never history.
             if destination_spec(token.destination_id).arrival_mode=='stop':
                 result=dict(phase='arrived',destination_id=token.destination_id,
-                    itinerary_sha256=token.receipt.itinerary_sha256,
-                    stopped_log_seq=token.receipt.reference.raw_fix.log_line_seq,
-                    actual_position=token.receipt.reference.package_xyz,
+                    itinerary_sha256=arrival_itinerary(token.receipt),
+                    stopped_log_seq=arrival_reference(token.receipt).raw_fix.log_line_seq,
+                    actual_position=arrival_reference(token.receipt).package_xyz,
                     camp_started=False,real_client_accepted=False)
                 self.stop_action('Stair landing reached · movement stopped')
                 self.journey_last_result=result
@@ -345,9 +348,9 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             if self.journey is not j or not self._camp_current():
                 if self.journey is j:self.stop_action('Camp input continuity changed during handoff')
                 return dict(camp_started=False,reason='Camp input continuity changed')
-            self.journey_last_result = dict(phase='camp', itinerary_sha256=token.receipt.itinerary_sha256,
+            self.journey_last_result = dict(phase='camp', itinerary_sha256=arrival_itinerary(token.receipt),
                 destination_id=token.destination_id,destination=json.loads(token.source_evidence),
-                stopped_log_seq=token.receipt.reference.raw_fix.log_line_seq,
+                stopped_log_seq=arrival_reference(token.receipt).raw_fix.log_line_seq,
                 camp_started=True, safe_camp_verified=False, real_client_accepted=False,
                 camp_input_continuity=j.camp_motion.snapshot(include_basis=True))
             self.trace('journey_camp_handoff', **self.journey_last_result)

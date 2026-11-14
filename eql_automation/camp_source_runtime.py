@@ -61,6 +61,7 @@ class CampSourceRuntime(SourceExecutionLoop):
         self.phase, self.reason, self.busy = 'startup', '', False
         self.collector = self.transfer = self.seal = self.completed_arrival = None
         self.stair_preflight=self.stair_boundary=None
+        self.contact_preflight=self.contact_boundary=self._contact_driver_state=None
         self.last_movement_release=None
         self.ledger = self.observer = self.driver = self.policy = None
         self._owned_ledger = self._owned_observer = self._owned_driver = self._owned_policy = None
@@ -113,6 +114,7 @@ class CampSourceRuntime(SourceExecutionLoop):
             raise ValueError('Camp route owner, original probe scope or sender changed')
         # Provider callbacks cannot carry a check beyond the original deadline.
         self.probe._check_scope();self.current()
+        self.check_contact_boundary()
 
     def cancel(self, reason):
         with self.lock:
@@ -121,6 +123,7 @@ class CampSourceRuntime(SourceExecutionLoop):
             if self.collector is not None:self.collector.cancel(reason)
             if self.transfer is not None:self.transfer.cancel(reason)
             if self.stair_preflight is not None:self.stair_preflight.cancel(reason)
+            if self.contact_preflight is not None:self.contact_preflight.cancel(reason)
             if self._owned_ledger is not None:self._owned_ledger.cancel(reason)
             if self._owned_observer is not None:self._owned_observer.cancel(reason)
 
@@ -140,13 +143,13 @@ class CampSourceRuntime(SourceExecutionLoop):
 
     def _request_location(self, request):
         collector, active, seal = self.collector, self.active, self.seal
-        pre=self.stair_preflight
+        pre=self.pending_preflight
         if type(request) is not LocationRequest or collector is None:
             raise ValueError('Owned camp route location request required')
         def current():
             self.check_current();collector.check()
             if seal is not None:active._check_seal(seal)
-            elif self.phase=='stair_start' and pre is not None and self.stair_preflight is pre:pre.check()
+            elif self.phase in ('stair_start','contact_start') and pre is not None and self.pending_preflight is pre:pre.check()
             elif self.phase=='startup':active._check()
             else:raise ValueError('Camp position request lacks its startup or receipt context')
             if (not self.busy or self.collector is not collector or self.active is not active

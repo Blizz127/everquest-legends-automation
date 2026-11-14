@@ -1,5 +1,58 @@
 # FINDINGS
 
+## 2026-11-14 23:26 UTC — 0.42.74 terminal contact itinerary and Throne candidate
+
+VERIFIED copied-client build to the exact Throne Room marker `(106,154)`:
+12 guide operations and 18 itinerary cells (13 walking, three steps, one stair,
+one terminal contact operation containing the eight retained corridor legs).
+Guide `owner-route-data/crushbone-camps-20261114/crushbone-throne-contact-source-guide-v1.json`
+SHA `ef46e373d2458e891a627c51bd63e426dd66313bf1057b20f7eb674e44eba5c0`;
+evidence `nav-candidates/crushbone-throne-contact-itinerary-0.42.74.json`
+SHA `bedf5b055a49b0200fa4333f3fdf22f58bdc2b4e1c30d119434c2a4971d561fb`.
+These are private copied-data artifacts, outside git. The recipe checks its code
+pins before and after rebuilding. Of 215 build pins, two changed afterward:
+the destination registry gained the produced guide hash; the runtime snapshot
+now counts completed contact pulses. Geometry code remained unchanged.
+
+The planner retains contact as a distinct terminal operation: no ordinary goal
+floor or invented floor commit. The driver preserves every bend and includes
+actual stair landing/remaining connector coordinates. Contact preflight obtains
+new stopped replies; the existing sender supplies each pulse. Final arrival
+keeps the original calibration and original pair deadline. First and onward
+camp handoff accept the distinct contact checkpoint without reactivating the
+retired source observer. Final callback mutation is checked again before
+completion/capture. Historical contact recovery remains stationary only.
+
+VERIFIED **71 unique focused checks passed; two real-time checks failed**.
+The 68-case core run covers itinerary planning, actual stair/contact composition
+with explicitly synthetic clock/receipts, post-validation mutation, original
+first-sample expiry, ordinary/contact camp replacement and F8/F9 transfer
+cancellation. Map-range selection and two actual OS-pipe cancellation cases
+also passed. The final counter regression passed separately. Virtual transport
+is not watchdog transport or client acceptance. Full owner pipe travel refused
+observation age **0.5046322899870574 > 0.5s**; the short contact pipe journey
+raised `PulseInterrupted`. Devbox load was above 200 on 48 CPUs; its contribution
+is INFERRED, not established as the only cause. Production deadlines were not
+relaxed. Original failed JUnit/log evidence is retained.
+
+Owner candidate 0.39.34 uses the existing 0.39.13 rotation snapshot plus current
+runtime and patches. Its GUI shows Throne Room with copied map hint 17–22, keeps
+the separate stop-only landing selection and retains assist controls. GUI
+selection/dialog checks forbid engine construction and settings writes. Runtime
+imports forbid development recipes; all 214 copied runtime files match. No
+client input/device creation occurred. Validation record
+`releases/eql-0.42.74-validation.json`, SHA
+`08e496e27ce9fe5595119e21f3e74428cc4c95571eeebc6fca8f523f7321bf6a`, lists all 560
+Python pins, case results, artifact hashes and outstanding failures.
+
+One read-only Alienware SSH request timed out at port 22. No remote installation,
+batch restart, helper restart, login, character/prefix change or live acceptance.
+Installed owner/runtime/source remain 0.39.32/0.42.61/0.42.68. Recover the retained
+remote arrival receipt before rerunning that old batch; resolve current travel
+timing checks before delivery. G0 is passed, including the owner's visible-stop
+confirmation. Current level/XP/XP-hour/deaths/camp remain unknown; neither the
+1–20 priority nor fresh-character hands-off 1–50 goal is complete.
+
 ## 2026-11-14 23:08 UTC — 0.42.73 distinct contact camp history and recovery
 
 VERIFIED source commit `bfa1846d804fb232ad77ab7ea0e584ee7f331ad1` is staged locally as

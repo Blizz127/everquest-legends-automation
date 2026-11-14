@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Rebuild a finite source route to the Throne stair landing, without combat."""
+"""Rebuild the Throne stair landing or full contact exit from retained client data."""
 from dataclasses import asdict,replace
 from hashlib import sha256
 from pathlib import Path
@@ -21,9 +21,11 @@ from eql_automation.source_detour import swept_square
 from eql_automation.source_floor_chain import SourceFloorChain
 from eql_automation.source_itinerary import SourceItineraryGuide,plan_source_itinerary
 from eql_automation.source_stair_hint import SourceStairHint
+from eql_automation.source_contact_hint import SourceContactHint
+from eql_automation.source_contact_plan import SourceContactPlan,SourceContactIndex
 
 
-def proposal(record,artifact_sha256):
+def proposal(record,artifact_sha256,*,contact_exit=False):
     if (record.get('completed') is not True or record.get('data_sha256')!=DATA_PINS
             or record.get('stair_vertical_model')!='bounded_source_contacts'
             or record.get('game_input_sent') is not False):
@@ -41,6 +43,21 @@ def proposal(record,artifact_sha256):
         goal=hint.end,arrival_mode='stop',contact_exit_included=False))).hexdigest()
     guide=replace(approach,goal=hint.end,provenance_sha256=provenance,
         operations=(*approach.operations,hint))
+    if contact_exit:
+        contact=SourceContactPlan(encoded(record['contact_plan']),record['contact_plan_sha256'])
+        SourceContactIndex(contact)
+        data=contact.record();rows=data['contact_walks']['accepted_envelopes']
+        points=(tuple(rows[0]['start']),*(tuple(row['end']) for row in rows))
+        if (points[0]!=hint.end or points[-1]!=tuple(record['goal'])
+                or data['body_radius']!=guide.radius or data['body_height']!=guide.body_height):
+            raise ValueError('Retained contact corridor does not continue the stair landing to the exact goal')
+        ids=tuple((face['fragment'],face['face']) for face in data['contact_hypothesis']['faces'])
+        final=SourceContactHint(points,ids,data['checked_radius'],
+            data['contact_hypothesis']['maximum_height_above_reference_terrain'])
+        provenance=sha256(encoded(dict(kind='throne_terminal_contact_camp',artifact_sha256=artifact_sha256,
+            approach_sha256=record['approach_sha256'],stair_sha256=record['stair_sha256'],
+            contact_plan_sha256=contact.sha256,goal=final.end,arrival_mode='camp'))).hexdigest()
+        guide=replace(guide,goal=final.end,provenance_sha256=provenance,operations=(*guide.operations,final))
     guide.validate();return guide
 
 
@@ -50,12 +67,15 @@ def main():
     parser.add_argument('--artifact-sha256',required=True)
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--evidence',type=Path,required=True)
+    parser.add_argument('--contact-exit',action='store_true',help='Include the retained contact corridor to the exact Throne camp marker')
     args=parser.parse_args()
     if (any(p.exists() or p.is_symlink() for p in (args.output,args.evidence))
             or args.output.parent.resolve()!=(STORE/'owner-route-data'/DATA_NAME).resolve()
             or args.evidence.parent.resolve()!=(STORE/'nav-candidates').resolve()):
         parser.error('New private guide and evidence paths required')
     os.umask(0o077);os.nice(19);resource.setrlimit(resource.RLIMIT_CPU,(40,45))
+    files=(Path(__file__).resolve(),*sorted((PROJECT/'eql_automation').glob('*.py')))
+    code_pins={str(p.relative_to(PROJECT)):sha256(p.read_bytes()).hexdigest() for p in files}
     began=time.monotonic()
     def check(*_):
         if time.monotonic()-began>180:raise TimeoutError('Stair landing build expired')
@@ -63,7 +83,8 @@ def main():
     signal.signal(signal.SIGALRM,timeout);signal.signal(signal.SIGXCPU,timeout);signal.alarm(180)
     if args.artifact.stat().st_size>8*1024*1024:raise ValueError('Contact artifact exceeds input bound')
     record=json.loads(checked_bytes(args.artifact,args.artifact_sha256))
-    guide=proposal(record,args.artifact_sha256)
+    guide=proposal(record,args.artifact_sha256,contact_exit=args.contact_exit)
+    arrival_mode='camp' if args.contact_exit else 'stop'
     assets=load_crushbone_assets(STORE/'owner-route-data'/DATA_NAME,native_planning=True);p=assets.planner
     start=tuple(record['approach_plan']['start'])
     seed=p.source.propose_unique_diffuse_floor(start,body_height=guide.body_height)
@@ -78,15 +99,16 @@ def main():
     plan=plan_source_itinerary(prefix,start,guide,p.source,p.static,p.bsp,p.region_policy,
         check_context=check,max_seconds=150.)
     check()
-    evidence=dict(format='eql-finite-stair-landing-build-v1',artifact_sha256=args.artifact_sha256,
-        code_sha256={str(path.relative_to(PROJECT)):sha256(path.read_bytes()).hexdigest()
-            for path in (Path(__file__).resolve(),*sorted((PROJECT/'eql_automation').glob('*.py')))},
-        plan=plan.record(),plan_sha256=plan.sha256,synthetic_seed=asdict(seed),synthetic_start=True,arrival_mode='stop',
-        contact_exit_included=False,game_input_sent=False,real_client_accepted=False,
+    if code_pins!={str(p.relative_to(PROJECT)):sha256(p.read_bytes()).hexdigest() for p in files}:
+        raise ValueError('Source code changed during the copied-client build')
+    evidence=dict(format='eql-throne-contact-build-v1' if args.contact_exit else 'eql-finite-stair-landing-build-v1',
+        artifact_sha256=args.artifact_sha256,code_sha256=code_pins,
+        plan=plan.record(),plan_sha256=plan.sha256,synthetic_seed=asdict(seed),synthetic_start=True,arrival_mode=arrival_mode,
+        contact_exit_included=args.contact_exit,game_input_sent=False,real_client_accepted=False,
         seconds=time.monotonic()-began)
     guide_record=dict(format='eql-copied-source-guide-v1',client_data_pins=DATA_PINS,
         guide=guide.record(),guide_sha256=sha256(encoded(guide.record())).hexdigest(),
-        evidence_sha256=sha256(encoded(evidence)).hexdigest(),arrival_mode='stop',
+        evidence_sha256=sha256(encoded(evidence)).hexdigest(),arrival_mode=arrival_mode,
         safe_camp_verified=False,input_authorized=False,real_client_accepted=False)
     for path,data in ((args.evidence,evidence),(args.output,guide_record)):
         with path.open('x') as f:json.dump(data,f,indent=2,allow_nan=False);f.write('\n')

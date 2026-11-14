@@ -12,6 +12,8 @@ from types import SimpleNamespace
 from .camp_stopped_height import measure_camp_stopped_height
 from .camp_contact_checkpoint import CampContactCheckpoint
 from .camp_contact_observation import observe_camp_contact
+from .source_contact_controller import SourceContactArrival
+from .source_arrival import validate_contact_completion
 from .camp_probe_preparation import CampProbePreparation
 from .camp_probe_runtime import CampProbeRuntime
 from .camp_probe_calibration import reduce_camp_probes
@@ -360,7 +362,10 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     self._camp_position_current(p)
                     # Capture the actual newly observed floor before stop closes
                     # the ancestor scope. Do not resume the camp we just left.
-                    reached=CampFloorCheckpoint(p.route_runtime.ledger)
+                    if type(p.route_runtime.completed_arrival) is SourceContactArrival:
+                        validate_contact_completion(p.route_runtime)
+                        reached=CampContactCheckpoint(p.route_runtime.transfer,p.route_runtime.completed_arrival)
+                    else:reached=CampFloorCheckpoint(p.route_runtime.ledger)
                     p.route_record=p.route_runtime.snapshot()
                     p.route_record['arrival']=reached.snapshot()
                     self._camp_position_current(p);p.route_complete=True

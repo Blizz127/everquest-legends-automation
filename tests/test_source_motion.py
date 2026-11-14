@@ -48,7 +48,7 @@ def f(tmp_path,monkeypatch,legacy,request):
     p=f.planner
     guide=SourceItineraryGuide('crushbone',p.pins[2],p.pins[3],'f'*64,.1,6.,(4.,3.25),
         (SourceWalkHint((4.,2.),(4.,3.)),))
-    if getattr(request,'param',None) in ('contact_preflight','contact_bend','contact_close'):
+    if getattr(request,'param',None) in ('contact_preflight','contact_bend','contact_close','contact_route'):
         p.source.sources=tuple(replace(s,vertices_wld=tuple((y*1.5,x,z) for y,x,z in s.vertices_wld))
                                for s in p.source.sources)
         coords=np.asarray([s.vertices_wld for s in p.source.sources])[:,:,[1,0,2]]
@@ -70,6 +70,10 @@ def f(tmp_path,monkeypatch,legacy,request):
                     raise ValueError('Source projection candidate budget exceeded')
                 return query(footprint)
             p.source.source_faces_for_footprint=bounded_query
+        if request.param=='contact_route':
+            from eql_automation.source_contact_hint import SourceContactHint
+            guide=replace(guide,goal=(4.,3.8),operations=(SourceWalkHint((4.,2.),(4.,2.4)),
+                SourceContactHint(((4.,2.4),(4.,3.8)),((20,0),(20,1)),.2)))
     if getattr(request,'param',None)=='compact_long':
         from eql_automation.source_guide_compaction import compact_source_guide
         vertices=((0.,0.,.2),(10.,0.,.2),(10.,15.,.2),(0.,15.,.2))
@@ -95,19 +99,34 @@ def f(tmp_path,monkeypatch,legacy,request):
         p.source.source_minimum=coords.min(axis=1);p.source.source_maximum=coords.max(axis=1)
         guide=replace(guide,goal=(4.,3.9),operations=(SourceWalkHint((4.,2.),(4.,3.1)),
             SourceStepHint((4.,3.1),(4.,3.5),((10,2),),.5,1.),SourceWalkHint((4.,3.5),(4.,3.9))))
-    if getattr(request,'param',None) in ('stair_preflight','stair_route'):
+    if getattr(request,'param',None) in ('stair_preflight','stair_route','stair_contact_route'):
         from test_source_stair_topology import fixture as stair_sources
         sources,f.stair_groups=stair_sources()
         p.source.sources=tuple(replace(s,vertices_wld=tuple((y+4.,x+4.,z+.2)
             for x,y,z in s.vertices_wld)) for s in sources)
+        if request.param=='stair_contact_route':
+            extension=((-1.,13.,3.2),(9.,13.,3.2),(9.,18.,3.2),(-1.,18.,3.2))
+            p.source.sources+=tuple(SourceFace(tuple((y,x,z) for x,y,z in tri),0,'Diffuse',1,30+i)
+                for i,tri in enumerate(((extension[0],extension[1],extension[2]),
+                                        (extension[0],extension[2],extension[3]))))
         coords=np.asarray([s.vertices_wld for s in p.source.sources])[:,:,[1,0,2]]
         p.source.source_minimum=coords.min(axis=1);p.source.source_maximum=coords.max(axis=1)
         p.source.source_minimum.setflags(write=False);p.source.source_maximum.setflags(write=False)
-        if request.param=='stair_route':
+        if request.param in ('stair_route','stair_contact_route'):
             from eql_automation.source_stair_hint import SourceStairHint
             guide=replace(guide,goal=(4.,10.5),operations=(SourceWalkHint((4.,2.),(4.,2.4)),
                 SourceStairHint((4.,2.4),(4.,10.),f.stair_groups,1.2,vertical_model='bounded_source_contacts'),
                 SourceWalkHint((4.,10.),(4.,10.5))))
+        if request.param=='stair_contact_route':
+            from eql_automation.source_contact_hint import SourceContactHint
+            points=((2.,13.1,3.2945911407470703),(6.,13.1,3.2945911407470703),
+                    (6.,17.,3.2945911407470703),(2.,17.,3.2945911407470703))
+            p.static.sources=tuple(SourceFace(tuple((y,x,z) for x,y,z in tri),0,'TransparentMasked',20,i)
+                for i,tri in enumerate(((points[0],points[1],points[2]),(points[0],points[2],points[3]))))
+            p.static.identities={20:dict(placement_fragment=110,model_wld_sha256='e'*64,transform_sha256='f'*64)}
+            p.static.faces_for_footprint=lambda _:p.static.sources
+            guide=replace(guide,goal=(4.,15.),operations=(*guide.operations[:2],
+                SourceContactHint(((4.,10.),(4.,15.)),((20,0),(20,1)),.2)))
     plan=plan_current_source_itinerary(p,f.reader,f.a,f.b,guide=guide,
         **{k:v for k,v in f.options.items() if k!='length'})
     a,b,options=fresh(f,plan.initial)

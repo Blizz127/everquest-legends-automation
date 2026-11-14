@@ -35,7 +35,11 @@ DESTINATIONS=MappingProxyType({
     'throne-stair-landing':SourceGuideDestination('throne-stair-landing','Throne stair landing',
         'crushbone-throne-stair-landing-source-guide-v1.json',
         '78f7a100bc0affef13612737365a9106d0336339bc2cd4afbb769465053138a0',(2.851,52.27075),
-        '790eb4995d486428261d322c066e0de76c23a7afe91646c6ac2387faf7bedc6f','stop')})
+        '790eb4995d486428261d322c066e0de76c23a7afe91646c6ac2387faf7bedc6f','stop'),
+    'throne-room':SourceGuideDestination('throne-room','Throne Room',
+        'crushbone-throne-contact-source-guide-v1.json',
+        'ef46e373d2458e891a627c51bd63e426dd66313bf1057b20f7eb674e44eba5c0',(106.,154.),
+        'f15eb66df458586bb2a3814a0ec846bd549e0fede673a7dbd6560e3e21fdb699')})
 
 
 def destination_spec(identifier):

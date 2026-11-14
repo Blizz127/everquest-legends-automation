@@ -1,11 +1,33 @@
 # STATUS
 
-Updated 2026-11-14 23:08 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 23:26 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.74 / owner 0.39.34 local candidate; not installed or accepted.**
+  Terminal contact now runs through the shared itinerary/execution loop, retains
+  the actual stair landing connector, and hands its distinct stopped arrival to
+  stationary camp. Completed-contact movement counts include every pulse.
+  VERIFIED copied-client Throne rebuild: 12 operations, 18 checked cells, exact
+  goal `(106,154)`; guide SHA
+  `ef46e373d2458e891a627c51bd63e426dd66313bf1057b20f7eb674e44eba5c0`.
+  The selector includes Throne Room (map hint 17–22); next-camp selection can
+  choose it after North Wall. Actual suitability and contact departure are unverified.
+  VERIFIED **71 unique focused checks passed; two real-time travel checks failed**.
+  The full owner pipe journey refused a 0.504632s observation against its 0.5s
+  limit; the short contact pipe journey was interrupted. Both cancellation pipe
+  cases passed. Devbox load exceeded 200/48 CPUs; load contribution is inferred,
+  not established as the only cause. Deadlines remain unchanged. No-game-input
+  GUI/dialog and runtime startup checks pass; all 214 preview runtime copies match.
+  Validation SHA `08e496e27ce9fe5595119e21f3e74428cc4c95571eeebc6fca8f523f7321bf6a`.
+  One read-only Alienware connection again timed out. Installed versions remain
+  owner/runtime/source **0.39.32/0.42.61/0.42.68**. Next: recover retained remote
+  receipt, resolve the focused real-time travel failures on an available test
+  host, then deliver the candidate for owner-driven travel acceptance. No login,
+  helper restart, game input or character/prefix changes. G0 remains passed.
+  Current level, XP, XP/hour, deaths and camp are unknown; no accepted 1–20/1–50 run.
 - **Source 0.42.73 locally verified; not installed.** VERIFIED 71 focused
   checks: 65 contact-history, stopped-observation and retained terrain cases;
   six real watchdog-pipe recovery/cancellation cases (contact and terrain).

@@ -14,6 +14,8 @@ from .native_region_policy import encoded
 from .owner_navigation_preflight import settings_identity,window_identity
 from .owner_route_trial import zone_binding
 from .source_walk_driver import SourceWalkFinished
+from .source_contact_controller import SourceContactArrival
+from .source_arrival import arrival_reference,arrival_itinerary,validate_contact_completion,assert_retained_arrival
 
 
 @dataclass(frozen=True)
@@ -26,7 +28,7 @@ class CampDestination:
 class CampArrival:
     pending: object
     runtime: CampSourceRuntime
-    receipt: SourceWalkFinished
+    receipt: object
     checkpoint: object
     destination: CampDestination
     basis: bytes
@@ -41,14 +43,16 @@ def capture_camp_arrival(engine,p,checkpoint):
     if type(r) is not CampSourceRuntime or r.phase!='complete':
         raise ValueError('Actual completed camp source runtime required')
     r.check_current();receipt=r.completed_arrival
-    final=r.driver.next_action()
-    if (type(receipt) is not SourceWalkFinished or type(final) is not SourceWalkFinished
+    contact=type(receipt) is SourceContactArrival
+    if contact:validate_contact_completion(r)
+    final=receipt if contact else r.driver.next_action()
+    if ((not contact and (type(receipt) is not SourceWalkFinished or type(final) is not SourceWalkFinished
             or final.reference is not receipt.reference or receipt.reference is not r.ledger.reference
             or receipt.itinerary_sha256!=r.driver.plan.sha256
-            or r.transfer is not None or r.collector is not None or r.seal is not None
+            or r.transfer is not None)) or r.collector is not None or r.seal is not None
             or r.busy or p.sender.held or p.sender.unfinished
             or getattr(p.sender,'_eql_route_operation',None) is not None
-            or checkpoint._reference is not receipt.reference or checkpoint._reader is not p.reader
+            or checkpoint._reference is not arrival_reference(receipt) or checkpoint._reader is not p.reader
             or not j.continue_camps or j.continue_camps is not j._continue_camps):
         raise ValueError('New camp requires an unchanged stopped route and explicit continuation')
     plan=p.probe_plan;spec=destination_spec(plan.destination_id)
@@ -56,7 +60,7 @@ def capture_camp_arrival(engine,p,checkpoint):
     if (seal is None or calibration is not seal[0] or encoded(calibration)!=seal[1]
             or plan.route_guide is not p.runtime.route_guide or plan.state()!=p.probe_plan_state):
         raise ValueError('Camp destination or sealed movement fit changed')
-    basis=camp_route_motion_basis(r,calibration)
+    basis=camp_route_motion_basis(r,calibration,checkpoint)
     destination=CampDestination(spec.identifier,encoded(dict(destination_id=spec.identifier,
         label=spec.label,guide_sha256=sha256(encoded(plan.route_guide.record())).hexdigest(),
         selection=json.loads(plan.destination_evidence),real_client_accepted=False)))
@@ -66,8 +70,8 @@ def capture_camp_arrival(engine,p,checkpoint):
     if not candidates:raise ValueError('No observed NPC candidates for the newly reached camp')
     checkpoint.check();e._camp_position_current(p)
     now=r.clock()
-    if (not 0<=now-receipt.reference.raw_fix.received_monotonic<=.5
-            or r.completed_arrival is not receipt or p.cancelled
+    assert_retained_arrival(r,receipt,checkpoint,now)
+    if (p.cancelled
             or e.journey is not j or e.cancel_generation!=p.generation
             or plan.state()!=p.probe_plan_state or r.plan.state()!=r.plan_state
             or p.calibration_seal is not seal or encoded(calibration)!=seal[1]):
@@ -90,6 +94,7 @@ def check_camp_arrival(engine,token,clock,*,new_camp=None):
     window=window_identity(e.gate,require_focus=True)
     sample=p.monitor.observer.sample();now=clock()
     p.monitor.check_binding(p.monitor.binding)
+    assert_retained_arrival(r,token.receipt,token.checkpoint,now)
     if (e.journey is not j or j.phase!='handoff' or p.cancelled
             or j.generation!=e.cancel_generation or j.generation not in (p.generation,p.generation+1)
             or j.settings!=token.settings or settings_identity(e.settings)!=token.settings
@@ -109,9 +114,6 @@ def check_camp_arrival(engine,token,clock,*,new_camp=None):
             or p.tracker.reader is not p.reader or p.tracker.lease is not None or p.lease.active
             or zone_binding(p.reader)!=token.zone or not p.runtime.closed
             or r is not p._route_runtime or r is not p.route_runtime
-            or r.phase!='complete' or r.completed_arrival is not token.receipt
-            or r.ledger.reference is not token.receipt.reference
-            or not 0<=now-token.receipt.reference.raw_fix.received_monotonic<=.5
             or not sample.clear_at(now) or sample.topology_generation!=p.monitor.topology
             or p.monitor.last_observed_at is not None and sample.started_at<p.monitor.last_observed_at
             or not veto.continuity_available or veto.reason is not None):
@@ -150,9 +152,9 @@ def continue_camp_arrival(engine,token,clock):
     j.height_check_done=False;j.last_considered_level_advance=None
     if not e._camp_current() or e.journey is not j:
         raise ValueError('New camp input continuity changed')
-    result=dict(phase='camp',itinerary_sha256=token.receipt.itinerary_sha256,
+    result=dict(phase='camp',itinerary_sha256=arrival_itinerary(token.receipt),
         destination_id=token.destination.destination_id,destination=json.loads(token.destination.source_evidence),
-        stopped_log_seq=token.receipt.reference.raw_fix.log_line_seq,camp_started=True,
+        stopped_log_seq=arrival_reference(token.receipt).raw_fix.log_line_seq,camp_started=True,
         fresh_preparation_due=e.camp_session.preparation_due,safe_camp_verified=False,
         real_client_accepted=False,camp_input_continuity=successor.snapshot(include_basis=True))
     e.journey_last_result=result

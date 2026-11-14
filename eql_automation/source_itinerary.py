@@ -20,6 +20,7 @@ from .route_floor_commit import _chain_snapshot
 from .source_detour import find_source_detour, swept_square
 from .source_step import check_source_step
 from .source_stair_hint import SourceStairHint
+from .source_contact_hint import SourceContactHint
 from .source_step_bsp import check_source_step_bsp
 from .static_floor_guard import check_source_static_floor
 
@@ -77,10 +78,11 @@ class SourceItineraryGuide:
                 or not 1 <= len(self.operations) <= 10000):
             raise ValueError('Bounded pinned source itinerary guide required')
         previous = None
-        for op in self.operations:
-            if (type(op) not in (SourceWalkHint, SourceStepHint, SourceStairHint)
+        for index,op in enumerate(self.operations):
+            if type(op) is SourceContactHint:op.validate()
+            if (type(op) not in (SourceWalkHint, SourceStepHint, SourceStairHint,SourceContactHint)
                     or not xy(op.start) or not xy(op.end)
-                    or math.dist(op.start, op.end) > 80
+                    or type(op) is not SourceContactHint and math.dist(op.start, op.end) > 80
                     or previous is not None and math.dist(previous, op.start) > 1e-6):
                 raise ValueError('Guide has an invalid operation or unexplained gap')
             if type(op) is SourceStepHint and (
@@ -98,6 +100,10 @@ class SourceItineraryGuide:
                 op.validate()
                 if op.vertical_model!='bounded_source_contacts' or op.radius<=self.radius/math.cos(math.pi/16):
                     raise ValueError('Stair guide requires explicit grounded contact clearance')
+            if type(op) is SourceContactHint:
+                if (index!=len(self.operations)-1 or op.end!=self.goal or op.radius<self.radius
+                        or any(math.dist(a,b)>80 for a,b in zip(op.waypoints,op.waypoints[1:]))):
+                    raise ValueError('Contact must end at the exact goal through bounded proposal legs')
             previous = op.end
         if math.dist(previous, self.goal) > 80:
             raise ValueError('Exact destination needs a bounded final connector')
@@ -105,7 +111,7 @@ class SourceItineraryGuide:
     def record(self):
         self.validate()
         value = asdict(self)
-        kinds={SourceWalkHint:'walk',SourceStepHint:'step',SourceStairHint:'stair'}
+        kinds={SourceWalkHint:'walk',SourceStepHint:'step',SourceStairHint:'stair',SourceContactHint:'contact'}
         value['operations'] = [dict(kind=kinds[type(op)],
                                     **asdict(op)) for op in self.operations]
         return value
@@ -125,6 +131,9 @@ class SourceItineraryGuide:
                 operations.append(SourceStairHint(tuple(item['start']),tuple(item['end']),
                     tuple(tuple(tuple(k) for k in group) for group in item['tread_ids']),
                     item['radius'],item['max_rise'],item['max_lift'],item['vertical_model']))
+            elif item['kind']=='contact':
+                operations.append(SourceContactHint(tuple(tuple(p) for p in item['waypoints']),
+                    tuple(tuple(k) for k in item['face_ids']),item['radius'],item['max_rise']))
             else:
                 raise ValueError('Unknown source itinerary operation')
         guide = cls(data['zone'], data['wld_sha256'], data['static_inventory_sha256'],
@@ -271,6 +280,7 @@ def plan_source_itinerary(prefix, start, guide, terrain, static, bsp, region_pol
     if chosen is None:
         raise ValueError('No checked connector from current floor to this source guide')
     position = guide.operations[chosen].start
+    terminal_contact=None
     for index, op in enumerate(guide.operations[chosen:], chosen):
         if position != op.start:
             chain = walk(chain, position, op.start, 'guide_rounding_connector')
@@ -288,6 +298,21 @@ def plan_source_itinerary(prefix, start, guide, terrain, static, bsp, region_pol
                 start_floor_height=departure_height,end_floor_height=landing.floor_at(op.end)[0],
                 hint=asdict(op),stair_plan=stair.record(),stair_plan_sha256=stair.sha256))
             chain=landing  # Only the planning suffix uses this hypothetical cap.
+        elif type(op) is SourceContactHint:
+            from .source_contact_envelope import declare_contact_hypothesis
+            from .source_contact_plan import plan_source_contact
+            chain=walk(chain,op.start,op.start,'contact_departure_cap')
+            hypothesis=declare_contact_hypothesis(static,op.face_ids,max_rise=op.max_rise)
+            contact=plan_source_contact(chain,tuple(SourceWalkHint(a,b)
+                for a,b in zip(op.waypoints,op.waypoints[1:])),op.end,
+                terrain,static,bsp,region_policy,hypothesis,body_radius=guide.radius,
+                checked_radius=op.radius,check_context=check,clock=clock,
+                maximum_seconds=max(.001,min(180.,began+max_seconds-last)))
+            terminal_contact=contact.record()
+            cells.append(dict(kind='contact',origin=index,start=op.start,end=op.end,
+                reference_floor_height=terminal_contact['contact_walks']['reference_goal_height'],
+                hint=asdict(op),contact_plan=terminal_contact,contact_plan_sha256=contact.sha256,
+                ordinary_goal_floor_available=False))
         else:
             # A departure cap is actual geometry, not an asserted start point.
             chain = walk(chain, op.start, op.start, 'step_departure_cap')
@@ -311,9 +336,12 @@ def plan_source_itinerary(prefix, start, guide, terrain, static, bsp, region_pol
                 transfer=asdict(transfer), bsp=asdict(old_bsp), native=asdict(native)))
             chain = landing  # Planning branch only; never published as current floor.
         position = op.end
-    chain = walk(chain, position, guide.goal, 'exact_destination_connector')
-    chain = walk(chain, guide.goal, guide.goal, 'exact_destination_cap')
-    goal_height, goal_ids = chain.floor_at(guide.goal)
+    if terminal_contact is None:
+        chain = walk(chain, position, guide.goal, 'exact_destination_connector')
+        chain = walk(chain, guide.goal, guide.goal, 'exact_destination_cap')
+        goal_height, goal_ids = chain.floor_at(guide.goal)
+    else:
+        goal_height,goal_ids=None,()
     check()
     payload = encoded(dict(format='eql-source-itinerary-v1', zone=guide.zone,
         source_wld_sha256=guide.wld_sha256, static_inventory_sha256=guide.static_inventory_sha256,
@@ -324,7 +352,9 @@ def plan_source_itinerary(prefix, start, guide, terrain, static, bsp, region_pol
         start=start, start_floor_height=start_height, start_source_ids=start_ids,
         goal=guide.goal, goal_floor_height=goal_height, goal_source_ids=goal_ids,
         connector_attempts=attempts, guide_entry=chosen, cells=cells,
-        final_proof_sha256=chain.previous.proof_sha256,
+        final_proof_sha256=chain.previous.proof_sha256 if terminal_contact is None else None,
+        terminal_contact_plan_sha256=None if terminal_contact is None else cells[-1]['contact_plan_sha256'],
+        ordinary_goal_floor_available=terminal_contact is None,
         started=began, finished=last, geometry_candidate=True,
         requires_fresh_start_pair=True, future_geometry_requires_runtime_checks=True,
         conditional_kinematic_hypothesis=True, client_step_capability_verified=False,

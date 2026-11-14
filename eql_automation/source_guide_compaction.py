@@ -13,6 +13,7 @@ from .ground_binding import finite
 from .native_region_policy import encoded
 from .source_itinerary import SourceItineraryGuide,SourceWalkHint,SourceStepHint
 from .source_stair_hint import SourceStairHint
+from .source_contact_hint import SourceContactHint
 
 
 def compact_source_guide(guide,*,maximum_length=8.,tolerance=1e-8):
@@ -42,7 +43,7 @@ def compact_source_guide(guide,*,maximum_length=8.,tolerance=1e-8):
         points.extend((a,b))
     for operation in guide.operations:
         if operation.start!=position:raise ValueError('Exactly contiguous proposal hints required')
-        if type(operation) in (SourceStepHint,SourceStairHint):
+        if type(operation) in (SourceStepHint,SourceStairHint,SourceContactHint):
             flush();result.append(operation)
         else:
             a=operation.start;b=operation.end

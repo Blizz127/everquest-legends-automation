@@ -1,42 +1,30 @@
 # EverQuest Legends automation — current owner guide
 
-Development source **0.42.73** · local stair candidate **0.39.33** (runtime source 0.42.69) · installed travel/camp test **0.39.32** (runtime source 0.42.61) · retained assist **0.39.13**.
+Development source **0.42.74** · local Throne candidate **0.39.34** · installed travel/camp test **0.39.32** (runtime source 0.42.61) · retained assist **0.39.13**.
 
-Source 0.42.73 adds the internal camp handoff for rug contact. A distinct
-checkpoint keeps the actual arrival and original height correspondence. After
-the first recovered kill, the camp checks two new positions without snapping
-rug height to terrain or recalibrating it. This can resume stationary camping;
-contact departure into another route is not implemented. The contact record is
-never passed into ordinary movement preparation. F8/F9 and the existing
-location sender passed local pipe tests, alongside unchanged terrain recovery.
-This remains a local source candidate: owner travel cannot reach this handoff
-until the contact itinerary and arrival adapter are connected. No new launch
-command or additional G0 test is needed.
+**G0 passed, including the visible stop. Do not repeat it.** The complete 1–20
+or 1–50 autopilot is not ready. Continue using the installed launcher below.
 
-Source 0.42.72 adds the internal rug-crossing controller. It follows checked
-waypoints through the existing movement sender, waits for actual stopped-position
-replies after every pulse, and records rug arrival separately from terrain.
-The controller passed simulated feedback and watchdog-pipe tests. It is not yet
-connected to owner travel or camp continuation, and this build is only staged
-locally. The staged 0.39.33 owner test still stops at the stair landing. There
-is no new launch command or G0 repeat for this source increment.
+Local candidate 0.39.34 extends the existing rotation bot with a **Throne Room**
+destination. Its copied map suggests levels 17–22. Starting near North Wall and
+Castle, the proposed route climbs the stairs and crosses the rug corridor to
+the exact map marker. A fresh stopped arrival can hand off to stationary
+camping while preserving the actual rug position. The optional next-camp
+selector can choose it after leaving the North Wall map range. Departure from
+a contact camp into a further route is not implemented.
 
-Source 0.42.69 connects stair travel to the existing owner route runner.
-A fresh stopped pair follows stair planning; each movement uses the retained
-sender and stopped feedback. Only the actual final landing updates the walking
-floor, and travel then continues from that observed position. A finite
-North Wall → Throne stair landing guide has been rebuilt from copied client
-geometry. The complete synthetic route passed real watchdog-pipe tests.
+The complete copied-client geometry rebuild and simulated route/camp handoff
+checks pass locally. Real-time pipe runs on the heavily loaded devbox have
+also stopped at their unchanged freshness deadlines; the full owner journey
+has not passed this release's real-time check. No real Throne travel or leveling
+has been accepted. This is a local candidate, **not installed on Alienware**.
+SSH currently times out, so there is no new command to run yet. STATUS.md
+records the installed versions and remaining checks.
 
-**Preview 0.39.33 is a local candidate and is not installed yet.** It adds
-“Throne stair landing · movement test” to the destination selector. This is an
-optional supervised test from near North Wall and Castle: it stops on the top
-stair landing, before the unfinished Throne exit. It starts no combat and disables
-camp continuation for that selection. Actual stair movement remains unverified.
-Keep using the installed 0.39.32 launcher below until STATUS.md records the new
-installation. The later arrival test has no retrieved result, and Alienware
-SSH currently times out; installing and checking the new build remain pending.
-G0 is complete, including the owner's visible-stop confirmation, and must not repeat.
+The separate **Throne stair landing · movement test** remains a stop-only
+selection before the contact corridor. It starts near North Wall, disables
+camp continuation and starts no combat. Assist still leaves movement and target
+selection to Blizz; F8 selects assist and F9 stops helper input.
 
 Preview 0.39.32 lets a released focus click settle before the location-hotbutton
 test, within its original deadline, and explains input-monitoring failures. It

@@ -46,6 +46,18 @@ def test_stair_landing_is_a_separate_finite_movement_destination():
     assert guide.operations[-1].end==guide.goal and guide.body_height==6. and guide.radius==1.2
 
 
+def test_throne_camp_has_a_terminal_contact_exit_to_the_exact_copied_map_goal():
+    from eql_automation.source_contact_hint import SourceContactHint
+    from eql_automation.source_stair_hint import SourceStairHint
+    spec=destination_spec('throne-room');guide=load_crushbone_source_guide(ROOT,spec.identifier)
+    assert spec.arrival_mode=='camp' and guide.goal==(106.,154.) and len(guide.operations)==12
+    assert type(guide.operations[-2]) is SourceStairHint
+    contact=guide.operations[-1]
+    assert type(contact) is SourceContactHint and contact.start==guide.operations[-2].end
+    assert contact.end==guide.goal and len(contact.waypoints)==9
+    assert set(contact.face_ids)=={(5781,0),(5781,1),(5782,0),(5782,1)}
+
+
 @pytest.mark.parametrize('identifier',('unknown','../slave-mines',None,[]))
 def test_unknown_destination_never_falls_back_to_default(identifier):
     with pytest.raises(ValueError,match='Unknown'):load_crushbone_source_guide(ROOT,identifier)

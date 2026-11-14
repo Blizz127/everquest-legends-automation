@@ -32,6 +32,7 @@ class OwnerSourceRuntime(SourceExecutionLoop):
         self.completed_arrival = None
         self.transfer = self.seal = self.collector = None
         self.stair_preflight=self.stair_boundary=None
+        self.contact_preflight=self.contact_boundary=self._contact_driver_state=None
         self.last_movement_release=startup_released_at
         self.observations, self.events, self.pairs = [], [], []
         if (self.ledger.observer.reader is not self.reader or self.ledger.clock is not clock
@@ -89,10 +90,11 @@ class OwnerSourceRuntime(SourceExecutionLoop):
             raise ValueError('Source route log hazard or coverage changed')
         e._trial_common_current(p)
         self._exclusive()
+        self.check_contact_boundary()
 
     def _request_location(self, request):
         e, p, collector, active, seal = self.engine, self.pending, self.collector, self.active, self.seal
-        pre=self.stair_preflight
+        pre=self.pending_preflight
         if type(request) is not LocationRequest or collector is None:
             raise ValueError('Owned source position request required')
 
@@ -100,7 +102,7 @@ class OwnerSourceRuntime(SourceExecutionLoop):
             self.check_current()
             collector.check()
             if seal is not None:active._check_seal(seal)
-            elif pre is not None and self.stair_preflight is pre and self.phase=='stair_start':pre.check()
+            elif pre is not None and self.pending_preflight is pre and self.phase in ('stair_start','contact_start'):pre.check()
             else:raise ValueError('Source location request lacks a movement seal or stair preflight')
             if (self.active is not active or self.seal is not seal or self.collector is not collector
                     or collector.pending is not request or collector.phase != 'requesting'

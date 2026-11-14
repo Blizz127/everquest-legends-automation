@@ -25,7 +25,8 @@ from test_owner_source_travel import configure
 @pytest.fixture
 def annotation_file(tmp_path,monkeypatch):
     data=(b'P -426, -74, -17, 0, 0, 0, 2, L07-10_Slave_Mines\n'
-          b'P 95, 78, 0, 0, 0, 0, 2, L13-17_North_Wall_and_Castle\n')
+          b'P 95, 78, 0, 0, 0, 0, 2, L13-17_North_Wall_and_Castle\n'
+          b'P -106, -154, 16, 0, 0, 0, 2, L17-22_Throne_Room\n')
     (tmp_path/'crushbone_3.txt').write_bytes(data)
     monkeypatch.setitem(provider.DATA_PINS,'crushbone_3.txt',sha256(data).hexdigest())
     return tmp_path
@@ -33,7 +34,7 @@ def annotation_file(tmp_path,monkeypatch):
 
 def test_map_ranges_keep_current_camp_and_never_fill_unbuilt_level_gaps(annotation_file):
     root=annotation_file
-    for level in (1,7,10,11,12,18,20,50):
+    for level in (1,7,10,11,12,23,50):
         assert provider.choose_next_destination(root,'slave-mines',level) is None
     selected,evidence=provider.choose_next_destination(root,'slave-mines',13)
     assert selected.identifier=='north-wall'
@@ -41,6 +42,10 @@ def test_map_ranges_keep_current_camp_and_never_fill_unbuilt_level_gaps(annotati
     assert record['level_hint']==[13,17] and record['observed_level']==13
     assert not record['live_suitability_verified'] and not record['label_z_used_for_floor']
     assert provider.choose_next_destination(root,'north-wall',17) is None
+    for level in (18,20):
+        selected,evidence=provider.choose_next_destination(root,'north-wall',level)
+        assert selected.identifier=='throne-room' and json.loads(evidence)['level_hint']==[17,22]
+    assert provider.choose_next_destination(root,'throne-room',20) is None
     assert provider.choose_next_destination(root,'throne-stair-landing',17) is None
     with pytest.raises(ValueError):provider.choose_next_destination(root,'slave-mines',True)
     (root/'crushbone_3.txt').write_text('changed')

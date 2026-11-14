@@ -26,18 +26,22 @@ from test_owner_journey_runtime import h
 @pytest.fixture
 def arrival(h,checkpoint,monkeypatch):
     f=checkpoint;reached=CampFloorCheckpoint(f.ledger)
+    receipt=SourceWalkFinished(f.ledger.observer.itinerary.sha256,f.ledger.reference)
+    runtime=SimpleNamespace(phase='complete',completed_arrival=receipt,ledger=f.ledger)
+    return make_arrival(h,f,monkeypatch,reached,runtime,receipt)
+
+
+def make_arrival(h,f,monkeypatch,reached,runtime,receipt):
     camp.__wrapped__(h,f,monkeypatch)
     e=h.engine;j=e.journey;old=e.camp_session
     h.now=f.now;clock=lambda:h.now
     j.continue_camps=j._continue_camps=True
     observer=j.camp_motion.observer
     observer.sample=lambda:OwnerInputObservation(h.now,h.now,1,True,1,0,False,0,'synthetic arrival')
-    receipt=SourceWalkFinished(f.ledger.observer.itinerary.sha256,f.ledger.reference)
-    runtime=SimpleNamespace(phase='complete',completed_arrival=receipt,ledger=f.ledger)
     plan_motion=f.ledger.motion
     calibration=dict(status='conditional',estimate=dict(record_id='synthetic-fresh-fit',
         estimate={k:getattr(plan_motion,k) for k in ('run_speed','turn_rate','right_sign','turn_latency')}))
-    basis=camp_route_motion_basis(runtime,calibration)
+    basis=camp_route_motion_basis(runtime,calibration,reached)
     p=SimpleNamespace(journey=j,camp=old,monitor=j.camp_motion,floor=j.arrival_floor,
         hotkey=j.location_binding,tracker=e.live_zone_tracker,reader=f.reader,
         lease=SimpleNamespace(active=False),runtime=SimpleNamespace(closed=True),

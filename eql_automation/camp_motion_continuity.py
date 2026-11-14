@@ -13,13 +13,13 @@ from .camp_floor_checkpoint import CampFloorCheckpoint
 from .camp_contact_checkpoint import CampContactCheckpoint
 
 
-def arrival_motion_basis(runtime, pending):
+def arrival_motion_basis(runtime, pending,checkpoint=None):
     if pending['session'].record_id!=runtime.ledger.bounds.calibration_record_id:
         raise ValueError('Arrival bounds and original calibration differ')
-    return _arrival_basis(runtime)
+    return _arrival_basis(runtime,checkpoint=checkpoint)
 
 
-def camp_route_motion_basis(runtime, calibration):
+def camp_route_motion_basis(runtime, calibration,checkpoint=None):
     """Record fresh route steering separately from its historical bound ID."""
     fit=calibration['estimate'];estimate=fit['estimate'];motion=runtime.ledger.motion
     if (calibration['status']!='conditional' or any(getattr(motion,k)!=estimate[k]
@@ -27,10 +27,15 @@ def camp_route_motion_basis(runtime, calibration):
         raise ValueError('Arrival motion differs from its sealed camp fit')
     return _arrival_basis(runtime,dict(camp_fit_record_id=fit['record_id'],
         camp_fit_sha256=sha256(json.dumps(calibration,sort_keys=True,separators=(',',':'),
-            allow_nan=False).encode()).hexdigest(),motion_bounds_verified=False))
+            allow_nan=False).encode()).hexdigest(),motion_bounds_verified=False),checkpoint=checkpoint)
 
 
-def _arrival_basis(runtime, extra=None):
+def _arrival_basis(runtime, extra=None,checkpoint=None):
+    if type(checkpoint) is CampContactCheckpoint:
+        if checkpoint._arrival is not runtime.completed_arrival:
+            raise ValueError('Contact motion basis must belong to the exact completed arrival')
+        record=json.loads(checkpoint.motion_basis());record.update(extra or {})
+        return json.dumps(record,sort_keys=True,separators=(',',':'),allow_nan=False).encode()
     ledger=runtime.ledger;reference=runtime.completed_arrival.reference
     heading=ledger.pose.heading
     if type(heading) not in (int,float) or not math.isfinite(heading) or not 0<=heading<360:
