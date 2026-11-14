@@ -1,7 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 01:50 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:51 UTC for coordinator task `829a00229b29`.
 
+- Private source **0.41.54**, commit `96f472c`, is staged at Alienware
+  `~/.local/share/eql-automation/owner-tools/0.41.54/source`. Archive SHA
+  `018a488f50db896a9f1fe93587f7f91d20a1d208ebd2f0f022b2ba409b3fcf65`
+  matched. Remote pure-geometry/CLI smokes passed, including rejection of a
+  competing source floor. No input device or game input was used.
 - Source **0.41.54** adds bounded reciprocal one-ULP precision retries with
   full copied-source ground support. Twenty-six focused tests passed. Source
   triangles must cover the expanded footprint continuously and without other

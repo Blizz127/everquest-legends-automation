@@ -1,5 +1,15 @@
 # FINDINGS
 
+## Private 0.41.54 staging — 2026-11-14 01:51 UTC
+
+**VERIFIED:** Commit `96f472c` archive SHA
+`018a488f50db896a9f1fe93587f7f91d20a1d208ebd2f0f022b2ba409b3fcf65`
+matched at Alienware `~/.local/share/eql-automation/owner-tools/0.41.54/source`.
+A synthetic two-source-triangle precision smoke passed; adding a competing
+floor refused. CLI startup and mutually incompatible precision flags were
+checked (`../smoke.json`). These remote checks used no input devices/client
+data; the full copied-data replays ran on the devbox. No game input occurred.
+
 ## Source-supported tile precision and separate ground heights — 2026-11-14 01:50 UTC
 
 **VERIFIED implementation:** `portal_precision.py` recognizes only unique,
