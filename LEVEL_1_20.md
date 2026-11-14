@@ -17,6 +17,9 @@ client capabilities. Seventy-one focused source/assist tests pass. Assist
 0.39.13 is staged with stale HP/mana invalidation; owner motion test 0.39.12 is
 unchanged. No automated level gain or real 1–20 route is accepted.
 
+Source `ac78e8b` is staged at Alienware `owner-tools/0.42.1/source`;
+generated discovery/caps/ranking and up/down startup checks pass without input.
+
 Source 0.42.0 adds an explicit conditional lift/transfer/settle model for copied
 source risers. It handles sloping departure/landing floors and both directions,
 without treating vertical faces as ordinary walkable joins. The source run

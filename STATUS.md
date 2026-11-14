@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 09:46 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 09:48 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -29,6 +29,10 @@ Updated 2026-11-14 09:46 UTC for coordinator task `829a00229b29`.
   leg and resolve copied BSP classifications for this completed source path.
   Measurement 0.39.12 is unchanged; G0 is passed and needs no repeat. No actual
   level gain, current level, XP/hour, death count or camp is verified.
+  Source `ac78e8b` is staged at Alienware `owner-tools/0.42.1/source`;
+  generated-cap/discovery/ranking/up-down/parent-isolation startup checks pass
+  without an engine or input. Startup SHA
+  `29e8aae74b3cda327858d39c32d961056172aaa58bdc3e03585edf61a742e2ba`.
 - **Source 0.42.0:** explicit source-backed up/down step diagnostics now
   check departure lift, the complete raised transfer and landing settle,
   retaining risers and all terrain/static faces. The landing has a distinct

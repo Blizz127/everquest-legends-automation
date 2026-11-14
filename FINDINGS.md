@@ -54,6 +54,15 @@ current scene/zone observations for the first supervised GFay leg; finish BSP
 classification on the source path. No accepted real route or automated XP.
 G0 passed with the owner's visible-stop confirmation and requires no repeat.
 
+**VERIFIED private source staging:** commit
+`ac78e8bc878e36f7ee0b4dcf4045097331084daa` is staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.1/source`. Archive SHA
+`50a9f0c4fdfabfe1ce9f590b0d03e45a5ec4d4148afed6050c3babf5981a18dc`.
+Imports, automatic discovery, generated caps, distance ranking, both step
+directions, component pruning and parent isolation pass without constructing
+an engine or sending input. Startup artifact SHA
+`29e8aae74b3cda327858d39c32d961056172aaa58bdc3e03585edf61a742e2ba`.
+
 ## Assist gauge lifecycle fix — 2026-11-14 09:39 UTC
 
 **VERIFIED:** owner preview 0.39.13 builds on the retained 0.39.6 rotation
