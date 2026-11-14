@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 13:34 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 13:46 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,19 @@ Updated 2026-11-14 13:34 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source0.42.25:** native float32 region metadata now preserves default0,
+  label precedence and full transition flags independently from collision.
+  A reproduced tiny-result/FTZ edge case is corrected.84 focused checks pass.
+  Final complete copied replay:1,046cells and7transfers, all terrain/static and
+  transition proofs rechecked; native metadata complete, possible full flags
+  exactly0 throughout. Legacy926cell and7step BSP refusals remain recorded.
+  Replay SHA `ce932ff516a5053e2b41bab44d7ba1c3ee77b2e1918b8d8cb4a8f02a2aed9526`.
+  **Next:** explicit supervised zero-flags policy in planning/height/per-move
+  authorization, then source-step execution and fresh camp routing. Native
+  bounds/actor query behavior, body dimensions and live movement remain
+  unverified. Owner crossing0.39.19 and assist0.39.13 unchanged; G0 passed.
+  Current level, XP/hour, deaths/camp unknown; no automated XP or accepted
+  1–20/1–50 run. No game input was sent.
 - **Source0.42.24:** explicit unique-Diffuse floor proposals distinguish
   distant Boundary sheets while preserving full footprint/static/BSP checks.
   Fresh height can use only the exact checked initial plan, with owner/log/zone,

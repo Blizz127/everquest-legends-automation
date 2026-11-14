@@ -10,6 +10,7 @@ from pathlib import Path
 from .bsp_detail_view import BspDetailMeshView
 from .bsp_volume import BspVolumeView
 from .camp_annotations import read_camp_annotations
+from .client_region_classification import ClientBspClassificationView
 from .current_route_start import CurrentStartPlanner
 from .ground_sweep_view import GroundSweepView
 from .location_log import unique_zone_ids_from_text
@@ -34,12 +35,14 @@ OBJECTS_PIN = 'fc7535a0c3ade7a4e3e76733d301acee697dddbf0d2db9ae41718009a29bb8c8'
 LIBRARY_PIN = 'efe378db3c69b1f2d8b362bc3c32b997bf0d8cec9eac418f893c1ec897b3be95'
 STATIC_PIN = 'b49d11674658e30a6df8914c4ba2002df6772f093b859647f05ad43c2842647a'
 BSP_PIN = '048f1cef7ddc9adc4700498c7211ef0fa2717ccd81132843890422a7e69db45c'
+CLASSIFICATION_PIN = '99197a077bfd709305eeececf77602f5ff3283006cad14da948d960c11b08b0a'
 
 
 @dataclass(frozen=True)
 class CrushboneAssets:
     planner: CurrentStartPlanner
     annotations: tuple
+    classification: ClientBspClassificationView
 
     def annotation_report(self, *, body_height=None):
         """Inspect exact annotation XY, never turn label Z into a floor seed."""
@@ -128,8 +131,11 @@ def load_crushbone_assets(root):
     ground = GroundSweepView.load(mesh_path, zone='crushbone')
     source = PortalPrecisionView(ground, mesh_path, root/'crushbone.s3d', zone='crushbone')
     bsp = BspVolumeView.from_wld(terrain)
+    classification = ClientBspClassificationView.from_wld(terrain)
     if static.inventory_sha256 != STATIC_PIN or bsp.inventory_sha256 != BSP_PIN:
         raise ValueError('Loaded Crushbone static/BSP inventory changed')
+    if classification.inventory_sha256 != CLASSIFICATION_PIN:
+        raise ValueError('Loaded native Crushbone classification inventory changed')
     source.sources = tuple(source.sources)
     for array in (ground.triangles, ground.polys, ground.areas, ground.components,
                   ground.minimum, ground.maximum, source.source_minimum, source.source_maximum):
@@ -140,4 +146,4 @@ def load_crushbone_assets(root):
         source_archive_sha256=DATA_PINS['crushbone.s3d'], source_wld_sha256=WLD_PIN,
         static_inventory_sha256=STATIC_PIN)
     verify()
-    return CrushboneAssets(planner, annotations)
+    return CrushboneAssets(planner, annotations, classification)

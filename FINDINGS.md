@@ -1,5 +1,70 @@
 # FINDINGS
 
+## Native region enclosure and complete Crushbone replay — 2026-11-14 13:46 UTC
+
+**VERIFIED implementation:** source0.42.25 composes the audited native
+`ClientBspTreeView` and last-record-wins `ClientRegionMap` into a separate
+`ClientBspClassificationView`. Missing children and untyped regions retain
+separate origins and fallback flags0. Typed labels retain the full DWORD,
+record/fragment identity and transition metadata; a low byte0 does not remove
+TP/high-bit flags. Cycles, budgets, unsupported arithmetic and the null-root
+special return remain unresolved. No `candidate`/dry-space claim is added.
+
+Complete body enclosures use exact rational nearest-even binary32 rounding in
+the audited product/add order. Each node receives the original AABB; no exact
+mathematical plane clips away a possible native branch. Both subnormal input
+and result flush choices are enclosed. RN and masked SIMD exceptions/no handler
+intervention remain assumptions; the native bounds gate and alternate-volume
+path are not modeled. Complete classification is not collision clearance.
+Separate adapters bind complete body and lift/transfer/settle classifications
+to freshly rechecked terrain/static and source-step proofs. The copied Crushbone
+loader pins this native inventory separately from the legacy BSP inventory.
+Final classifier SHA `99197a077bfd709305eeececf77602f5ff3283006cad14da948d960c11b08b0a`.
+
+**VERIFIED arithmetic correction:** a focused test reproduced omission of FTZ
+zero when an exact tiny product rounds to minimum-normal under gradual
+underflow. The enclosure now includes the pre-round tiny alternative as well.
+The independent arithmetic check and root source check used the
+[Intel SDM, volume1 §§4.9.1.5 and11.5.2.5](https://cdrdv2-public.intel.com/843827/253665-sdm-vol-1-dec-24.pdf).
+No client MXCSR state was read or claimed. The first replay and entrance probe
+used the earlier enclosure and are superseded by the final replay below.
+
+**VERIFIED final focused checks:** 84 pass, including exact midpoint parity,
+float64 double-rounding counterexample, underflow/normal carry, FTZ zero, native
+operation ordering, full transition flags, label precedence, unresolved model
+states, changed geometry and real copied Crushbone loading.
+
+**VERIFIED full copied-route replay:**
+`nav-candidates/crushbone-native-all-phases-0.42.25-ftz.json` SHA
+`ce932ff516a5053e2b41bab44d7ba1c3ee77b2e1918b8d8cb4a8f02a2aed9526`.
+All **1,046 ordinary cells and seven step transfers** were replayed without
+searching for a new route. Every saved terrain proof and transition digest was
+asserted; static occupancy was rechecked. Native metadata is complete for every
+body/phase and its full possible flag set is exactly `[0]`, with no unresolved
+classification. Runtime97.18seconds on the devbox. The legacy results are
+preserved:926 ordinary missing-child refusals and all seven step BSP refusals;
+`current_path_bsp_candidate` remainsfalse. Route and real-client acceptance
+remainfalse. Final floor proof is
+`0a49c84e8be0beafc822fda6dc77cc74bf58dd46092cb2ca0f6d15df0103f521`.
+This resolves the copied metadata question; it does not establish live step
+capability, body dimensions, actor query offsets, dynamic obstacles or movement.
+
+For traceability, the superseded entrance probe SHA is
+`beba9000cd092c75a191cd4b82d5f2ea3036e4d467281be42c7f6dab6f7bfcae` and the
+pre-correction full replay SHA is
+`a5c55cd931ed4ddc1feedecdf02ec60a789513a2bdd3752980d44b80996a4420`.
+They were never used to enable game input.
+
+**Next:** explicit Crushbone measurement policy accepting only complete full
+flags0 metadata alongside unchanged terrain/static proofs, preserving the old
+BSP result and refusing other legacy hazards. Bind policy/classifier and nested
+evidence hashes into current planning, fresh height, each movement preparation
+and supervised authorization. Keep ordinary/default/full-auto behavior and
+exact zone-line crossing permissions separate. The seven source steps still
+need actual driver execution support. Owner crossing0.39.19 and assist0.39.13
+remain unchanged; G0 passed. Current level, XP/hour, deaths/camp unknown; no live
+route, automated XP, accepted1–20 or fresh hands-off1–50 run.
+
 ## Explicit floor proposal and bound height bootstrap — 2026-11-14 13:33 UTC
 
 **VERIFIED implementation:** source0.42.24 adds an explicit

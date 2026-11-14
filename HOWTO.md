@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.24** · rotation preview **0.39.13** · crossing preview **0.39.19** · approach preview **0.39.18**.
+Source **0.42.25** · rotation preview **0.39.13** · crossing preview **0.39.19** · approach preview **0.39.18**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -50,6 +50,11 @@ unknown materials and surfaces touching the body still refuse. Fresh height
 readings can use the exact checked initial floor and stop if that plan changes.
 The copied Crushbone entrance now reaches the separate region-tree refusal;
 this is not yet a traversable camp route. No new owner test is requested.
+Source 0.42.25 adds a separate model of the client's native region metadata,
+including missing-branch default class0, float32 arithmetic and full transition
+flags. It checks body and step volumes alongside the existing terrain/static
+checks. Its results are still offline evidence; they are not connected to the
+owner movement permission yet. The current launchers and controls are unchanged.
 
 ## Travel into Crushbone on Alienware: 0.39.19
 

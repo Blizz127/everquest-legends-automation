@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from eql_automation.camp_annotations import read_camp_annotations
-from eql_automation.crushbone_assets import DATA_NAME, load_crushbone_assets
+from eql_automation.crushbone_assets import DATA_NAME, CLASSIFICATION_PIN, load_crushbone_assets
 from eql_automation.owner_route_assets import checked_bytes
 from test_source_floor_observation import face, view
 
@@ -66,6 +66,10 @@ def test_retained_crushbone_loader_reports_real_layers_without_accepted_destinat
         pytest.skip('Approved private copied Crushbone inputs not staged here')
     monkeypatch.syspath_prepend(str(helper))
     assets = load_crushbone_assets(root)
+    assert assets.classification.inventory_sha256 == CLASSIFICATION_PIN
+    native = assets.classification.classify_point_after_bounds(-424.04,274.06,0.)
+    assert native.complete and native.classification.flags == 0
+    assert not native.collision_verified and not native.input_authorized
     report = assets.annotation_report()
     assert (report['zone_id'], report['zone_name']) == (58, 'Clan Crushbone')
     assert (report['terrain_faces'], report['static_faces'], report['placements']) == (21834, 9576, 178)

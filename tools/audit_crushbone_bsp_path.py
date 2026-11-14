@@ -22,7 +22,7 @@ STEPS = STORE/'nav-candidates/crushbone-source-steps-and-components-0.42.0.json'
 AUTO = STORE/'nav-candidates/crushbone-auto-source-steps-ranked-0.42.1.json'
 
 
-def run(output):
+def run(output, *, native_classification=False):
     sys.path[:0] = [str(PROJECT),str(HELPER)]
     from eqnav import zonegeom
     from eql_automation.ground_sweep_view import GroundSweepView
@@ -36,6 +36,9 @@ def run(output):
     from eql_automation.source_step_bsp import check_source_step_bsp
     from eql_automation.bsp_floor_guard import check_source_body_bsp
     from eql_automation.bsp_volume import BspVolumeView
+    from eql_automation.client_region_classification import ClientBspClassificationView
+    from eql_automation.native_body_regions import classify_source_body_regions
+    from eql_automation.native_step_regions import classify_source_step_regions
 
     pins = dict(PINS)
     pins.update({PARENT:'94116bdf777333bb875e537e450818950a4683b0ffd4965b002a0607689002c8',
@@ -59,6 +62,7 @@ def run(output):
         transform_sha256=pins[HELPER/'eqnav/zonegeom.py'])
     assert source.wld_sha256==parent['source_wld_sha256'] and static.inventory_sha256==parent['static_inventory_sha256']
     bsp = BspVolumeView.from_wld(terrain)
+    native = ClientBspClassificationView.from_wld(terrain) if native_classification else None
     seed = parent['source_seed']; seed_ids = tuple(sorted(tuple(k) for _,k in seed['candidates']))
     chain = SourceFloorChain(inventory_sha256=source.wld_sha256,
         seed_evidence_sha256=sha256(json.dumps(seed,sort_keys=True).encode()).hexdigest(),
@@ -69,6 +73,9 @@ def run(output):
         source_wld_sha256=source.wld_sha256,static_inventory_sha256=static.inventory_sha256,
         bsp_inventory_sha256=bsp.inventory_sha256,cells=[],steps=[],
         current_path_bsp_candidate=False,pins={str(p):h for p,h in pins.items()})
+    if native is not None:
+        record.update(native_classification_inventory_sha256=native.inventory_sha256,
+            native_classification_complete=False, native_all_flags_zero=False)
     def save():
         record['seconds'] = time.monotonic()-began
         record['cell_count'] = len(record['cells']); record['step_count'] = len(record['steps'])
@@ -77,6 +84,12 @@ def run(output):
                                                                if not c[kind]['candidate']).items()))
         record['step_refusals'] = dict(sorted(Counter(s['bsp']['reason'] for s in record['steps']
                                                     if not s['bsp']['candidate']).items()))
+        if native is not None:
+            results = [row['native'] for key in ('cells','steps') for row in record[key]]
+            record['native_possible_flags'] = sorted({v for r in results for v in r['possible_flags']})
+            record['native_refusals'] = dict(sorted(Counter(r['reason'] for r in results if not r['complete']).items()))
+            record['native_classification_complete'] = record['completed'] and all(r['complete'] for r in results)
+            record['native_all_flags_zero'] = record['native_classification_complete'] and record['native_possible_flags']==[0]
         temporary = output.with_suffix('.json.tmp')
         temporary.write_text(json.dumps(record,indent=2)+'\n'); temporary.replace(output)
     def budget():
@@ -92,6 +105,9 @@ def run(output):
                 footprint=footprint,selected_ids=step.selected_ids,
                 unclipped=asdict(check_source_body_bsp(step,footprint,sources,bsp)),
                 clipped=asdict(check_source_body_bsp(step,footprint,sources,bsp,clip_branches=True))))
+            if native is not None:
+                record['cells'][-1]['native'] = asdict(classify_source_body_regions(step,footprint,sources,
+                    static,native,source_wld_sha256=source.wld_sha256))
             if len(record['cells'])%200==0:
                 save(); print(json.dumps(dict(cells=len(record['cells']),seconds=record['seconds'])),flush=True)
     def replay_step(transition,label,landing_seed_ids=None):
@@ -104,6 +120,8 @@ def run(output):
         classification = check_source_step_bsp(checked,source,static,bsp)
         record['steps'].append(dict(origin=label,transition_sha256=checked.transition_sha256,
             bsp=asdict(classification)))
+        if native is not None:
+            record['steps'][-1]['native'] = asdict(classify_source_step_regions(checked,source,static,native))
         chain = continued
     save()
     try:
@@ -132,11 +150,16 @@ def run(output):
     print(json.dumps({k:record[k] for k in ('status','completed','cell_count','step_count','seconds',
         'unclipped_cell_refusals','clipped_cell_refusals','step_refusals','current_path_bsp_candidate')}))
     print(json.dumps(dict(output=str(output),sha256=sha256(output.read_bytes()).hexdigest())))
+    if native is not None:
+        print(json.dumps({k:record[k] for k in ('native_classification_complete','native_all_flags_zero',
+            'native_possible_flags','native_refusals')}))
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output',type=Path,required=True); args = parser.parse_args()
+    parser.add_argument('--output',type=Path,required=True)
+    parser.add_argument('--native-classification',action='store_true',help='Also model native float32 region metadata')
+    args = parser.parse_args()
     if args.output.exists() or args.output.is_symlink() or args.output.parent.resolve()!=(STORE/'nav-candidates').resolve():
         parser.error('Use a new output directly in approved nav-candidates store')
-    os.umask(0o077); os.nice(10); run(args.output)
+    os.umask(0o077); os.nice(10); run(args.output,native_classification=args.native_classification)
