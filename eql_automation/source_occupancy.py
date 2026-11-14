@@ -70,7 +70,11 @@ def exact_floor_partition(boundary,polygons):
     target=convert(boundary)
     patches=[]
     for polygon in polygons:
-        patch=clip(convert(polygon),target)
+        # Clip the small footprint by the triangle's three halfspaces. The
+        # intersection is identical, but clipping a large source triangle
+        # successively by many near-parallel footprint edges creates very
+        # large intermediate rational denominators.
+        patch=clip(target,convert(polygon))
         if area(patch)>0:patches.append(patch)
     if sum(area(p) for p in patches)!=area(target):return False
     return all(area(clip(a,b))==0 for i,a in enumerate(patches) for b in patches[:i])

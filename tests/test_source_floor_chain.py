@@ -4,7 +4,7 @@ from dataclasses import replace
 import pytest
 
 from eql_automation.portal_precision import SourceFace
-from eql_automation.source_floor_chain import SourceFloorChain
+from eql_automation.source_floor_chain import SourceFloorChain,positive_overlap,rational
 
 
 def face(vertices,index,material='Diffuse'):
@@ -98,6 +98,17 @@ def test_seed_multiple_faces_must_be_edge_connected():
     detached=face(((-4.,-4.,.0000001),(4.,4.,.0000001),(-4.,4.,.0000001)),2)
     r=chain(seed_ids=((1,1),(1,2))).advance(cell(0.,0.,1.),(FLOOR[0],detached))
     assert r.reason=='seed_faces_not_edge_connected'
+
+
+def test_exact_overlap_distinguishes_crossings_from_edge_or_point_contact():
+    square=rational(cell(0.,0.,1.))
+    assert positive_overlap(square,rational(cell(1.99999999,0.,1.)))
+    assert not positive_overlap(square,rational(cell(2.,0.,1.)))
+    assert not positive_overlap(square,rational(cell(2.,2.,1.)))
+    assert not positive_overlap(square,rational(cell(2.00000001,0.,1.)))
+    horizontal=rational(((-4.,-.1),(4.,-.1),(4.,.1),(-4.,.1)))
+    vertical=rational(((-.1,-4.),(.1,-4.),(.1,4.),(-.1,4.)))
+    assert positive_overlap(horizontal,vertical)
 
 
 @pytest.mark.parametrize('options',({'seed_evidence_sha256':''},{'body_height':0.},{'seed_ids':((1,1),(1,1))}))

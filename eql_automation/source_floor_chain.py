@@ -23,6 +23,21 @@ def rational(points):
     return tuple(tuple(Fraction(n) for n in p) for p in points)
 
 
+def inside(point,polygon, *, strict=False):
+    return all(cross(a,polygon[(i+1)%len(polygon)],point)>0 if strict else
+               cross(a,polygon[(i+1)%len(polygon)],point)>=0 for i,a in enumerate(polygon))
+
+
+def positive_overlap(first,second):
+    """Exact convex positive-area overlap, without constructing intersections."""
+    for polygon,other in ((first,second),(second,first)):
+        center=tuple(sum(p[k] for p in polygon)/len(polygon) for k in range(2))
+        if inside(center,other,strict=True):return True
+    # Separating-axis theorem: equality is only a line/point contact.
+    return all(max(cross(a,polygon[(i+1)%len(polygon)],p) for p in other)>0
+               for polygon,other in ((first,second),(second,first)) for i,a in enumerate(polygon))
+
+
 def exact_plane(vertices):
     a,b,c = rational(vertices)
     denominator = cross(a,b,c)
@@ -116,23 +131,30 @@ class SourceFloorChain:
                     or len(polygon)!=3 or math.hypot(*surface[:2])>1.):
                 continue
             exact_polygon=rational(polygon)
-            if area(clip(exact_polygon,exact_boundary))>0:
+            if positive_overlap(exact_polygon,exact_boundary):
                 patches[key]=(source,vertices,exact_polygon)
         geometry_sha=sha256(json.dumps({'footprint':footprint,'sources':[asdict(s) for s in sources]},
                                       sort_keys=True,separators=(',',':')).encode()).hexdigest()
         if len(patches)>32:
             return refuse('floor_patch_budget_exceeded',geometry_sha=geometry_sha)
-        overlap=None
         if self.previous is None:
             carried=tuple(sorted(self.seed_ids))
             if not set(carried)<=patches.keys():
                 return refuse('seed_floor_missing_or_unsupported',geometry_sha=geometry_sha)
         else:
-            overlap=clip(exact_boundary,self._expanded)
-            if area(overlap)<=0:
+            if not positive_overlap(exact_boundary,self._expanded):
                 return refuse('successive_cells_do_not_overlap',geometry_sha=geometry_sha)
-            carried=tuple(sorted(k for k in patches if k in self._selected
-                                  and area(clip(patches[k][2],overlap))>0))
+            def shared(key):
+                polygon=patches[key][2]
+                # If this triangle covers either cell, it covers their
+                # entire overlap. Otherwise clip the new footprint by the
+                # triangle first, keeping exact intermediates small.
+                if any(all(inside(p,polygon) for p in boundary)
+                       for boundary in (exact_boundary,self._expanded)):
+                    return True
+                patch=clip(exact_boundary,polygon)
+                return area(patch)>0 and positive_overlap(patch,self._expanded)
+            carried=tuple(sorted(k for k in patches if k in self._selected and shared(k)))
             if not carried:
                 return refuse('no_shared_source_floor_with_previous_cell',geometry_sha=geometry_sha)
 
@@ -187,14 +209,20 @@ class SourceFloorChain:
         # Compare every positive-area patch in the complete cell overlap.
         # Sharing one old face somewhere is insufficient to exclude a fork
         # into a different physical layer elsewhere in that overlap.
-        if overlap is not None:
+        if self.previous is not None:
             for _,old_vertices,old_polygon in self._selected.values():
-                old_patch=clip(old_polygon,overlap)
-                if area(old_patch)<=0:continue
                 old_plane=exact_plane(old_vertices)
                 for key in ids:
                     _,new_vertices,new_polygon=patches[key]
-                    if area(clip(old_patch,new_polygon))>0 and exact_plane(new_vertices)!=old_plane:
+                    # Equal affine planes agree on every possible overlap.
+                    # Unequal source triangles are intersected before the
+                    # larger footprint polygons, avoiding unnecessary work
+                    # for neighboring triangles that meet only on an edge.
+                    if exact_plane(new_vertices)==old_plane:continue
+                    intersection=clip(new_polygon,old_polygon)
+                    if area(intersection)<=0:continue
+                    intersection=clip(intersection,self._expanded)
+                    if area(intersection)>0 and positive_overlap(intersection,exact_boundary):
                         return refuse('previous_overlap_floor_changed',ids=ids,carried=carried,joins=joins,
                                       occupancy=occupancy,geometry_sha=geometry_sha)
         values=dict(candidate=True,reason='conditional_connected_source_cell_only',index=self.index,
