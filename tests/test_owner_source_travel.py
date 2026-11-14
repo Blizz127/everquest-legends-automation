@@ -1,5 +1,6 @@
 """Full retained helper handoff; synthetic geometry/game with actual pipe input."""
 import time
+from hashlib import sha256
 
 import pytest
 
@@ -13,11 +14,12 @@ from test_owner_route_trial import h, finish
 from test_route_step_sender import after_down
 
 
-def configure(h, monkeypatch, *, stop=None):
+def configure(h, monkeypatch, *, stop=None,destination_id='slave-mines'):
     planner=native(h,monkeypatch)
     guide=SourceItineraryGuide('crushbone',planner.pins[2],planner.pins[3],'f'*64,
         1.2,6.,(400.,205.),(SourceWalkHint((400.,200.),(400.,204.)),))
-    assets=SourceDestinationAssets(planner,guide,'Synthetic source destination',encoded(dict(synthetic=True)))
+    assets=SourceDestinationAssets(planner,guide,'Synthetic source destination',encoded(dict(synthetic=True,
+        destination_id=destination_id,guide_sha256=sha256(encoded(guide.record())).hexdigest())),destination_id)
     h.source_loading[0]=lambda:assets
     e=h.engine;h.source_seen=[];h.source_stopped=False
     def down():

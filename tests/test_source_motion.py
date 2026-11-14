@@ -48,6 +48,17 @@ def f(tmp_path,monkeypatch,legacy,request):
     p=f.planner
     guide=SourceItineraryGuide('crushbone',p.pins[2],p.pins[3],'f'*64,.1,6.,(4.,3.25),
         (SourceWalkHint((4.,2.),(4.,3.)),))
+    if getattr(request,'param',None)=='compact_long':
+        from eql_automation.source_guide_compaction import compact_source_guide
+        vertices=((0.,0.,.2),(10.,0.,.2),(10.,15.,.2),(0.,15.,.2))
+        p.source.sources=tuple(SourceFace(tuple((y,x,z) for x,y,z in points),0,'Diffuse',10,index)
+            for index,points in enumerate(((vertices[0],vertices[1],vertices[2]),
+                                           (vertices[0],vertices[2],vertices[3]))))
+        coords=np.asarray([s.vertices_wld for s in p.source.sources])[:,:,[1,0,2]]
+        p.source.source_minimum=coords.min(axis=1);p.source.source_maximum=coords.max(axis=1)
+        guide=compact_source_guide(replace(guide,goal=(4.,10.),operations=tuple(
+            SourceWalkHint((4.,float(y)),(4.,float(y+1))) for y in range(2,10))))
+        assert guide.operations==(SourceWalkHint((4.,2.),(4.,10.)),)
     if getattr(request,'param',None) in ('step','down'):
         before_z,after_z=((.5125,.2) if request.param=='down' else (.2,.5125))
         def face(points,index):
@@ -73,6 +84,7 @@ def f(tmp_path,monkeypatch,legacy,request):
         motion=legacy.Motion(run_speed=10.,turn_rate=90.,right_sign=1,turn_latency=.005,back_speed=0.),
         heading=0.,stop_lock=threading.RLock())
     def position(x=4.,y=2.,z=2.7):
+        if getattr(request,'param',None)=='compact_long' and f.real:f.now=f.clock()
         f.append(f'Your Location is {y:.2f}, {x:.2f}, {z:.2f}')
         return f.reader.poll(now=f.clock())[0]
     f.position=position;f.now=time.monotonic()-.4

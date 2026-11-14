@@ -1,8 +1,8 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.37** · travel/camp test **0.39.25** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.38** · travel/camp test **0.39.26** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.25 joins supervised Crushbone travel and repeated camp combat in one helper. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.26 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -25,7 +25,48 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
 Preview 0.39.24 switches between assist and the repeated stationary camp test without a
-restart. Preview 0.39.25 adds same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
+restart. Preview 0.39.26 adds an explicit destination selector to the same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
+
+## Choose a travel/camp destination — preview 0.39.26
+
+Close your old helper yourself; run only one. On Alienware:
+
+```bash
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.26/launch.sh
+```
+
+This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
+Assist leaves movement and targets to you. **F11** starts/stops the stationary
+camp where you stand. The first F11 after travel/setup remains OFF.
+
+In **Travel and camp test**, select the destination:
+
+- **Slave Mines**: the original route. The copied map suggests levels 7–10.
+- **North Wall and Castle**: start near Slave Mines. The route retraces the
+  corridor to reach this combined map destination. The copied map suggests
+  levels 13–17; this does not establish live camp suitability.
+
+Start inside Clan Crushbone. Open the map and run **Test /location hotbutton…**
+using your configured `/location` key. Then close map/chat, clear your target,
+turn native melee off and stand on clear, flat ground. Click **Travel to selected
+camp…**, confirm the open starting area and focus EverQuest during the countdown.
+The helper measures motion, checks a route from your current floor and travels
+if those checks pass. A fresh stopped arrival hands over to automatic learned
+spell preparation in gems **1–8**, then repeated stationary fights and recovery.
+
+Stay present for this test. **F8** switches to assist after movement releases;
+**F9** stops. The selected destination stays fixed throughout that trip and is
+shown in the travel/camp status. Stop before choosing another. There is no
+restart or re-login between these activities. G0 passed; do not repeat it.
+
+The North Wall path passed copied terrain/object/region checks and a bounded
+long-leg fixture. It has **not been traversed or accepted in the real client**.
+A start without a checked connection is refused. Later-camp relocation is still
+an explicit selection; it is not automatically triggered by a level-up. GFay
+entry, Trainer Hill, the full 1–20/1–50 route, buying/scribing, active looting,
+vendors and death recovery remain unfinished. The camp still needs observed
+NPC/consider/kill names in your log and fresh eligible target evidence.
+Preview 0.39.25 remains available below.
 
 ## Travel to Slave Mines, then camp — preview 0.39.25
 
@@ -565,15 +606,22 @@ Assist 0.39.13 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.42.37/source
+~/.local/share/eql-automation/owner-tools/0.42.38/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.42.37 adds long source-face route proposals, reversed itinerary
+above. Source 0.42.38 adds bounded near-straight proposal compaction and the
+pinned North Wall/Castle guide. Its complete copied-data check passes; the
+owner preview still rebuilds a fresh route before any travel. The diagnostic
+accepts `--compact`; its longer offline audit budget does not change runtime
+movement, observation or travel limits.
+
+Source 0.42.37 added long source-face route proposals, reversed itinerary
 guides and the copied-data diagnostic `tools/audit_crushbone_camp_transit.py`.
 Its `--strategy graph|reverse` options never send input. The initial North Wall
-graph failed ground coverage; the reverse-corridor check exhausted its work
-budget. Neither enables later-camp travel. Owner preview remains 0.39.25 and
+graph failed ground coverage; the original reverse-corridor check exhausted
+its work budget. Those attempts remain refused; the compacted 0.42.38 check
+supersedes them for North Wall. Owner preview is 0.39.26 and
 G0 remains passed. Use the owner launch commands above for game testing.
 
 Source 0.41.97 additionally wires a finite, owner-supervised relative

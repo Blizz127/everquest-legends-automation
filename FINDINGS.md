@@ -1,5 +1,58 @@
 # FINDINGS
 
+## 2026-11-14 16:40 UTC — North Wall copied route checked; owner candidate
+
+VERIFIED: the compacted reverse guide from Slave Mines `(426,74)` to the
+combined North Wall/Castle annotation `(-95,-78)` passes the complete copied
+terrain/static/BSP/native-region itinerary check. Its 237 operations rebuild
+into 247 checked cells with seven explicit steps; destination source height is
+0. The retained 1,065-cell/seven-step prefix was replayed again first. This is
+conditional geometry evidence, not a current character position or traversal.
+
+- Report `nav-candidates/crushbone-north-wall-transit-0.42.38-compacted.json`:
+  `6271afba7548adb9c64dfde89f065aaf28dd3ff2b7f136b0b6ee8e505fc30300`.
+- Checked plan: `6c56b689c20fa0cb1af25a681c70a1e8adbb5b12690bbea81e9b68d323d77559`.
+- Private `owner-route-data/crushbone-camps-20261114/crushbone-north-wall-source-guide-v1.json`:
+  `62f8f50797414ace566d7ec967a5ed61153b15ccdb11efeb4f2ea35f38f67d97`.
+- Guide record: `0e3827e24ad599762b1ad75a1669f21d57cadf7d776e61779921332b99ae59a4`.
+
+The 633 original reverse operations compact to 237 using an eight-unit hint
+length and an explicit `1e-8` XY rounding tolerance. Every intermediate point
+is tested against that tolerance; steps, reversals and larger turns remain.
+These are new proposals and proofs, not a claim of exact geometry equivalence.
+The diagnostic finished in 126.24 seconds. Its offline total budget is now
+600 seconds to include parent replay; the itinerary check still caps at 240.
+Owner startup, pulse, observation and travel limits were not increased.
+
+VERIFIED: eight compaction checks, one actual-pipe eight-unit driver check and
+15 destination-loader/queue checks pass locally. The driver case confirms
+three bounded releases with fresh stopped pairs, then mid-leg OFF without a
+new floor or later action. Its initial test failures mixed synthetic and real
+clocks/log timestamps; the corrected fixture uses consistent real timing.
+No product time or provenance checks were relaxed.
+
+Three local complete-handoff checks stopped before handoff: one release
+watchdog refusal and two current-floor connector refusals. Reports and hashes
+are retained in `owner-build-drafts/0.39.26/local-handoff-refusals.json`.
+Devbox was heavily loaded; timing is a possible cause, not a verified diagnosis.
+The isolated Alienware run **passes all 40 focused checks** in 322.79 seconds,
+with synthetic geometry, game feedback and OS pipes. It covers both queued
+selection and complete handoff, destination mutation at release, existing
+F8/F9/F11 cancellation, loader pins, compaction and the long-leg driver.
+Output SHA `3d5bc125e878da71b31c5664631daf882ccf20ff5184f962723e5bfba94929f3`,
+retained under `owner-tools/0.42.38-validation-1/checks.txt` on Alienware.
+No game input or character action. The native runtime limits were unchanged.
+
+Source 0.42.38 / owner preview 0.39.26 is built and validated; publication and
+GUI/startup checks are pending.
+It pins both destination guides, copies the queued choice, rejects unknown or
+mismatched destinations and retains selected-destination evidence through the
+fresh arrival/camp handoff. The GUI has an explicit selector and separate
+travel/camp indicators. Native engine SHA remains
+`d4925d8250e69d6e631f64b4c7eea115b34473aef90d86c9838c045ad355309e`.
+Real traversal/camp suitability and automated relocation after level-ups are
+unverified/unfinished. Full 1–20/1–50 remains unfinished; G0 remains passed.
+
 ## 2026-11-14 16:25 UTC — source 0.42.37 published
 
 VERIFIED: revision `4cd5c622ad31654aac8e5d49579c22c659b01e97` is staged at

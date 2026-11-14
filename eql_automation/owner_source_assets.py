@@ -13,6 +13,7 @@ class SourceDestinationAssets:
     guide: SourceItineraryGuide
     target_name: str
     source_evidence: bytes
+    destination_id: str = 'slave-mines'
     _guide_state: tuple = field(init=False, repr=False, compare=False)
 
     def __post_init__(self):
@@ -29,6 +30,7 @@ class SourceDestinationAssets:
                 or (self.guide.wld_sha256, self.guide.static_inventory_sha256) != self.planner.pins[2:]
                 or tuple(vars(self.guide).items()) != self._guide_state
                 or not isinstance(self.target_name, str) or not self.target_name
+                or self.destination_id not in ('slave-mines','north-wall')
                 or type(self.source_evidence) is not bytes or not 0 < len(self.source_evidence) <= 65536):
             raise ValueError('Current Crushbone planner and unchanged private guide required')
         self.planner._check_views()
@@ -37,11 +39,14 @@ class SourceDestinationAssets:
 def load_owner_source_destination(engine):
     from .owner_route_assets import load_owner_crushbone_planner
     from .crushbone_assets import DATA_NAME
-    from .crushbone_source_guide import GUIDE_PIN, load_crushbone_source_guide
+    from .crushbone_source_guide import destination_spec, load_crushbone_source_guide
+    journey=getattr(engine,'journey',None)
+    identifier='slave-mines' if journey is None else journey.destination_id
+    spec=destination_spec(identifier)
     planner = load_owner_crushbone_planner(engine)
-    guide = load_crushbone_source_guide(Path.home()/'.local/share/eql-automation/owner-route-data'/DATA_NAME)
+    guide = load_crushbone_source_guide(Path.home()/'.local/share/eql-automation/owner-route-data'/DATA_NAME,identifier)
     evidence = encoded(dict(kind='copied_client_source_guide', zone='crushbone',
-        guide_file_sha256=GUIDE_PIN, guide_sha256=sha256(encoded(guide.record())).hexdigest(),
-        package_goal_xy=guide.goal, target='Slave Mines', current_position=False,
+        destination_id=identifier,guide_file_sha256=spec.file_sha256, guide_sha256=sha256(encoded(guide.record())).hexdigest(),
+        package_goal_xy=guide.goal, target=spec.label, current_position=False,
         safe_camp_verified=False, real_client_accepted=False))
-    return SourceDestinationAssets(planner, guide, 'Crushbone Slave Mines', evidence)
+    return SourceDestinationAssets(planner,guide,'Crushbone '+spec.label,evidence,identifier)

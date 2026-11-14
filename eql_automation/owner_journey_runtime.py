@@ -5,6 +5,7 @@ receipt from that same job; saved reports cannot start a camp. No login or game
 launch, and no claim that copied geometry establishes live camp safety.
 """
 from dataclasses import dataclass
+import json
 import time
 
 from .navigation_phase import navigation_active
@@ -13,6 +14,7 @@ from .owner_location_hotkey_test import HOTKEY_TEST_JOB
 from .owner_navigation_preflight import settings_identity, window_identity
 from .owner_route_trial import SOURCE_JOB, make_owner_route_trial_engine, zone_binding
 from .source_walk_driver import SourceWalkFinished
+from .crushbone_source_guide import destination_spec
 
 
 @dataclass
@@ -21,6 +23,8 @@ class Journey:
     settings: tuple
     phase: str
     candidates: tuple = ()
+    destination_id: str = 'slave-mines'
+    destination_assets: object = None
 
 
 @dataclass(frozen=True)
@@ -35,6 +39,9 @@ class Arrival:
     sender: object
     gate: object
     captured_at: float
+    destination_id: str
+    destination: object
+    source_evidence: bytes
 
 
 def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
@@ -58,7 +65,13 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             j = self.journey
             return (j is not None and j.phase in {'setup', 'travel'}
                     and j.generation == self.cancel_generation
+                    and (j.destination_assets is None or j.destination_assets.destination_id==j.destination_id)
                     and j.settings == settings_identity(self.settings) and not self.stopping)
+
+        def post(self,name,value=None):
+            # GUI state/caller-owned dictionaries cannot change an already queued choice.
+            if name==SOURCE_JOB and isinstance(value,dict):value=dict(value)
+            return super().post(name,value)
 
         def _navigation_busy(self):
             return any(getattr(self, name, None) is not None for name in (
@@ -69,6 +82,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             data = super().autopilot_payload()
             if self.journey is not None:
                 data['journey_phase'] = self.journey.phase
+                data['journey_destination_id'] = self.journey.destination_id
             data['journey_last_result'] = self.journey_last_result
             return data
 
@@ -77,7 +91,8 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             self._journey_assist = None
             if j is not None:
                 self.journey_last_result = dict(phase='stopped', reason=str(reason),
-                    prior_phase=j.phase, real_client_accepted=False)
+                    prior_phase=j.phase,destination_id=(j.destination_id if j.destination_assets is None
+                        else j.destination_assets.destination_id),real_client_accepted=False)
             return super().stop_action(reason, keep_autopilot=keep_autopilot)
 
         def stop_autopilot(self, reason):
@@ -117,8 +132,18 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                     return
                 if self.journey is not None or self._navigation_busy() or self.camp_session is not None:
                     self.stop_action('Stop the current activity before requesting travel/setup'); return
+                selected='slave-mines'
+                if name==SOURCE_JOB:
+                    declaration=value.get('declaration')
+                    try:
+                        if not isinstance(declaration,dict) or not set(declaration)<={'open_flat_clear','destination_id'}:
+                            raise ValueError('Invalid source destination request')
+                        selected=destination_spec(declaration.get('destination_id','slave-mines')).identifier
+                    except ValueError as error:
+                        self.emit('Travel did not start: '+str(error));return
+                    value=dict(value,declaration={'open_flat_clear':declaration.get('open_flat_clear')})
                 self.journey = Journey(self.cancel_generation, settings_identity(self.settings),
-                    'setup' if name == HOTKEY_TEST_JOB else 'travel')
+                    'setup' if name == HOTKEY_TEST_JOB else 'travel',destination_id=selected)
                 self._journey_f11_release = True
                 result = super().handle_job(name, value)
                 if not self._navigation_busy(): self.journey = None
@@ -134,6 +159,10 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             recipe = super()._prepare_supervised_job(name)
             if name == SOURCE_JOB:
                 j = self.journey
+                destination=recipe['destination']
+                if j is None or destination.destination_id!=j.destination_id:
+                    raise ValueError('Loaded source destination differs from the queued choice')
+                j.destination_assets=destination
                 candidates = tuple(super()._load_camp_candidates('crushbone'))
                 if j is None or self.journey is not j or not navigation_active(self):
                     raise ValueError('Travel cancelled while loading observed camp candidates')
@@ -141,6 +170,15 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                     raise ValueError('No observed Crushbone NPC/consider/kill candidates; travel-to-camp unavailable')
                 j.candidates = candidates
             return recipe
+
+        def _trial_current(self,p):
+            result=super()._trial_current(p)
+            j=self.journey
+            if (j is not None and p['job']==SOURCE_JOB and
+                    (p['continuation']['destination'] is not j.destination_assets
+                     or j.destination_assets.destination_id!=j.destination_id)):
+                raise ValueError('Queued source destination changed during travel')
+            return result
 
         def _load_camp_candidates(self, zone=None):
             j = self.journey
@@ -172,8 +210,11 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             tracker = self.live_zone_tracker
             if tracker is None or tracker.reader is not r.reader or r.zone[0] != 58:
                 raise ValueError('Current Crushbone arrival required')
-            token = Arrival(j, p, r, receipt, tracker, r.zone, p['window'],
-                            self.sender, self.gate, clock())
+            destination=p['continuation']['destination']
+            if destination is not j.destination_assets or destination.destination_id!=j.destination_id:
+                raise ValueError('Source destination changed before arrival')
+            token = Arrival(j,p,r,receipt,tracker,r.zone,p['window'],self.sender,self.gate,clock(),
+                            j.destination_id,destination,destination.source_evidence)
             j.phase = 'handoff'
             return token
 
@@ -192,6 +233,9 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                     or getattr(self.sender, '_eql_route_operation', None) is not None
                     or window != token.window or self.live_zone_tracker is not token.tracker
                     or token.tracker.lease is not None or zone_binding(token.tracker.reader) != token.zone
+                    or j.destination_id!=token.destination_id or j.destination_assets is not token.destination
+                    or p['continuation']['destination'] is not token.destination
+                    or token.destination.source_evidence is not token.source_evidence
                     or r.completed_arrival is not token.receipt or r.phase != 'complete'
                     or r.ledger.reference is not token.receipt.reference
                     or not 0 <= now-token.receipt.reference.raw_fix.received_monotonic <= .5
@@ -211,6 +255,12 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             j.generation = expected
 
         def _continue_finished_trial(self, p, token):
+            try:return self._continue_source_journey(p,token)
+            except Exception as error:
+                if self.journey is token.journey:self.stop_action(str(error))
+                raise
+
+        def _continue_source_journey(self,p,token):
             self._arrival_current(token)
             self.zone = 'crushbone'  # From the fresh zone-bound arrival, never history.
             started = self.start_stationary_camp(arrival_check=lambda:self._arrival_current(token))
@@ -219,8 +269,14 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                 return dict(camp_started=False, reason='Owner changed the handoff')
             if not started or self.camp_session is None:
                 self.stop_action('Arrived; camp did not start'); return dict(camp_started=False)
+            if (j.destination_id!=token.destination_id or j.destination_assets is not token.destination
+                    or p['continuation']['destination'] is not token.destination
+                    or token.destination.source_evidence is not token.source_evidence):
+                self.stop_action('Source destination changed during camp handoff')
+                return dict(camp_started=False,reason='Destination changed before handoff commit')
             j.phase = 'camp'
             self.journey_last_result = dict(phase='camp', itinerary_sha256=token.receipt.itinerary_sha256,
+                destination_id=token.destination_id,destination=json.loads(token.source_evidence),
                 stopped_log_seq=token.receipt.reference.raw_fix.log_line_seq,
                 camp_started=True, safe_camp_verified=False, real_client_accepted=False)
             self.trace('journey_camp_handoff', **self.journey_last_result)

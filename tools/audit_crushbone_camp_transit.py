@@ -72,13 +72,14 @@ def replay_parent(parent,terrain,static,check):
         synthetic_offline_start=True,current_character_observation=False)
 
 
-def run(output,destination,strategy):
+def run(output,destination,strategy,compact):
     sys.path[:0]=[str(PROJECT),str(STORE/'owner-assist/0.39.4')]
     from eql_automation.crushbone_assets import load_crushbone_assets,DATA_NAME
     from eql_automation.source_step_links import discover_step_links
     from eql_automation.source_transit_graph import SourceTransitGraph
     from eql_automation.source_itinerary import plan_source_itinerary,SourceItineraryPlan
     from eql_automation.source_reverse_guide import reverse_source_plan
+    from eql_automation.source_guide_compaction import compact_source_guide
     from eql_automation.native_region_policy import encoded
     import math
     pins={p:sha256(p.read_bytes()).hexdigest() for p in
@@ -90,9 +91,11 @@ def run(output,destination,strategy):
                 raise ValueError('Copied evidence or code changed: '+str(path))
     verify();began=time.monotonic()
     def check():
-        if time.monotonic()-began>300:raise TimeoutError('Camp transit audit budget exhausted')
+        if time.monotonic()-began>600:raise TimeoutError('Camp transit audit budget exhausted')
     record=dict(format='eql-offline-camp-transit-v1',destination=destination,
-        goal=DESTINATIONS[destination],strategy=strategy,parent_sha256=PARENT_PIN,status='running',
+        goal=DESTINATIONS[destination],strategy=strategy,compact=compact,
+        offline_audit_budget_seconds=600,maximum_itinerary_check_seconds=240,
+        parent_sha256=PARENT_PIN,status='running',
         completed=False,source_candidate=False,game_input_sent=False,
         input_authorized=False,real_client_accepted=False,
         code_pins={str(p):v for p,v in pins.items()})
@@ -124,10 +127,15 @@ def run(output,destination,strategy):
                 key=lambda i:math.dist(parent['plan']['cells'][i]['start'],DESTINATIONS[destination]))
             guide=reverse_source_plan(retained,first_cell=index,goal=DESTINATIONS[destination])
             record['reverse_first_cell']=index
+        record['uncompacted_operations']=len(guide.operations)
+        if compact:
+            guide=compact_source_guide(guide)
+            record['compaction']=dict(maximum_length=8.,xy_rounding_tolerance=1e-8,
+                geometry_equivalence_claimed=False,requires_full_rebuild=True)
         record['guide']=guide.record();save()
         print(json.dumps(dict(stage='proposal',strategy=strategy,operations=len(guide.operations))),flush=True)
         plan=plan_source_itinerary(chain,start,guide,terrain,static,planner.bsp,planner.region_policy,
-            check_context=check,max_seconds=max(.001,min(240.,300-(time.monotonic()-began))))
+            check_context=check,max_seconds=max(.001,min(240.,600-(time.monotonic()-began))))
         record.update(plan=plan.record(),plan_sha256=plan.sha256,source_candidate=True,status='checked')
     except (ValueError,TimeoutError) as error:
         record.update(status='refused',reason=str(error))
@@ -141,8 +149,9 @@ if __name__=='__main__':
     parser.add_argument('--output',type=Path,required=True)
     parser.add_argument('--destination',choices=DESTINATIONS,required=True)
     parser.add_argument('--strategy',choices=('graph','reverse'),default='graph')
+    parser.add_argument('--compact',action='store_true',help='Merge straight hints before the complete geometry check')
     args=parser.parse_args()
     if (args.output.exists() or args.output.is_symlink()
             or args.output.parent.resolve()!=(STORE/'nav-candidates').resolve()):
         parser.error('Use a new output directly in the approved nav-candidates store')
-    os.umask(0o077);os.nice(19);run(args.output,args.destination,args.strategy)
+    os.umask(0o077);os.nice(19);run(args.output,args.destination,args.strategy,args.compact)

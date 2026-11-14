@@ -9,6 +9,7 @@ from eql_automation.source_walk_driver import (
 from eql_automation.uinput_watchdog import PulseReceipt
 from eql_automation.source_step_approach import source_step_supports
 from test_source_motion import f,legacy,proposed_receipt
+from test_route_step_sender import after_down
 
 
 def test_repeated_forward_receipts_require_stopped_ack_before_reaching_exact_goal(f):
@@ -115,3 +116,36 @@ def test_boundary_cannot_adopt_a_replaced_hint_map(f):
     driver._steps[boundary.cell_index]=replace(driver._steps[boundary.cell_index],end=(4.,3.7))
     with pytest.raises(RuntimeError,match='handoff'):driver.prepare_step_approach(boundary)
     assert f.ledger.steps==0 and f.sender.release_calls==0
+
+
+@pytest.mark.parametrize('f',['compact_long'],indirect=True)
+def test_compacted_eight_unit_leg_keeps_pulses_acknowledgments_and_mid_leg_off(f,monkeypatch):
+    driver=SourceWalkDriver(f.ledger)
+    legs=[row for row in f.plan.itinerary.record()['cells']
+          if row['kind']=='walk' and math.dist(row['start'],row['end'])==8.]
+    assert len(legs)==1
+    for _ in range(3):
+        f.real=True
+        action=driver.next_action();before=f.ledger.chain;start=f.ledger.reference.package_xyz
+        assert type(action) is SourceWalkCommand and action.target==(4.,10.,.2)
+        assert f.ledger.bounds.minimum_requested_hold<=action.requested_seconds<=.02
+        seal=driver.drive_one(f.sender,policy=f.policy,command_state_clear=lambda:True,pump=lambda:None)
+        assert f.ledger.chain is before and f.ledger.phase=='await_stopped'
+        # No new action is requested until the actual release gets two fresh replies.
+        position=start[1]+f.ledger.pose.speed*action.requested_seconds
+        # Keep the actual pipe/watchdog clock: the single-pulse fixture helper
+        # advances synthetic time and cannot be followed by another real pulse.
+        time.sleep(.2)
+        first=f.ledger.observe_reply(seal,f.position(y=position))
+        time.sleep(.4)
+        second=f.ledger.observe_reply(seal,f.position(y=position))
+        f.ledger.acknowledge_stopped(seal,first,second)
+        assert f.ledger.chain.index==before.index+2 and not f.sender.held
+    before=f.ledger.chain;count=f.ledger.steps
+    f.real=True
+    after_down(monkeypatch,lambda:f.ledger.cancel('owner OFF mid long leg'))
+    with pytest.raises(RuntimeError):
+        driver.drive_one(f.sender,policy=f.policy,command_state_clear=lambda:True,pump=lambda:None)
+    assert f.ledger.chain is before and f.ledger.steps==count==3
+    assert f.ledger.phase=='stopped' and not f.sender.held and f.sender.release_calls>=1
+    with pytest.raises(RuntimeError):driver.next_action()

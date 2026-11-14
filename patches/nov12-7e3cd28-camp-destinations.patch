@@ -1,0 +1,311 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -221,7 +221,7 @@
+             banner_layout.addWidget(QLabel(
+                 "MEASUREMENT ONLY    F9/F11 STOP    COMBAT + LEVELING DISABLED" if measurement_only else
+                 "F6  PREPARE    F8  ON    F9  OFF    F7  ON/OFF    F10  HEAL    "
+-                "F11/F12  DISABLED"))
++                "F11  CAMP TEST    F12  DISABLED"))
+             layout.addWidget(banner)
+             controls = QGridLayout()
+             self.character = QComboBox()
+@@ -346,14 +346,14 @@
+                 self.tabs.setTabText(3, "Movement measurement")
+                 self.tabs.setCurrentIndex(3)
+             else:
+-                self.tabs.setTabText(3, "Travel unavailable")
+-                self.tabs.setTabEnabled(3, False)
++                self.tabs.setTabText(3, "Travel and camp test")
++                self.tabs.setTabEnabled(3, True)
+             layout.addWidget(self.tabs, 1)
+             footer = QLabel(
+                 "G0 stop check only · one short pulse · F9/F11 cancel · leveling disabled"
+                 if measurement_only else
+                 "F6 prepares  ·  F8 turns persistent combat on  ·  F9 turns it off  ·  F7 toggles on/off  ·  "
+-                "Movement, targeting and melee are manual  ·  F11/F12 disabled")
++                "F8 assist: manual movement/targeting  ·  F11: repeated stationary fights  ·  Melee is manual")
+             footer.setWordWrap(True)
+             footer.setObjectName("muted")
+             layout.addWidget(footer)
+@@ -384,18 +384,20 @@
+             self.ap_default_status = (
+                 "Only the G0 movement-stop check is available: one 0.15-second forward pulse. F9/F11 cancel."
+                 if measurement_only else
+-                "Travel is unavailable in this assist preview. Movement and targeting stay manual.")
++                "F11 prepares learned spells, repeats stationary fights and recovers resources, stopping at observed level 20 or a failed check. Turn native melee OFF and choose your camp. F8 returns to assist; F9 stops.")
+             self.ap_status = QLabel(self.ap_default_status)
+             self.ap_status.setWordWrap(True)
+             column.addWidget(self.ap_status)
+             self.ap_info = QLabel("Zone, position and movement calibration appear while the helper runs."
+-                                 if measurement_only else "Zone, position and camp appear while the helper runs.")
++                                 if measurement_only else "Your chosen stationary camp · kills and observed target levels appear while running.")
+             self.ap_info.setObjectName("muted")
+             self.ap_info.setWordWrap(True)
+             column.addWidget(self.ap_info)
+             row = QHBoxLayout()
+-            start = QPushButton("Start autopilot  ·  F11")
+-            start.setObjectName("primary")
++            start = QPushButton("Repeat stationary camp  ·  F11")
++            start.setObjectName("stationaryCampButton")
++            start.setToolTip("Uses NPC names observed in your log, checks each target, casts spells and recovers resources between fights. Stops at observed level 20 or a failed check. Supervise this test.")
++
+             start.clicked.connect(lambda: self.post("autopilot_later"))
+             if measurement_only:
+                 start.setText("Leveling autopilot disabled in measurement mode")
+@@ -437,7 +439,39 @@
+                 scroll.setWidget(page)
+                 return scroll
+ 
+-            column.addWidget(QLabel("Camps from the leveling guide (select one for the buttons below)"))
++            limits = QLabel("Recovery resumes at HP 95% and mana 90%. F9 leaves posture under your control. "
++                            "Automatic preparation clears helper gems 1–8 and loads learned spells, including after level-ups. Travel is a separate button below. No buying, scribing, vendor or loot input.")
++            limits.setWordWrap(True)
++            column.addWidget(limits)
++            self.test_location_hotkey = QPushButton("Test /location hotbutton…")
++            self.test_location_hotkey.setObjectName("testLocationHotkeyButton")
++            self.test_location_hotkey.clicked.connect(self.configure_location_hotkey_test)
++            column.addWidget(self.test_location_hotkey)
++            column.addWidget(QLabel("Travel destination"))
++            self.source_destination = QComboBox()
++            self.source_destination.setObjectName("journeyDestinationBox")
++            self.source_destination.addItem("Slave Mines  ·  map hint 7–10", "slave-mines")
++            self.source_destination.addItem("North Wall and Castle  ·  map hint 13–17", "north-wall")
++            column.addWidget(self.source_destination)
++            self.supervised_source = QPushButton("Travel to selected camp…")
++            self.supervised_source.setObjectName("supervisedSourceTravelButton")
++            self.supervised_source.clicked.connect(self.configure_supervised_source)
++            column.addWidget(self.supervised_source)
++            travel = QLabel("Start inside Crushbone. Test your /location hotbutton with the map visible, then close the map. "
++                            "Travel measures motion on clear open ground, follows the source route and starts the camp "
++                            "only after a fresh stopped arrival. F8 switches to assist; F9 or F11 stops travel/camp. "
++                            "North Wall travel starts from the Slave Mines area. Map level ranges are hints; live camp suitability is unverified. "
++                            "F11 camps where you stand; the destination applies to the Travel button. "
++                            "The first F11 after travel/setup is always OFF. Supervise every travel test.")
++            travel.setWordWrap(True)
++            column.addWidget(travel)
++            column.addStretch()
++            # Keep inherited widget references for settings compatibility, but
++            # do not expose controls the stationary runtime does not use.
++            self.unused_camp_controls = QWidget(page)
++            self.unused_camp_controls.hide()
++            column = QVBoxLayout(self.unused_camp_controls)
++            column.addWidget(QLabel("Historical guide hints below are not the camp test’s routing instructions"))
+             self.camps = QTableWidget(0, 5)
+             self.camps.setHorizontalHeaderLabels(["Levels", "Zone", "Camp", "Autopilot", "Anchor"])
+             self.camps.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+@@ -645,12 +679,17 @@
+             if not autopilot:
+                 return
+             state = autopilot.get("state", "off")
+-            if state != self.ap_badge:
+-                self.ap_badge = state
+-                kind = "MEASUREMENT" if measurement_only else "AUTOPILOT"
++            if not measurement_only:
++                self.source_destination.setEnabled(not bool(autopilot.get("journey_phase")))
++            badge = (state, autopilot.get("journey_phase"), autopilot.get("journey_destination_id"))
++            if badge != self.ap_badge:
++                self.ap_badge = badge
++                kind = "TRAVEL TEST" if autopilot.get("journey_phase") in {"setup", "travel", "handoff"} else "CAMP TEST"
+                 label = {"running": "RUNNING", "paused": "PAUSED", "halted": "STOPPED"}.get(
+                     state, "IDLE" if measurement_only else "OFF")
+-                self.ap_state.setText(f"●  {kind} {label}")
++                destination = autopilot.get("journey_destination_id")
++                suffix = {"slave-mines": " · Slave Mines", "north-wall": " · North Wall and Castle"}.get(destination, "")
++                self.ap_state.setText(f"●  {kind} {label}{suffix}")
+                 self.ap_state.setStyleSheet({"running": "color: #7addac;", "paused": "color: #f5ca72;",
+                                              "halted": "color: #ffb9c2;"}.get(state, "color: #a9b5c5;"))
+                 if not measurement_only:
+@@ -671,10 +710,10 @@
+             parts = [f"Zone: {guide.zone_long(zone) if guide and zone else zone or 'unknown'}",
+                      f"Position: {loc[0]:.0f}, {loc[1]:.0f}" if loc else "Position: —"]
+             if not measurement_only:
+-                parts.extend([f"Camp: {camp['name']}" if camp else "Camp: chosen when started",
++                parts.extend([f"Camp: {camp['name']}" if camp else "Camp: owner chosen",
+                               f"Kills: {autopilot.get('kills', 0)}"])
+             parts.append(f"Movement: {calibration['speed']} units/s, {calibration['turn_rate']}°/s turn"
+-                         if calibration else "Movement: not calibrated")
++                         if calibration else "Movement: not calibrated" if measurement_only else "Stationary camp")
+             if measurement_only:
+                 self.ap_info.setText("   ·   ".join(parts))
+                 return
+@@ -720,6 +759,72 @@
+                     self.worker.engine.cancelled = True
+                 self.worker.engine.post(name, value)
+ 
++        def configure_location_hotkey_test(self):
++            from eql_automation.location_hotkey import HOTKEY_CODES
++            dialog = QDialog(self)
++            dialog.setWindowTitle("Test your /location hotbutton")
++            layout = QVBoxLayout(dialog)
++            text = QLabel("In EverQuest, create a hotbutton containing only /location. Bind it to a "
++                          "function key below and remove any other action on that key. Manually verify "
++                          "that it prints your position and does nothing else.\n\n"
++                          "Open the in-game map so its zone name and three coordinates are visible. "
++                          "The helper compares those labels with the fresh reply to recognize your current zone.\n\n"
++                          "This test sends that key once after a four-second focus countdown. "
++                          "Close chat, stand still and release keys. F9/F11 stop. It does not start a route.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            key = QComboBox()
++            key.addItem("Choose the key you configured", None)
++            for name in HOTKEY_CODES:
++                key.addItem(name, name)
++            layout.addWidget(key)
++            confirmation = QCheckBox("I verified this key runs only /location in this game session.")
++            layout.addWidget(confirmation)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Test once")
++            ok.setEnabled(False)
++            refresh = lambda *_: ok.setEnabled(key.currentData() is not None and confirmation.isChecked())
++            key.currentIndexChanged.connect(refresh)
++            confirmation.toggled.connect(refresh)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if dialog.exec() == QDialog.DialogCode.Accepted:
++                self.post("test_location_hotkey", {"key_name": key.currentData(), "confirmed": True})
++
++        def configure_supervised_source(self):
++            from eql_automation.crushbone_source_guide import destination_spec
++            identifier = self.source_destination.currentData()
++            selected = destination_spec(identifier)
++            dialog = QDialog(self)
++            dialog.setWindowTitle("Travel to " + selected.label + ", then camp")
++            layout = QVBoxLayout(dialog)
++            text = QLabel("Start inside Clan Crushbone. This measures motion, plans from your current position "
++                          f"toward {selected.label}, then starts the repeated stationary camp after a fresh stopped arrival. "
++                          "For North Wall and Castle, start near Slave Mines. Elsewhere the connection may be refused. "
++                          "The camp prepares learned spells in gems 1–8, fights and recovers between fights. "
++                          "Real traversal and camp safety remain unverified.\n\n"
++                          "First open the map and use Test /location hotbutton in this helper. "
++                          "Close the map and chat, clear your target and turn melee off. Start on clear, flat, open ground. "
++                          "After a four-second focus countdown, seven short calibration presses precede planning.\n\n"
++                          "Stay present. F9/F11 or Stop autopilot cancels; F8 switches to assist. Travel is limited to 25 minutes. "
++                          "The helper stops on an observed attack or zone change; it does not recover automatically.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            confirmation = QCheckBox("I will supervise; the starting calibration area is clear, flat and open.")
++            layout.addWidget(confirmation)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Travel, then camp")
++            ok.setEnabled(False)
++            confirmation.toggled.connect(ok.setEnabled)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if dialog.exec() == QDialog.DialogCode.Accepted and confirmation.isChecked():
++                self.post("supervised_crushbone_source_travel", {"open_flat_clear": True, "destination_id": identifier})
++
+         def confirm_chat_closed(self):
+             if self.worker is None or measurement_only:
+                 return
+@@ -787,10 +892,13 @@
+             self.status.setText(state["status"])
+             active, preparing = state["active"], state["preparing"]
+             self.chat_recovery.setEnabled(not measurement_only and not active and not preparing)
+-            if (active, preparing) != self.badge:
+-                self.badge = (active, preparing)
++            camp_running = (state.get("autopilot") or {}).get("state") == "running"
++            journey_phase = (state.get("autopilot") or {}).get("journey_phase")
++            if (active, preparing, camp_running, journey_phase) != self.badge:
++                self.badge = (active, preparing, camp_running, journey_phase)
+                 self.state_badge.setText("●  MEASUREMENT ONLY" if measurement_only else
+-                                        "●  ASSIST ON" if active else "●  PREPARING" if preparing else "●  ASSIST OFF")
++                                        "●  TRAVEL TEST" if journey_phase in {"setup", "travel", "handoff"} else
++                                        "●  CAMP TEST" if camp_running else "●  ASSIST ON" if active else "●  PREPARING" if preparing else "●  ASSIST OFF")
+                 self.state_badge.setStyleSheet("color: #7addac;" if active else "color: #f5ca72;" if preparing else "color: #a9b5c5;")
+             known = state["known"]
+             self.book_status.setText(f"{known} learned Paladin/Cleric spells read · Bar {'prepared' if state['prepared'] else 'needs preparation'}" if known is not None else
+@@ -908,6 +1016,17 @@
+                     "travel_tab_enabled": window.tabs.isTabEnabled(3),
+                     "travel_tab_label": window.tabs.tabText(3),
+                     "chat_recovery_enabled": window.chat_recovery.isEnabled(),
++                    "camp_button_text": window.findChild(QPushButton, "stationaryCampButton").text(),
++                    "journey_hotkey_visible": window.test_location_hotkey.isVisible(),
++                    "journey_hotkey_enabled": window.test_location_hotkey.isEnabled(),
++                    "journey_travel_visible": window.supervised_source.isVisible(),
++                    "journey_travel_enabled": window.supervised_source.isEnabled(),
++                    "journey_destination_ids": [window.source_destination.itemData(i) for i in range(window.source_destination.count())],
++                    "journey_destination_current": window.source_destination.currentData(),
++                    "journey_destination_visible": window.source_destination.isVisible(),
++                    "journey_destination_enabled": window.source_destination.isEnabled(),
++                    "camp_button_enabled": window.findChild(QPushButton, "stationaryCampButton").isEnabled(),
++                    "unused_camp_controls_visible": window.unused_camp_controls.isVisible(),
+                 }, indent=2) + "\n")
+             app.quit()
+         QTimer.singleShot(400, render)
+@@ -918,7 +1037,7 @@
+ 1. Enter your Paladin + Cleric loadout. A third class is optional; this profile does not depend on one.
+ 2. Choose your character and current level above. Set the starting level once; future level-up log messages update it while this helper runs.
+ 3. Stand somewhere safe, out of combat. Focus EverQuest and press F6. Preparation exports your learned spellbook and memorizes ONLY spells you own and can use at your selected level. Each gem waits for EverQuest's own "finished memorizing" message (about 2 seconds for a gem that already holds the spell), so /log must be on. F9 cancels.
+-4. Press F8 to turn combat on, heal low HP, and maintain prepared buffs even with no enemy selected. Repeated F8 presses leave it on. It checks for the enemy you select, fights it, then waits for your next selection after the kill. F9 turns combat off. F7 is a single on/off toggle (on like F8, off like F9) for controllers that map a button to F7; the helper consumes F7 so EQ's own Target Nearest PC does not also fire. F8 combat never selects, pulls or moves; F11 travel and F12 recording are disabled in this preview. You control melee yourself; F9 stops further helper input but does not turn melee off or cancel a spell already cast.
++4. Press F8 to turn combat on, heal low HP, and maintain prepared buffs even with no enemy selected. Repeated F8 presses leave it on. It checks for the enemy you select, fights it, then waits for your next selection after the kill. F9 turns combat off. F7 is a single on/off toggle (on like F8, off like F9) for controllers that map a button to F7; the helper consumes F7 so EQ's own Target Nearest PC does not also fire. F8 assist never selects or moves. F11 starts/stops a stationary repeated camp test with automatic target selection; F8 switches back to assist. F12 recording stays disabled. You control melee yourself; F9 stops further helper input but does not turn melee off or cancel a spell already cast.
+ 5. At full health, click Find / calibrate HP, check the proposed inner red gauge, and Save only when that outline and full HP are correct. Drag a corrected rectangle if needed. Automatic healing requires this reading. F10 requests your fast heal even without calibration.
+ 6. Optional: calibrate the blue mana bar. Below 25% mana the assistant saves mana for healing; at 35% or less it also skips buffs, stuns and the Smite ability.
+ 
+@@ -958,8 +1077,8 @@
+ At low levels, prioritize a useful weapon, shield/armor, and heal efficiency over dumping all mana into damage. At higher levels, raise damage cadence only as sustain allows. The tool does not claim a simulated best-in-slot DPS rotation; it favors a simple, durable solo setup.
+ 
+ TRAVEL STATUS
+-F11 travel and F12 recording are disabled in this preview. Routes for levels 1–20 are being built from copied client geometry; real movement validation is incomplete. You do not need to record routes by hand.
+-The separate --measure-navigation mode offers only the supervised G0 stop check. Passing G0 does not enable leveling or certify a route.
++F11 repeats stationary spell-only fights using names evidenced in your log. Stand at your chosen camp and turn native melee OFF. It automatically prepares learned spells, refreshes after dings and rests between fights. Stops at observed level 20 or a failed check. No buying/scribing, movement, loot input or vendors. F8 returns to assist; F9 stops.
++The complete 1–20 path is unfinished. Use separate preview 0.39.21 for movement. G0 passed; do not repeat it.
+ 
+ SOURCE OF SPELL LEVELS
+ The installed client's spells_us.txt is authoritative for this installation. The progression tab is a preview; your live bar is filtered against a fresh /outputfile spellbook export. No third-class skills are assumed.
+--- a/rotation_engine.py
++++ b/rotation_engine.py
+@@ -828,6 +828,19 @@
+         self.hotkey_releases[code] = now
+         return now - previous >= 0.35
+ 
++    def chat_input_opened(self):
++        self.stop_action("Stopped because chat input opened. Press F8 after closing chat.")
++
++    def autopilot_hotkey_released(self):
++        if self.measurement_only or self.autopilot_running() or self.deferred in {
++                "autopilot_start", "nav_calibrate", "nav_stop_check"}:
++            # Stopping works from anywhere; combat stays armed.
++            self.stop_autopilot("Measurement stopped (F11)." if self.measurement_only else
++                                "Autopilot OFF (F11) · combat assist stays ON · F9 turns it off")
++        elif (not self.measurement_only and self.gate.controls_ready()
++              and not self.preparing and not self.stop_keys_held()):
++            self.jobs.put(("autopilot_start", self.cancel_generation))
++
+     def input_events(self):
+         from evdev import ecodes as e
+         keys = key_sets()
+@@ -868,10 +881,10 @@
+                     if event.code in keys.disarm:
+                         if self.sender and event.code in keys.enter:
+                             self.sender.unfinished = False
+-                        reason = ("Stopped by F9. Press F8 when you are ready again."
+-                                  if event.code == e.KEY_F9 else
+-                                  "Stopped because chat input opened. Press F8 after closing chat.")
+-                        self.stop_action(reason)
++                        if event.code == e.KEY_F9:
++                            self.stop_action("Stopped by F9. Press F8 when you are ready again.")
++                        else:
++                            self.chat_input_opened()
+                     elif event.code == e.KEY_ESC:
+                         if self.sender and self.sender.unfinished:
+                             self.sender.unfinished = False
+@@ -922,14 +935,7 @@
+                     elif event.code == e.KEY_F9 and self.gate.controls_ready() and not self.preparing:
+                         self.jobs.put(("attack_off", self.cancel_generation))
+                     elif event.code == e.KEY_F11:
+-                        if self.measurement_only or self.autopilot_running() or self.deferred in {
+-                                "autopilot_start", "nav_calibrate", "nav_stop_check"}:
+-                            # Stopping works from anywhere; combat stays armed.
+-                            self.stop_autopilot("Measurement stopped (F11)." if self.measurement_only else
+-                                                "Autopilot OFF (F11) · combat assist stays ON · F9 turns it off")
+-                        elif (not self.measurement_only and self.gate.controls_ready()
+-                              and not self.preparing and not self.stop_keys_held()):
+-                            self.jobs.put(("autopilot_start", self.cancel_generation))
++                        self.autopilot_hotkey_released()
+                     elif event.code == e.KEY_F12 and self.gate.controls_ready() and not self.preparing:
+                         self.jobs.put(("record_point", self.cancel_generation))
+ 

@@ -1,5 +1,6 @@
 """Actual retained engine/source navigation and pipe sender; no device/game input."""
 import time
+from dataclasses import replace
 from types import SimpleNamespace
 
 import pytest
@@ -47,18 +48,31 @@ def h(tmp_path, retained, monkeypatch):
     e.stop_action('test cleanup');generator.close()
 
 
-def start(h):
+def start(h,destination_id=None):
     h.engine.read_log()  # Drain the fixture entry before the explicit travel start.
+    if destination_id is not None:
+        e=h.engine;e.post(SOURCE_JOB,dict(open_flat_clear=True,destination_id=destination_id))
+        return e.handle_job(*e.jobs.get_nowait())
     return route_start(h)
 
 
 def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,monkeypatch):
-    configure(h,monkeypatch);e=h.engine
+    assets=configure(h,monkeypatch,destination_id='north-wall');e=h.engine
     assert not navigation_active(e) and not e.measurement_only
-    start(h);assert navigation_active(e)
+    captured=[];capture=e._capture_trial_continuation
+    def keep(p):
+        token=capture(p)
+        if token:captured.append(token)
+        return token
+    e._capture_trial_continuation=keep
+    start(h,'north-wall');assert navigation_active(e)
     h.due_trial();record=finish(h,timeout=80.)
     assert record is not None and record['outcome']=='arrived','\n'.join(h.notices)
     assert record['continuation']['camp_started'],h.notices
+    assert record['destination']['destination_id']==record['continuation']['destination_id']=='north-wall'
+    assert record['destination']['guide_sha256']==record['continuation']['destination']['guide_sha256']
+    assert captured[0].destination is assets and captured[0].destination_id=='north-wall'
+    assert e.journey_last_result['destination_id']==e.journey.destination_id=='north-wall'
     assert e.camp_session is not None and e.journey.phase=='camp'
     assert e.sender is h.sender and not e.sender.held and h.observer_closed
     assert e.live_zone_tracker.lease is None and not navigation_active(e)
@@ -193,3 +207,58 @@ def test_packaged_native_f11_release_survives_gui_stop_and_keeps_deduplication(h
     events[:]=[SimpleNamespace(type=1,code=code,value=0)]
     module.Engine.input_events(e)  # Duplicate release retains the native debounce.
     assert e.cancel_generation==generation and e.jobs.empty()
+
+
+def test_queued_destination_is_copied_before_gui_or_caller_changes(h,monkeypatch):
+    assets=configure(h,monkeypatch,destination_id='north-wall');e=h.engine;e.read_log()
+    declaration=dict(open_flat_clear=True,destination_id='north-wall')
+    e.post(SOURCE_JOB,declaration);declaration['destination_id']='slave-mines'
+    queued=e.jobs.get_nowait();epoch=queued[1]['epoch'];generation=queued[1]['generation']
+    e.handle_job(*queued)
+    assert e.journey.destination_id=='north-wall' and e.journey.destination_assets is assets
+    assert e.supervised_motion['declaration']=={'open_flat_clear':True}
+    assert e.supervised_motion['epoch']==epoch and e.cancel_generation==generation
+    assert e.supervised_motion['continuation']['destination'] is assets and not h.events
+
+
+@pytest.mark.parametrize('identifier',('unknown',None,[],7))
+def test_invalid_destination_does_not_load_or_send_input(h,monkeypatch,identifier):
+    configure(h,monkeypatch);e=h.engine;called=[]
+    h.source_loading[0]=lambda:called.append(True)
+    start(h,identifier) if identifier is not None else (
+        e.read_log(),e.post(SOURCE_JOB,dict(open_flat_clear=True,destination_id=None)),
+        e.handle_job(*e.jobs.get_nowait()))
+    assert not called and e.journey is None and e.supervised_motion is None and e.route_trial is None
+    assert not h.events and not h.commands
+
+
+def test_known_destination_cannot_fall_back_to_another_guides_assets(h,monkeypatch):
+    configure(h,monkeypatch);start(h,'north-wall')
+    assert h.engine.journey is None and h.engine.supervised_motion is None and not h.events
+    assert any('queued choice' in str(value) for value in h.notices)
+
+
+@pytest.mark.parametrize('changed',('id','assets'))
+def test_destination_change_after_arrival_capture_never_hands_off(h,monkeypatch,changed):
+    from eql_automation.owner_zone_tracker import ZoneReaderLease
+    assets=configure(h,monkeypatch,destination_id='north-wall');e=h.engine;fired=[]
+    original=ZoneReaderLease.release
+    def release(lease):
+        result=original(lease)
+        if e.journey is not None and e.journey.phase=='handoff' and not fired:
+            fired.append(True)
+            if changed=='id':e.journey.destination_id='slave-mines'
+            else:
+                # The actual token retains the completed route's original evidence.
+                token=e._captured_for_test
+                token.pending['continuation']['destination']=replace(assets,destination_id='slave-mines')
+        return result
+    capture=e._capture_trial_continuation
+    def keep(p):
+        token=capture(p);e._captured_for_test=token;return token
+    e._capture_trial_continuation=keep;monkeypatch.setattr(ZoneReaderLease,'release',release)
+    start(h,'north-wall');h.due_trial();record=finish(h,timeout=80.)
+    assert fired and e.camp_session is None and e.journey is None
+    assert record['destination']['destination_id']=='north-wall'
+    assert not record['continuation'] and not h.commands and not h.sender.held
+    assert e.live_zone_tracker.lease is None and e.journey_last_result['destination_id']=='north-wall'

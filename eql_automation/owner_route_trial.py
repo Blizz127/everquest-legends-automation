@@ -433,7 +433,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 clock=clock,local_wall_clock=local_wall_clock)
             p.update(stage='source_route',source_runtime=runtime,collector=None)
             self._trial_current(p)
-            self.emit('Travel toward Slave Mines active · movement only · F9/F11 stop.')
+            self.emit(p['continuation']['label']+' active · movement only · F9/F11 stop.')
 
         def _attach_trial_driver(self,p,pair):
             from eqnav import steer
@@ -551,6 +551,8 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             if p['busy'] or (driver is not None and driver.busy):return
             runtime=p.get('corridor_runtime')
             source_runtime=p.get('source_runtime')
+            destination_evidence=(None if p['continuation']['destination'] is None else
+                p['continuation']['destination'].source_evidence)
             arrival=None; continuation=None
             try:arrival=self._capture_trial_continuation(p)
             except Exception as error:reason=str(reason)+'; continuation refused: '+str(error)
@@ -576,8 +578,7 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                                 'eql-owner-destination-travel-v1' if p['job']==DESTINATION_JOB
                                 else 'eql-owner-local-route-trial-v1'),record_id=p['trial_id'],
                 scope=p['continuation']['scope'],
-                destination=None if p['continuation']['destination'] is None else
-                    json.loads(p['continuation']['destination'].source_evidence),
+                destination=None if destination_evidence is None else json.loads(destination_evidence),
                 outcome='arrived' if ((driver is not None and driver.session.phase=='arrived')
                     or (runtime is not None and runtime.corridor.phase=='complete')
                     or (source_runtime is not None and source_runtime.phase=='complete')) else 'stopped',
