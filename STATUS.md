@@ -1,12 +1,12 @@
 # STATUS
 
-Updated 2026-11-14 18:20 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 18:21 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.50 validated; private publication pending.** Optional
+- **Source 0.42.50 privately published; preview stays 0.39.30.** Optional
   camp-position→probe handoff now preserves the exact reader/sender/monitor.
   A separate noncombat branch admits only the active driver. Retained-engine
   F8/F9 handlers cancel movement; key UP and operation cleanup precede reader
@@ -15,6 +15,9 @@ Updated 2026-11-14 18:20 UTC for coordinator task `829a00229b29`.
   Five local checks pass; final 31 Alienware handoff/position/runtime checks
   pass in 52.84 seconds, output SHA
   `944ba4e77e6245cb7b78ca548d3096288b8365a7544b8c1be6690dda64eecde5`.
+  Published at Alienware `owner-tools/0.42.50/source`, revision `8416403`.
+  Runtime/tests/tools match the checked candidate; imports/CLI/copied-data pins
+  pass. Startup SHA `85bbdbdcf04b3eeab11966cc69c500e31465aa233d0e2c9fd9adcaae761e88fd`.
   Actual watchdog/OS-pipe input, synthetic scene/admission/game feedback; no
   game input. Preview stays 0.39.30. Next: current movement policy, calibration
   reduction and reached-reference adoption for the next route. G0 passed;

@@ -1,5 +1,23 @@
 # FINDINGS
 
+## 2026-11-14 18:21 UTC — source 0.42.50 privately published
+
+VERIFIED Alienware `owner-tools/0.42.50/source`, revision
+`84164032b5fbb59d8bd4e07cc44f9c31da53f549`. Runtime/tests/tools match the
+31-pass final retained-engine/OS-pipe candidate; imports, diagnostic CLI startup
+and copied-data pins pass. Archive SHA
+`3e8106a1d10dceb87862633fadd1b635205aa3f2425277e4be895e3259ab7890`;
+startup SHA `85bbdbdcf04b3eeab11966cc69c500e31465aa233d0e2c9fd9adcaae761e88fd`.
+Publication record: `releases/eql-automation-0.42.50-staging.json`.
+
+Optional camp-probe handoff and retained F8/F9 handlers are tested with synthetic
+admission/game feedback. The owner launcher has no default probe plan provider;
+preview remains 0.39.30. No real client input, input-device creation, login,
+character action or protected-prefix edit. Current movement admission, independent
+scene/supported motion bounds, calibration reduction and next-route adoption
+remain unfinished. G0 passed; no repeat/new owner test. Current level, XP,
+XP/hour, deaths and camp remain unknown; no real 1–20/1–50 acceptance.
+
 ## 2026-11-14 18:20 UTC — source 0.42.50, retained-engine probe handoff
 
 VERIFIED optional `CampProbePlan` handoff preserves the exact post-recovery
