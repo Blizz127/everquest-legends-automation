@@ -45,6 +45,13 @@ chat observation, G2, route following and automated leveling. F9 stops further
 helper input; native melee and an already-started game cast are owner/client
 controlled. The owner-visible G0 stop result remains accepted separately.
 
+Source-only project 0.41.44 (`0cb5167`) is also staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.41.44/source`. Its local/remote
+archive SHA-256 is `b6043c05109c8dd6374394052a2414fbf1a0ee39d6b95dc042924171fa2a091f`.
+Remote CLI/startup checks passed and the offline navigation demo returned
+ARRIVED with `no_game_input=true`. This synthetic result is not movement
+acceptance.
+
 ## Crushbone detail-sampling next experiment — 2026-11-13 18:20 CST
 
 **VERIFIED read-only source probe by delegated audit:** All 65 existing
