@@ -1,5 +1,52 @@
 # FINDINGS
 
+## 2026-11-14 16:50 UTC — fresh-character candidate fallback and NPC-selection fix
+
+VERIFIED: source 0.42.39 derives a 5,370-byte private NPC-name artifact from
+retained owner log SHA `d622b3c12567f903d411860d3de1a0be28e4e8b38be7bbdc2bebfdd62c60f04e`.
+The artifact is `owner-route-data/owner-npc-candidates-20261113-v1.json`, SHA
+`0d43373b543d09a41e43f76aa42bfee9e6d892dda898ea238a4cac2fe8d73676`.
+The existing parser finds five GFay names, four Crushbone names and none for
+Butcherblock. Only names, historical levels and source line pairs are included;
+no raw chat or other-player log content is distributed. Source bytes are checked
+before and after extraction, and the builder refuses a changed output hash.
+
+The selected character's log takes precedence. With no candidates there, the
+runtime can use that exact artifact only for matching Freeport/zone identity.
+It does not scan other logs, invent current level/position, grant target authority
+or manufacture absent log continuity. Missing optional data provides no names;
+changed, oversized, symlink or nonregular data is refused. The camp's existing
+installed-executable check remains. Candidate origin and artifact hash survive
+into camp start/final evidence and the existing travel-to-camp handoff.
+
+VERIFIED: an actual retained Engine/KeySender fixture exposed a pre-existing
+camp issue: `Targeted (NPC)` sets `native_attack_off_pending`, while the camp's
+overridden combat tick omitted the owner's no-command bookkeeping cleanup.
+The next `/cast` therefore refused. The camp now runs that inherited adapter
+cleanup and waits for the next tick. It sends no `/attack` command, and an
+observed native-melee ON message still stops camp. This is a synthetic feedback
+reproduction, not a newly observed live-client result.
+
+All 84 focused candidate/camp checks pass locally in 3.44 seconds, with actual
+OS-pipe key events and synthetic game feedback. Earlier new-test failures first
+used a wrong fixture server/log filename; the corrected fixture then exposed
+the NPC-selection issue above. No movement or authority limits were relaxed.
+The existing matching-consideration path uses unknown kind if no selection
+receipt exists; it does not require an explicit NPC receipt. Bad fresh target,
+high level, PC selection and cancellation remain refused.
+
+VERIFIED on Alienware: all 84 selected focused checks pass in 44.36 seconds,
+including the full copied-geometry fixture travel→camp handoff carrying fallback
+candidate provenance. The raw-log reproduction check ran locally only; it was
+excluded remotely so raw chat did not need to be redistributed. Remote output
+SHA `69b7341fb562869340fb0efeaeccdde094475a9e2f4557c12022c5c4acd22f4c`.
+No game input. Preview 0.39.27 private publication/startup checks are pending.
+G0 remains passed including owner confirmation; never repeat it. Actual current
+level, XP/hour, deaths and camp remain unknown; full 1–20/1–50 is unfinished.
+Automatic relocation still needs preserved motion/heading continuity through
+camp, fresh stopped positions/posture and a supported destination choice.
+Copied map level labels alone are not evidence of suitable live encounters.
+
 ## 2026-11-14 16:43 UTC — 0.39.26 published on Alienware
 
 VERIFIED: source 0.42.38 revision

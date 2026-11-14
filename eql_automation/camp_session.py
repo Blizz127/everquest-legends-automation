@@ -28,6 +28,8 @@ class NpcCandidate:
     levels: tuple[int, ...]
     source_sha256: str
     pairs: tuple[tuple[int, int], ...]
+    origin: str = 'selected_character_log'
+    history_sha256: str | None = None
 
 
 def observed_candidates(path: Path, zone_name: str, *, consider, safe, excluded=(), max_bytes=4*1024*1024):
@@ -295,5 +297,6 @@ class StationaryCamp:
             posture_requested=getattr(self.recovery,'posture_requested',None),posture_observed=None,
             preparation=self.preparation.snapshot() if self.preparation else None,
             preparation_history=self.preparation_history,
-            candidates=[dict(name=c.name, source_sha256=c.source_sha256, pairs=c.pairs) for c in self.candidates],
+            candidates=[dict(name=c.name, source_sha256=c.source_sha256, pairs=c.pairs,
+                             origin=c.origin, history_sha256=c.history_sha256) for c in self.candidates],
             evidence=self.evidence)

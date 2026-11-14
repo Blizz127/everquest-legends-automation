@@ -25,9 +25,11 @@ def h(tmp_path, retained, monkeypatch):
         rotation_core.Spell(14,'Strike',1,255,100,0,100,5,0,1)]),
         check=lambda:None,source_sha256={'fixture':'a'*64})
     candidate = NpcCandidate('orc fixture', (5,), 'a'*64, ((1,2),))
+    import eql_automation.owner_camp_runtime as camp_runtime
+    monkeypatch.setattr(camp_runtime,'observed_candidates',lambda *args,**kwargs:(candidate,))
     def combined(base, **options):
         return make_owner_journey_engine(base, client=client, **options,
-            camp_options=dict(candidates_loader=lambda e:(candidate,),
+            camp_options=dict(
                 posture_loader=lambda p:SimpleNamespace(check=lambda:None),
                 preparation_catalog_loader=lambda p:prep))
     monkeypatch.setattr(route_fixture,'make_owner_route_trial_engine',combined)
@@ -58,6 +60,13 @@ def start(h,destination_id=None):
 
 def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,monkeypatch):
     assets=configure(h,monkeypatch,destination_id='north-wall');e=h.engine
+    import eql_automation.owner_camp_runtime as camp_runtime
+    fallback=NpcCandidate('orc fixture',(5,),'a'*64,((1,2),),'retained_owner_history','b'*64)
+    monkeypatch.setattr(camp_runtime,'observed_candidates',lambda *a,**k:())
+    loads=[]
+    def history(server,zone,**kwargs):
+        loads.append((server,zone));return (fallback,)
+    monkeypatch.setattr(camp_runtime,'load_owner_candidates',history)
     assert not navigation_active(e) and not e.measurement_only
     captured=[];capture=e._capture_trial_continuation
     def keep(p):
@@ -74,6 +83,8 @@ def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,
     assert captured[0].destination is assets and captured[0].destination_id=='north-wall'
     assert e.journey_last_result['destination_id']==e.journey.destination_id=='north-wall'
     assert e.camp_session is not None and e.journey.phase=='camp'
+    assert loads==[(e.settings.server,'crushbone')]
+    assert e.camp_session.candidates==(fallback,)
     assert e.sender is h.sender and not e.sender.held and h.observer_closed
     assert e.live_zone_tracker.lease is None and not navigation_active(e)
     assert e.camp_session.preparation_due and not record['real_client_accepted']

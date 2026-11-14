@@ -11,7 +11,7 @@ from build_nov12_preview import RUNTIME_FILES, sha256, PROJECT
 from owner_nov12_entry_03913 import verify_snapshot
 
 
-def build(source, output):
+def build(source, output, *, version='0.39.26', change=None):
     if output.exists() or output.is_symlink():
         raise ValueError('Refusing to replace an owner preview')
     if source.is_symlink() or not source.is_dir():
@@ -20,7 +20,7 @@ def build(source, output):
         raise ValueError('Preview must remain outside the protected game prefix')
     verify_snapshot(source)
     output.parent.mkdir(parents=True,exist_ok=True)
-    with tempfile.TemporaryDirectory(prefix='eql-preview-03926-',dir=output.parent) as temporary:
+    with tempfile.TemporaryDirectory(prefix='eql-preview-'+version+'-',dir=output.parent) as temporary:
         work=Path(temporary)/'snapshot';work.mkdir()
         names=set(RUNTIME_FILES)|{'launch.sh','BUILD_INFO.json'}
         names.update(str(p.relative_to(source)) for p in (source/'eqnav').glob('*.py'))
@@ -45,10 +45,10 @@ def build(source, output):
         assert entry.count('@MANIFEST_SHA256@')==1
         (work/'owner_nov12_entry.py').write_text(entry.replace('@MANIFEST_SHA256@',manifest))
         info=work/'BUILD_INFO.json';record=json.loads(info.read_text())
-        record.update(version='0.39.26',source_manifest_sha256=manifest,
+        record.update(version=version,source_manifest_sha256=manifest,
             entry_sha256=sha256(work/'owner_nov12_entry.py'),preview_hashes=pins,
             patch_sha256=[*record['patch_sha256'],sha256(patch)],
-            change='Existing assist plus explicitly selected Slave Mines or North Wall travel with fixed destination and fresh stopped camp handoff',
+            change=change or 'Existing assist plus explicitly selected Slave Mines or North Wall travel with fixed destination and fresh stopped camp handoff',
             mode='F8 owner-targeted assist; explicit travel then camp button; F11 stationary camp/off; F9 OFF; no loot input',
             real_camp_acceptance=False,real_route_acceptance=False)
         info.write_text(json.dumps(record,indent=2)+'\n')

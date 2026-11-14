@@ -1,8 +1,8 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.38** · travel/camp test **0.39.26** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Source **0.42.39** · travel/camp test **0.39.27** · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.26 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.27 offers supervised travel to Slave Mines or North Wall and Castle, followed by repeated camp combat. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -25,14 +25,14 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** Assist still uses the existing rotation bot. Preview 0.39.21 adds a
 separate finite movement test; it cannot switch into assist or full auto.
 Preview 0.39.24 switches between assist and the repeated stationary camp test without a
-restart. Preview 0.39.26 adds an explicit destination selector to the same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
+restart. Preview 0.39.27 includes the destination selector, same-process Crushbone travel→camp and F8 assist switching; complete full-auto remains unfinished.
 
-## Choose a travel/camp destination — preview 0.39.26
+## Choose a travel/camp destination — preview 0.39.27
 
 Close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.26/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.27/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
@@ -64,8 +64,23 @@ long-leg fixture. It has **not been traversed or accepted in the real client**.
 A start without a checked connection is refused. Later-camp relocation is still
 an explicit selection; it is not automatically triggered by a level-up. GFay
 entry, Trainer Hill, the full 1–20/1–50 route, buying/scribing, active looting,
-vendors and death recovery remain unfinished. The camp still needs observed
-NPC/consider/kill names in your log and fresh eligible target evidence.
+vendors and death recovery remain unfinished.
+
+In 0.39.27, an empty combat history can use NPC names from your retained
+observations on **Freeport**, in GFay or Crushbone. Your character's own
+NPC/consider/kill history takes precedence. No other character logs are scanned.
+Only reduced name evidence is staged; the source log and chat are not copied
+into the release. The helper still needs a current zone, readable log, correct
+configured level, learned spells and readable resources. Historical levels do
+not set your current level or authorize combat: each attempted fight needs a
+fresh matching consideration inside the current level window. A PC selection
+or mismatched target is rejected. The inherited matching-consideration path
+does not require an NPC-selection receipt when none is logged.
+
+This build also fixes a camp bookkeeping error that could block casting after
+a normal NPC-selection message. It sends no native melee command. Fresh-character
+login, new NPC discovery outside the retained names, automatic camp relocation
+and complete 1–20 remain unfinished. G0 is passed; no repeat is needed.
 Preview 0.39.25 remains available below.
 
 ## Travel to Slave Mines, then camp — preview 0.39.25

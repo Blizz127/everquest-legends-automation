@@ -44,13 +44,14 @@ def h(tmp_path, monkeypatch, client, request):
     h.append = lambda body: h.path.open('a').write(h.wall().strftime('[%a %b %d %H:%M:%S %Y] ')+body+'\n')
     candidate = NpcCandidate('orc fixture', (5,), 'a'*64, ((1,2),))
     options=getattr(request,'param',False)
-    options=options if isinstance(options,dict) else {'repeat':options}
+    options=dict(options) if isinstance(options,dict) else {'repeat':options}
+    real_history = options.pop('real_history', False)
     h.prep_source=SimpleNamespace(catalog=rotation_core.Catalog([
         rotation_core.Spell(200,'Minor Healing',1,255,100,0,100,5,0,1),
         rotation_core.Spell(14,'Strike',1,255,100,0,100,5,0,1)]),
         check=lambda:None,source_sha256={'fixture':'a'*64})
     E = make_owner_camp_engine(client.Engine, client=client, clock=h.clock, wall=h.wall,
-                              candidates_loader=lambda e:(candidate,),**options,
+                              candidates_loader=None if real_history else lambda e:(candidate,),**options,
                               posture_loader=lambda p:SimpleNamespace(check=lambda:None),
                               preparation_catalog_loader=lambda p:h.prep_source)
     e = h.engine = E(rotation_core.Settings(game_dir=str(game), character='Probe', server='private', level=7),

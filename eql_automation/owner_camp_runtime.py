@@ -11,6 +11,7 @@ from pathlib import Path
 import time
 
 from .camp_session import StationaryCamp, observed_candidates
+from .camp_candidate_history import load_owner_candidates
 from .camp_recovery import CampRecovery, PostureCommandBinding
 from .camp_preparation import CampPreparation, PreparationCatalog
 from .location_log import NonReplayingLogTail
@@ -107,8 +108,11 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             if zone is None:
                 raise ValueError('No historical zone hint for candidate names')
             excluded = [t.name for c in guide.camps for t in c.targets if t.avoid]
-            return observed_candidates(self.log_path(), guide.zone_long(zone),
+            candidates = observed_candidates(self.log_path(), guide.zone_long(zone),
                 consider=client.consider_target, safe=client.safe_leveling_target, excluded=excluded)
+            if candidates:
+                return candidates
+            return load_owner_candidates(self.settings.server, zone, client=client, excluded=excluded)
 
         def start_stationary_camp(self, *, arrival_check=None):
             entry_generation = self.cancel_generation
@@ -141,7 +145,7 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 return False
             candidates = tuple(c for c in candidates if client.valid_target_name(c.name))[:8]
             if not candidates:
-                self.emit('Camp did not start: no paired NPC/consider and kill evidence in this log'); return False
+                self.emit('Camp did not start: no NPC/consider/kill names in this log or matching retained owner history'); return False
             try:
                 posture = posture_loader(self.settings.game_dir) if repeat else None
             except (OSError,ValueError) as error:
@@ -293,6 +297,12 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             if not self._camp_current():
                 self.stop_action('Camp scope, focus, input or time bound changed'); return
             if not self._camp_can_cast() or now < max(self.command_pause_until, self.rotation.busy_until):
+                return
+            if self.native_attack_off_pending:
+                # NPC selection sets the retained engine's bookkeeping flag.
+                # The owner adapter clears it without a melee command; camp
+                # overrides the native combat tick that normally does this.
+                self.flush_native_attack_off()
                 return
             if now >= camp.grant_until-2:
                 return  # Refresh before typing; do not start at token expiry.
