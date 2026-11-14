@@ -1,5 +1,23 @@
 # FINDINGS
 
+## 2026-11-14 18:33 UTC — source 0.42.52 privately published
+
+VERIFIED Alienware `owner-tools/0.42.52/source`, revision
+`968b4e9e0f51c01a6674a3f5180f6d511972d056`. Runtime/tests/tools match the
+45-pass final source-planning/retained-handler/watchdog-pipe candidate. Imports,
+diagnostic CLI startup and copied-data pins pass. Archive SHA
+`845853fb72edb77ddfbd93f5aed179cda54dc25c579f44f28a8b60057865a529`;
+startup SHA `2bbbf1246107d5a92defbd8b9e215565969043b7ade0413ec46e11ea0abb33f4`.
+Publication record: `releases/eql-automation-0.42.52-staging.json`.
+
+Optional onward planning now stays on the reached source floor, collects genuinely
+new before/after-planning positions, and retains the original scope/deadline.
+It finishes stopped before movement execution. The owner launcher has no default
+probe plan/guide; preview remains 0.39.30. No game input, input-device creation,
+character action or protected-prefix edit. New observer/driver adoption and
+current movement admission remain unfinished. G0 passed; no repeat/new owner
+test. Actual level, XP/hour, deaths and camp unknown; 1–20/1–50 remain unaccepted.
+
 ## 2026-11-14 18:32 UTC — source 0.42.52, onward source-route preparation
 
 Implemented `CampRoutePreparation`: direct `plan_source_itinerary` reuse on a
