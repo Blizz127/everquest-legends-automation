@@ -149,8 +149,6 @@ class SourceFloorChain:
                 patches[key]=(source,vertices,exact_polygon)
         geometry_sha=sha256(json.dumps({'footprint':footprint,'sources':[asdict(s) for s in sources]},
                                       sort_keys=True,separators=(',',':')).encode()).hexdigest()
-        if len(patches)>32:
-            return refuse('floor_patch_budget_exceeded',geometry_sha=geometry_sha)
         if self.previous is None:
             carried=tuple(sorted(self.seed_ids))
             if not set(carried)<=patches.keys():
@@ -201,6 +199,11 @@ class SourceFloorChain:
         selected={carried[0]} if self.previous is None else set(carried)
         queue=list(selected);joins=[]
         while queue:
+            # The patch budget bounds the inherited supporting floor, not
+            # unrelated floors overhead. Keep every candidate in edge
+            # ownership and every source in the occupancy check below.
+            if len(selected)>32:
+                return refuse('floor_patch_budget_exceeded',carried=carried,geometry_sha=geometry_sha)
             key=queue.pop()
             if key in branches:
                 return refuse('ambiguous_source_edge_branch',carried=carried,geometry_sha=geometry_sha)

@@ -1,11 +1,21 @@
 # STATUS
 
-Updated 2026-11-14 21:05 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 21:13 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.64 built locally; publication next.** VERIFIED 45 focused
+  checks pass. The 32-patch limit now counts the inherited connected floor;
+  every unrelated source layer remains in ambiguity/collision checks. The
+  Throne exit hits a rug 0.094591 units above terrain; the original target and
+  rejoin lie on a second rug. A complete-query lower bypass passes its retreat
+  then refuses uncovered floor toward (100,76). No complete Throne guide or
+  live stair executor. Next: explicit placed-surface support or a fully checked
+  alternate approach, then stair execution. Owner preview/runtime stay
+  0.39.32/0.42.61; trace unchanged at 19:31, G0 passed, no game input. Real
+  level/XP/XP-hour/deaths/camp unknown; full 1–20/1–50 not met.
 - **Source tools 0.42.63 privately published; owner preview remains 0.39.32.**
   Installed at `owner-tools/0.42.63/source`; all 523 pinned files match. Imports
   and three auditor startups pass on Alienware. Bundle SHA

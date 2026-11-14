@@ -114,3 +114,39 @@ def test_exact_overlap_distinguishes_crossings_from_edge_or_point_contact():
 @pytest.mark.parametrize('options',({'seed_evidence_sha256':''},{'body_height':0.},{'seed_ids':((1,1),(1,1))}))
 def test_invalid_seed_context_refuses_before_tracking(options):
     with pytest.raises(ValueError):chain(**options)
+
+
+def overhead_layers():
+    return tuple(face(((-4.,-4.,20.+i),(4.,-4.,20.+i),(0.,4.,20.+i)),10+i)
+                 for i in range(40))
+
+
+def test_unrelated_overhead_layers_do_not_consume_selected_floor_budget():
+    sources=(*FLOOR,*overhead_layers())
+    result=chain().advance(cell(0.,0.,1.),sources)
+    assert result.candidate and result.selected_ids==((1,1),(1,2))
+    assert len(result.occupancy.faces)==40
+    assert all(row.classification=='overhead' for row in result.occupancy.faces)
+
+
+@pytest.mark.parametrize('kind',['wall','ceiling','ambiguous_edge'])
+def test_all_extra_layers_remain_in_occupancy_and_edge_ownership(kind):
+    if kind=='wall':extra=face(((0.,-3.,-1.),(0.,3.,-1.),(0.,0.,10.)),100)
+    elif kind=='ceiling':extra=face(((-4.,-4.,4.),(4.,-4.,4.),(0.,4.,4.)),100)
+    else:extra=face(((-4.,-4.,0.),(4.,4.,0.),(-4.,4.,.1)),100)
+    result=chain().advance(cell(0.,0.,1.),(*FLOOR,*overhead_layers(),extra))
+    expected='ambiguous_source_edge_branch' if kind=='ambiguous_edge' else 'other_source_surface_intersects_body_band'
+    assert not result.candidate and result.reason==expected
+
+
+def test_truly_connected_selected_patch_budget_and_complete_source_limit_stay_fixed():
+    boundary=tuple((-4.+.8*i,-4.,0.) for i in range(10))
+    boundary+=tuple((4.,-4.+.8*i,0.) for i in range(10))
+    boundary+=tuple((4.-.8*i,4.,0.) for i in range(10))
+    boundary+=tuple((-4.,4.-.8*i,0.) for i in range(10))
+    fan=tuple(face(((0.,0.,0.),a,boundary[(i+1)%len(boundary)]),i+1)
+              for i,a in enumerate(boundary))
+    result=chain().advance(cell(0.,0.,1.),fan)
+    assert not result.candidate and result.reason=='floor_patch_budget_exceeded'
+    too_many=(*FLOOR,*(replace(overhead_layers()[0],face=100+i) for i in range(127)))
+    assert chain().advance(cell(0.,0.,1.),too_many).reason=='invalid_cell_or_source_budget'

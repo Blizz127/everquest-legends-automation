@@ -1,10 +1,11 @@
 # EverQuest Legends automation — current owner guide
 
-Development source **0.42.63** · travel/camp test **0.39.32** (runtime source 0.42.61) · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
+Development source **0.42.64** · travel/camp test **0.39.32** (runtime source 0.42.61) · stationary preview **0.39.24** · retained assist **0.39.13** · movement preview **0.39.21**.
 
-Source 0.42.63 adds offline staircase body and region checks. The owner launcher
+Source 0.42.64 fixes an offline floor-budget error while retaining all collision
+checks, and adds a diagnostic for the blocked Throne approach. The owner launcher
 and controls remain those of 0.39.32. The copied stair flight passes its geometry
-checks; full route integration and live execution are still being built. Throne
+checks; the exit route and live stair execution are still being built. Throne
 is not available for travel. G0 is complete and must not repeat.
 
 Preview 0.39.32 lets a released focus click settle before the location-hotbutton

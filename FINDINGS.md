@@ -1,5 +1,57 @@
 # FINDINGS
 
+## 2026-11-14 21:13 UTC — source 0.42.64: selected-floor budget and Throne exit diagnosis
+
+VERIFIED the 32-patch limit now applies to the connected supporting floor,
+instead of counting unrelated eligible floors overhead. All source faces still
+participate in edge ownership and occupancy. Three-owner edges remain ambiguous;
+the selected-floor limit stays 32 and the complete source limit stays 128.
+No height filtering, material exemption or collision clearance was introduced.
+
+VERIFIED **45 focused checks pass**: 19 floor-chain checks and 26 detour,
+occupancy and static-floor checks. New regressions retain 40 overhead layers,
+still reject a wall/low ceiling/ambiguous edge, and reject over-budget connected
+floors and complete inventories. Private JUnit hashes:
+`3218665407b2da427b3db24bed0100d237d53387a9b253f7227e5f564e36aa79`
+and `252eb0714e70f9188e8a9a32f5fc5b274eea997519baa3691f2e3f1a523f049f`.
+
+VERIFIED copied-data gap diagnosis: the original crossing after package
+(103.96875,100.96875) hits static fragment 5781, face 1, actor `OGGRUG_ACTORDEF`.
+Its surface is 0.09459114074707031 above the selected terrain Z16. The exact
+source face is flag 0 / `TransparentMasked`; neither its name nor material
+establishes pass-through. Gap artifact `nav-candidates/crushbone-throne-exit-gap-0.42.64.json`
+SHA `a4aaa82a93e9bf5454a3f3bb2edf87620b5125e4d7dee57792110233afa2261a`.
+The map target (106,154) and old rejoin (115.84375,134.01041666666666)
+lie inside the second rug's faces. The original detour cannot reach those
+endpoints under the retained static-obstacle model, irrespective of its budget.
+
+A proposed lower bypass toward a nearby stopping-point hypothesis (90,154)
+was checked using complete terrain/static queries. Retreat to
+(99.63541666666667,86.30208333333333) passes; the next sweep to (100,76)
+is refused for uncovered supporting floor. Remaining waypoints were not run.
+Artifact `nav-candidates/crushbone-throne-exit-bypass-0.42.64.json`, SHA
+`622ffde4f9b8ffdc48d6d6271d931d2c516de3e3bc365ac3eeb03310ce114eb2`,
+38.70 seconds wall / 3.00 CPU. This diagnostic replays an explicitly synthetic
+landing/exit prefix; it does **not** replay the full approach/flight or check
+BSP regions. It is not an executable route or camp-suitability proof.
+`tools/audit_crushbone_throne_gap.py` preserves the inventory, obstruction and
+ordered waypoint results privately. Its command-line startup passes.
+
+OBSERVED REA session inspection initially timed out during its apktool version
+probe; one read-only retry completed with no target open, no retained evidence
+and no pending cleanup. Native analysis is unavailable: Ghidra's required full
+JDK21 is missing; other providers are unavailable/unconfigured. No configuration,
+access or client change was made. Retained actor-down-query evidence does not
+connect rug/material flags to collision filtering. Rug pass-through and static
+support behavior remain unknown; no such behavior was inferred or enabled.
+
+Next: reconcile explicit placed-surface support or find a completely checked
+alternate approach/nearby endpoint; finish the separate stair executor. Owner
+preview/runtime remain 0.39.32/0.42.61. Read-only Alienware trace remains 17,821
+bytes, modified 2026-11-14 19:31:12.111509 UTC. No new real-client travel/camp
+acceptance. G0 is passed and must not repeat. Current level, XP, XP/hour, deaths
+and camp remain unknown; full 1–20 and fresh hands-off 1–50 remain unfinished.
+
 ## 2026-11-14 21:05 UTC — source tools 0.42.63 privately published
 
 VERIFIED installed `~/.local/share/eql-automation/owner-tools/0.42.63/source`
