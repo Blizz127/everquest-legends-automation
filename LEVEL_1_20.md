@@ -1,9 +1,16 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 10:10 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 10:17 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.42.5 binds the installed `/location` text to direct actor coordinates
+and records the state-dependent offset used by the movement clamp. The downward
+query returns a retracted path point, so a fixed floor-to-log height is still
+unproven. A pinned static audit replays the chain without native execution or
+input. Next: correlate the decoded relations with the current floor and consume the
+pending owner 0.39.12 motion/current scene. No new owner test or G0 repeat.
 
 Source 0.42.4 binds the installed executable's region-label callback and maps
 its exact flags onto copied GFay, Butcherblock and Crushbone regions. Later

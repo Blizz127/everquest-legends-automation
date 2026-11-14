@@ -1,5 +1,81 @@
 # FINDINGS
 
+## Actor Z, location text and downward collision query — 2026-11-14 10:17 UTC
+
+**VERIFIED static evidence:** the installed `eqstr_us.txt` was read over SSH
+without changing the protected install. Its message 13177 prints the three
+`/location` substitutions in order. The handler at `0x14024d280–0x14024d3e3`
+formats actor `+0x74`, `+0x78`, `+0x7c` directly with `%1.2f`; there is no
+height correction in this output path. Handler source-span SHA:
+`e519458ba5ac02a907fd13a20ee90f57453fa34fbd041ad0806128026916a7a3`.
+Resource copy: `client-data/location-resource-20261114T101437Z/eqstr_us.txt`,
+458,530 bytes, SHA
+`0dd0117a23092cb195d0e62d6b03a49bf1aaf8dbfb843dd629e38ca950732fde`.
+Its manifest records the complete Alienware source path. This resolves the
+previously missing rendered coordinate order; it does not measure current Z.
+
+**VERIFIED static chain:** constructors at `0x1403141c0` and `0x140331a60`
+install primary vtables `0x1409c4558` and `0x1409cc468`. Both slot `+0x128`
+entries point to `0x140277010–0x140277117`, source-span SHA
+`2d81fc4d14476b59eaca20e308e22aff615a09eb96f16759291de4e8ac352d5a`.
+The movement clamp at `0x140275e2b` compares `actorZ-offset` with actor+0x38;
+when below, it stores `actorZ=actor+0x38+offset`. This offset is state-dependent:
+
+- State byte +0x281 in {0x6f,0x78}, byte +0xb6>=5, or virtual +0xa0 true:
+  zero. The live meanings of these states remain unnamed.
+- Otherwise virtual +0x110 in {2,9,10}: max(float32 1.9, field158*0.5).
+  Other kinds yield 1.9 for finite values; the actual negative-field branch
+  multiplies by 0.75 before the maximum.
+- A present +0x12c8 subobject may raise a positive offset using its virtual
+  +0x88 result. This is not a universal height or simply field +0x158/+0x164.
+
+`0x1402762f0–0x140276380` writes the return of `0x140276d80` into actor+0x38.
+The latter uses a downward query with identical first two coordinates and
+end Z=-32767. Its size input r is float32(field158*0.1), with exact zero
+replaced by float32 0.1. The dispatcher `0x140194700` stores r, r² and 1/r.
+After the query, the routine computes `outputZ-r+float32(0.062)`, subject to
+cache, Scene predicate, global-threshold and failure-sentinel behavior.
+The sentinel is approximately -1e27; it must not become a valid support height.
+
+The point-output getter `0x1405c39c0–0x1405c3a86` does **not** simply return a
+triangle surface coordinate. It normalizes `t*(end-start)` and, above length
+float32 0.002, retracts that displacement by 0.002 before adding start.
+At shorter lengths it returns start. The normalization helper is
+`0x1400f5460–0x1400f5524`. The separate region probe still uses its independently
+computed `inputZ+(0.25-d)` sample. Consequently no universal `source floor+0.25`
+or `source floor+0.062` mapping is established by this chain.
+
+**VERIFIED conditional collision distinction:** the solver's timed-face branch
+uses start C, direction V and runtime vector U, then D=V-U and S=C±rN.
+Its separate output P=(S+tD)+tU differs algebraically from the original
+path point C+tV by the radius/normal term. The actual scalar float operations
+retain separate rounding; that algebra is not a bit-exact simplification. However, a zero-relative-motion overlap can return P=C,
+t=0, mode=1. Thus contact output and path output cannot be interchanged.
+Solver `0x1405c5790–0x1405c641a` SHA:
+`fc00eb75c831305052282fd5a4bceb15a2f876023b45bc6e0ba6acb1f6b84543`.
+U at `0x140fe6c28` is runtime data, not a verified zero; non-face branches
+remain outside this interpretation. **INFERRED:** a swept-radius center path
+versus a separate contact result. No universal flat-floor correction follows
+without its branch, motion and hit conditions.
+
+**VERIFIED tooling:** source 0.42.5 adds `tools/audit_client_actor_vertical.py`.
+It checks whole-file identities, constructor-bound slots, the command entry,
+format and resource order, and saves 16 bounded native spans plus constants.
+Replay artifact `client-data/native-actor-vertical-20261114T101807Z/probe.json`,
+SHA `2b597ed18b1f91c96aa8678b73a452a869eeb9c14404a847a6e8d849295aa886`.
+Pinned-source replay, changed executable/resource rejection and refusal to
+write disassembly outside the private data store passed. Native code was not
+executed and no client input was sent. No conservative route check was relaxed.
+
+**Remaining real-client gate:** owner 0.39.12 hotbutton/motion results and a
+current scene/position remain pending. A read-only check found no saved JSON
+results in either result directory; it was not repeatedly polled. Actual actor
+state/dimensions, dynamics and traversal remain unaccepted. Next: correlate the decoded coordinate/collision relations with the current
+source floor and use the owner's measured motion for the first supervised GFay
+leg. G0 remains passed, assist 0.39.13
+unchanged; no new owner test is introduced. Current level, XP/hour, deaths and
+camp remain unknown. This is not a level 1–20 or fresh 1–50 completion.
+
 ## Native region callback and actor samples — 2026-11-14 10:10 UTC
 
 **VERIFIED static chain:** retained

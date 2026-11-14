@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 10:10 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 10:17 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,15 @@ Updated 2026-11-14 10:10 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.5:** `/location` output order is now bound to the installed
+  string resource and direct actor coordinate loads. The ground clamp's virtual
+  offset is bound to two constructor-installed vtables; the downward query
+  and its retracted output point are recorded in a reproducible static audit.
+  Audit replay and changed-source/output-boundary checks pass. No universal
+  ground-height offset or live dimensions are inferred. **Next:** correlate those
+  relations with the current source floor and pending owner 0.39.12 motion
+  plus current scene for the first GFay leg. Assist 0.39.13 and passed G0 are
+  unchanged. No real route/XP or current character metrics are accepted.
 - **Source 0.42.4:** the current executable's region callback is statically
   bound to the graphics Scene setter. Added its exact flag/prefix model and
   copied type-record precedence; GFay, Butcherblock and Crushbone inventories
