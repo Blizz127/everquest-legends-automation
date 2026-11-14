@@ -24,6 +24,8 @@ PLAN_SHA = "145679ec15111cf2d319ca630c66da693cc69863bdef594f67a46989c18592a4"
 MESH = STORE / "navmesh/nov12-7e3cd28-store/gfaydark.npz"
 MESH_SHA = "5f8e16c5bcd2221ba273f681750ca480349780524d23609c059a3e817df6abd9"
 HELPER = STORE / "owner-assist/0.39.4"
+SEAM_EXPERIMENT = STORE / "nav-candidates/gfay-source-seam-experiment-0.41.52.json"
+SEAM_EXPERIMENT_SHA = "0ca4fa85769c8e94e236ce69f09da180e70597006d2cb4934fc191598d1eb076"
 PINS = {
     PLAN: PLAN_SHA, MESH: MESH_SHA,
     MESH.with_suffix(".json"): "ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82",
@@ -32,7 +34,38 @@ PINS = {
 }
 
 
-def run(output, *, speed, min_hold, ground_sweep=False):
+def local_seam_diagnostic(view, footprint, reference, component, window, detail_ids, evidence):
+    """Retry only inside the pinned source triangle; never modify the mesh.
+
+    This is a diagnostic local XY correction for one known reciprocal portal.
+    It neither changes source/baked heights nor generalizes to other gaps.
+    """
+    from eql_automation.ground_sweep import GroundFace, check_ground_coverage, cross, hull
+    triangle = hull(tuple(p[:2]) for p in evidence['source_overlaps'][0]['vertices_wld'])
+    if len(triangle) != 3:
+        return None
+    for x, y in footprint:
+        if any(cross(a, triangle[(i+1) % 3], (y, x)) <= 0 for i, a in enumerate(triangle)):
+            return None
+    if not {31668, 32479}.issubset({int(view.polys[i]) for i in detail_ids}):
+        return None
+    west, east = 1761.2440185546875, 1761.244140625
+    midpoint = (west + east) / 2
+    faces = []
+    for detail_id in detail_ids:
+        polygon = int(view.polys[detail_id])
+        vertices = []
+        for x, y, z in view.triangles[detail_id]:
+            if (polygon == 31668 and x == west) or (polygon == 32479 and x == east):
+                x = midpoint
+            vertices.append((float(x), float(y), float(z)))
+        faces.append(GroundFace(tuple(vertices), int(view.areas[polygon]), int(view.components[polygon])))
+    return check_ground_coverage(footprint, tuple(faces), reference=tuple(reference),
+                                  component=component, vertical_window=window)
+
+
+def run(output, *, speed, min_hold, ground_sweep=False, local_seam_experiment=False,
+        shorten_ground_step=False):
     began = time.monotonic()
     sys.path[:0] = [str(PROJECT), str(HELPER)]
     from eql_automation.fixed_route_follower import FixedRoute, FixedRouteFollower, RouteHalt
@@ -49,6 +82,17 @@ def run(output, *, speed, min_hold, ground_sweep=False):
     if ground_sweep:
         for path in (PROJECT / 'eql_automation/ground_sweep.py', PROJECT / 'eql_automation/ground_sweep_view.py'):
             pins[path] = sha256(path.read_bytes()).hexdigest()
+    seam_evidence = None
+    if local_seam_experiment:
+        pins[SEAM_EXPERIMENT] = SEAM_EXPERIMENT_SHA
+        if sha256(SEAM_EXPERIMENT.read_bytes()).hexdigest() != SEAM_EXPERIMENT_SHA:
+            raise ValueError('Local source-seam experiment changed')
+        seam_evidence = json.loads(SEAM_EXPERIMENT.read_text())
+        if (seam_evidence['source_continuity_supported'] is not True
+                or len(seam_evidence['source_overlaps']) != 1
+                or seam_evidence['source_or_mesh_modified'] is not False):
+            raise ValueError('Unexpected local seam source evidence')
+        pins.update({Path(path): digest for path, digest in seam_evidence['pins'].items()})
     def verify():
         if any(p.is_symlink() or sha256(p.read_bytes()).hexdigest() != h for p, h in pins.items()):
             raise ValueError("Replay source changed")
@@ -71,6 +115,8 @@ def run(output, *, speed, min_hold, ground_sweep=False):
     position, seq, clock = list(start), 0, 100.
     history, recent, portal_samples = [], [], []
     sweep_checks, sweep_failure = 0, None
+    local_seam_retries = []
+    ground_shortening_trials = []
     def stopped_pair(release):
         nonlocal seq, clock
         aligned = []
@@ -98,13 +144,31 @@ def run(output, *, speed, min_hold, ground_sweep=False):
             if sweep_view is not None:
                 # Deliberately hypothetical: these are NOT current client
                 # speed, heading, latency, body-size or drift measurements.
-                reach = (speed * 1.2 * (seconds + .02)) if proposal.forward else 0.
-                footprint = motion_footprint(tuple(position[:2]), heading, reach,
-                    position_error=.05, heading_error_degrees=2., post_release_drift=.05, extra_radius=.2)
-                window = max(math.dist(position[:2], p) for p in footprint) + .05
-                check, detail_ids = sweep_view.check(footprint, reference=tuple(position),
-                    component=int(sweep_view.components[segment.polygon]), vertical_window=window)
-                sweep_checks += 1
+                trials = []
+                while True:
+                    reach = (speed * 1.2 * (seconds + .02)) if proposal.forward else 0.
+                    footprint = motion_footprint(tuple(position[:2]), heading, reach,
+                        position_error=.05, heading_error_degrees=2., post_release_drift=.05, extra_radius=.2)
+                    window = max(math.dist(position[:2], p) for p in footprint) + .05
+                    check, detail_ids = sweep_view.check(footprint, reference=tuple(position),
+                        component=int(sweep_view.components[segment.polygon]), vertical_window=window)
+                    sweep_checks += 1
+                    if check.reason == 'uncovered_ground_area' and seam_evidence is not None:
+                        retry = local_seam_diagnostic(sweep_view, footprint, position,
+                            int(sweep_view.components[segment.polygon]), window, detail_ids, seam_evidence)
+                        if retry is not None:
+                            local_seam_retries.append({'step': step, 'segment': index,
+                                'original': asdict(check), 'local_retry': asdict(retry)})
+                            check = retry
+                    trials.append({'hold': seconds, 'candidate': check.candidate, 'reason': check.reason})
+                    if (check.candidate or not shorten_ground_step or not proposal.forward
+                            or seconds <= min_hold or len(trials) >= 8):
+                        break
+                    # Recheck every reduced footprint; never assume monotonic
+                    # safety or integrate a rejected trial into predicted motion.
+                    seconds = max(min_hold, seconds / 2)
+                if len(trials) > 1:
+                    ground_shortening_trials.append({'step': step, 'segment': index, 'trials': trials})
                 if not check.candidate:
                     sweep_failure = {'step': step, 'segment': index, 'proposal': asdict(proposal),
                         'reach': reach, 'footprint': footprint, 'reference': list(position),
@@ -175,6 +239,10 @@ def run(output, *, speed, min_hold, ground_sweep=False):
               "adjacent_portal_samples": portal_samples,
               "continuous_ground_sweep": ground_sweep, "sweep_checks": sweep_checks,
               "sweep_failure": sweep_failure,
+              "local_seam_experiment": local_seam_experiment,
+              "local_seam_retries": local_seam_retries,
+              "shorten_ground_step": shorten_ground_step,
+              "ground_shortening_trials": ground_shortening_trials,
               "pins": {str(p): h for p, h in pins.items()}}
     with output.open("x") as out:
         json.dump(report, out, indent=2); out.write("\n")
@@ -191,7 +259,13 @@ def main():
                         help="Hypothetical pulse granularity; not a live timing guarantee")
     parser.add_argument('--ground-sweep', action='store_true',
                         help='Check full detail-ground footprints with hypothetical uncertainty bounds')
+    parser.add_argument('--local-seam-experiment', action='store_true',
+                        help='Offline only: try one pinned source-supported XY seam correction')
+    parser.add_argument('--shorten-ground-step', action='store_true',
+                        help='Offline only: recheck successively shorter forward holds down to --min-hold')
     args = parser.parse_args()
+    if (args.local_seam_experiment or args.shorten_ground_step) and not args.ground_sweep:
+        parser.error('Ground experiments require --ground-sweep')
     output = args.output.expanduser()
     if (output.parent.resolve() != (STORE / "nav-candidates").resolve() or output.exists()
             or output.is_symlink() or output.suffix != ".json"
@@ -200,7 +274,8 @@ def main():
         parser.error("use a new private nav-candidates JSON and finite bounded motion parameters")
     os.umask(0o077)
     os.nice(15)
-    run(output, speed=args.speed, min_hold=args.min_hold, ground_sweep=args.ground_sweep)
+    run(output, speed=args.speed, min_hold=args.min_hold, ground_sweep=args.ground_sweep,
+        local_seam_experiment=args.local_seam_experiment, shorten_ground_step=args.shorten_ground_step)
 
 
 if __name__ == "__main__":

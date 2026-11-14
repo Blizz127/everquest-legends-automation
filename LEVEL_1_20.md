@@ -193,3 +193,12 @@ copied ground with zero XY snap distance and consistent 2.065–2.085-unit
 character-to-mesh height offsets. This supports the coordinate transform at
 that spot. A new fix and independent scene checks are still needed before
 any G2 motion test.
+
+Source 0.41.52 verifies source terrain under the one-ULP GFay detail seam.
+An explicit local correction is used only by the offline experiment, with
+unchanged baked heights and no mesh writes. Three footprint checks pass;
+the guarded route then stops at segment 6 because detail face 248932 has
+plane grade 1.3266 against limit 1.0. Adaptive shorter holds allow two extra
+steps but the minimum hypothetical hold still fails. The next correction
+must resolve the source/route geometry at that face. No G2/F11 leg or level
+progress is accepted by these copied-data runs.

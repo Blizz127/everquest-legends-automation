@@ -1,4 +1,4 @@
-# EverQuest Legends automation — project 0.41.51 / assist 0.39.6 / G0 candidate 0.39.7
+# EverQuest Legends automation — project 0.41.52 / assist 0.39.6 / G0 candidate 0.39.7
 
 ## Current availability
 
@@ -19,16 +19,27 @@ validated. The owner chose to test rotation himself on live.
 The prioritized [level 1–20 route record](LEVEL_1_20.md) starts with
 Butcherblock, then Crushbone and Unrest as the character's observed level
 allows. These are planned camps; no leg is accepted for F11 yet.
-Source tools 0.41.51 use the private Alienware path
-`~/.local/share/eql-automation/owner-tools/0.41.51/source`; the runnable
+Source tools 0.41.52 use the private Alienware path
+`~/.local/share/eql-automation/owner-tools/0.41.52/source`; the runnable
 rotation helper is separately staged under `owner-assist/0.39.6`.
+
+Source 0.41.52 reconciles the tiny GFay portal gap against the copied client
+terrain. The entire failed footprint lies inside one source path triangle.
+A local XY-only correction then passes three affected footprints in offline
+replay; it does not rewrite the navmesh or change terrain heights. Four
+focused tests confirm the correction stays within its source/portal scope.
+The replay now stops at segment 6 on a steep detail face. Shortening the
+forward holds allows two more steps but still reaches the same grade limit.
+This needs a source/route correction, not a relaxed limit. Live movement,
+level gains and a playable 1–20 route remain unverified; F11 stays unavailable.
+Assist 0.39.6 and the separate G0 candidate 0.39.7 remain unchanged.
 
 Source 0.41.51 checks ground coverage across a possible step footprint,
 including gaps, overlapping floors, steep detail faces and height seams.
 Twenty-three focused checks passed. Six copied-GFay footprints pass under
 hypothetical motion bounds, but the complete guarded replay stops at a
 0.000122-unit mismatch between two reciprocal navmesh portal edges. The
-client terrain under that seam must be reconciled before any repair is used.
+0.41.52 source reconciliation above is limited to that local footprint.
 The earlier 155-segment motion replay did not include this ground check.
 These checks still omit source-wall/headroom, continuous BSP hazards, dynamic
 objects and live calibration. They do not authorize movement or enable F11.
@@ -512,7 +523,7 @@ the game, run the command below from a terminal, and return focus to EverQuest
 within five seconds:
 
 ```bash
-cd ~/.local/share/eql-automation/owner-tools/0.41.51/source
+cd ~/.local/share/eql-automation/owner-tools/0.41.52/source
 python3 tools/capture_owner_ui.py --label idle
 ```
 

@@ -1,7 +1,23 @@
 # STATUS
 
-Updated 2026-11-14 01:25 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 01:32 UTC for coordinator task `829a00229b29`.
 
+- Source **0.41.52** reconciles the GFay one-ULP detail seam against all
+  copied terrain faces. Exactly one flag-zero Diffuse source face contains
+  the entire failed footprint; source Z is 0.3713 below the baked reference.
+  A local virtual XY correction shifts endpoints only 0.0000610352 unit,
+  leaves Z unchanged and passes three affected replay footprints. Original
+  client data, navmesh and route artifacts are untouched.
+- **VERIFIED:** Four focused scope tests passed. The guarded replay now
+  stops at segment 6, detail face 248932, grade 1.3266 against limit 1.0.
+  Rechecking shorter holds permits two additional steps, then refuses even
+  the hypothetical 0.02-second minimum. Final replay SHA
+  `4fc154ee94226560abccf08c848cdfa214105fc35562b18e6c8834a0909ab2a0`.
+- Current level, XP, XP/hour, deaths and camp remain unobserved beyond the
+  owner-reported Legira 7 in GFay. Owner G0 visible stop is confirmed; no
+  accepted 1–20 leg or automated XP. Next: compare face 248932 with source
+  terrain and adjust the route if needed; live scene/alignment/speed and
+  timed sender integration remain open. Assist 0.39.6/G0 0.39.7 unchanged.
 - Private source **0.41.51**, commit `bfc9d7e`, is staged on Alienware at
   `~/.local/share/eql-automation/owner-tools/0.41.51/source`. Archive SHA
   `35893d8b96ac0c73e8340bdb8c2577af836910423054d72c4309fc8ce4ce7d01`

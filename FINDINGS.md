@@ -1,5 +1,57 @@
 # FINDINGS
 
+## Source-supported GFay seam diagnostic — 2026-11-14 01:32 UTC
+
+**VERIFIED:** `tools/audit_gfay_source_seam.py` reads pinned copied
+`client-data/retail-full/assets/gfaydark.s3d`, SHA
+`ea95f51a2d4645410223d24cc7da9eb0e7095310c6e9f8756e8c51d67df13d9f`,
+using the existing archive/WLD/mesh/material parsers. WLD SHA is
+`3f9a479ea46a3fb8f826ccfb608d0f69a5876e1cab5fa38ea86712e8fdabe138`.
+All 74,981 faces in 1,597 terrain meshes were checked against the failed
+step-18 footprint after helper XY→raw WLD YX conversion. Exactly one source
+face overlaps: fragment 698, face 66, flag 0, Diffuse `GFAYDARK_SPATH_MDF`.
+Every vertex is strictly inside that convex source triangle (minimum
+barycentric 0.22415), so its full 3.47416-square-unit footprint has continuous
+source terrain support. Source plane grade is 0.052416 (about 3 degrees).
+The baked reference Z is +0.3712978 above the source plane. This is source
+terrain evidence, not collision, headroom, dynamic or client acceptance.
+
+**VERIFIED:** The reciprocal portal edges differ by exactly one float32 ULP,
+0.0001220703125. The local diagnostic moves only those XY edge coordinates
+to their midpoint (maximum shift 0.00006103515625), keeps baked Z, and rechecks
+all local clipped detail faces. It closes this footprint's coverage deficit.
+The optional replay correction requires every new footprint to be strictly
+inside the same pinned source triangle and both reciprocal polygons to be
+present. Four synthetic tests cover its scope, source-frame containment,
+immutability and rejection of an unrelated hole. This does not implement a
+general stitch or edit any mesh/plan/client data.
+
+**VERIFIED replay:** The local correction is used for three footprints at
+steps 18–20; then the guarded replay reaches segment 6 and refuses detail
+face 248932, grade 1.326597 against limit 1.0. An optional bounded diagnostic
+halves rejected forward holds, rechecking every smaller footprint before
+integrating any motion. It permits two more steps (61→63) but still refuses
+at the hypothetical 0.02-second minimum. The source/route at this steep face
+is the next investigation; neither a wider grade limit nor live input is
+adopted. All speed, heading, timing and body-radius bounds remain hypothetical.
+
+Retained GFay bake parameters include cell size 0.600000024, height
+0.300000012, detail sampling distance 6, detail max error 1 and radius
+1.20000005. The pinned baker is SHA
+`072f9b06935ef76d870219e4e2812146006d0c86fdca4bb6c78b70eed4383d44`.
+**INFERRED:** voxel/detail approximation can explain a source/bake height
+difference, but no retained intermediate heightfield/contour isolates this
+particular +0.3713 offset. No global Z correction is justified by this probe.
+
+Private `nav-candidates/` evidence:
+
+| Artifact | SHA-256 | Result |
+| --- | --- | --- |
+| `gfay-source-seam-experiment-0.41.52.json` | `0ca4fa85769c8e94e236ce69f09da180e70597006d2cb4934fc191598d1eb076` | Exact source containment and local virtual coverage |
+| `gfay-local-seam-replay-0.41.52.json` | `a747a3a60bd0633ff6bb07d2130c426f9a1684a0af2a897e78caca0adc3e876d` | Segment 6, step 61, steep face refusal |
+| `gfay-local-seam-shortened-replay-0.41.52.json` | `4fc154ee94226560abccf08c848cdfa214105fc35562b18e6c8834a0909ab2a0` | Segment 6, step 63, minimum hold still refuses |
+
+
 ## Private 0.41.51 staging — 2026-11-14
 
 **VERIFIED:** Commit `bfc9d7e` archive SHA
