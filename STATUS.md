@@ -1,13 +1,17 @@
 # STATUS
 
-Updated 2026-11-14 21:40 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 21:41 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.66 checked; private publication pending.** VERIFIED 49 stair
-  checks plus 14 retained sender/transfer checks. Stair preflight now leases the
+- **Source 0.42.66 privately published; owner preview remains 0.39.32.** VERIFIED 49 stair
+  checks plus 14 retained sender/transfer checks. All 532 installed pins,
+  imports and three auditor startups pass on Alienware. Bundle SHA
+  `67b8a23c27686da550def55ebda33ad4f2fd2bfca6e3dbd234e430704bf01d7a`;
+  startup SHA `49dd03acde606f14bd0e1144987724b26c5e1ff9687664c39258fc83badfe175`.
+  Stair preflight now leases the
   real source ledger, builds conditional geometry outside the stop lock, then
   requires a newly issued stopped pair at exactly the original printed XYZ.
   It retains scope/calibration/hold budgets and floor/pose/counters; late

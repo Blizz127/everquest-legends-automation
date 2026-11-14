@@ -1,5 +1,25 @@
 # FINDINGS
 
+## 2026-11-14 21:41 UTC — source 0.42.66 privately published
+
+VERIFIED Alienware `owner-tools/0.42.66/source` contains commit
+`eaaeb762893be9993b1289ceb50bf58e649440b7`. All **532** validated source/test/tool pins match,
+all **63** focused checks and JUnit hashes are retained, and imports plus three
+auditor startup smokes pass. Compatibility and runtime stair-plan exports refer
+to the same implementation. Bundle SHA
+`67b8a23c27686da550def55ebda33ad4f2fd2bfca6e3dbd234e430704bf01d7a`; startup receipt SHA
+`49dd03acde606f14bd0e1144987724b26c5e1ff9687664c39258fc83badfe175`. Staging receipt:
+`releases/eql-source-tools-0.42.66-staging.json`.
+
+Owner launcher/runtime remain 0.39.32/0.42.61; the launcher hash is unchanged.
+No helper restart, game input, install/prefix change or character mutation.
+This source release adds the cancellable runtime preflight, not an enabled stair
+pulse controller or an accepted real route. Next: retain all compatible phase
+and height candidates, check complete per-pulse motion against the cached
+volumes, then connect provisional receipts and final observed landing to the
+itinerary/driver loop. Contact traversal still needs separate treatment. G0
+passed; current real level/XP/XP-hour/deaths/camp unknown; 1–20/1–50 incomplete.
+
 ## 2026-11-14 21:40 UTC — source 0.42.66: runtime stair preflight and fresh departure handoff
 
 VERIFIED **49** focused stair checks passed on the devbox (45.260s); JUnit SHA
