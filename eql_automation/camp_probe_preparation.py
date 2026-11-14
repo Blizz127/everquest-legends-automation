@@ -10,7 +10,7 @@ from hashlib import sha256
 import json
 import time
 
-from .camp_floor_checkpoint import CampFloorCheckpoint
+from .camp_probe_floor import CAMP_FLOOR_TYPES
 from .camp_stopped_height import CampStoppedHeight,measure_camp_stopped_height
 from .ground_binding import finite
 from .motion_collection import immutable_binding
@@ -68,7 +68,7 @@ class CampProbePreparation:
     """One source envelope and one fresh matching start, without a walk route."""
     def __init__(self,checkpoint,height,lease,*,probe_kind,bounds,bounds_basis,
                  owner_binding,binding_reader,local_wall_clock,clock=time.monotonic):
-        if (type(checkpoint) is not CampFloorCheckpoint or type(height) is not CampStoppedHeight
+        if (type(checkpoint) not in CAMP_FLOOR_TYPES or type(height) is not CampStoppedHeight
                 or type(lease) is not ZoneReaderLease
                 or type(bounds) is not RouteMotionBounds or probe_kind not in ('forward','left','right')
                 or type(bounds_basis) is not bytes or not 0<len(bounds_basis)<=16384

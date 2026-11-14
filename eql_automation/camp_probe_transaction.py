@@ -65,9 +65,13 @@ class CampProbeResult:
 class CampProbeTransaction:
     """One proposal, one release, one prepared endpoint and a fresh confirmation."""
     def __init__(self,preparation,*,stop_lock):
+        from .camp_probe_floor import CampProbeFloorReference
         if (type(preparation) is not CampProbePreparation
                 or not isinstance(stop_lock,type(threading.RLock()))):
             raise ValueError('Exact camp probe preparation and shared stop lock required')
+        if (type(preparation.checkpoint) is CampProbeFloorReference
+                and stop_lock is not preparation.checkpoint._transaction.lock):
+            raise ValueError('Continued probes must share the original stop lock')
         self.preparation=preparation;self.lock=stop_lock
         self._context=(preparation,stop_lock)
         self.phase='new';self.reason=''
@@ -77,6 +81,7 @@ class CampProbeTransaction:
         self._planning_pair=self._planning_position=self._planning_offset=None
         self._endpoint_payload=None;self._confirmation_deadline=None
         self._geometry_state=None
+        self._continuation=None
         preparation.check()
 
     def cancel(self,reason):
@@ -87,6 +92,7 @@ class CampProbeTransaction:
             self._geometry_state=None
             self.result=self._result_state=None
             self.preparation.cancel(self.reason)
+            if self._continuation is not None:self._continuation.invalidate(self.reason)
 
     @staticmethod
     def _ticket_values(ticket):
@@ -357,6 +363,40 @@ class CampProbeTransaction:
                         or self._result_values(result)!=self._result_state):
                     raise ValueError('Exact confirmed probe result required')
                 return self._endpoint.fork()
+            except BaseException as error:self.cancel(str(error));raise
+
+    def retain_endpoint(self,result):
+        """Consume a fresh confirmation once for the next probe's historical floor.
+
+        A new stopped-height pair must be measured on the returned reference.
+        No SourceItineraryObservation or replacement calibration is manufactured.
+        """
+        from .camp_probe_floor import CampProbeFloorReference
+        with self.lock:
+            try:
+                now=self._check();reader=self.preparation.reader
+                if (self.phase!='confirmed' or result is not self.result
+                        or self._continuation is not None
+                        or not result.observed_at<=now<=result.expires_at
+                        or reader.latest is not result.second or reader.log_line_seq!=result.second.log_line_seq):
+                    raise ValueError('Fresh exact unconsumed endpoint confirmation required')
+                self.phase='retaining'
+                reference=CampProbeFloorReference(self,result)
+                finished=self._check()
+                if (self.phase!='retaining' or not now<=finished<=result.expires_at
+                        or reader.latest is not result.second or reader.log_line_seq!=result.second.log_line_seq):
+                    reference.invalidate('Endpoint changed during retention')
+                    raise ValueError('Endpoint changed during retention')
+                self._continuation=reference;self.phase='continued'
+                reference.check()
+                # The ancestry check may run provider callbacks. A historical
+                # record can outlive this expiry, but initial transfer cannot.
+                final=self._check()
+                if (self.phase!='continued' or final>result.expires_at
+                        or reader.latest is not result.second or reader.log_line_seq!=result.second.log_line_seq):
+                    raise ValueError('Endpoint expired before reference transfer')
+                reference._assert_intact()
+                return reference
             except BaseException as error:self.cancel(str(error));raise
 
     def snapshot(self):

@@ -1,5 +1,43 @@
 # FINDINGS
 
+## 2026-11-14 18:05 UTC — source 0.42.48, reached-floor probe continuation
+
+VERIFIED a fresh exact confirmed `CampProbeResult` can be consumed once into
+`CampProbeFloorReference`, retaining a private checked endpoint floor and the
+actual transaction/reader/stop-lock ancestry. The original arrival checkpoint,
+travel observer and calibration are not modified or reconstructed. Retention
+rechecks freshness and cancellation after callbacks. Continued preparation uses
+an actual newly collected `CampStoppedHeight` on the reached floor; the previous
+result's pair cannot be relabelled as new evidence. A different stop lock,
+released lease, ancestor cancellation or changed source/result invalidates the
+continuation. Existing arrival-height/preparation behavior remains covered.
+
+VERIFIED **89 focused local checks passed in 62.33 seconds** and **89 Alienware
+checks passed in 4.90 seconds**. This includes an actual seven-transaction
+source-floor chain with synthetic forward/right/forward/right/forward/left/forward
+receipts and positions outside the original arrival cap. Original expiry and
+calibration identity remain unchanged; stopping the first transaction invalidates
+the last. These are short explicit motion hypotheses, not the real client's
+seven-probe calibration or a heading fit. No game input was sent.
+Remote candidate: `owner-tools/0.42.48-validation-1`; output SHA
+`3638485e58194b50ab6bcbd2a120e5e835f0bf818b213bf609e8e4c2ae835db9`.
+
+OBSERVED next runtime integration point: `owner_camp_position._camp_position_tick`
+must transfer the exact sender/hotkey/monitor/lease before `_release_camp_position`
+clears the reader and resumes combat. `StoppedLocationPair` and
+`send_location_hotkey` already supply collection. The existing source sender's
+exact ledger/policy requirements cannot be bypassed with a fabricated travel
+ledger. Next: a finite camp-specific runtime and selected-key sender adapter
+requiring an explicit current movement policy, with F8/F9 release behavior
+checked in the retained-engine/OS-pipe harness. Production independent scene
+and supported motion-bound producers are still missing for unattended input.
+
+Source publication pending. Owner preview remains 0.39.30; no new controls or
+owner test. G0 passed, including visible stop. No client login, character action,
+input device or protected-prefix edit. Current level, XP, XP/hour, deaths and
+camp remain unknown. Automatic camp relocation and full 1–20/1–50 acceptance
+remain unfinished; no completion is claimed.
+
 ## 2026-11-14 18:01 UTC — source 0.42.47 privately published
 
 VERIFIED Alienware `owner-tools/0.42.47/source`, revision

@@ -11,6 +11,7 @@ import math
 import time
 
 from .camp_floor_checkpoint import CampFloorCheckpoint
+from .camp_probe_floor import CAMP_FLOOR_TYPES,CampProbeFloorReference,camp_floor_anchor
 from .ground_binding import finite,point
 from .location_log import LocationLogReader,RawLocationFix
 from .motion_collection import immutable_binding
@@ -20,7 +21,7 @@ from .route_floor_commit import _chain_snapshot
 
 @dataclass(frozen=True)
 class CampStoppedHeight:
-    checkpoint: CampFloorCheckpoint
+    checkpoint: CampFloorCheckpoint | CampProbeFloorReference
     first: RawLocationFix
     second: RawLocationFix
     package_xyz: tuple
@@ -38,7 +39,7 @@ def measure_camp_stopped_height(checkpoint,reader,first,second,*,minimum_log_seq
                                 clock=time.monotonic,local_wall_clock=datetime.now,
                                 residual_limit=.05,maximum_offset_change=.05):
     """Validate new samples without constructing a route or rearming an observer."""
-    if (type(checkpoint) is not CampFloorCheckpoint or type(reader) is not LocationLogReader
+    if (type(checkpoint) not in CAMP_FLOOR_TYPES or type(reader) is not LocationLogReader
             or any(type(v) is not RawLocationFix for v in (first,second))
             or type(minimum_log_seq) is not int or minimum_log_seq<1
             or not all(finite(v) for v in (released_at,residual_limit,maximum_offset_change))
@@ -49,8 +50,8 @@ def measure_camp_stopped_height(checkpoint,reader,first,second,*,minimum_log_seq
     checkpoint.check()
     if reader is not checkpoint._reader:
         raise ValueError('Camp height reader differs from the retained arrival')
-    anchor=checkpoint._reference
-    if minimum_log_seq<anchor.raw_fix.log_line_seq:
+    anchor,anchor_raw,anchor_position=camp_floor_anchor(checkpoint)
+    if minimum_log_seq<anchor_raw.log_line_seq:
         raise ValueError('Acquisition baseline predates the arrival')
     branch=checkpoint.fork();state=_chain_snapshot(branch);last=None
     expected=(reader.zone_id,reader.zone_display_name,reader.tail.epoch,reader.zone_generation)
@@ -59,7 +60,7 @@ def measure_camp_stopped_height(checkpoint,reader,first,second,*,minimum_log_seq
         binding=binding_reader();wall=local_wall_clock()
         checkpoint.check();now=clock();checkpoint._assert_intact()
         if (binding!=owner_binding or reader is not checkpoint._reader
-                or checkpoint._reference is not anchor or _chain_snapshot(branch)!=state
+                or camp_floor_anchor(checkpoint)[0] is not anchor or _chain_snapshot(branch)!=state
                 or not finite(now) or last is not None and now<last
                 or reader.latest is not second or reader.log_line_seq!=second.log_line_seq
                 or (reader.zone_id,reader.zone_display_name,reader.tail.epoch,reader.zone_generation)!=expected
@@ -91,7 +92,7 @@ def measure_camp_stopped_height(checkpoint,reader,first,second,*,minimum_log_seq
                             offset=raw.raw_coordinates[2]-z))
         check()
     offsets=tuple(s['offset'] for s in samples);center=sum(offsets)/2
-    anchor_offset=anchor.raw_fix.raw_coordinates[2]-anchor.package_xyz[2]
+    anchor_offset=anchor_raw.raw_coordinates[2]-anchor_position[2]
     if (not finite(center) or center<=0 or not finite(anchor_offset) or anchor_offset<=0
             or any(abs(v-center)>residual_limit or abs(v-anchor_offset)>maximum_offset_change for v in offsets)):
         raise ValueError('Fresh heights disagree with the reached floor correspondence')
