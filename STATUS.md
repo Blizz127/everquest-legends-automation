@@ -23,6 +23,9 @@ Updated 2026-11-14 11:42 UTC for coordinator task `829a00229b29`.
   destination owner scope/runtime, then real traversal and camps; retain the
   pending 0.39.15 short trial and assist 0.39.13. No new G0/test request.
   Current level, XP/hour, deaths and camp remain unknown; 1–20 and 1–50 are not met.
+  Source `f5037e7` is staged at Alienware `owner-tools/0.42.12/source`;
+  copied-geometry/permission-off/changed-manifest startup passes without input.
+  Startup SHA `c70d8b19ac011cd7ab6e0d2b902f7d50fca7a5114f46928880f1490bea1e8043`.
 - **Source 0.42.11:** a fresh-start destination planner now
   emits multi-polygon routes using the retained navmesh search. It independently
   checks exact endpoint floors/XY, reciprocal portal geometry and initial

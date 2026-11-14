@@ -60,6 +60,17 @@ Current level, XP/hour, deaths and camp are unknown. G0 is passed including
 owner visible-stop confirmation; no repeat. Assist 0.39.13 and owner trial
 0.39.15 stay unchanged, with no new owner action or lead game input.
 
+**VERIFIED private staging (2026-11-14 11:42 UTC):** source `f5037e7546df0360d31a3ae8637e2a386d4dda10` is
+available on Alienware at `owner-tools/0.42.12/source`, with the new copied
+bundle under `owner-route-data/gfay-destination-20261114-tiles`. The actual
+copied five-ULP geometry startup passes terrain/static/BSP, refuses without
+overlap permission and rejects a changed grid manifest. The existing 0.39.15
+snapshot verifies unchanged before and after. No engine worker, device,
+game input or protected-install change. Archive SHA
+`f90fb3ff2689a03efd2feedb72576951cf6ac8ed1c76b9a70911dd37c0694f02`;
+startup SHA `c70d8b19ac011cd7ab6e0d2b902f7d50fca7a5114f46928880f1490bea1e8043`.
+This source staging is not an owner traversal or leveling acceptance.
+
 ## Fresh current-position destination corridor — 2026-11-14 11:31 UTC
 
 **VERIFIED copied-data planning:** source 0.42.11 adds `plan_destination`,
