@@ -1,5 +1,71 @@
 # FINDINGS
 
+## Fresh current-position destination corridor — 2026-11-14 11:31 UTC
+
+**VERIFIED copied-data planning:** source 0.42.11 adds `plan_destination`,
+composing the existing current-start producer with the retained rotation
+helper's NavMesh search. Exact start and destination support are resolved
+independently; the search's nearest-point mechanism cannot move either XY or
+select another endpoint polygon. Every corridor polygon is dry and in the
+current component; every selected crossing lies on both unique directed
+portal segments. Chosen segment lengths and height seams satisfy the existing
+follower limits. Body/obstacle clearance of the suffix is explicitly unverified.
+
+The initial accepted source-floor chain remains at index 1. Future movement
+must still run the existing `RouteGeometryPreparer` terrain/static/BSP checks,
+then commit its floor extension only after the matching release receipt.
+Runtime observations use that committed chain. Whole-corridor precomputation
+is not a movement requirement; the evidence explicitly scopes its proof to
+the initial floor/body and reciprocal topology. A first prototype reused the
+old whole-route strip selector and exhausted its repair rounds after 44.48s;
+it produced no plan. The final producer selects bounded reciprocal portal
+targets and leaves each forthcoming body footprint to the mandatory runtime
+checks. No collision guard or input policy was disabled.
+
+The source destination is `to_Clan_Crushbone`, line 2 of private
+`client-data/retail-full/maps/gfaydark_1.txt`, SHA
+`84a1e1a655a73ddb13a71a7afc121acfe73d8737554a3ac1a5ad78249d0db882`.
+Pinned map-alignment evidence SHA
+`c3f9fb5ffdf8dc740d145c119b2c3522e22cb5f36617e575417176932620901f`
+supports map-to-WLD `(-y,-x)` via 8,163 vertex matches versus 2 next-best.
+The resulting package XY is an approach marker in dry polygon 19255, not
+acceptance of the actual zone trigger. Three source terrain heights exist at
+that XY; no source floor was chosen by nearest label Z. The connected runtime
+floor chain must establish support as the character approaches.
+
+The pinned probe uses synthetic fresh replies at fixture XY
+`(1780.12, -1802.22)`, not a claimed current character location. It produces
+197 segments, total length 4,995.9465 units, in 10.62 seconds after loading,
+retaining initial floor index 1. Code/data hashes and executed probe source
+are saved outside git. No game input or client execution occurred.
+
+Private `nav-candidates/gfay-crushbone-destination-pinned-0.42.11/`:
+
+- `probe.json` SHA `dbf36ca66eac3112faf4b48aa7fe9df894b45ac97036f706e2bfa013760fb531`.
+- `plan.json` SHA `ebe75cdd071ab04866b79ef559a8b56a702b9dc29988e9fdcd206ad0d90e021b`.
+- `geometry.json` SHA `6c8d32df692d74b471867c7b33b8bdeeb907171647a1472748fd800c1e74998a`.
+
+**VERIFIED focused tests:** thirteen final planning cases pass, including
+changed source/owner/deadline, displaced reverse portal, duplicate/missing
+links, changed endpoint XY/floor and closed/foreign components. Two actual
+watchdog-pipe cases pass with synthetic scene/movement feedback: the new
+multi-polygon plan reaches its destination, and a wall outside the initial
+proof stops the sender before the wall. Every completed DOWN has a matching
+receipt/chain extension; rejection adds no extension. Test-harness corrections
+were needed for clock rebinding, a serialized receipt property and the
+terminal follower index; no runtime bounds were widened. The final planning
+plus clear traversal run passed 14 cases; the suffix-wall case passed in its
+preceding focused run. These do not establish actual client movement.
+
+**Remaining work:** the current owner policy remains a finite short trial;
+this full destination plan cannot silently extend its limits. Copied tile
+rounding/overlap handling must be carried consistently into runtime guards;
+Crushbone source steps and later camps remain unfinished. Owner trial 0.39.15
+and assist 0.39.13 stay unchanged. A single read-only result check found no
+route-trial JSON or `~/eql-route-trial-trace.jsonl`; the owner test remains
+pending without repeated polling. G0 stays passed. Current level, XP/hour,
+deaths and camp remain unknown; no automated XP or real route accepted.
+
 ## Same-action owner route runtime — 2026-11-14 11:18 UTC
 
 **VERIFIED implementation and pipe tests:** source 0.42.10 composes the retained

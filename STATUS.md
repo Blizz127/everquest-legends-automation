@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 11:18 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 11:31 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,20 @@ Updated 2026-11-14 11:18 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.11:** a fresh-start destination planner now
+  emits multi-polygon routes using the retained navmesh search. It independently
+  checks exact endpoint floors/XY, reciprocal portal geometry and initial
+  source-floor/body evidence; future footprints retain the per-movement
+  terrain/static/BSP and receipt-commit requirements. The copied current-client
+  Crushbone approach marker yields 197 segments / 4,995.95 units, without
+  manual recording or reuse of a historical starting point. This is a
+  synthetic-position planning result, not actual movement or a zone crossing.
+  The clear pipe case reaches the destination across a portal; the suffix-wall
+  case stops before collision. Fifteen focused cases pass across the final planning and runtime runs. **Next:**
+  carry explicit tile-seam handling and full destination plans into the owner
+  runtime, then verify actual traversal and camps. Owner trial 0.39.15 and
+  assist 0.39.13 remain unchanged. One result check found no new owner trace or
+  route JSON; no polling loop. Level/XP/hour/deaths/camp remain unknown.
 - **Source 0.42.10 / route preview 0.39.15 staged:** one owner action
   now retains the motion experiment's input observer/heading, collects fresh
   stopped positions, creates the short current-XY plan, checks fresh height,
