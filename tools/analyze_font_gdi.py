@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
-from eql_automation.font_gdi_probe import read_gdi_probe
+from eql_automation.font_gdi_probe import read_gdi_probe, compare_dib_history
 from eql_automation.font_geometry import (
     command_font_geometry, COPIED_RUNTIME_SHA256, RASTER_RUNTIME_SHA256,
 )
@@ -24,6 +24,11 @@ def main():
                         help='Optional geometry hypothesis; requires --ui-scale and --client-box-ui')
     parser.add_argument('--ui-scale',type=float)
     parser.add_argument('--client-box-ui',type=int,nargs=4,metavar=('LEFT','TOP','RIGHT','BOTTOM'))
+    parser.add_argument('--diagnostic-only',action='store_true',
+                        help='Record probe/DC metadata without building independent glyph PNGs')
+    parser.add_argument('--compare-baseline',type=Path,
+                        help='Pinned version-2 clear-each probe for a DIB reuse comparison')
+    parser.add_argument('--baseline-sha256')
     args=parser.parse_args()
     private=(Path.home()/'.local/share/eql-automation/font-probes').resolve()
     output=args.output.expanduser().resolve()
@@ -33,10 +38,21 @@ def main():
     geometry_args=(args.base_height,args.ui_scale,args.client_box_ui)
     if any(v is not None for v in geometry_args) and not all(v is not None for v in geometry_args):
         parser.error('Geometry requires --base-height, --ui-scale and --client-box-ui together')
+    if (args.compare_baseline is None)!=(args.baseline_sha256 is None):
+        parser.error('--compare-baseline and --baseline-sha256 are required together')
+    if args.compare_baseline is not None and not args.diagnostic_only:
+        parser.error('DIB history comparison requires --diagnostic-only')
     try:
         probe=read_gdi_probe(args.input.read_bytes(),expected_sha256=args.input_sha256,
                             font_sha256=args.font_sha256,descriptor_sha256=args.descriptor_sha256)
-        renderings=probe.prefix_renderings()
+        renderings=() if args.diagnostic_only else probe.prefix_renderings()
+        comparison=None
+        if args.compare_baseline is not None:
+            if args.compare_baseline.stat().st_size>33*1024*1024:
+                raise ValueError('Baseline probe exceeds size bound')
+            baseline=read_gdi_probe(args.compare_baseline.read_bytes(),expected_sha256=args.baseline_sha256,
+                                   font_sha256=args.font_sha256,descriptor_sha256=args.descriptor_sha256)
+            comparison=compare_dib_history(baseline,probe)
         geometry=[]
         if args.base_height is not None:
             from eql_automation.command_text_match import PREFIXES
@@ -55,6 +71,7 @@ def main():
     # PNGs remain the raw alpha4 probe model; geometry is a separate diagnostic.
     manifest['preprojection_geometry']=geometry
     manifest['pngs_apply_geometry']=False
+    manifest['dib_history_comparison']=comparison
     manifest['renderings']=[]
     for index,t in enumerate(renderings):
         name=f'prefix-{index:02d}.png'

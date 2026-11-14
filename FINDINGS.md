@@ -1,5 +1,73 @@
 # FINDINGS
 
+## Corrected DC setup and reusable-bitmap evidence 0.41.88 — 2026-11-14 07:35 UTC
+
+**VERIFIED correction to the earlier trace:** PE import parsing resolves
+IAT `0x18035e060` to **SetMapMode**, not SetBkMode. The call at `0x180197dd8`
+sets MM_TEXT (1); the DLL imports no SetBkMode. The earlier claim that this
+call selected TRANSPARENT was wrong. Complete bounded new-glyph, rerender,
+raster and copy paths show no explicit full-bitmap clear. Evidence
+`font-dc-correction-native-0.41.88.json` SHA
+`f9c34b2034cc820ce809a4f56843e0763857c10a7ea17f058c33a2bee39e307e`.
+
+The own-tool probe now sets MM_TEXT, leaves the background mode at its DC
+default, and records both actual modes. Its version-2 format records whether
+the bitmap is cleared before every glyph, zeroed once and reused (default),
+or initialized white once and reused. Version-1 imports retain their actual
+legacy transparent-background/clear-each provenance. Reused diagnostics
+cannot be composed into independent glyph rendering banks. The comparison
+requires matching font, descriptor, metrics, sequence and DC modes, then
+separates changed alpha4 pixels inside and outside each glyph's cx/cy extent.
+
+**VERIFIED execution:** 72 focused parser/geometry checks pass. Zig 0.13.0
+built the corrected native helper on one low-priority devbox CPU; source SHA
+`1550757f03706a966402a6dddf10bbeb2995bffaac839040cd94b4804eba33ea`,
+executable SHA `db9da10858f2f94e798bbbf9792b720bb719fb8120a56af24caba0ea4c643f63`.
+Three offscreen runs used the existing dedicated devbox Wine 10.0 prefix,
+never the owner's game prefix. All selected the exact copied font and
+observed mapping mode 1, background mode **2 (OPAQUE)**. Own-prefix server
+exit and existing-output preservation were checked successfully.
+
+| Isolated height-19 probe | SHA-256 |
+| --- | --- |
+| Clear each glyph | `e4458657f0c351a72aa7a6b349e2944e0202b083496ad7e2ada17c7e82925fac` |
+| Zero once, reuse | `0b36f0c4e1c109bd960778d85afcee4054802a1c68a6ffd11cb17bdc0aee6853` |
+| White once, reuse | `b43c810e95635252408fe46e3bd174223a47195838d361e6d6f3c8f60703dcd4` |
+
+**OBSERVED isolated behavior:** the 21×19 bitmap retains history beyond the
+measured glyph width. The zero-once sequence changes 76 alpha4 pixels across
+five glyphs outside their extents; none change inside. White-once runs also
+preserve outside pixels, including the column immediately after cx. Corrected
+clear-each alpha4 glyphs match the older clear-each results exactly. Thus the
+DC labeling error did not change these particular baseline glyphs, but the
+baseline cannot represent unknown live bitmap history. Linear sampling may
+touch those retained edge pixels. Comparison artifact SHA
+`85734b0a5c6f19ac210a982f2e97e1463378135bed8b17b2f348d8b0c92d8994`.
+
+The CLI's `--diagnostic-only` import/comparison succeeded with zero rendering
+PNGs, manifest SHA
+`dc8d4f7689ed1c28185e07e7db874d8382d28a4e2a672fcfc6312ab3134bbb55`.
+Non-diagnostic reused import and incomplete baseline arguments both refused
+before creating output; CLI evidence SHA
+`e67be5267582da0411d2e914986c2a162e6ccc68ceb72698ea1841bebafa92ad`.
+
+**VERIFIED static shader filenames:** the traced stage/input serialization
+and CRC32 reproduce table pipeline 7/8 keys 209776124/750037918 exactly,
+matching the retained identical vertex shaders. Evidence
+`font-shader-keys-0.41.88.json` SHA
+`56330272396face7035bc06394d265a9271eaf23922bafca84b0b41ef44bfa97`.
+Font preparation requests source-alpha/inverse-source-alpha blending and
+alpha modulation; color stage, blend override and ADD state remain inherited.
+This does not prove an active shader, bitmap history or rendered live pixels.
+
+The next direct route integration is a read-only consumer of the existing
+stationary pair, reusing saved-pair/crop and GFay route validators. The pending
+owner observation remains missing at the last 07:26 UTC check; no new test or
+repeat G0 is requested. Owner assist 0.39.6 and observation 0.39.10 are unchanged.
+No game execution, live capture/input, login or protected-prefix write occurred.
+Current level/XP/hour/deaths/camp remain unknown; no live route or level gain
+is accepted. This build corrects a source-model error, not the completion claim.
+
 ## Compiled shader candidates — 2026-11-14 07:29 UTC
 
 **VERIFIED static candidate evidence:** the two installed vertex shaders
@@ -162,7 +230,9 @@ hypothesis, not a current live binding. Config evidence SHA
 `6cdb4ca1e88c28d5b94e13a68cf5489288a4b8a5111387e27d189892e48fea5f`.
 
 The native raster path uses a memory DC, the unchanged 60-byte LOGFONTA,
-TRANSPARENT background mode, black background, white text and alignment 0.
+MM_TEXT mapping mode, black background, white text and alignment 0.
+The original 0.41.86 description mislabeled the mapping-mode import as
+SetBkMode(TRANSPARENT); the 0.41.88 section above records that correction.
 It creates a top-down 32-bit DIB sized `tmMaxCharWidth × tmHeight`; each UTF-16
 unit is measured and rendered separately with `ExtTextOutW` options 2. Texture
 copy converts `(pixel & 255) >> 4` to 4-bit alpha with white RGB. This is why

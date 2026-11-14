@@ -1,9 +1,24 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 07:17 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 07:35 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.88 corrects the probe's DC setup and records bitmap reuse. The
+client's SetMapMode import was previously mislabeled as SetBkMode; corrected
+own-tool runs observe opaque background mode and persistent pixels beyond
+some glyph extents. Seventy-two focused checks and three native offscreen
+runs pass. Reused samples cannot become independent glyph banks. This fixes
+a source-model error and does not enable movement. The next direct route
+integration is a read-only consumer for the already requested stationary
+pair: validate pinned metadata/crops, inspect map/scene candidates and report
+current-start binding gaps against the retained GFay plan. No repeat G0 or
+additional owner measurement is needed for that development work.
+
+Source 0.41.87 adds separate integer advances, fractional rectangles and
+independent caret rounding, with 57 focused checks and six remote checks.
+These remain geometry hypotheses, with no final raster/live acceptance.
 
 Source 0.41.86 supplies copied-font glyph hypotheses from an isolated offscreen
 GDI helper, with actual selected font bytes pinned and the client's inspected

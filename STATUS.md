@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:28 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:35 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,22 @@ Updated 2026-11-14 07:28 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.88:** corrected a native import-labeling error: the client
+  calls SetMapMode(MM_TEXT), not SetBkMode(TRANSPARENT), and its glyph bitmap
+  is reused. The version-2 probe records actual DC modes and three reset
+  policies; importer/comparison preserve that provenance and refuse to turn
+  reused samples into independent glyph banks. Seventy-two focused checks
+  pass. Native build and three devbox-only offscreen runs pass; all observe
+  map mode 1/background mode 2. Five glyphs retain 76 changed alpha4 pixels
+  outside their extents in the tested zero-once sequence; none change inside.
+  Comparison artifact SHA
+  `85734b0a5c6f19ac210a982f2e97e1463378135bed8b17b2f348d8b0c92d8994`.
+  Old/new clear-each alpha4 glyphs match, but neither captures unknown live
+  bitmap history. Existing-output refusal and own-prefix cleanup pass.
+  No game runtime/capture/input occurred. Next: consume the already requested
+  stationary pair into a pinned map/scene/current-start diagnostic, reusing
+  the existing pair and route validators. That pair is still missing; G0
+  needs no repeat, and no additional owner test is requested.
 - **Source 0.41.87:** copied-source font geometry now separates integer
   advances, fractional rectangles, UI-space metrics/centering and the caret's
   independent rounding. Fifty-seven focused geometry/parser checks pass.
