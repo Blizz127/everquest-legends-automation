@@ -1,12 +1,17 @@
 # STATUS
 
-Updated 2026-11-14 21:03 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 21:05 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source tools 0.42.63 built locally; owner preview remains 0.39.32.**
+- **Source tools 0.42.63 privately published; owner preview remains 0.39.32.**
+  Installed at `owner-tools/0.42.63/source`; all 523 pinned files match. Imports
+  and three auditor startups pass on Alienware. Bundle SHA
+  `8b4f97325267e87a83f7aec2824058c3ce431401b60d95e660d0528d44c21743`;
+  startup SHA `baf2e1964600dac85821443aab7935542040d97a52bc2a89d73eceee3798473e`.
+  Owner launcher/runtime unchanged; no helper restart or input.
   VERIFIED 21 focused checks. Corrected copied-data flight passes 33 full body,
   static and region phases; complete independent local queries and a checked
   final landing link only the planning clone to its original floor.

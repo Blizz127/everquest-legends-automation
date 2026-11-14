@@ -1,5 +1,22 @@
 # FINDINGS
 
+## 2026-11-14 21:05 UTC — source tools 0.42.63 privately published
+
+VERIFIED installed `~/.local/share/eql-automation/owner-tools/0.42.63/source`
+on Alienware from `f02fa000fdc3bf6600ec07bf7470f21c70b536b0`. All **523** pinned source/test files
+match the locally validated snapshot; the bundle includes the **21 passing**
+focused tests with verified JUnit hashes. Imports and all three auditor
+command-line startup checks pass remotely. Owner preview/runtime remain
+**0.39.32 / 0.42.61**; its launcher hash is unchanged. No owner helper was
+restarted and no game input was sent.
+
+Bundle SHA `8b4f97325267e87a83f7aec2824058c3ce431401b60d95e660d0528d44c21743`;
+startup receipt SHA `baf2e1964600dac85821443aab7935542040d97a52bc2a89d73eceee3798473e`.
+Receipt: private `releases/eql-source-tools-0.42.63-staging.json`.
+This release contains offline stair-flight planning tools, not a live stair
+executor or complete Throne guide. The later exit crossing remains the next
+geometry issue. Full 1–20 and fresh hands-off 1–50 remain unfinished.
+
 ## 2026-11-14 21:03 UTC — source 0.42.63: checked stair flight and composed route boundary
 
 VERIFIED the copied Crushbone flight now passes **33 complete body/region
