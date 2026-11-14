@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 09:52 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 10:02 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,16 @@ Updated 2026-11-14 09:52 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.3:** resolved the installed DLL's actual WLD tree/point-query
+  chain. A null child returns -1; label consumers propagate absence/defaults,
+  not a proven dry classification. Added a separate binary32 point diagnostic
+  and reproducible private static evidence. Sixty focused checks pass. All
+  926 saved null-volume centroids still fail under this model; rounding does
+  not clear the route. **Next:** identify actor query position/classification
+  and consume pending 0.39.12 owner motion/current scene for the first GFay leg.
+  Bounds/live MXCSR, actor body/step capability, dynamic obstacles and real
+  traversal remain unverified. Assist 0.39.13 and measurement 0.39.12 unchanged;
+  no new owner test and no G0 repeat. Level, XP/hour, deaths and camp unknown.
 - **Assist 0.39.13 staged:** stale HP/mana is cleared on stop, inactive arm
   and settings changes. Actual retained-engine regression and offscreen GUI
   pass on Alienware without devices or game input; explicit F10 still works

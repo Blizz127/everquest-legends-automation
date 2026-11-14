@@ -1,9 +1,18 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 09:50 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 10:02 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.42.3 resolves the installed graphics DLL's tree-query behavior:
+missing children return -1, and callers propagate no label/defaults rather
+than a proven dry region. A separate copied-point model matches the observed
+instruction ordering under an explicit binary32 arithmetic assumption. All
+926 saved null-volume centroids still return missing child; 60 focused checks
+pass, with no route relaxation. Next: establish the actor query position and
+classification callback, and consume the pending owner motion/current-scene
+result. Assist 0.39.13 and measurement 0.39.12 remain unchanged; G0 is passed.
 
 Source 0.42.2 replays the complete terrain/static candidate and checks exact
 closed BSP intersections: 1,046 ordinary cells plus all phases of seven steps.

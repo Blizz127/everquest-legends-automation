@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.2** · rotation preview **0.39.13** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
+Source **0.42.3** · rotation preview **0.39.13** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -20,10 +20,10 @@ Run only one helper at a time. **G0 passed; do not repeat the movement-stop
 pulse.** The next owner check is the combined hotbutton + motion measurement
 below. The manual position observation remains available separately.
 
-Source 0.42.2 checks the completed copied-source Crushbone corridor against
-clipped BSP volumes, including all step phases. Unknown regions still prevent
-route acceptance. Assist 0.39.13 and the 0.39.12 motion test below are unchanged.
-No repeat of G0 is needed.
+Source 0.42.3 reproduces the installed client's region lookup in an offline
+diagnostic. The problematic Crushbone points still return no region; this does
+not clear the route. Assist 0.39.13 and the 0.39.12 motion test below are
+unchanged. No repeat of G0 is needed.
 
 ## Next owner test on Alienware: 0.39.12
 

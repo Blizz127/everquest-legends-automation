@@ -1,5 +1,78 @@
 # FINDINGS
 
+## Installed-client BSP lookup resolved — 2026-11-14 10:02 UTC
+
+**VERIFIED static evidence, not native execution:** the retained
+`client-data/font-runtime-20261114T0706Z/EQGraphics.dll`, SHA
+`4f5f18ee9821b3e15ff25980dda7def1b2cfcdfd72a5d359ac02d0b546163168`,
+contains the actual WLD loader and tree conversion/query chain. Source 0.42.3
+adds `tools/audit_client_bsp_static.py` to reproduce eleven bounded disassembly
+spans without loading the DLL. Evidence is under
+`client-data/bsp-native-query-20261114T100048Z/probe.json`, SHA
+`725c1e04894c28bd67747245e3f31e1c6209c894adc36bd3b9a70eb154d4953a`.
+All client disassembly remains in the private data store.
+
+- WLD reader `0x1802bf3a0` checks magic `0x54503d02`, reads the 28-byte header,
+  decodes the existing XOR key and produces 32-byte fragment descriptors.
+  The accepted version tests are `(version & 0xffff0000)==0x10000000` or
+  `(version & ~1)==0x15500`. Its error `-1` concerns loading, not region lookup.
+- Conversion `0x1802c03f0–0x1802c0856` calls the 0x21 tree expander
+  `0x1802c0860–0x1802c0b4f`. Each 28-byte source node becomes a 48-byte
+  runtime node; source child zero becomes null, otherwise the child pointer
+  is `nodes + 48*(reference-1)`. `0x1802bc750` installs tree pointer/count at
+  runtime `+0xa8/+0xa0`. The conversion has five chained unwind ranges:
+  its first `.pdata` end `0x1802c0408` is **not** the function end.
+- Point lookup `0x1802bc5f0–0x1802bc719` first requires strict interior of
+  runtime bounds expanded by float32 **2000**. Outside returns `-1`.
+  Inside, a null root returns the distinct value `1`. Otherwise a nonzero
+  node region reference returns `reference-1` before testing children. Scalar
+  `MULSS/ADDSS` evaluates `y*ny + x*nx`, then `z*nz`, then split, with separate
+  rounded operations. A nonnegative result, including zero, takes child
+  `+0x10`; negative takes `+0x18`. A null child returns **-1** at `0x1802bc6e2`.
+  Query source-span SHA:
+  `cb27263a07676da173d04e454eae75f84e58dcb235cdd47634ca0fb6fc923c11`.
+- `0x1802bcce0` initializes the region-to-type map to `-1`, then applies the
+  zero-based IDs listed by 0x29 records; later overlapping records overwrite
+  earlier entries. Label consumer `0x1802bc510–0x1802bc5ce` returns null for
+  query `-1` or an unassigned type. Null root and missing child are different.
+- Scene wrapper `0x1800f78c0` forwards its point unchanged and returns its
+  caller's fifth DWORD argument when no label/callback exists. `0x1800f8c40`
+  has an unclassified numeric-zero default and separate AFG-volume logic.
+  A nine-point caller `0x1802bd290` samples center/eight extent corners and
+  skips callbacks for query `-1`; valid untyped regions instead invoke its
+  callback with a null label. None of these facts identifies missing space
+  as dry. The upstream actor coordinate/height and classification callback
+  installed at Scene `+0x18` remain unresolved.
+
+**VERIFIED implementation:** `client_bsp_probe.py` is a separate copied-tree
+diagnostic. It models the tree suffix after the native bounds gate, assumes
+normal binary32 round-to-nearest/even arithmetic, and explicitly leaves live
+MXCSR, bounds and actor position unverified. Subnormal/overflow arithmetic,
+cycles and visit limits return model refusals; they do not invent native
+results. No route policy or closed-volume test is relaxed. Read-only native
+comparison found no concrete mismatch within this declared scope.
+
+**VERIFIED checks:** 60 focused tests pass across the new point model,
+conservative volumes, exact clipping and WLD regions. They distinguish null
+root/child, zero/negative-zero, region-before-children and intermediate
+rounding; a point resolving above the floor still cannot clear a thin unknown
+volume below it.
+
+**VERIFIED copied-data comparison:**
+`nav-candidates/crushbone-client-bsp-points-0.42.3.json`, SHA
+`76612457b311046e2bb964678f818ac8eda844a9549dae535b31e3cf639d260e`.
+All **926** centroids of the first-reported ordinary-cell null volumes still
+return missing child. Of **9,578** vertex samples, **5,136** return missing
+child and **4,442** resolve a region. These finite samples are not exhaustive
+volume classifications and resolve none of the route refusals. No height
+tolerance or default-dry interpretation was introduced.
+
+**Next:** identify the actor-position/classification caller, and consume the
+pending owner 0.39.12 hotbutton/motion/current-scene result for the first GFay
+leg. G0 is passed and needs no repeat. Assist 0.39.13 remains based on the
+existing rotation bot. Current level, XP/hour, deaths and camp are unknown;
+no real route, automated level gain or fresh-character run is accepted.
+
 ## Clipped BSP audit of complete source path — 2026-11-14 09:50 UTC
 
 **VERIFIED implementation:** source 0.42.2 adds exact rational clipping of a
