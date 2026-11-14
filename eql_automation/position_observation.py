@@ -30,6 +30,16 @@ def validate_pair(fix, expected, metadata, checked_at):
     if (metadata.get("game_session") != expected["game_session"] or
             metadata.get("focused_window_id") != expected["window_id"]):
         raise ValueError("Captured window/process differs from the location observation")
+    validate_capture_record(fix, metadata, checked_at)
+
+
+def validate_capture_record(fix, metadata, checked_at):
+    """Check recorded timing/no-chat invariants, without proving live identity.
+
+    The producer separately compares its expected process/window in
+    validate_pair. A saved pair does not retain that second identity record;
+    readers must not manufacture it from metadata and call it verification.
+    """
     start = metadata.get("capture_started_monotonic")
     end = metadata.get("capture_ended_monotonic")
     if not all(isinstance(n, (float, int)) and not isinstance(n, bool) and isfinite(n)

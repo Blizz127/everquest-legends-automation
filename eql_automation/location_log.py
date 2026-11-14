@@ -47,9 +47,14 @@ def parse_raw_location(body: str) -> tuple[float, float, float] | None:
 
 def unique_client_zone_ids(zone_names_path: Path) -> tuple[dict[str, int], set[str]]:
     """Resolve only exact, unambiguous display names from copied client data."""
+    return unique_zone_ids_from_text(zone_names_path.read_text(encoding="latin-1"))
+
+
+def unique_zone_ids_from_text(text: str) -> tuple[dict[str, int], set[str]]:
+    """Apply the same lookup to an already pinned immutable source snapshot."""
     from .client_ingest import parse_zone_names
     by_name: dict[str, set[int]] = defaultdict(set)
-    rows = parse_zone_names(zone_names_path.read_text(encoding="latin-1"))
+    rows = parse_zone_names(text)
     for row in rows:
         by_name[row["name"]].add(row["id"])
     unique = {name: next(iter(ids)) for name, ids in by_name.items() if len(ids) == 1}

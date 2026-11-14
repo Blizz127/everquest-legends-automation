@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:38 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:49 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,21 @@ Updated 2026-11-14 07:38 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.41.89:** the saved-position reader now checks the existing
+  observation format, file hashes, timing records and parent/child crop pixels,
+  and can summarize the pinned GFay route with its actual named zone mesh.
+  Eighty-two reader/adapter/catalog checks and 17 original capture checks pass.
+  The retained 0.39.10 producers generated a synthetic pair that the new CLI
+  successfully read alongside the real copied catalog and 155-segment GFay
+  plan. All seven child crops matched their parents; source files stayed
+  unchanged. Evidence SHA
+  `ef0bd3fbfbd29985c094207a9842f5d6baec67be59d3821ba21517fe2965db3c`.
+  Pixels, location and label hypothesis in that experiment were synthetic;
+  no current-start query or live acceptance was claimed. At 07:48 UTC the
+  owner observation store still contained zero pairs. Next: analyze the
+  already requested pair when available, then bind actual zone/scene/ground
+  and measured motion before the first checked live route step. G0 needs no
+  repeat. Owner helpers are unchanged.
 - **Source 0.41.88:** corrected a native import-labeling error: the client
   calls SetMapMode(MM_TEXT), not SetBkMode(TRANSPARENT), and its glyph bitmap
   is reused. The version-2 probe records actual DC modes and three reset

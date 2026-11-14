@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.41.88** · rotation preview **0.39.6** · observation candidate **0.39.10**.
+Source **0.41.89** · rotation preview **0.39.6** · observation candidate **0.39.10**.
 
 **The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -108,11 +108,30 @@ Assist 0.39.6 remains the current rotation test; run it separately.
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.88/source
+~/.local/share/eql-automation/owner-tools/0.41.89/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers
-above. Source 0.41.88 corrects the isolated font probe's DC setup and records
+above. Source 0.41.89 adds a saved-position diagnostic. After the existing
+observation helper reports a saved directory, the lead can analyze it without
+opening a display or sending game input:
+
+```bash
+python3 tools/analyze_owner_position_pair.py \
+  --capture-dir /path/reported/by/helper \
+  --pair-sha256 SHA256_OF_UNBOUND_LOCATION_JSON
+```
+
+The tool checks saved file hashes, capture-record timing and overlapping crop
+pixels. Optional `--zone-names`/`--zone-names-sha256` and `--map-label-text`
+look up an explicitly supplied label hypothesis; they do not perform OCR.
+Optional `--route`/`--route-sha256`/`--mesh`/`--mesh-sha256` summarize a pinned
+offline route, with the mesh tied to that route's named zone. Recorded process
+IDs are not current identity evidence, and raw `/location` coordinates remain
+unbound to WLD. The tool does not enable F11 or accept a live route. There is
+no new owner check: the pending 0.39.10 stationary observation is unchanged.
+
+Source 0.41.88 corrects the isolated font probe's DC setup and records
 its mapping mode, background mode and bitmap reuse policy. The native helper
 defaults to `reuse`; `clear-each` supplies a comparison baseline and
 `white-reuse` exposes pixels that GDI leaves untouched. Run it only in its

@@ -1,9 +1,20 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 07:38 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 07:49 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
+
+Source 0.41.89 adds the read-only saved-position consumer. It checks the
+existing pair/crop format and summarizes the pinned GFay route, requiring
+the supplied mesh to match that route's named zone mesh pin. Eighty-two
+reader/adapter/catalog checks and 17 original capture checks pass. A pair
+from the retained 0.39.10 producers, using synthetic pixels and coordinates,
+was read with the real copied zone catalog and 155-segment GFay plan.
+The caller-supplied label hypothesis resolved to catalog ID 54; it was not
+recognized from pixels. This proves format compatibility, not a current-start
+query. At 07:48 UTC no owner pair was saved. Current zone/scene/ground and
+motion bindings remain missing; no route input is enabled. G0 remains passed.
 
 Source 0.41.88 corrects the probe's DC setup and records bitmap reuse. The
 client's SetMapMode import was previously mislabeled as SetBkMode; corrected

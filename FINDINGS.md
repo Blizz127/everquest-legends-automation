@@ -1,5 +1,48 @@
 # FINDINGS
 
+## Saved-position and offline-route diagnostic 0.41.89 — 2026-11-14 07:49 UTC
+
+**VERIFIED:** the new saved-pair reader validates the existing 0.39.10 format,
+pinned metadata/PNG bytes, recorded timing/no-chat conditions, bounded RGB
+crop dimensions and parent/child pixel agreement. It preserves recorded-only
+process/window identifiers and raw unbound coordinates. The capture producer's
+independent identity comparison is unchanged; only its shared record checks
+were extracted. Exact zone-name lookup uses the existing catalog parser.
+
+The optional route summary reuses `FixedRoute.load` and additionally requires
+exactly one named `<zone>.npz` source pin with the supplied mesh's digest.
+This prevents another valid input pin from being mistaken for the zone mesh,
+while allowing a relocated byte-identical mesh. The report never queries the
+route from raw coordinates, selects a scene state or enables F11.
+
+**VERIFIED checks:** 82 focused saved-reader/adapter/catalog checks pass,
+followed by all 17 original capture checks. A separate CLI experiment loaded
+the retained 0.39.10 capture and pair producers by SHA and used them to save
+synthetic pixels/location. The reader checked all ten PNGs and seven overlapping
+child crops, then loaded the real copied catalog and existing GFay plan/mesh.
+The explicit label hypothesis `The Greater Faydark` resolves to catalog ID 54;
+the route has 155 segments. Input files stayed unchanged. Evidence:
+`evidence/owner-pair-0.41.89.json`, SHA
+`ef0bd3fbfbd29985c094207a9842f5d6baec67be59d3821ba21517fe2965db3c`.
+All paths here are relative to the private `~/.local/share/eql-automation/` store.
+
+| Retained input | SHA-256 |
+| --- | --- |
+| 0.39.10 owner UI producer | `3da44541cc6dee7e55c87a32188512a8ce55681188c4859e5a5d3d5b3161e940` |
+| 0.39.10 position producer | `e1cd015858e19c2dd8116d4cb65bda40a3d20d32653da8d14133100502c3ec16` |
+| Copied ZoneNames.txt | `840b61b01deb4dfb8f49cf13e007364a629ce380c165aad5bb37adba6e52cd39` |
+| GFay fixed plan 0.41.48 | `145679ec15111cf2d319ca630c66da693cc69863bdef594f67a46989c18592a4` |
+| Retained gfaydark.npz | `5f8e16c5bcd2221ba273f681750ca480349780524d23609c059a3e817df6abd9` |
+
+**OBSERVED:** read-only Alienware listing at 07:48 UTC found zero saved
+`g2-ui-observations/*/unbound-location.json` pairs. No capture/input/game launch
+occurred. The existing stationary observation remains pending; no new test or
+G0 repeat is requested. G0 passed with the owner's visible-stop confirmation.
+Assist 0.39.6 and observation 0.39.10 are unchanged. Actual current scene,
+zone-to-asset/coordinate/height binding and measured travel bounds are still
+required for a checked live route step. Current level, XP/hour, deaths and camp
+remain unknown; the real 1–20 and fresh 1–50 goals are not met.
+
 ## Private source 0.41.88 staged — 2026-11-14 07:38 UTC
 
 **VERIFIED:** source `ad9a9867cbf75441463c122c17f1acfb5ee21bab`, archive SHA
