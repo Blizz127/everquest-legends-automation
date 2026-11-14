@@ -103,6 +103,19 @@ class RouteFloorCommit:
         if isinstance(error,(KeyboardInterrupt,SystemExit)):raise error
         raise RouteHalt(self.runner.reason) from error
 
+    def check_pending(self,ticket):
+        """Recheck a staged request without consuming it or granting input."""
+        with self.lock:
+            try:
+                self.runner._check(self.clock())
+                if self._busy is not None or self._pending is None or ticket is not self._pending[0]:
+                    raise ValueError('Missing current one-use floor ticket')
+                _,fork,_,base,fork_state,controller=self._pending
+                if (_chain_snapshot(self.chain)!=base or _chain_snapshot(fork)!=fork_state
+                        or _controller_snapshot(self.runner)!=controller):
+                    raise ValueError('Staged floor or route context changed')
+            except BaseException as error:self._failure(error)
+
     def stage(self,proposal,*,reference_fix,footprint,sources,requested_seconds,
               maximum_actual_hold,movement_key,motion_bounds_record_id,check_geometry):
         with self.lock:

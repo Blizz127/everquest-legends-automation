@@ -77,7 +77,8 @@ def setup(legacy,*,clock=None,lock=None):
         options.update(changes)
         return ledger.stage(proposal,**options)
     return SimpleNamespace(state=state,clock=clock,observer=observer,chain=chain,runner=runner,
-        ledger=ledger,stage=stage,check=check,evaluated=evaluated,lock=lock)
+        ledger=ledger,stage=stage,check=check,evaluated=evaluated,lock=lock,
+        reference=fixes[-1],footprint=footprint,sources=sources)
 
 
 def receipt(ticket,**changes):

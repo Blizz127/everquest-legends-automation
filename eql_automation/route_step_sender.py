@@ -1,0 +1,226 @@
+"""One checked route pulse on the existing sender, with transactional release.
+
+Not installed in an owner helper. All providers are mandatory trusted
+dependencies: in particular an offline FloorTrial is never an authorization.
+The external guard must cover the complete swept body, measured hold/speed/
+drift bounds, static/BSP geometry and current dynamic hazards. This bridge
+checks bindings and revocation, not the truth of those external measurements.
+
+All users of this sender (including device close/replacement) must share the
+ledger's stop lock and respect its exclusive operation marker. A duplicated
+descriptor pins watchdog cleanup to the original open device even on failure.
+No device is created; no chat, target, recovery or location command is sent.
+"""
+from dataclasses import dataclass
+import os
+
+from .fixed_route_follower import RouteHalt, finite
+from .g2_pulse_budget import G2Scene
+from .ground_binding import AlignedWldFix
+from .route_floor_commit import FloorCommitTicket, RouteFloorCommit
+from .uinput_watchdog import PulseReceipt, PulseSelection, selected_key_pulse_receipt
+
+
+@dataclass(frozen=True)
+class RouteStepScene:
+    # The provider must poll the independent log/scene observer and preserve
+    # the exact accepted AlignedWldFix object (including its raw fix). This is
+    # the stopped reference, never
+    # a claim to have observed the character's current position while moving.
+    reference_fix: AlignedWldFix
+    scene: G2Scene
+
+
+@dataclass(frozen=True)
+class RouteStepAuthorization:
+    ticket: FloorCommitTicket
+    reference_fix: AlignedWldFix
+    issued_at: float
+    expires_at: float
+    guard_record_id: str
+
+
+@dataclass(frozen=True)
+class RouteStepResult:
+    receipt: PulseReceipt
+    floor_proof_sha256: str
+    guard_record_id: str
+    # Device writes alone do not prove client consumption or route acceptance.
+    real_client_accepted: bool = False
+
+
+def _fd_identity(fd):
+    info = os.fstat(fd)
+    return info.st_dev, info.st_ino, info.st_rdev, info.st_mode
+
+
+def run_checked_route_step(sender, ledger, *, scene_provider, prepare_step,
+                           authorize_step, still_authorized,
+                           command_state_clear, pump):
+    """Arm, observe, propose, check, send, release, then commit exactly once.
+
+    ``prepare_step(proposal, scene)`` stages the complete geometry request on
+    this ledger. ``authorize_step(ticket, scene)`` supplies an independently
+    verified RouteStepAuthorization for that exact request. Its guard must
+    remain revocable through ``still_authorized(authorization, scene)``.
+    ``command_state_clear()`` must read engine recovery/draft/job state, not
+    merely sender.check(). All callbacks must avoid input and device mutation;
+    pump may process OFF, which must cancel/increment the bound generation.
+
+    Fresh scene checks can exhaust the 50 ms proposal deadline; that refuses
+    movement rather than renewing timestamps. After success the follower still
+    requires a new stopped-location pair. Assist/off always refuse movement.
+    """
+    if (not isinstance(ledger, RouteFloorCommit) or not all(callable(f) for f in
+            (scene_provider, prepare_step, authorize_step, still_authorized,
+             command_state_clear, pump))):
+        raise ValueError('A route ledger and all independent live providers are required')
+    operation = object()
+    owned = False
+    pinned_fd = None
+    key = None
+    ticket = authorization = reference = None
+    ui = identity = original_fd = None
+    initial_mode = None
+    released = False
+    r = ledger.runner
+
+    def binding():
+        r._check(ledger.clock())
+        if (getattr(sender, '_eql_route_operation', None) is not operation
+                or sender.ui is not ui or ui.fileno() != original_fd
+                or _fd_identity(original_fd) != identity
+                or r.mode_reader() != initial_mode):
+            raise RouteHalt('Route sender/device/mode binding changed')
+        if ticket is not None:
+            ledger.check_pending(ticket)
+
+    def check_sender():
+        binding()
+        sender.check()  # May synchronously process OFF using this same RLock.
+        if (sender.unfinished is not False or sender.dismissed is not False
+                or command_state_clear() is not True
+                or sender.held - ({key} if key is not None and not released else set())):
+            raise RouteHalt('Route requires closed chat, clear recovery and exclusive keys')
+        binding()  # Recheck after every potentially reentrant callback.
+
+    def checked_scene():
+        check_sender()
+        observed = scene_provider()
+        binding()
+        now = ledger.clock()
+        if not isinstance(observed, RouteStepScene) or not isinstance(observed.reference_fix, AlignedWldFix):
+            raise RouteHalt('No independent route scene/reference')
+        aligned = observed.reference_fix
+        raw, scene = aligned.raw_fix, observed.scene
+        if (not isinstance(scene, G2Scene) or not finite(scene.at)
+                or not 0 <= now-scene.at <= .1
+                or not finite(raw.received_monotonic) or not 0 <= now-raw.received_monotonic <= .5
+                or scene.zone != r.route.zone or scene.raw_location != raw.raw_coordinates
+                or (scene.log_epoch, scene.fix_seq, scene.zone_generation) !=
+                   (raw.log_epoch, raw.log_line_seq, raw.zone_generation)
+                or (raw.zone_id, raw.zone_display_name, raw.log_epoch, raw.zone_generation) != r.binding
+                or raw.log_line_seq != r.last_seq or raw.received_monotonic != r.last_fix_at
+                or aligned.mesh_projection.package_xyz != (r.pose.x, r.pose.y, r.pose.z)
+                or (reference is not None and aligned is not reference)
+                or not all(v is True for v in (scene.focused, scene.owner_keys_clear,
+                    scene.chat_clear, scene.target_absent, scene.combat_clear,
+                    scene.no_transition, scene.no_incoming_attack))):
+            raise RouteHalt('Route scene is stale, unsafe or differs from the stopped reference')
+        return observed
+
+    def select():
+        nonlocal reference, ticket, authorization, key
+        observed = checked_scene()
+        reference = observed.reference_fix
+        proposal = r.propose(ledger.clock())  # Child READY precedes this timestamp.
+        ticket = prepare_step(proposal, observed)
+        binding()
+        if (not isinstance(ticket, FloorCommitTicket)
+                or ticket.preparation.proposal is not proposal
+                or ticket.preparation.reference_fix is not reference
+                or ledger._pending is None or ledger._pending[0] is not ticket):
+            raise RouteHalt('Guard did not stage this exact route step')
+        authorization = authorize_step(ticket, observed)
+        binding()
+        now = ledger.clock()
+        if (not isinstance(authorization, RouteStepAuthorization)
+                or authorization.ticket is not ticket or authorization.reference_fix is not reference
+                or not all(finite(t) for t in (authorization.issued_at, authorization.expires_at))
+                or not ticket.staged_at <= authorization.issued_at <= now <= authorization.expires_at
+                or authorization.expires_at > proposal.at+.05
+                or not isinstance(authorization.guard_record_id, str) or not authorization.guard_record_id):
+            raise RouteHalt('Missing fresh independent whole-motion authorization')
+        check_sender()
+        key = ticket.preparation.movement_key
+        sender.held.add(key)  # Retain until final UP and SYN both succeed.
+        return PulseSelection(key, ticket.preparation.requested_seconds, authorization.expires_at)
+
+    def should_stop():
+        try:
+            with ledger.lock:
+                observed = checked_scene()
+                if authorization is not None:
+                    if still_authorized(authorization, observed) is not True:
+                        raise RouteHalt('Whole-motion authorization revoked')
+                    check_sender()
+                return False
+        except Exception as error:
+            ledger.cancel(str(error))
+            return True
+
+    try:
+        with ledger.lock:
+            if getattr(sender, '_eql_route_operation', None) is not None:
+                raise RouteHalt('Another route sender operation is active')
+            sender._eql_route_operation = operation
+            owned = True
+            ui = sender.ui
+            original_fd = ui.fileno()
+            identity = _fd_identity(original_fd)
+            initial_mode = r.mode_reader()
+            if (sender.held or r.phase != 'ready' or ledger._pending is not None
+                    or ledger._busy is not None
+                    or (sender.codes.KEY_UP, sender.codes.KEY_LEFT, sender.codes.KEY_RIGHT) != (103,105,106)):
+                raise RouteHalt('Route sender is not idle or movement key bindings differ')
+            check_sender()
+            pinned_fd = os.dup(original_fd)
+        try:
+            receipt = selected_key_pulse_receipt(pinned_fd, select, pump=pump,
+                should_stop=should_stop, go_lock=ledger.lock)
+        finally:
+            # Watchdog teardown/its pinned-fd UP has finished. Never consult
+            # focus or send Escape before cleanup. A replacement UI must not
+            # receive this operation's release, nor clear its held marker.
+            with ledger.lock:
+                if key is not None:
+                    if (sender.ui is not ui or ui.fileno() != original_fd
+                            or _fd_identity(original_fd) != identity):
+                        raise RouteHalt('Input device changed; final sender release unavailable')
+                    sender.release(key)
+                    if key in sender.held:
+                        raise RouteHalt('Sender failed to acknowledge final release')
+                    released = True
+        os.close(pinned_fd)
+        pinned_fd = None
+        with ledger.lock:
+            if receipt is None or ticket is None or authorization is None:
+                raise RouteHalt('No completed checked route pulse')
+            if should_stop():
+                raise RouteHalt('Route was cancelled before receipt commit')
+            if sender.held:
+                raise RouteHalt('Sender acquired a held key after final release')
+            floor = ledger.commit(ticket, receipt)
+            return RouteStepResult(receipt, floor.proof_sha256, authorization.guard_record_id)
+    except BaseException:
+        ledger.cancel('Checked route sender failed; no floor commit')
+        raise
+    finally:
+        try:
+            if pinned_fd is not None:
+                os.close(pinned_fd)
+        finally:
+            if owned:
+                with ledger.lock:
+                    if getattr(sender, '_eql_route_operation', None) is operation:
+                        sender._eql_route_operation = None

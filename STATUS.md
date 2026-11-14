@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 04:48 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 04:54 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,15 +11,13 @@ Updated 2026-11-14 04:48 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
-- **Source 0.41.68:** **VERIFIED** receipt-bound floor commit component stages
-  one checked fork and commits only after matching successful release timing.
-  It rejects changed context, stale/repeated/overlong receipts, cancellation
-  and reentrant operations. **39 focused checks pass**, including the actual
-  pipe watchdog, ground producer and retained follower. It sends no input,
-  creates no permit and is not imported by an owner helper yet.
-  Source `a3fccf4` is privately staged at `owner-tools/0.41.68/source`; five
-  remote startup checks pass. Archive SHA
-  `31b344b027f20faa2465219c4b872eba9a32a2ecd122a5bc5c961f10a0550c06` matched.
+- **Source 0.41.69:** **VERIFIED** isolated checked-step sender joins watchdog
+  release and floor commit. It binds fresh scenes/exact stopped references,
+  requires explicit external whole-motion authorization, pins cleanup to the
+  original descriptor, and commits only after final UP/SYN succeeds. **67 focused
+  checks pass**, including cancellation and descriptor-reuse pipe checks.
+  Not imported by owner controls; no live motion provider/acceptance is claimed.
+  Private source staging is the next release step.
 - **Completed printed-feedback replay:** **VERIFIED** all 155 segments and
   2,323 simulated steps arrive with all terrain/static/BSP trials passing.
   All 2,324 stopped observation pairs pass; 48 pins rechecked. Artifact SHA
@@ -33,10 +31,10 @@ Updated 2026-11-14 04:48 UTC for coordinator task `829a00229b29`.
   location record. Its 98 local checks and actual-helper synthetic/GUI smokes
   passed; live capture remains unrun. Read-only listing at 04:46 UTC found zero
   paired records. No lead capture was initiated.
-- **Next / real-client gate:** connect the checked route sender to current
-  scene, measured motion bounds and receipt-bound floor commits; obtain the
+- **Next / real-client gate:** supply the checked route sender with current
+  scene and measured whole-motion bounds; obtain the
   pending owner scene/position evidence and current zone/frame/height/speed
-  calibration. Source-ground production and receipt bookkeeping now exist;
+  calibration. Source-ground production, checked-step adapter and receipt bookkeeping exist;
   live providers and owner runtime wiring remain incomplete. No new owner test
   is requested, and the existing stationary capture remains pending.
 - Same-zone GFay is the practical Legira candidate; Butcherblock then Crushbone

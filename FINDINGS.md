@@ -1,5 +1,51 @@
 # FINDINGS
 
+## Checked route sender bridge — 2026-11-14 04:54 UTC
+
+**VERIFIED source 0.41.69:** The new isolated `run_checked_route_step` adapter
+joins the real release watchdog and `RouteFloorCommit` through the existing
+sender interface. Every provider is mandatory. Scene checks bind the exact
+stopped aligned/raw reference, zone/log generation/sequence/coordinates and
+freshness; current position while moving is never inferred from that reference.
+Proposal creation follows watchdog READY. An explicit external authorization
+must bind that staged request; a conditional FloorTrial alone is rejected.
+Complete swept-body coverage, measured speed/drift/hold bounds, static/BSP and
+dynamic hazards still belong to the external guard, which is not implemented as
+a live provider here. Slow checks expire the existing 50 ms deadline rather than
+refreshing it. `RouteFloorCommit.check_pending` rechecks snapshots before GO and
+throughout the operation without consuming or authorizing the ticket.
+
+The adapter requires the shared reentrant OFF/GO lock, an idle sender with no
+command/recovery state, and an exclusive sender operation. It duplicates the
+existing descriptor for watchdog lifetime, preventing cleanup from reaching an
+unrelated reused descriptor. Final sender UP/SYN and held-key acknowledgement
+must succeed before commit. Device changes or final-release failure retain the
+held marker, discard the fork and halt. All writers/device lifecycle must obey
+the same lock/exclusive-operation contract. Generation changes and reentrant
+OFF invalidate the step. A successful receipt still proves device writes only;
+the follower requires new stopped fixes before another step.
+
+**VERIFIED:** 67 focused checks passed in 5.44 seconds, using the actual watchdog
+subprocess on pipes and the retained follower/ground/floor machinery. Cases cover
+successful cleanup-before-commit, drafts/recovery/dismissed/assist refusal,
+missing or offline-only authorization, altered scene/reference/floor, slow or
+invalid authorization, stop/rearm/unsafe scene after DOWN, failed final release,
+reentrant operation, cancellation during cleanup, descriptor reuse, a key
+re-added by a post-release callback, and failure to close the pinned descriptor.
+The latter two regressions were added after focused read-only source review.
+The final 67-check run includes both fixes. The descriptor identity check does
+not prove the same open-file description if the same device is reopened; the
+explicit lifecycle exclusivity contract remains essential.
+No full suite, full copied replay or live input was run this release.
+
+**Not verified / still required:** current owner scene/UI/height/motion bounds,
+independently calibrated live safety and complete motion-guard providers, actual
+owner helper wiring and client consumption. G2SafetyProvider remains explicitly
+measurement-only; no full-auto mode or provider default was silently added.
+The adapter is not imported by the owner helper. G0 passed, no repeat needed;
+assist 0.39.6 and observation candidate 0.39.9 remain unchanged. Current level,
+XP, XP/hour, deaths and camp remain unknown; no live 1–20 or 1–50 run is accepted.
+
 ## Private source 0.41.68 staging — 2026-11-14 04:48 UTC
 
 **VERIFIED:** Commit `a3fccf43b330f283a805f7a34352b73ede606107`, archive SHA
