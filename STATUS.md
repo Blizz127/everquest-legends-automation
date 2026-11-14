@@ -6,7 +6,11 @@ Updated 2026-11-14 22:58 UTC for coordinator task `829a00229b29`.
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.72 locally verified; not installed.** VERIFIED 95 focused
+- **Source 0.42.72 locally verified; not installed.** Source commit
+  `53d729a6409b96919110de4c42b691ac83ebdab8`; private candidate
+  `releases/eql-source-tools-0.42.72-candidate.tar.gz`, SHA
+  `646bd8c0335078dc49839515ff41b7669bc64f962a19e88b05e58a57ec56f8cb`.
+  All 551 packaged source pins and evidence hashes match. VERIFIED 95 focused
   checks: 89 contact/preflight/stair-feedback cases, five watchdog-pipe cases
   covering contact/stair/ordinary senders and cancellation, and one close-waypoint
   receipt test. No game input. New contact controller uses the existing sender,

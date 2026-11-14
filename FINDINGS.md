@@ -2,6 +2,14 @@
 
 ## 2026-11-14 22:58 UTC — 0.42.72 receipt-driven contact traversal and arrival
 
+VERIFIED local source commit `53d729a6409b96919110de4c42b691ac83ebdab8`
+is staged in `releases/eql-source-tools-0.42.72-candidate.tar.gz`, SHA
+`646bd8c0335078dc49839515ff41b7669bc64f962a19e88b05e58a57ec56f8cb`.
+All 551 archived source pins and packaged evidence hashes match. Validation
+SHA `71604917d6ab4b7e2eb20b7bbc4075fdc4364af482d31f1187237ce168624179`.
+This is a local private candidate, not an Alienware installation.
+
+
 VERIFIED **95 focused checks**, with synthetic game positions and scene identity:
 
 - `eql-0.42.72-contact-final-local.xml`: 89 passed; SHA `152e5c7f12c9580a8c844dc331e88f270ed7abb6d2b5878cf4ec7fb009568525`.
