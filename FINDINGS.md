@@ -1,5 +1,28 @@
 # FINDINGS
 
+## Private source 0.41.86 staged — 2026-11-14 07:17 UTC
+
+**VERIFIED:** source `780ba2c83a62471aa0a7c2fd39a1f157ea1ed2a7`, archive SHA
+`4fcd1c179b69a553bb773c918b12d8e6003e3e1c15612cd4a3c56025a1c690eb`,
+is staged at Alienware `owner-tools/0.41.86/source`. Five focused startup
+checks pass. The installed Arial file still matches the font bytes selected
+by the isolated devbox GDI probe. Both pinned probe files import correctly,
+a wrong selected-font hash refuses, and four complete frame passes compare
+height-15/19 models with/without caret against the installed 172-source layout.
+All pixels in these frames are synthetic; no GDI/native helper was run on the
+Alienware. Its game install/prefix were read only.
+
+**OBSERVED model-frame timing:** first 79.6 ms, median 80.2 ms, maximum 83.1 ms;
+four of four meet 100 ms. Real capture/input/log scanning remains excluded.
+Remote `../isolated-font-synthetic-frames.json` SHA
+`de4d0f23ec831d5186daccc6256671b76068b6675b0e9c49e9589e460dfd1944`;
+local staging record `releases/eql-automation-0.41.86-staging.json`.
+
+No real-client command, route or leveling acceptance is implied. Current font
+overrides, final texture sampling/compensation and scene/position/motion/height/
+envelope binding remain the next integration work. Owner controls are unchanged;
+the pending stationary observation remains the only requested owner check.
+
 ## Source font and isolated GDI glyph model 0.41.86 — 2026-11-14 07:16 UTC
 
 **VERIFIED static input selection:** `CW_ChatInput` omits `Font`; SIDL's

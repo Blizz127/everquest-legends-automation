@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:16 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:17 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -19,6 +19,11 @@ Updated 2026-11-14 07:16 UTC for coordinator task `829a00229b29`.
   preserved. Thirty-six copied-font model comparisons pass at heights 15/19
   with/without caret; artifact SHA
   `7cf6009a09e46fc9e84d348121b4c7a4bbeca17acd28d4a25b1a0883ff042145`.
+  Source `780ba2c` is staged on Alienware; five focused startup checks pass.
+  Four complete synthetic frame passes with copied-font models take 79.6 ms
+  first, 80.2 ms median and 83.1 ms maximum; real capture/input/log scans are
+  excluded. Remote artifact SHA
+  `de4d0f23ec831d5186daccc6256671b76068b6675b0e9c49e9589e460dfd1944`.
   Saved UIScale enum 1 maps to 1.25; height 19 is the ceil-scaled source
   hypothesis. Current remap/face overrides, final filtering/compensation and
   live glyph equivalence remain unverified. No game was launched or controlled.
