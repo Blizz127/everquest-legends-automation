@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 06:28 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 06:29 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -19,6 +19,11 @@ Updated 2026-11-14 06:28 UTC for coordinator task `829a00229b29`.
   real capture/layout/input/log work. Deterministic candidate reports match
   0.41.79; evidence SHA
   `71aca508483faa07c3b91eafaf5a4e180092be4bd7c92ab60b544d14cc14966d`.
+  Staged source `ba00f00` passes eleven remote checks. Alienware preparation
+  takes 33.1 ms; first observation 59.6 ms, warm median 56.4 ms, maximum
+  67.9 ms (ten synthetic frames, all under 100 ms). Real capture/layout/input/
+  log work remains excluded. Archive SHA
+  `38f26a24c9da68f06aecc46375e09fdd53ed1173473934f54d4f4db077fa4403`.
   HOWTO now leads with current owner commands; older development commands are
   preserved separately. Owner helpers and live acceptance remain unchanged.
 - **Source 0.41.79:** exact NumPy batches replace Python pixel summation when
@@ -135,9 +140,8 @@ Updated 2026-11-14 06:28 UTC for coordinator task `829a00229b29`.
   button and manual `/location` flow. It additionally saves private copied
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
-  turn (2026-11-14 06:20 UTC) found zero paired records. No lead capture was initiated.
-- **Next / real-client gate:** measure prepared-reader startup on Alienware;
-  implement selected-skin dynamic chat-page resolution and validate the source-derived scene templates against the
+  turn (2026-11-14 06:29 UTC) found zero paired records. No lead capture was initiated.
+- **Next / real-client gate:** implement selected-skin dynamic chat-page resolution and validate the source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported
   initial travel envelope and current scene, then supply the checked sender
   with measured whole-motion bounds; obtain the

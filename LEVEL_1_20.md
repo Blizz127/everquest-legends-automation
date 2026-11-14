@@ -6,7 +6,10 @@ of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
 
 Source 0.41.80 prepares the source templates and numerical backend before a
-new observation. Sixty-seven focused checks pass, and deterministic candidate
+new observation. The source is privately staged; eleven no-input remote checks
+pass. Ten synthetic Alienware observations take 59.6 ms first, 56.4 ms warm
+median and 67.9 ms maximum after 33.1 ms preparation. Real capture/layout/
+input/log timing remains excluded. Sixty-seven focused checks pass, and deterministic candidate
 reports match 0.41.79. Preparation is recorded separately; every frame retains
 its complete timing and neither preparation nor a matching sprite authorizes
 movement. The owner guide now puts current commands first and preserves older

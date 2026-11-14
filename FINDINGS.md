@@ -1,5 +1,29 @@
 # FINDINGS
 
+## Private source 0.41.80 staged — 2026-11-14 06:29 UTC
+
+**VERIFIED:** commit `ba00f00a8323a96da2ed4de834521e65d1cd961c`, archive SHA
+`38f26a24c9da68f06aecc46375e09fdd53ed1173473934f54d4f4db077fa4403`,
+is staged at Alienware `~/.local/share/eql-automation/owner-tools/0.41.80/source`.
+Eleven no-input remote checks pass, including complete deterministic candidate
+report equality against published 0.41.79 (timing/preparation fields excluded
+and private source path basenames normalized).
+
+**OBSERVED synthetic Alienware timing:** preparation 33.1 ms, first new frame
+59.6 ms, subsequent-frame median 56.4 ms, maximum 67.9 ms. All ten synthetic
+frames meet 100 ms. This excludes real capture/layout/input/log work and is
+not whole-scene live acceptance. The separate preparation record remains in
+every report. Existing NumPy 2.5.1 was used without installing dependencies.
+Remote detailed artifact `../synthetic-frame-features.json` SHA
+`0ecb93c7e7285c8959aae7e0ce55270c659ea0c28c732f08d3eaed49031dc2d1`;
+local `releases/eql-automation-0.41.80-staging.json` retains the smoke report.
+Only private source/benchmark files were written; no input device, game capture,
+login or protected client/prefix modification occurred.
+
+A read-only listing still finds zero paired owner position records. Assist
+0.39.6 and observation candidate 0.39.10 remain unchanged. G0 is passed with
+no repeat. No 1–20 route, automated level gain or hands-off 1–50 run is accepted.
+
 ## Prepared frame reader 0.41.80 — 2026-11-14 06:28 UTC
 
 **VERIFIED implementation:** `PreparedUiFrameReader` compiles the source sprite
