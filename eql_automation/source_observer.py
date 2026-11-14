@@ -139,7 +139,8 @@ class SourceItineraryObserver:
         self.last_at = now
         return now
 
-    def _sample(self, raw, chain, observed_at):
+    def validate_raw(self,raw,observed_at):
+        """Shared raw provenance check; does not consume or select any floor."""
         c = self.calibration
         if (type(raw) is not RawLocationFix or not point(raw.raw_coordinates)
                 or type(raw.log_line_seq) is not int or raw.log_line_seq <= c.last_calibration_log_line_seq
@@ -150,10 +151,14 @@ class SourceItineraryObserver:
                     -(raw.received_monotonic-c.valid_from_monotonic))>2.
                 or (raw.zone_id,raw.zone_display_name,raw.log_epoch,raw.zone_generation) !=
                    (c.zone_id,c.zone_display_name,c.log_epoch,c.zone_generation)
-                or not c.valid_from_monotonic <= raw.received_monotonic <= observed_at
-                or (chain.inventory_sha256,chain.seed_evidence_sha256,chain.seed_ids,chain.body_height)
-                    != self._seed):
-            raise ValueError('Source reply or selected floor has foreign provenance')
+                or not c.valid_from_monotonic <= raw.received_monotonic <= observed_at):
+            raise ValueError('Source reply has foreign provenance')
+
+    def _sample(self, raw, chain, observed_at):
+        self.validate_raw(raw,observed_at)
+        c = self.calibration
+        if (chain.inventory_sha256,chain.seed_evidence_sha256,chain.seed_ids,chain.body_height)!=self._seed:
+            raise ValueError('Selected floor has foreign provenance')
         state = _chain_snapshot(chain)
         xy = (raw.raw_coordinates[1],raw.raw_coordinates[0])
         z, ids = chain.floor_at(xy)

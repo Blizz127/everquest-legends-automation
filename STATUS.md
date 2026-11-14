@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 14:44 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 14:55 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,18 @@ Updated 2026-11-14 14:44 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.31:** receipt-bound step controller now uses the existing sender,
+  observer and stop lock. Actual approach caps can commit; partial steps retain
+  the old ordinary floor and cannot masquerade as grounded observations.
+  Ambiguous/elevated replies settle without movement; complete observed landing
+  caps resume ordinary walking. Shared time/hold budgets survive every handoff.
+  All **18 transfer checks pass**, including steps up/down, partial landing,
+  OS-pipe DOWN/UP, OFF and late-callback ownership. The combined initial run had
+  74 passes and one diagnostic-order mismatch; fixed, all 18 affected checks
+  rerun successfully. No game input or real-client acceptance.
+  **Next:** connect the controller and fresh stopped-pair collector to the owner
+  runtime, preserving one sender, reader lease and cancellation scope. Owner
+  movement 0.39.20/assist 0.39.13 remain unchanged; G0 remains passed.
 - **Source 0.42.30:** actual source-step handoff can prepare a direct or compound
   approach, explicit transfer and maximum-hold exit while keeping the committed
   floor unchanged. Exact union coverage includes uncertainty/drift; unsupported

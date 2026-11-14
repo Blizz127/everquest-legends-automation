@@ -1,5 +1,45 @@
 # FINDINGS
 
+## Receipt-bound source step progression — 2026-11-14 14:55 UTC
+
+**VERIFIED implementation:** source 0.42.31 connects the conditional approach
+planner to a typed transfer controller through the existing source sender and
+shared stop lock. Checked branch identities remain private runtime state;
+serialized plans cannot create a landing capability. Whole maximum-hold body
+and center envelopes are checked independently. Every release remains
+provisional until fresh consecutive stopped replies are consumed exactly once.
+
+The ordinary ledger stays leased with its confirmed floor/pose unchanged during
+a partial step. Geometry selects possible support before raw-Z comparison;
+multiple heights remain ambiguous even if both fit the calibration residual.
+Ambiguous or elevated readings enter bounded settling with no new movement.
+A complete observed cap can publish an approach or landing; otherwise a partial
+cap must overlap both checked riser sides. Downstep landing uses branch lineage,
+not a larger height. Actual approach stops preserve the pending step instead of
+steering back to an earlier guide cap. Policy time/origin/hold budgets remain
+shared across every transition.
+
+**VERIFIED focused checks:** all 18 transfer cases pass, including repeated
+approaches, partial/up/down landings, settling/expiry, center-envelope refusal,
+mutated branches, copied observations, OFF and stale callbacks. The combined
+75-case run initially had 74 passes and one diagnostic-order mismatch: an
+attempt to move while settling validated an old reference before reporting the
+settling phase. Phase refusal now comes first; all 18 transfer cases pass after
+the correction. Actual watchdog OS-pipe checks assert DOWN/SYN/UP/SYN and release
+without committing a floor. Game positions, terrain and scenes remain synthetic.
+
+Two material cancellation findings were corrected and covered: a final
+observation callback could publish after OFF; a completed controller's late
+cancel could stop a newer transfer lease. Final observations now recheck the
+exact live receipt/window before consuming a reply, and cancellation propagates
+only while the controller still owns the ordinary ledger's exact lease.
+
+**Remaining:** owner-runtime connection and actual client traversal. No game
+input, client login or character change occurred. Owner movement 0.39.20 and
+assist 0.39.13 are unchanged. G0 is passed and requires no repeat; current
+level/XP/hour/deaths/camp unknown. No accepted real 1–20 route, automated XP or
+fresh hands-off 1–50 run.
+
 ## Full-envelope source step approach — 2026-11-14 14:43 UTC
 
 **VERIFIED implementation:** source 0.42.30 connects the ordinary driver's

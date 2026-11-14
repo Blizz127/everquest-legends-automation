@@ -149,6 +149,9 @@ class SourceReceiptLedger:
         return (_chain_snapshot(self.chain),id(self.reference),self.steps,self.serial,
                 id(self.pose),deepcopy(vars(self.pose)))
 
+    def validate_reference(self):
+        return self.observer.validate(self.reference,self.chain,maximum_age=.5)
+
     def _pair(self,first,second,branch,released_at,minimum_seq):
         self.observer.validate(first,branch)
         now=self.observer.validate(second,branch,maximum_age=.5)

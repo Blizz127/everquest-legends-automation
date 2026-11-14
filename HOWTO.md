@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.30** · rotation preview **0.39.13** · movement preview **0.39.20** · crossing preview **0.39.19** · approach preview **0.39.18**.
+Source **0.42.31** · rotation preview **0.39.13** · movement preview **0.39.20** · crossing preview **0.39.19** · approach preview **0.39.18**.
 
 **The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
@@ -24,6 +24,14 @@ pulse.** Assist still uses the existing rotation bot. Preview 0.39.20 is a
 separate finite movement test; it cannot switch into assist or full auto.
 The requested seamless assist/full-auto switch is still unfinished.
 
+Source 0.42.31 adds the step controller to the movement core. It uses the same
+sender and stop lock, keeps the confirmed floor during a partial step, waits
+without movement when height is ambiguous, and resumes ordinary walking only
+after fresh stopped readings confirm a complete landing. Steps up and down,
+stop during input and late callbacks pass focused synthetic/OS-pipe checks.
+The controller retains the existing time and movement budgets. It is not yet
+connected to the owner launcher, so there is no new owner test or command.
+
 Source 0.42.30 rebuilds a height-step approach from the actual stopped floor,
 including the full possible movement area and an exit beyond the landing.
 If a direct transfer cannot cover the approach, it checks a compound approach
@@ -33,8 +41,8 @@ riser edges; they do not label an uncertain or partial step as grounded.
 
 The copied Slave Mines guide is now a pinned private data file on Alienware,
 so the future owner runtime will not need Devbox's old recipe files. This is
-still a source-development build: transfer input, settling/landing handling and
-the owner launcher connection remain unfinished. No new owner test is needed;
+still a source-development build: the owner launcher connection and real
+traversal acceptance remain unfinished. No new owner test is needed;
 G0 remains passed and the launch controls below are unchanged.
 
 Source 0.42.29 adds a source-floor movement core for the Slave Mines itinerary.
@@ -46,7 +54,7 @@ the actual stopped position stay attached to that handoff. No step or landing
 is accepted merely because its copied geometry passes.
 
 This source core passes synthetic route and OS-pipe checks. It is not connected
-to the owner launcher, and step execution remains unfinished. It adds no owner
+to the owner launcher. It adds no owner
 launch step or repeated G0 check. Continue using 0.39.20 for the short movement
 test or 0.39.13 for assist, as documented below. Both use the existing helper;
 assist continues to leave movement and target selection to Blizz.

@@ -48,15 +48,16 @@ def f(tmp_path,monkeypatch,legacy,request):
     p=f.planner
     guide=SourceItineraryGuide('crushbone',p.pins[2],p.pins[3],'f'*64,.1,6.,(4.,3.25),
         (SourceWalkHint((4.,2.),(4.,3.)),))
-    if getattr(request,'param',None)=='step':
+    if getattr(request,'param',None) in ('step','down'):
+        before_z,after_z=((.5125,.2) if request.param=='down' else (.2,.5125))
         def face(points,index):
             return SourceFace(tuple((y,x,z) for x,y,z in points),0,'Diffuse',10,index)
         def rect(y0,y1,z,index):
             a,b,c,d=(0.,y0,z),(10.,y0,z),(10.,y1,z),(0.,y1,z)
             return face((a,b,c),index),face((a,c,d),index+1)
-        p.source.sources=(*rect(0.,3.3,.2,0),*rect(3.3,5.,.5125,2),
-            face(((0.,3.3,.2),(10.,3.3,.2),(10.,3.3,.5125)),4),
-            face(((0.,3.3,.2),(10.,3.3,.5125),(0.,3.3,.5125)),5))
+        p.source.sources=(*rect(0.,3.3,before_z,0),*rect(3.3,5.,after_z,2),
+            face(((0.,3.3,before_z),(10.,3.3,before_z),(10.,3.3,after_z)),4),
+            face(((0.,3.3,before_z),(10.,3.3,after_z),(0.,3.3,after_z)),5))
         coords=np.asarray([s.vertices_wld for s in p.source.sources])[:,:,[1,0,2]]
         p.source.source_minimum=coords.min(axis=1);p.source.source_maximum=coords.max(axis=1)
         guide=replace(guide,goal=(4.,3.9),operations=(SourceWalkHint((4.,2.),(4.,3.1)),

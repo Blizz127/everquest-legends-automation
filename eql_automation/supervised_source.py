@@ -8,6 +8,7 @@ from .g2_safety_provider import GameWindowIdentity, focused_game_identity
 from .owner_input_observer import OwnerInputObservation
 from .scene_log_veto import SceneLogVeto
 from .source_motion import SourceReceiptLedger
+from .source_transfer import SourceTransferController
 from .supervised_route import SupervisedRouteDeclaration, scope_limits
 
 
@@ -62,6 +63,7 @@ class SupervisedSourcePolicy:
                 or log_veto.cancel_generation!=ledger.observer.generation):
             raise ValueError('Source scope must match itinerary, motion, log and finite budgets')
         self.ledger,self.declaration,self.gate=ledger,d,gate
+        self._ordinary_ledger=ledger
         self.owner_input,self.log_veto=owner_input,log_veto
         self.window,self.topology,self.check_current=expected_window,topology_generation,check_current
         self._context=(ledger,d,gate,owner_input,log_veto,check_current)
@@ -69,6 +71,30 @@ class SupervisedSourcePolicy:
         self.origin=None;self.reserved_hold=0.
         self._scene=self._authorization=None
         self._check()
+
+    def bind_transfer(self,controller):
+        """Keep the same physical observers, start time and aggregate budgets."""
+        if type(controller) is not SourceTransferController:
+            raise ValueError('Exact source transfer controller required')
+        with controller.lock:
+            self._check();controller._check()
+            if self.ledger is not self._ordinary_ledger or controller.ordinary is not self.ledger:
+                raise RouteHalt('Source policy already leased or transfer belongs to another job')
+            self.ledger=controller
+            self._context=(controller,*self._context[1:])
+            self._scene=self._authorization=None
+            self._check()
+
+    def finish_transfer(self,controller):
+        with controller.lock:
+            if (self.ledger is not controller or controller.ordinary is not self._ordinary_ledger
+                    or controller.phase not in ('approach','landed')
+                    or self._ordinary_ledger.phase!='ready' or self._ordinary_ledger._busy is not None):
+                raise RouteHalt('Source transfer has no published observed cap')
+            self.ledger=self._ordinary_ledger
+            self._context=(self.ledger,*self._context[1:])
+            self._scene=self._authorization=None
+            self._check()
 
     def _check(self):
         self.check_current();began=self.ledger._check()
@@ -88,7 +114,7 @@ class SupervisedSourcePolicy:
 
     def observe(self):
         began=self._check();reference=self.ledger.reference
-        self.ledger.observer.validate(reference,self.ledger.chain,maximum_age=.5)
+        self.ledger.validate_reference()
         before=self.owner_input.sample();log=self.log_veto.poll();after=self.owner_input.sample()
         self._check();finished=self.ledger.clock()
         if (reference is not self.ledger.reference
@@ -115,7 +141,7 @@ class SupervisedSourcePolicy:
                 or not scene.at<=scene.finished_at<=now<=scene.at+.1
                 or scene.independent_scene_verified is not False or scene.motion_bounds_verified is not False):
             raise RouteHalt('Source supervised scene is stale or foreign')
-        self.ledger.observer.validate(scene.reference,self.ledger.chain,maximum_age=.5)
+        self.ledger.validate_reference()
 
     def authorize(self,ticket,scene):
         self.validate_scene(scene);self.ledger.check_pending(ticket)

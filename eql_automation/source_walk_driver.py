@@ -63,6 +63,7 @@ class SourceWalkDriver:
         cells=self.plan.record()['cells'];self.index=0
         self._payload=self.plan.payload
         self._boundary=None
+        self._active_step=None
         self._steps={}
         targets=[]
         for row in cells:
@@ -90,6 +91,13 @@ class SourceWalkDriver:
         step planner must check the actual departure and any remaining approach.
         """
         b=self.ledger.bounds
+        if self._active_step is not None:
+            index=self._active_step;row=self.targets[index]
+            if row.kind!='step' or not self.index<=index:
+                raise RouteHalt('Active source step cursor changed')
+            return SourceStepBoundary(index,position,row.start,row.end,row.transition,
+                self.ledger.reference,self.ledger.chain.previous.proof_sha256,
+                tuple(range(self.index,index)))
         footprint=motion_footprint((0.,0.),0.,b.forward_speed_upper_bound*b.maximum_actual_hold,
             position_error=b.position_error,heading_error_degrees=b.heading_error_degrees,
             post_release_drift=b.post_release_drift,extra_radius=b.body_radius)

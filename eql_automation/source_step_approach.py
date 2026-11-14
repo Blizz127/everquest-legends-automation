@@ -3,7 +3,7 @@
 All branches are conditional planning state. No key receipt or hypothetical
 landing commits these branches; an execution consumer must bind fresh replies.
 """
-from dataclasses import asdict,dataclass
+from dataclasses import asdict,dataclass,field
 from fractions import Fraction
 from hashlib import sha256
 import json
@@ -68,6 +68,8 @@ def covered_by_union(footprint,polygons):
 class SourceStepApproachPlan:
     payload: bytes
     sha256: str
+    conditional_branches: tuple = field(default=(),repr=False,compare=False)
+    branch_snapshots: tuple = field(default=(),repr=False,compare=False)
 
     def record(self):
         if type(self.payload) is not bytes or sha256(self.payload).hexdigest()!=self.sha256:
@@ -75,6 +77,21 @@ class SourceStepApproachPlan:
         result=json.loads(self.payload)
         if encoded(result)!=self.payload:raise ValueError('Noncanonical source step approach')
         return result
+
+    def checked_branches(self):
+        data=self.record()
+        if (len(self.conditional_branches)!=len(data['cells'])
+                or tuple(_chain_snapshot(c) for c in self.conditional_branches)!=self.branch_snapshots):
+            raise ValueError('Missing unchanged conditional source branches')
+        seed=data['initial_seed']
+        for chain,cell in zip(self.conditional_branches,data['cells']):
+            expected=(cell['terrain']['proof_sha256'] if cell['kind']=='walk'
+                else cell['transfer']['landing_proof_sha256'])
+            if (chain.previous.proof_sha256!=expected
+                    or (chain.inventory_sha256,chain.seed_evidence_sha256,chain.seed_ids)!=
+                       (seed['wld'],seed['sha256'],tuple(tuple(k) for k in seed['ids']))):
+                raise ValueError('Conditional branch does not belong to this source plan')
+        return self.conditional_branches
 
 
 def plan_source_step_approach(prefix,start,hint,terrain,static,bsp,policy,*,
@@ -118,7 +135,7 @@ def plan_source_step_approach(prefix,start,hint,terrain,static,bsp,policy,*,
             raise ValueError('Source step approach changed, cancelled or expired')
         last=now
 
-    cells=[]
+    cells=[];branches=[]
     def walk(chain,a,b,phase):
         check();polygon=swept_square(a,b,checked_radius)
         sources=terrain.source_faces_for_footprint(polygon)
@@ -134,6 +151,7 @@ def plan_source_step_approach(prefix,start,hint,terrain,static,bsp,policy,*,
         _zero_native(native);check()
         cells.append(dict(kind='walk',phase=phase,start=a,end=b,footprint=polygon,
             terrain=asdict(floor),static=asdict(objects),bsp=asdict(old),native=asdict(native)))
+        branches.append(fork)
         return fork
 
     def transfer(chain,a,b):
@@ -171,6 +189,7 @@ def plan_source_step_approach(prefix,start,hint,terrain,static,bsp,policy,*,
     cells.append(dict(kind='step',phase='conditional_transfer',start=result.evidence['start'],
         end=destination,footprint=result.evidence['footprint'],transfer=asdict(result),
         bsp=asdict(old),native=asdict(native)))
+    branches.append(landing)
     # Never walk back from the landing toward a ray endpoint still before it.
     # In that case the conditional step already covers the forward reach.
     beyond=sum((nominal_end[k]-destination[k])*direction[k] for k in (0,1))
@@ -192,7 +211,8 @@ def plan_source_step_approach(prefix,start,hint,terrain,static,bsp,policy,*,
         input_authorized=False,real_client_accepted=False,game_input_sent=False,
         started=began,finished=last))
     check()
-    return SourceStepApproachPlan(payload,sha256(payload).hexdigest())
+    return SourceStepApproachPlan(payload,sha256(payload).hexdigest(),tuple(branches),
+        tuple(_chain_snapshot(c) for c in branches))
 
 
 @dataclass(frozen=True)
