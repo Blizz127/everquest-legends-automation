@@ -85,14 +85,14 @@ Updated 2026-11-13 18:08 CST for coordinator task `829a00229b29`.
   the sixth still needs a portal choice. Their live camps remain unaccepted. The
   guide markers are not client-certified positions. Current level remains
   last observed 7; XP/hour and deaths remain unavailable, and F11 is off.
-- Private publish: source-only project 0.41.42 commit `46dd559` is staged
-  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.42`,
+- Private publish: source-only project 0.41.43 commit `6a95d20` is staged
+  under Alienware `~/.local/share/eql-automation/owner-tools/0.41.43`,
   outside the game install. Local/remote archive SHA-256 matched
-  `ab327e97faea7e8bdc77f0ab42aef8dc3f6e81b5928cf1548bc86b33bf410050`.
+  `91893b007f16bea143624c9d44b518323b4e5a4b38c80247e3afd1bcdd6a4597`.
   Remote offline navigation startup returned `ARRIVED` with `no_game_input=true`,
-  and the bake-probe/UI-capture CLI help checks passed. This release adds
-  the controlled Crushbone bake probe and supersedes source 0.41.41.
-  No live screenshot, character input or movement was run for 0.41.42.
+  and the preview-builder/UI-capture CLI help checks passed. This release adds
+  the owner HP-layout proposal and supersedes source 0.41.42.
+  No live screenshot, character input or movement was run for 0.41.43.
   Owner-run assist is now 0.39.5; G0 was observed in 0.39.4. F11 remains disabled.
 - Read-only UI progress: the installed Legira layout puts the HP gauge at
   `(1966,693,330,17)` at 2560×1600; the saved HP crop starts 32 pixels too
