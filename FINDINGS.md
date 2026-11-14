@@ -42,6 +42,16 @@ has area 4 / `DRNTP00255000004_ZONE`, zone-point 4. Package bounds are
 is explicitly a guide hint; destination ID, spawn target and heading are null.
 No exact server destination or spawn was invented from this record.
 
+**VERIFIED private publication:** source commit
+`340402a6079c653456c21885c9c79581953cb429` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.42.16/source`. Startup exercises
+loading→release→ready→two stopped destination positions and logging-reset
+rejection using synthetic logs, clocks and release callbacks. No worker,
+device, game input or install change occurs. Owner 0.39.18 is unchanged.
+Source archive SHA
+`0a54115dd34257e98fbddc13de3b208b3fd902b48357df96af6dfab0038f54e3`;
+startup SHA `9df757ed74aa57f3c22cda491ca2474a4e9aeaadfc3efd68e6ac9f2611c26cce`.
+
 **Still required:** connect the final checked trigger movement and loading
 release to the owner runtime, then load Crushbone geometry and plan from its
 fresh positions. Existing ground-only destination routes still reject zone-line

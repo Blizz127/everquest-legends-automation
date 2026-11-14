@@ -15,7 +15,10 @@ Updated 2026-11-14 12:17 UTC for coordinator task `829a00229b29`.
   exact entry/current readiness, then obtains two fresh stopped destination
   positions on the same exclusive reader. Logging-reset pairing and reentrant
   loading-event loss are fixed. 91 focused checks pass with synthetic callbacks
-  and positions. No crossing move is enabled yet. **Next:** connect the checked
+  and positions. Source `340402a` is staged at Alienware
+  `owner-tools/0.42.16/source`; no-input arrival startup SHA
+  `9df757ed74aa57f3c22cda491ca2474a4e9aeaadfc3efd68e6ac9f2611c26cce`.
+  No crossing move is enabled yet. **Next:** connect the checked
   zone-line approach/loading handoff, then destination geometry/camp planning;
   consume pending owner 0.39.18 live map/travel evidence. Current level,
   XP/hour, deaths and camp unknown; G0 remains passed and assist 0.39.13 stays.
