@@ -155,3 +155,87 @@ def test_probe_branch_does_not_admit_unrequested_input(camp,monkeypatch):
     with pytest.raises(InterruptedError):e.send('/target orc fixture')
     e.stop_action('F9 before probe work');assert e.camp_position is None
     assert not [(kind,k,v) for kind,k,v in h.events if kind==1 and v==1 and k!=62]
+
+
+def configure_route(h,monkeypatch):
+    from eql_automation.source_itinerary import SourceItineraryGuide,SourceWalkHint
+    configure(h,monkeypatch)
+    e=h.engine;provider=e._camp_probe_plan
+    def plan(p):
+        base=provider(p)
+        guide=SourceItineraryGuide('crushbone',p.floor._terrain.wld_sha256,
+            p.floor._static.inventory_sha256,'f'*64,base.bounds.body_radius,
+            base.bounds.body_height,(5.,2.),(SourceWalkHint((4.2,2.),(5.,2.)),))
+        return replace(base,route_guide=guide)
+    e._camp_probe_plan=plan
+
+
+def test_real_retained_engine_prepares_route_from_probe_endpoint_then_stops(camp,monkeypatch):
+    h=camp;e=h.engine;configure_route(h,monkeypatch);h.recovered();scope=e.camp_position
+    finish(h)
+    record=e.camp_position_last_result
+    assert record['outcome']=='probe_complete',h.notices
+    assert record['probe']['phase']=='route_ready'
+    route=record['probe']['route']
+    assert route['phase']=='ready' and route['goal']==(5.,2.) and route['start'] is not None
+    assert not route['source_execution_wired'] and not route['input_authorized']
+    runtime=scope.runtime
+    assert runtime.route_preparation.checkpoint is runtime.reference
+    plan=runtime.route_preparation.itinerary.record()
+    assert plan['start']==[4.2,2.] and plan['goal']==[5.,2.]
+    assert [row['kind'] for row in record['probe']['collections']][-2:]==['route_planning','route_start']
+    assert len([key for kind,key,value in h.events if kind==1 and value==1 and key==103])==1
+    assert not h.commands and runtime.closed and e.journey is None and not e.active
+
+
+@pytest.mark.parametrize('mode',('F8','F9'))
+def test_stop_during_onward_location_down_preserves_release_order(camp,monkeypatch,mode):
+    h=camp;e=h.engine;configure_route(h,monkeypatch);stopped=[];released=[]
+    e.prepared=True;e.prepared_level=7
+    original=ZoneReaderLease.release
+    def release(lease):
+        if stopped and lease is stopped[0].lease:
+            assert not stopped[0].runtime.busy and not e.sender.held
+            assert e.sender._eql_route_operation is None
+            h.drain();assert h.events[-1][0]!=1 or h.events[-1][2]==0
+            released.append(lease)
+        return original(lease)
+    monkeypatch.setattr(ZoneReaderLease,'release',release)
+    def stop():
+        p=e.camp_position
+        if (p is not None and p.runtime is not None and p.runtime.phase=='collect_route_start'
+                and p.runtime.input_kind=='location'):
+            stopped.append(p)
+            if mode=='F8':e.handle_job('arm',e.cancel_generation)
+            else:e.stop_action('F9 during onward location DOWN')
+            assert p.busy and p.runtime.busy and p.tracker.lease is p.lease
+    after_down(monkeypatch,stop)
+    h.recovered();finish(h)
+    assert len(stopped)==1 and released==[stopped[0].lease],h.notices
+    record=e.camp_position_last_result
+    assert record['outcome']=='stopped' and record['probe']['phase']=='stopped'
+    assert record['probe']['route']['phase']=='stopped'
+    assert not h.commands and e.journey is None and e.camp_session is None
+    if mode=='F8':
+        assert e._journey_assist is not None
+        before=list(h.events);h.tick();h.drain();assert e.active and h.events==before
+    else:assert not e.active and e._journey_assist is None
+
+
+@pytest.mark.parametrize('fault',('guide_removed','preparation_replaced'))
+def test_changed_route_handoff_stops_before_collecting_start(camp,monkeypatch,fault):
+    from eql_automation.camp_route_preparation import CampRoutePreparation
+    h=camp;e=h.engine;configure_route(h,monkeypatch)
+    actual=CampRoutePreparation.prepare
+    def changed(preparation,**kwargs):
+        result=actual(preparation,**kwargs)
+        runtime=e.camp_position.runtime
+        if fault=='guide_removed':runtime.route_guide=None
+        else:runtime.route_preparation=object()
+        return result
+    monkeypatch.setattr(CampRoutePreparation,'prepare',changed)
+    h.recovered();finish(h)
+    record=e.camp_position_last_result
+    assert record['outcome']=='stopped' and record['probe']['route']['phase']=='stopped'
+    assert not any(row['kind']=='route_start' for row in record['probe']['collections'])
+    assert not e.sender.held and not h.commands and e.journey is None

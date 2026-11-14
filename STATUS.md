@@ -1,11 +1,23 @@
 # STATUS
 
-Updated 2026-11-14 18:27 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 18:32 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
+- **Source 0.42.52 validated; publication pending, preview stays 0.39.30.** Optional
+  onward guide now retains the original probe scope, collects a new stopped
+  pair, rebuilds the source itinerary from its actual reached floor, and needs
+  another matching pair after planning. Original lease/deadline and F8/F9
+  cancellation remain active. No future floor or expired travel calibration is
+  adopted. The route is prepared but execution remains disconnected. 19 local
+  source-planning checks pass in 14.72 seconds. Final Alienware candidate:
+  **45 passed in 72.08 seconds**, covering source planning, retained-handler
+  handoff/cancellation and watchdog/pipe runtime. Output SHA
+  `b278dd1257e7d9b18957810df161b7af453d37018783d6ec577d6a504ad594ae`. No game input or owner test. Next: explicit
+  transfer to a new route observer/driver, plus current movement admission.
+  Current level/XP/hour/deaths/camp unknown; G0 passed; no real 1–20/1–50 run.
 - **Source 0.42.51 privately published; preview stays 0.39.30.** Completed
   camp probes now feed the retained rotation fitter using each actual immediate
   before/after pair. Confirmation/planning readings and source identities remain

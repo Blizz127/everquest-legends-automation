@@ -187,6 +187,8 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     collection=None if p.collector is None else p.collector.snapshot(),
                     location_events=list(p.events),movement_sent=False,real_client_accepted=False)
                 if p.runtime is not None:
+                    if p.probe_record is not None and not p.probe_complete:
+                        p.probe_record.update(p.runtime.snapshot())
                     self.camp_position_last_result.update(
                         outcome='probe_complete' if p.probe_complete else 'stopped',
                         initial_position=p.position_record,
@@ -242,10 +244,21 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                         calibration=dict(status='unavailable',reason=str(error))
                     self._camp_position_current(p)
                     p.probe_record['calibration']=calibration
+                    if p.probe_plan.route_guide is not None:
+                        p.runtime.prepare_route(p.probe_plan.route_guide)
+                        self._camp_position_current(p)
+                        self.emit('Planning next camp route · F8 assist · F9 stops')
+                        return
                     p.probe_complete=True
                     # A later planner must explicitly adopt the reached reference.
                     # Do not resume the old stationary camp after movement.
                     self.stop_action('Camp probes complete · stopped before next route')
+                elif p.runtime.phase=='route_ready':
+                    self._camp_position_current(p)
+                    p.runtime.route_preparation.check_start(p.runtime.route_start)
+                    p.probe_record.update(p.runtime.snapshot())
+                    p.probe_complete=True
+                    self.stop_action('Next camp route prepared · execution is not connected')
             except Exception as error:
                 self._stop_camp_position(p,error)
             finally:
@@ -322,7 +335,8 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 collector=self.camp_position.collector
                 result['camp_position_phase']='starting' if collector is None else collector.phase
                 if self.camp_position.runtime is not None:
-                    result['phase']='Measuring camp movement'
+                    result['phase']=('Planning next camp route' if self.camp_position.runtime.route_guide is not None
+                                     else 'Measuring camp movement')
                     result['camp_probe_phase']=self.camp_position.runtime.phase
             result['camp_position_last_result']=self.camp_position_last_result
             return result

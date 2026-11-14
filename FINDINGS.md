@@ -1,5 +1,40 @@
 # FINDINGS
 
+## 2026-11-14 18:32 UTC — source 0.42.52, onward source-route preparation
+
+Implemented `CampRoutePreparation`: direct `plan_source_itinerary` reuse on a
+private fork of the actual retained camp/probe floor, with new stopped-height
+observations. It does not call `CurrentStartPlanner.plan`, choose new baked
+support, manufacture a `CurrentStartPlan`, or restart an old observer. Guide,
+source, body, reader and owner identities remain checked. The future suffix
+stays planning evidence; the retained current prefix is unchanged. Another new
+matching pair is required after planning, including when geometry outlives the
+original half-second observation window.
+
+The optional `CampProbePlan.route_guide` now carries that planning sequence
+through the actual retained engine before lease release. It uses the same
+configured location key and original runtime deadline. Guide/preparation
+replacement is refused. Route-ready completion stops before any onward input;
+there is no default provider/guide or new owner control. Traces keep compact
+route identity/start evidence rather than embedding an entire long itinerary.
+Cancellation diagnostics retain the owned preparation and updated collection
+history.
+
+VERIFIED 19 focused local source-planning checks passed in 14.72 seconds.
+VERIFIED final Alienware candidate `owner-tools/0.42.52-validation-1`:
+**45 checks passed in 72.08 seconds**, output SHA
+`b278dd1257e7d9b18957810df161b7af453d37018783d6ec577d6a504ad594ae`.
+Coverage includes the new planner, original current-source planner, retained
+engine handoff/F8/F9 and actual watchdog/pipe checks. In particular, route-start
+key UP/operation cleanup precede lease release and queued F8 assist. Changed
+guide/preparation identities stop before the start collection. Private source
+publication pending. Synthetic
+positions, scenes and admission only; no game input, character action or prefix
+changes. Current movement admission and explicit new observer/driver adoption
+remain unfinished. Preview stays 0.39.30; G0 passed, no new owner test. Actual
+level, XP/hour, deaths and camp remain unknown; 1–20 and hands-off 1–50 are not
+accepted.
+
 ## 2026-11-14 18:27 UTC — source 0.42.51 privately published
 
 VERIFIED Alienware `owner-tools/0.42.51/source`, revision

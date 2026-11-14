@@ -10,6 +10,7 @@ import threading
 from .camp_probe_preparation import CampProbePreparation
 from .camp_probe_sender import CampProbeInputPolicy,send_camp_probe
 from .camp_probe_transaction import CampProbeTransaction
+from .camp_route_preparation import CampRoutePreparation
 from .camp_stopped_height import measure_camp_stopped_height
 from .ground_binding import finite
 from .location_hotkey import OwnerLocationHotkey,send_location_hotkey
@@ -18,6 +19,7 @@ from .motion_calibration import PROBES,Probe
 from .motion_collection import CommandReceipt,LocationRequest
 from .native_region_policy import encoded
 from .stopped_location_pair import StoppedLocationPair
+from .source_itinerary import SourceItineraryGuide, _guide_snapshot
 
 
 class CampProbeRuntime:
@@ -53,6 +55,8 @@ class CampProbeRuntime:
         self.index=0;self.transaction=None;self.start=None;self.policy=None;self.sent=None
         self.reference=None;self.results=[];self.transactions=[];self.collections=[];self.events=[]
         self.input_kind=self.input_request=None
+        self.route_guide=self._route_guide_state=self.route_preparation=self.route_start=None
+        self._route_preparation=None
         self._check();preparation.check(fresh=preparation.height)
 
     def _check(self):
@@ -64,8 +68,19 @@ class CampProbeRuntime:
         if (self.phase=='stopped' or self.closed
                 or any(a is not b for a,b in zip(self._context,actual))
                 or encoded([asdict(p) for p in self.probes])!=self._probes_bytes
+                or (self._route_guide_state is None)!=(self.route_guide is None)
+                or self.route_guide is not None and (type(self.route_guide) is not SourceItineraryGuide
+                    or (id(self.route_guide),_guide_snapshot(self.route_guide))!=self._route_guide_state)
+                or self.route_preparation is not self._route_preparation
                 or not finite(now) or not self.started<=self.last_at<=now<=self.started+self.maximum_seconds):
             raise ValueError('Camp probe runtime context changed or budget expired')
+        route=self._route_preparation
+        if route is not None and (route.checkpoint is not self.reference or route.guide is not self.route_guide
+                or route.bounds is not self.root.bounds or route.lease is not self.lease
+                or route.reader is not self.lease.reader or route.owner_binding is not self.root.owner_binding
+                or route.binding_reader is not self.root.binding_reader
+                or route.clock is not self.clock or route.wall is not self.wall):
+            raise ValueError('Camp route differs from its retained probe scope')
         self.last_at=now
         return now
 
@@ -76,6 +91,7 @@ class CampProbeRuntime:
             if self.collector is not None:self.collector.cancel(reason)
             for tx in self.transactions:tx.cancel(reason)
             self.preparation.cancel(reason)
+            if self._route_preparation is not None:self._route_preparation.cancel(reason)
             # Keep navigation busy through any DOWN/UP cleanup. release() owns
             # the later lease release, which clears the reader's latest reply.
             self.lease.active=False
@@ -84,10 +100,22 @@ class CampProbeRuntime:
         """Caller cleanup after completion/stop and actual sender release."""
         with self.lock:
             if self.closed:return
-            if (self.phase not in ('complete','stopped') or self.busy or self.sender.held
+            if (self.phase not in ('complete','route_ready','stopped') or self.busy or self.sender.held
                     or getattr(self.sender,'_eql_route_operation',None) is not None):
                 raise ValueError('Camp probe runtime still owns pending input or work')
             self.lease.release();self.closed=True
+
+    def prepare_route(self,guide):
+        """Retain the same scope for onward planning; never extend its deadline."""
+        with self.lock:
+            self._check()
+            if (self.phase!='complete' or self.busy or self.route_guide is not None
+                    or self.reference is None or type(guide) is not SourceItineraryGuide
+                    or self.sender.held or getattr(self.sender,'_eql_route_operation',None) is not None):
+                raise ValueError('Completed idle probes and one explicit onward guide required')
+            guide.validate();self.reference.check()
+            self.route_guide=guide;self._route_guide_state=(id(guide),_guide_snapshot(guide))
+            self._begin_pair('route_planning',released_at=self._check())
 
     def _begin_pair(self,kind,*,released_at):
         self._check()
@@ -136,7 +164,7 @@ class CampProbeRuntime:
         return first,second
 
     def tick(self):
-        if self.closed or self.phase in ('complete','stopped'):return
+        if self.closed or self.phase in ('complete','route_ready','stopped'):return
         if self.busy:
             try:self._check()
             except Exception as error:self.cancel(str(error));raise
@@ -183,7 +211,26 @@ class CampProbeRuntime:
                         owner_binding=root.owner_binding,binding_reader=root.binding_reader,
                         clock=self.clock,local_wall_clock=self.wall)
                     self._check();self.phase='prepare'
+                elif kind=='route_planning':
+                    root=self.root
+                    height=measure_camp_stopped_height(self.reference,self.lease.reader,first,second,
+                        minimum_log_seq=self.baseline,released_at=self.released_at,
+                        owner_binding=root.owner_binding,binding_reader=root.binding_reader,
+                        clock=self.clock,local_wall_clock=self.wall)
+                    self.route_preparation=CampRoutePreparation(self.reference,height,self.lease,
+                        guide=self.route_guide,bounds=root.bounds,owner_binding=root.owner_binding,
+                        binding_reader=root.binding_reader,clock=self.clock,local_wall_clock=self.wall)
+                    self._route_preparation=self.route_preparation
+                    self._check();self.phase='prepare_route'
+                elif kind=='route_start':
+                    self.route_start=self.route_preparation.observe_start(first,second,
+                        minimum_log_seq=self.baseline,released_at=self.released_at)
+                    self._check();self.phase='route_ready'
                 else:raise ValueError('Unknown camp probe collection stage')
+            elif self.phase=='prepare_route':
+                remaining=self.started+self.maximum_seconds-self._check()
+                self.route_preparation.prepare(maximum_seconds=min(240.,remaining))
+                self._begin_pair('route_start',released_at=self._check())
             elif self.phase=='pulse':
                 self.input_kind='movement';self.input_request=self.transaction
                 try:
@@ -204,5 +251,6 @@ class CampProbeRuntime:
             result_sha256=[r.sha256 for r in self.results],collections=list(self.collections),
             sender_events=list(self.events),
             current_floor_sha256=None if self.reference is None else self.reference.sha256,
+            route=None if self._route_preparation is None else self._route_preparation.snapshot(),
             input_policy_required=True,independent_scene_verified=False,motion_bounds_verified=False,
             current_heading_verified=False,real_client_accepted=False)
