@@ -1,13 +1,13 @@
 # STATUS
 
-Updated 2026-11-14 23:53 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 23:57 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**. Historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics. **G0 passed**, including
   the owner's visible-stop confirmation; do not repeat it.
-- **Owner 0.39.35 / source 0.42.75 candidate built; installation pending.**
+- **Owner 0.39.35 / source 0.42.75 privately installed on Alienware.**
   The existing rotation helper now offers Newbie Hills camp and stop-only local
   approaches inside Butcherblock. Zone 68 stays bound through planner, guide,
   observations, motion and camp checkpoints; Crushbone stays zone 58. Butcher
@@ -30,12 +30,22 @@ Updated 2026-11-14 23:53 UTC for coordinator task `829a00229b29`.
   match. The devbox pipe continuation failure passes there unchanged. Original
   failures and fixture corrections are retained; deadlines remain unchanged.
   Validation SHA `217f9bd0d2fba78133b7fd4389e8e55791a34073865722f75911622c42aa08d4`.
-- **Installed build remains owner 0.39.34 / source 0.42.74** until the candidate's
-  additive publication is verified. No helper restart,
-  login, game input, client/prefix edit or character change by the lead.
-  Next: publish the checked small build, then continue
-  missing early-camp connections and Trainer approach discovery. Real travel,
-  live camp suitability, zone crossings and unattended leveling remain unverified.
+- **VERIFIED additive installation and startup:** all 570 source Python pins,
+  248 owner snapshot files and six destination guides match. Six installed
+  client executable/catalog/Butcher archive pins match via read-only checks.
+  Previous versions remain available; no running helper was restarted.
+  Archive SHA `a629beee1c2284d7074912f4735d087dcf676b03fd48e797f86ec8cf404732b2`;
+  receipt SHA `4711b81b53e77273e5db06b36241d885dddd575c7aa2fcc3bf92c47bfc1d2128`.
+  Source revision `7686bfb7ba4dda23f69d9826ca67363c7bf7ae81`.
+  The install preflight initially rejected Bazzite's standard /home→/var/home
+  mapping before any changes; using the resolved private store fixed it.
+- **Next:** owner-run travel/camp acceptance and an offline Newbie Hills→Goblin
+  or Dwarf Skeletons corridor proposal. Their copied map hints are 5–8, but
+  only destination footprints are checked; no connecting source itinerary is
+  retained. Continue Trainer approach discovery as well. Real travel, camp
+  suitability, zone crossings and unattended leveling remain unverified.
+  No lead login, game input, client/prefix edit or character change.
+
 
 ## Historical development entries
 

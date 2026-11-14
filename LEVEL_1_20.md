@@ -1,10 +1,10 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 23:54 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 23:57 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **No full 1–20 route is
 accepted. G0 passed, including the visible stop; do not repeat it.**
 
-Owner candidate **0.39.35**, source **0.42.75**, adds the copied Newbie Hills
+Installed owner **0.39.35**, source **0.42.75**, adds the copied Newbie Hills
 marker (map hint 1–4) inside Butcherblock to the existing rotation helper.
 Choose a short local travel-and-camp test or movement-only arrival. The camp
 option requires observed Butcherblock NPC history; the movement-only option

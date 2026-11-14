@@ -1,5 +1,42 @@
 # FINDINGS
 
+## 2026-11-14 23:57 UTC — owner 0.39.35 privately installed
+
+VERIFIED additive publication on Alienware: owner **0.39.35**, source/runtime
+**0.42.75**, source revision `7686bfb7ba4dda23f69d9826ca67363c7bf7ae81`.
+Archive `releases/eql-owner-journey-0.39.35.tar.gz`, SHA
+`a629beee1c2284d7074912f4735d087dcf676b03fd48e797f86ec8cf404732b2`.
+Installation receipt SHA
+`4711b81b53e77273e5db06b36241d885dddd575c7aa2fcc3bf92c47bfc1d2128`.
+All **570 source Python pins**, **248 owner files**, evidence/package hashes,
+and **six guides** verify; installed `launch.sh --help` returns 0. Read-only
+installed-file checks matched eqgame.exe, EQGraphics.dll, ZoneNames.txt and all
+three Butcher archives. Previous versions are preserved. No helper restart,
+engine start, game input, login, character change or client/prefix write.
+
+The first install preflight refused lexical `/home` versus resolved `/var/home`
+on Bazzite before extraction or installation. The private store was verified
+as the same direct directory and resolved before the successful retry.
+
+On Alienware, close the old helper yourself, then run:
+
+```bash
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.35/launch.sh
+```
+
+This continues the existing rotation bot. F8 is owner-targeted assist with manual
+movement; F9 stops. Newbie Hills offers a short same-zone camp approach and a
+movement-only choice with no combat. G0 is passed and should not repeat.
+Owner real travel/camp acceptance, the complete 1–20 route and fresh hands-off
+1–50 remain unfinished. Real level, XP/hour, deaths and camp are unknown.
+
+Next concrete offline step: source-transit proposals from Newbie Hills
+`(-650,2700)` to Goblin `(-2069,-298)` or Dwarf Skeletons `(884,-1540)` using the
+copied 5–8 annotations and already checked caps. No retained source corridor
+connects those endpoints; local detours are limited to 80 units and cannot be
+used as the initial thousands-of-units route query. The historical Kaladim→GFay
+mesh corridor does not establish that missing source-floor route.
+
 ## 2026-11-14 23:55 UTC — zone-bound Newbie Hills owner candidate
 
 VERIFIED source/runtime **0.42.75**, owner candidate **0.39.35**, extends the
