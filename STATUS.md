@@ -23,6 +23,11 @@ Updated 2026-11-14 14:55 UTC for coordinator task `829a00229b29`.
   **Next:** connect the controller and fresh stopped-pair collector to the owner
   runtime, preserving one sender, reader lease and cancellation scope. Owner
   movement 0.39.20/assist 0.39.13 remain unchanged; G0 remains passed.
+  Source `27ee681` is staged at Alienware `owner-tools/0.42.31/source`.
+  All **97** selected startup checks pass with zero failures/errors/skips;
+  imports, CLI, copied pins and private guide match. Startup SHA
+  `a8bfaff8ca317adf7fc50e37a5c227fcdd1a90897e80362ab192bee43d71ca2d`.
+  No worker/device/game input or prefix modification.
 - **Source 0.42.30:** actual source-step handoff can prepare a direct or compound
   approach, explicit transfer and maximum-hold exit while keeping the committed
   floor unchanged. Exact union coverage includes uncertainty/drift; unsupported

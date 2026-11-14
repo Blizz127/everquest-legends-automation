@@ -40,6 +40,14 @@ assist 0.39.13 are unchanged. G0 is passed and requires no repeat; current
 level/XP/hour/deaths/camp unknown. No accepted real 1–20 route, automated XP or
 fresh hands-off 1–50 run.
 
+**VERIFIED private source publication:** commit `27ee681` is staged at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.31/source`. All 97 selected startup
+checks pass without failures/errors/skips; imports, CLI, copied pins and the
+private guide match. No worker/device/game input or prefix modification.
+Archive SHA `7cea7dd0fe34b0a0f068b16652f806012dab909da318d17e24af353163d429db`;
+startup SHA `a8bfaff8ca317adf7fc50e37a5c227fcdd1a90897e80362ab192bee43d71ca2d`;
+test-output SHA `8919fea7f2b1b7422c41825afda7bdc2f38ed8283ad704284b513d399b3937bb`.
+
 ## Full-envelope source step approach — 2026-11-14 14:43 UTC
 
 **VERIFIED implementation:** source 0.42.30 connects the ordinary driver's
