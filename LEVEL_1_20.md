@@ -1,6 +1,6 @@
 # Level 1–20 route work
 
-Updated 2026-11-14 09:13 UTC. This is the prioritized route and acceptance
+Updated 2026-11-14 09:12 UTC. This is the prioritized route and acceptance
 record for the owner's requested playable 1–20 path. **F11 is disabled:** none
 of these legs has been driven and accepted in the real client. The owner can
 use the rotation-only preview described in [HOWTO.md](HOWTO.md) while he plays.
@@ -18,6 +18,9 @@ waived. A source-supported guide repair clears polygon 440; its full retry
 passes 537 terrain/static cells before a separate intersection at polygon 510.
 Forty-one focused checks pass. No whole route, transition, camp,
 movement or level gain is accepted. The pending owner 0.39.12 test is unchanged.
+
+Source `ba64f91` is privately staged at Alienware `owner-tools/0.41.98/source`;
+no-input imports and geometry startup checks pass. Owner helper stays 0.39.12.
 
 Source 0.41.97 ships the combined stationary hotbutton + supervised finite
 motion test as owner candidate 0.39.12. In the same helper session the owner

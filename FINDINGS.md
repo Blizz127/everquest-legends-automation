@@ -70,6 +70,15 @@ route or fresh-character 1–50 acceptance occurred. Level, XP/hour, deaths and
 camp remain unknown. Existing assist 0.39.6 still uses the earlier rotation bot.
 
 
+**VERIFIED private source staging:** commit
+`ba64f91c0c6ccd075829fcf5573be7e967678d18` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.41.98/source`. Archive SHA
+`b7718ea37f6cd4cf5dd365a82e3ae8627dac13f4f55ea30b89486b9fbe789f6c`.
+Module startup and above-floor volume, missing-child, degenerate-volume and
+missing-floor checks pass there. No engine was created or game input sent.
+Startup evidence SHA
+`3671241bc1cbef5c0cec366abb25231c8138e6a68703adf45a7f646937b60a83`.
+
 ## Supervised relative measurement shipped as 0.39.12 — 2026-11-14 08:59 UTC
 
 **VERIFIED implementation:** source 0.41.97 composes the existing helper's

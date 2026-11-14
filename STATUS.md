@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 09:13 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 09:12 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -24,6 +24,9 @@ Updated 2026-11-14 09:13 UTC for coordinator task `829a00229b29`.
   **Next:** resolve the full corridor's source coverage and BSP interpretation,
   while consuming the already staged 0.39.12 owner hotbutton/motion result for
   the first supervised GFay leg. Owner helper and pending test are unchanged.
+  Source `ba64f91` is staged at `owner-tools/0.41.98/source`; imports and
+  geometry refusal/startup checks pass without input. Startup SHA
+  `3671241bc1cbef5c0cec366abb25231c8138e6a68703adf45a7f646937b60a83`.
 - **Source 0.41.97 / owner candidate 0.39.12:** the same existing helper now
   runs a finite relative motion measurement after its successful stationary
   hotbutton check. The owner explicitly starts it on declared open/flat/clear
