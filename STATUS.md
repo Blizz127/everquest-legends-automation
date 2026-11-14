@@ -17,7 +17,12 @@ Updated 2026-11-14 06:41 UTC for coordinator task `829a00229b29`.
   checks complete content/selection fingerprints around each feature pass while
   reusing its parse. Fifty-one focused cache/chat/frame checks pass. Both setup
   costs and all per-frame verification time remain visible. Current owner
-  helpers are unchanged; combined installed-layout timing is next.
+  helpers are unchanged. Staged `a345da0` passes four no-input remote checks.
+  Ten synthetic frames with the installed full layout: first 104 ms, median
+  117 ms, maximum 143 ms; only three meet 100 ms. Layout/numerical preparation
+  took 282/110 ms. Profile identifies repeated source-selection parsing/path
+  checks; compiling that plan is next. Artifact SHA
+  `09a4058568a73de14f7595f124db9fc889347b531d1e266d87007a2653b7ec6c`.
 - **Source 0.41.81:** copied binary resolves the dynamic chat Page/ChatWindow
   hierarchy, frame overlap and forced input border. The new isolated resolver
   supplies source-derived input outer/client proposals without guessing tab
@@ -158,7 +163,7 @@ Updated 2026-11-14 06:41 UTC for coordinator task `829a00229b29`.
   templates and `combat-analysis.json`; missing sources preserve the raw pair.
   Old 0.39.9 pairs remain valid for separate analysis. Read-only listing this
   turn (2026-11-14 06:35 UTC) found zero paired records. No lead capture was initiated.
-- **Next / real-client gate:** measure the combined prepared source/layout reader;
+- **Next / real-client gate:** reduce the measured source-snapshot cost;
   integrate current focus evidence and immutable submitted-command prefixes (caret is a positive-focus candidate
   only; its absence cannot establish closed chat); validate the new selected-skin chat geometry and source-derived scene templates against the
   pending owner capture; bind the new conditional motion estimator to an independently supported

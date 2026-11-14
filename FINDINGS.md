@@ -1,5 +1,37 @@
 # FINDINGS
 
+## Source 0.41.82 staged with full layout measurement — 2026-11-14 06:43 UTC
+
+**VERIFIED:** `a345da0fc748bbb6832039d3b9a079cb6aa23c62`, archive SHA
+`0c8ab92d17382abf8879abbd255f65bc7fd6eb2f4210b11e02e4039122c44899`,
+is staged at Alienware `owner-tools/0.41.82/source`. Four focused no-input
+startup checks pass. Ten synthetic frames use the actual installed full layout,
+172 fingerprinted sources, actual retained gauge reader and copied sprites
+rendered at source-supported 16×16 inside the real 16×33 combat-widget proposal.
+HP/mana and all sprite rankings match; chat crops bind the same frame and retain
+unknown focus. Changed resolution refuses without reparsing.
+
+**OBSERVED timing:** layout preparation 282.4 ms; numerical preparation 110.0 ms;
+first observation 104.0 ms, warm median 117.2 ms, maximum 142.9 ms. Only three
+of ten observations meet 100 ms. This includes complete installed-source layout
+verification, geometry and features, but uses synthetic frame copies and excludes
+real capture/input/log scans. It is not live acceptance. Remote artifact
+`../synthetic-full-layout-frames.json` SHA
+`09a4058568a73de14f7595f124db9fc889347b531d1e266d87007a2653b7ec6c`;
+local staging record `releases/eql-automation-0.41.82-staging.json`.
+
+**VERIFIED bounded profile:** three complete snapshot checks took 156 ms under
+profiling. Repeated path safety/resolution accounts for 90 ms cumulative and
+INI parsing 38 ms. The snapshot makes 1,545 path resolutions and 21,594 lstat
+calls across those three checks. Median sampling/feature times from the frame
+record are 59.3/51.5 ms. The source content/selection plan can be compiled during
+preparation: unchanged manifest/INI bytes do not need reparsing in every frame.
+That is the next measured optimization; content and overlay verification remain
+required. Remote `../layout-snapshot-profile.txt` SHA
+`c74215c76ae610b387f4448c5984359a0ffee4afcf4c751474056762a627ddf4`.
+No game capture, input, device access, login or protected-install write occurred.
+Owner helpers remain unchanged and G0 remains passed, with no repeat.
+
 ## Prepared layout and same-frame chat integration 0.41.82 — 2026-11-14 06:41 UTC
 
 **OBSERVED bottleneck:** a read-only Alienware call to the actual retained
