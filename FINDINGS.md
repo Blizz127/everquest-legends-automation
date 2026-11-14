@@ -45,7 +45,21 @@ and read queued UP after a closed child stdin. 68 crossing/arrival/watchdog
 checks passed afterward (7.31 seconds), then 53 crossing/policy cases passed after
 the final lock changes (5.69 seconds). No timing deadline was relaxed. A further
 late-loading case checks the receipt time rather than accepting a late message
-merely because it changed the phase.
+merely because it changed the phase; all 15 crossing tests pass on that final
+change (4.11 seconds).
+
+**VERIFIED private publication:** commit
+`bf8e8ea601cdacf42e8b245113d70838586c78d7` is staged on Alienware at
+`~/.local/share/eql-automation/owner-tools/0.42.18/source`. Imports, synthetic
+loading→release→fresh destination pairing, hazard scanning across loading and
+an actual watchdog interruption on an OS pipe pass. No engine worker, input
+device, game input or install change occurs. The first startup attempt ran from
+SSH's home directory and its `python -m` child could not import the staged
+package; it failed without input. The retry verified every staged file against
+the unchanged archive and ran from the source directory, as the helper launcher
+does. No installed client or prefix was touched.
+Archive SHA `f58abc80b9eb619b5a532215504f6ce8fdf639589e3065d1047cadc0ec4249d0`;
+startup SHA `4e526c5e633e399e0e2cc0b1bd7050b7ed90fee749817fb57767b628f216d52f`.
 
 **Remaining owner/runtime work:** the GUI travel action still ends at the
 Crushbone approach. It must plan the checked launch-point approach, carry its

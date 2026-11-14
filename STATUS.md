@@ -19,6 +19,10 @@ Updated 2026-11-14 12:39 UTC for coordinator task `829a00229b29`.
   loading, wrong zone and release failure. 232 focused regressions passed before
   review fixes; 68 crossing/arrival/watchdog and 53 crossing/policy checks pass
   after cancellation/receipt fixes. Owner preview 0.39.18 is unchanged.
+  Final late-loading change passes 15 crossing tests. Commit `bf8e8ea` is
+  staged on Alienware at `owner-tools/0.42.18/source`; imports, synthetic
+  arrival, continued hazard scanning and pipe interruption startup pass,
+  SHA `4e526c5e633e399e0e2cc0b1bd7050b7ed90fee749817fb57767b628f216d52f`.
   **Next:** bind the checked launch-point approach and exclusive lease transfer
   into the owner travel action, then fresh Crushbone geometry/camps. Pending
   owner map/travel acceptance remains; no new G0 request. Current level,
