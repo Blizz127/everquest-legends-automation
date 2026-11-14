@@ -1,5 +1,24 @@
 # FINDINGS
 
+## Private source 0.41.88 staged — 2026-11-14 07:38 UTC
+
+**VERIFIED:** source `ad9a9867cbf75441463c122c17f1acfb5ee21bab`, archive SHA
+`3762ee15ca2f485876b84ba5326275b369626365baf77a8c999d25ac35b810f8`,
+is staged at Alienware `owner-tools/0.41.88/source`. Seven focused checks
+pass: import/version, installed font and three version-2 probe pins/DC
+metadata, refusal of both reused banks, exact local comparison reproduction,
+legacy metadata/pixel compatibility, geometry/false live flags and CLI startup.
+Remote `font-dib-smoke.json` SHA
+`9a7b8a6a7f047f7ebbbfc9095fec7c2237133c6262859929166b5fa6394ad4ff`;
+canonical comparison SHA
+`3f8cd9f7f6be8f1e1f63989089d492f888e011235251bc927cc2d924c6a11082`.
+Local staging record: `releases/eql-automation-0.41.88-staging.json`.
+
+No native helper or game ran on Alienware; its font was read only. No capture,
+input, devices, protected writes or character changes occurred. Owner helpers
+and the pending stationary observation remain unchanged. Current run metrics
+remain unknown; neither a live route nor a level gain is accepted.
+
 ## Corrected DC setup and reusable-bitmap evidence 0.41.88 — 2026-11-14 07:35 UTC
 
 **VERIFIED correction to the earlier trace:** PE import parsing resolves

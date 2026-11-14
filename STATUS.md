@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 07:35 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 07:38 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -21,6 +21,11 @@ Updated 2026-11-14 07:35 UTC for coordinator task `829a00229b29`.
   outside their extents in the tested zero-once sequence; none change inside.
   Comparison artifact SHA
   `85734b0a5c6f19ac210a982f2e97e1463378135bed8b17b2f348d8b0c92d8994`.
+  Source `ad9a986` is staged at `owner-tools/0.41.88/source`; seven remote
+  startup/model checks pass. The importer reproduces the local comparison
+  exactly, preserves legacy clear-each pixels, and rejects reused glyph banks.
+  Remote artifact SHA
+  `9a7b8a6a7f047f7ebbbfc9095fec7c2237133c6262859929166b5fa6394ad4ff`.
   Old/new clear-each alpha4 glyphs match, but neither captures unknown live
   bitmap history. Existing-output refusal and own-prefix cleanup pass.
   No game runtime/capture/input occurred. Next: consume the already requested
