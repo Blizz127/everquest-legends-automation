@@ -1,5 +1,66 @@
 # FINDINGS
 
+## Same-action owner route runtime — 2026-11-14 11:18 UTC
+
+**VERIFIED implementation and pipe tests:** source 0.42.10 composes the retained
+rotation engine with the current zone reader, supervised motion, fresh stopped
+pair collectors, current-start planner, height producer and checked route
+sender. A separate `supervised_local_route_trial` owner job retains the exact
+input observer and same-session heading after calibration; it never reloads
+saved heading or rearms another queued action. Ordinary motion measurement
+still ends stopped. Trial cancellation releases keys and closes the reader
+lease/observer; F9 at the completed-motion handoff cannot start a route.
+
+Fifteen focused runtime/collector cases pass, including actual pipe-backed
+motion-to-route completion, cancellation during startup and route DOWN,
+missing zone/assets before motion, stale/duplicate/unsolicited positions and
+ownership changes. The separate 11-case check includes ordinary measurement
+completion and cancellation at the handoff boundary. Physical feedback/logs
+are synthetic: these are **not real-client movement or level acceptance**.
+
+Preview 0.39.15 is built from verified 0.39.12 and uses the existing rotation
+engine, with a separate short-route button and stage indicator. Its entry
+requires measurement mode; assist 0.39.13 remains unchanged. The source manifest
+pins all packaged runtime modules. Client data stays outside git, in the private
+`owner-route-data/gfay-trial-20261114-current/` directory: mesh, terrain/object archives
+and zone catalog, 11,396,711 bytes. Loader checks loaded archive/WLD identities,
+complete static/BSP inventories, transform source and installed read-only source
+hashes. It consumes no historical route/position proof.
+
+**OBSERVED installed-catalog change:** the first unpublished 0.39.14 staging
+attempt refused before device/GUI startup because its copied zone catalog no
+longer matched the installed file. The current catalog was read from Alienware
+without modification: 20,266 bytes, SHA
+`0a5c0ff78c452a1895af2ac3014254d29aee996a36a2d4e907e717e2180c422d`.
+It adds unique entries for Tomar's Terrorfields (84) and Firiona Vie (503);
+GFay remains uniquely The Greater Faydark (54). The new 0.39.15 bundle pins
+this current catalog; old candidate/data are retained and not reused. Both
+installed GFay source archive hashes matched before the catalog refusal.
+Private retained catalog: `client-data/zone-catalog-20261114T1123Z/ZoneNames.txt`.
+
+**Remaining real-client gate:** this first finite route needs a newly observed
+GFay zone entry in the running helper, same-session `/location` hotbutton setup,
+owner-supervised open ground and a real execution result. Current-zone label
+OCR/bootstrap and multi-polygon paths/camps remain unfinished. The two-unit
+one-polygon trial is not the requested 1–20 route. Level, XP/hour, deaths and camp
+remain unknown. G0 is passed, including the owner's latest visible-stop answer;
+no repeat is needed. No lead-driven character movement or login was performed.
+
+**VERIFIED private 0.39.15 publication/startup:** staged at Alienware
+`~/.local/share/eql-automation/owner-assist/0.39.15`. The exact packaged source
+manifest passes, complete copied geometry loads, and installed archives/catalog
+match. Offscreen GUI smoke shows both the separate route trial and ordinary
+motion buttons enabled. No helper worker, input device, game input or settings
+write occurred. Entry without measurement mode refuses, leaving assist 0.39.13
+separate. The loader smoke uses a synthetic tracker identity; it is not proof
+of the current live zone. Four focused followup cases pass for preparation
+refusals (including a transition during load) and observed-zone/countdown UI
+payload. The new loader consumes the actual current copied data successfully.
+
+- Private archive SHA: `973fdb977d6c693d5bd97d14c7aeeeb7dea4f4f132558ec9dacf07f0e9881f0c`.
+- Alienware startup SHA: `bf9be22fe38d2b0e21264ac9551b4ec7beabc77d0b2fe9fb1442fb58dfea8022`.
+- GUI image SHA: `657ac604daa81c2b592dfd1695256b7b10bbda7836ac3a0b0a96366b5184bc57`.
+
 ## Current-position route producer — 2026-11-14 11:03 UTC
 
 **VERIFIED implementation:** source 0.42.9 adds `CurrentStartPlanner`. It uses

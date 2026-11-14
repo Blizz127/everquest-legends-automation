@@ -1,8 +1,8 @@
 # EverQuest Legends automation — current owner guide
 
-Source **0.42.9** · rotation preview **0.39.13** · observation **0.39.10** · hotbutton + motion measurement **0.39.12**.
+Source **0.42.10** · rotation preview **0.39.13** · short route trial **0.39.15** · motion-only **0.39.12**.
 
-**The 1–20 autopilot is not ready. F11 and F12 are disabled.** No real route,
+**The 1–20 autopilot is not ready. F11 cannot start leveling; F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -15,30 +15,62 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Read-only position observation | One owner-triggered capture; no commands, keys or clicks sent. | **Observe current position**, F9/Stop to cancel. |
 | Stationary location-hotbutton test | Sends one explicitly configured key, then checks the log for one fresh position reply. No route movement or combat. | **Test /location hotbutton…**, F9/F11/Stop to cancel. |
 | Supervised motion measurement | Four short forward presses and three turns on owner-confirmed open ground; saves relative observations and stops. | **Supervised motion measurement…**, F9/F11/Stop to cancel. |
+| Supervised short route trial | In 0.39.15, measures motion, creates a two-unit GFay path from fresh current positions, checks terrain/objects/BSP, follows it if checks pass, then stops. No combat or leveling. | **Supervised short route trial…**, F9/F11/Stop to cancel. |
 
 Run only one helper at a time. **G0 passed; do not repeat the movement-stop
-pulse.** The next owner check is the combined hotbutton + motion measurement
-below. The manual position observation remains available separately.
+pulse.** Assist still uses the existing rotation bot. Preview 0.39.15 is a
+separate finite movement test; it cannot switch into assist or full auto.
+The requested seamless assist/full-auto switch is still unfinished.
 
-Source 0.42.9 can generate a short trial plan from fresh printed coordinates,
-without using a historical starting waypoint. It checks the complete local
-terrain, placed objects and BSP volume. A copied Greater Faydark case passes
-with synthetic position replies and fresh height startup. This initial
-producer stays within one navigation polygon; it is not the 1–20 camp route.
-The finite supervised policy from 0.42.8 retains focus, input, log, geometry
-and release checks with conditional assumptions recorded separately.
-The owner route button still needs same-session motion handoff and startup
-assembly. A saved 0.39.12 result alone cannot supply current heading or
-enable autopilot. No route control is enabled by this source release.
+## Short route test on Alienware: 0.39.15
 
-The installed client's zone-label producer was also traced to the character's
-current zone. Live recognition and refresh checks remain unfinished. Passive
-zone tracking from newly observed log entries is implemented in source; a
-helper started after an earlier entry cannot yet establish its zone that way.
-Assist 0.39.13 and the motion test below are unchanged. No new owner test or
-repeat of G0 is needed.
+This is the next traversal check, **not a usable 1–20 leveling route**.
+Preview 0.39.15 is staged on Alienware. Its no-input GUI startup and installed
+data checks pass; actual route traversal is unverified. Do not reuse a saved
+motion result as heading.
+This action measures and follows the new path in the same uninterrupted session.
 
-## Next owner test on Alienware: 0.39.12
+```bash
+cd ~/.local/share/eql-automation/owner-assist/0.39.15
+EQL_ROTATION_TRACE="$HOME/eql-route-trial-trace.jsonl" ./launch.sh --measure-navigation
+```
+
+1. Close the other helper before launching. Choose the correct character.
+   **The new helper must observe a Greater Faydark zone entry while it is
+   running.** Starting it while already in GFay cannot establish the zone from
+   old log history. If no new entry is seen, the trial refuses before moving;
+   automatic current-zone recognition is still unfinished. Any zoning is yours
+   to perform, and is not part of this test's movement.
+2. Configure/test a hotbutton containing only `/location` in this same helper,
+   using the stationary hotbutton steps below. A prior helper's result is not
+   reused. An unused F1–F5 or F13–F24 key is required; F6–F12 remain reserved.
+3. On wide, clear, flat GFay ground, close chat, clear the target and turn
+   native melee off. Click **Supervised short route trial…** and confirm the
+   setup. Loading verifies the copied data against the installed archives and
+   catalog before any movement. Focus EverQuest during the four-second countdown
+   and release all keyboard/mouse input. Stay present.
+4. It makes four short forward presses and three turns, then collects new
+   stopped positions, checks a new two-unit path from there, obtains fresh
+   height observations and follows that path if all checks pass. It ends
+   stopped. **F9/F11 or Stop measurement cancels throughout.** A failed check
+   stops the action; there is no automatic retry or fallback typing.
+5. Report the displayed **Route trial arrived/stopped** result or its refusal
+   reason. Evidence is under `~/.local/share/eql-automation/route-trials/` and
+   the trace is `~/eql-route-trial-trace.jsonl`.
+
+The GUI shows countdown, startup, route and stopped stages. The ordinary
+**Supervised motion measurement…** button still finishes after measurement;
+only the distinct route-trial button can continue into a short path.
+The initial path stays inside one navigation polygon. Body dimensions, motion
+bounds and open-ground conditions remain conditional observations/assumptions.
+The owner supervises current obstacles and chat/target state. This test does
+not fight, select targets, loot, choose camps, cross zones or level unattended.
+Pipe completion/cancellation checks and copied geometry loading do not prove
+that real-client traversal works. Current level, XP/hour, deaths and camp are
+unknown; no automated level gain has been verified.
+
+## Motion-only option on Alienware: 0.39.12
+
 
 This supersedes the stationary-only 0.39.11 test. Run the hotbutton check and
 then the short motion measurement in the **same helper session**. It does not
@@ -181,14 +213,14 @@ enable G2, F11 or leveling. **Check movement stop** is a separate pulse button;
 do not click it for this observation. The path has been checked with synthetic
 events and frames; actual game capture still needs owner-run evidence.
 
-Assist 0.39.6 remains the current rotation test; run it separately.
+Assist 0.39.13 remains the current rotation test; run it separately.
 
 ## Source builds and offline tools
 
 The latest private source is staged on Alienware at:
 
 ```text
-~/.local/share/eql-automation/owner-tools/0.41.97/source
+~/.local/share/eql-automation/owner-tools/0.42.10/source
 ```
 
 Source builds are development tools, not replacements for the owner launchers

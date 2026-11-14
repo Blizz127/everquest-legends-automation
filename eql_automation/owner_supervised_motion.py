@@ -31,10 +31,21 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
 
         def post(self, name, value=None):
             self.supervised_epoch += 1
-            if name == MOTION_JOB:
+            if name in self._supervised_job_names():
                 value = dict(declaration=value, epoch=self.supervised_epoch,
                     generation=self.cancel_generation, settings=settings_identity(self.settings))
             return super().post(name, value)
+
+        def _supervised_job_names(self):
+            return (MOTION_JOB,)
+
+        def _prepare_supervised_job(self, name):
+            return None
+
+        def _handoff_completed_motion(self, pending, session, record):
+            # Ordinary motion measurement always finishes stopped. A concrete
+            # route wrapper may adopt only its separate explicit owner job.
+            return False
 
         def _cancel_supervised(self, reason):
             if self.supervised_motion is not None:
@@ -89,7 +100,7 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
             self.emit('Motion measurement stopped: '+str(reason)+' · no route enabled.')
 
         def handle_job(self, name, value):
-            if name != MOTION_JOB:
+            if name not in self._supervised_job_names():
                 self._cancel_supervised('another helper job requested')
                 return super().handle_job(name, value)
             if self.supervised_motion is not None or self.motion_collection_driver is not None:
@@ -107,6 +118,7 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                 self.emit('Motion measurement requires stopped measurement mode and your open-ground confirmation.')
                 return
             try:
+                continuation = self._prepare_supervised_job(name)
                 record = self.last_hotkey_test
                 window = window_identity(self.gate, require_focus=False)
                 if (not isinstance(record, dict) or record.get('outcome') != 'observed_location'
@@ -121,7 +133,7 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                     raise ValueError('Idle tested hotbutton sender required')
                 p = dict(value, binding=binding, sender=sender, gate=self.gate, window=window,
                     setup_record_id=record['record_id'], cancelled=None, observer=None,
-                    stage='countdown', due=clock()+4.)
+                    stage='countdown', due=clock()+4., job=name, continuation=continuation)
                 self.supervised_motion = p
                 p['observer'] = observer_factory(helper_ui=sender.ui, clock=clock)
                 p['topology'] = p['observer'].sample().topology_generation
@@ -158,6 +170,7 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
             driver = MotionExperimentDriver(session, request_location=executors.request_location,
                                             run_pulse=executors.run_pulse)
             self.attach_motion_collection(driver)
+            p['session'] = session
             p['stage'] = 'active'
             self.emit('Supervised motion measurement active · seven bounded pulses · F9/F11 stop.')
 
@@ -176,7 +189,25 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                     self._close_supervised(str(error))
             result = super().autopilot_tick(now)
             if self.supervised_motion is not None and self.supervised_motion['stage'] == 'active' and self.motion_collection_driver is None:
-                self._close_supervised('finite experiment finished; see saved result')
+                with self.g0_stop_lock:
+                    p = self.supervised_motion
+                    session, record = p.get('session'), self.last_motion_collection_result
+                    adopted = False
+                    try:
+                        if (isinstance(session,MotionExperimentSession) and session.phase=='complete'
+                                and isinstance(record,dict) and record.get('outcome')=='complete'
+                                and record.get('record_id')==session.record_id
+                                and record.get('estimate') is session.result):
+                            self._supervised_current(p,active=True)
+                            session._check()
+                            adopted = self._handoff_completed_motion(p,session,record)
+                            if adopted and self.supervised_motion is p:
+                                raise ValueError('Motion continuation did not adopt its observation scope')
+                    except Exception as error:
+                        self._close_supervised('Continuation unavailable: '+str(error))
+                        self.emit('Motion continuation stopped: '+str(error))
+                    if not adopted:
+                        self._close_supervised('finite experiment finished; see saved result')
             return result
 
         def run(self):

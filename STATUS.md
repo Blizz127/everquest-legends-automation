@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 11:03 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-14 11:18 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -11,6 +11,25 @@ Updated 2026-11-14 11:03 UTC for coordinator task `829a00229b29`.
   F8 rotation, F9 stop, F10 heal. Movement, targeting, native melee, loot,
   vendors and camps remain manual; F11/F12 are disabled. Live HP/chat/target
   identity still need acceptance.
+- **Source 0.42.10 / route preview 0.39.15 staged:** one owner action
+  now retains the motion experiment's input observer/heading, collects fresh
+  stopped positions, creates the short current-XY plan, checks fresh height,
+  follows the route and stops. Fifteen focused runtime/collector tests pass;
+  F9 releases during startup/route and cancellation at handoff prevents routing.
+  Ordinary measurement still stops (11-case focused check passed). A distinct
+  GUI button is wired, with current stage display; assist 0.39.13 is unchanged.
+  The GFay loader pins complete copied terrain/static/BSP and checks the live
+  install read-only. **Remaining gate:** owner-run real short traversal,
+  requiring a new GFay log entry in this helper session and same-session
+  hotbutton setup. Cross-polygon/camp routing and 1–20 leveling remain unfinished.
+  Current level, XP/hour, deaths and camp unknown; no real route/XP acceptance.
+  Alienware startup passed: both GUI buttons visible/enabled, no helper worker,
+  device, input or settings write; complete copied loader agrees with installed
+  archives/catalog. Startup SHA
+  `bf9be22fe38d2b0e21264ac9551b4ec7beabc77d0b2fe9fb1442fb58dfea8022`.
+  Four further focused checks cover transitions during loading and the current
+  zone/countdown indicator. The first 0.39.14 staging candidate refused an old
+  catalog; 0.39.15 uses the current installed catalog, preserving old artifacts.
 - **Source 0.42.9:** current-position producer now creates a new short plan
   from exact stopped XY and checks its complete terrain/static/BSP capsule.
   It refuses layered support, gaps, obstacles, water, changed bindings and

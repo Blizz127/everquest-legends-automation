@@ -1,0 +1,80 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -383,7 +383,7 @@
+             column.addWidget(self.ap_state)
+             self.ap_default_status = (
+                 "Test your /location hotbutton, then use Supervised motion measurement on open flat ground. "
+-                "This measures movement only; no leveling route starts."
++                "The separate route trial measures, checks a short GFay path, moves, then stops. No leveling starts."
+                 if measurement_only else
+                 "Travel is unavailable in this assist preview. Movement and targeting stay manual.")
+             self.ap_status = QLabel(self.ap_default_status)
+@@ -449,12 +449,18 @@
+             column.addLayout(row)
+ 
+             if measurement_only:
++                self.supervised_route_trial = QPushButton("Supervised short route trial…")
++                self.supervised_route_trial.setObjectName("supervisedLocalRouteTrialButton")
++                self.supervised_route_trial.setToolTip("Measure motion, plan two units from here in GFay, follow the checked path, then stop.")
++                self.supervised_route_trial.clicked.connect(self.configure_supervised_route_trial)
++                column.addWidget(self.supervised_route_trial)
+                 limits = QLabel(
+                     "The supervised measurement saves relative speed/turn observations and finishes stopped. "
+                     "Open ground is your confirmation; this does not independently check obstacles or certify a route. "
+                     "G0 is a separate single-pulse stop check. "
+-                    "It does not start mesh travel, combat, targeting, route recording, or leveling, and "
+-                    "it does not determine character radius, height, climb, or slope limits.")
++                    "Only the separate short route trial can move along a checked two-unit GFay plan. "
++                    "Combat, targeting, route recording and leveling remain disabled. The measurement "
++                    "does not determine character radius, height, climb, or slope limits.")
+                 limits.setWordWrap(True)
+                 limits.setObjectName("muted")
+                 column.addWidget(limits)
+@@ -781,6 +787,38 @@
+             if dialog.exec() == QDialog.DialogCode.Accepted:
+                 self.post("test_location_hotkey", {"key_name": key.currentData(), "confirmed": True})
+ 
++        def configure_supervised_route_trial(self):
++            if not measurement_only:
++                return
++            dialog = QDialog(self)
++            dialog.setWindowTitle("Supervised short route trial — GFay")
++            layout = QVBoxLayout(dialog)
++            text = QLabel("This is a short movement test, not the level 1–20 autopilot. "
++                          "The helper must have observed a new Greater Faydark zone entry since it started. "
++                          "First complete Test /location hotbutton in this same helper session.\n\n"
++                          "Stand on wide open, flat ground, away from edges, water, objects and enemies. "
++                          "Close chat, clear your target, turn melee off and release all keys. "
++                          "After the focus countdown, seven short calibration presses measure current movement. "
++                          "The helper then obtains fresh positions, checks a new two-unit path from here "
++                          "against copied terrain and objects, follows it if checks pass, and stops. "
++                          "It may stop early if a check fails.\n\n"
++                          "Stay present. F9/F11 or Stop measurement cancels. This does not fight, loot, "
++                          "choose a camp or cross a zone. Missing current zone or data refuses before movement.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            confirmation = QCheckBox("I am supervising on clear, flat, open ground with chat closed, target cleared and melee off.")
++            layout.addWidget(confirmation)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Start short route trial")
++            ok.setEnabled(False)
++            confirmation.toggled.connect(ok.setEnabled)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if dialog.exec() == QDialog.DialogCode.Accepted and confirmation.isChecked():
++                self.post("supervised_local_route_trial", {"open_flat_clear": True})
++
+         def configure_supervised_motion(self):
+             if not measurement_only:
+                 return
+@@ -1003,6 +1041,8 @@
+                     "position_observation_enabled": measurement_only and window.observe_position.isEnabled(),
+                     "location_hotkey_test_visible": measurement_only and window.test_location_hotkey.isVisible(),
+                     "location_hotkey_test_enabled": measurement_only and window.test_location_hotkey.isEnabled(),
++                    "supervised_route_trial_visible": measurement_only and window.supervised_route_trial.isVisible(),
++                    "supervised_route_trial_enabled": measurement_only and window.supervised_route_trial.isEnabled(),
+                     "supervised_motion_visible": measurement_only and window.supervised_motion.isVisible(),
+                     "supervised_motion_enabled": measurement_only and window.supervised_motion.isEnabled(),
+                 }, indent=2) + "\n")
