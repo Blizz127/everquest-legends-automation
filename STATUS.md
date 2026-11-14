@@ -6,7 +6,15 @@ Updated 2026-11-14 20:21 UTC for coordinator task `829a00229b29`.
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
   XP/hour, deaths and camp remain **unknown**; historical Legira level 7/GFay
   and old log awards/deaths are not current run metrics.
-- **Source 0.42.61 / preview 0.39.32 candidate1 checked locally; publication next.**
+- **Source 0.42.61 / preview 0.39.32 privately published on Alienware.**
+  Exact locally checked runtime/test hashes match the installed source, and all
+  198 runtime modules match the preview. Manifest, installed data pins and
+  offscreen GUI startup pass; no worker/input/settings write. Bundle SHA
+  `1429c0ecf4239fd8f292f633df7c774a5a139b550e8a119ba09341c634e408d2`;
+  startup receipt SHA
+  `325b0c373baec104ab58431b7575cee1efc11fab4ba47e8eecd269ef8faa11fb`.
+  Owner launcher: `owner-assist/0.39.32/launch.sh`; no running helper restarted.
+
   Location-hotbutton setup can wait for a released focus click or active controls
   to settle within its original eight-second deadline. Coverage/clock failures
   stay immediate; aggregate observations distinguish the reason. VERIFIED 19
@@ -17,8 +25,8 @@ Updated 2026-11-14 20:21 UTC for coordinator task `829a00229b29`.
   ended 19:31 after a refused location setup; its generic message cannot prove
   held input. No route/camp acceptance. North Wall synthetic start cap passes
   copied-data checks; the Throne proposal fails at uncovered walk 8, and local
-  repair exhausted its bounded search. No Throne guide added. Next: publish the
-  hotbutton fix, then inspect/refine that narrow route crossing. G0 passed;
+  repair exhausted its bounded search. No Throne guide added. Next: owner-run location/travel acceptance, and inspect/refine the narrow
+  Throne route crossing. G0 passed;
   current real level/XP/hour/deaths/camp unknown; full 1–20/1–50 not met.
 - **Source 0.42.60 / preview 0.39.31 privately published.** Alienware
   is reachable again. VERIFIED complete production-provider path: seven probes,

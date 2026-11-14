@@ -1,5 +1,29 @@
 # FINDINGS
 
+## 2026-11-14 20:21 UTC — source 0.42.61 / preview 0.39.32 privately published
+
+VERIFIED installed outside the game prefix on Alienware:
+`~/.local/share/eql-automation/owner-assist/0.39.32/launch.sh` and
+`~/.local/share/eql-automation/owner-tools/0.42.61/source`, source revision
+`7b463160dcae0ba4f0d9de30df8e9077f95372a7`. The bundle contains the exact 19-check local
+validation snapshot and JUnit evidence; its runtime and test hashes match.
+All 198 preview runtime modules match source, and the preview manifest passes.
+Installed spell/posture pins, both packaged guides and owner NPC history load.
+Offscreen GUI startup passes with continuation unchecked, no worker, device,
+game input or settings write. The obsolete measurement flag is refused.
+No owner helper was restarted and no character was controlled.
+
+Bundle SHA `1429c0ecf4239fd8f292f633df7c774a5a139b550e8a119ba09341c634e408d2`;
+startup receipt SHA `325b0c373baec104ab58431b7575cee1efc11fab4ba47e8eecd269ef8faa11fb`.
+Local receipt: `releases/eql-owner-journey-0.39.32-staging.json`.
+
+Owner command:
+`EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.32/launch.sh`.
+F8 assist / F9 stop / F11 stationary camp remain. Use the separate location-hotbutton
+test, focus the game and release controls; G0 already passed and must not repeat.
+No Throne destination was added. Actual route acceptance, full 1–20 and fresh
+hands-off 1–50 remain open; current real level/XP/hour/deaths/camp unknown.
+
 ## 2026-11-14 20:21 UTC — hotbutton input settling and bounded Throne investigation
 
 Source **0.42.61**, owner preview **0.39.32 candidate1** built locally. The
