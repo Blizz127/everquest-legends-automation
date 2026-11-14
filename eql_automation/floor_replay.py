@@ -8,10 +8,10 @@ checked for occupancy before selected faces feed the source/baked comparison.
 from __future__ import annotations
 
 from copy import copy
-from dataclasses import dataclass
+from dataclasses import dataclass,replace
 
-from .ground_sweep import GroundCoverage,GroundFace
-from .portal_precision import PrecisionCheck,SourceSupport,retry_precision_gap,source_support
+from .ground_sweep import GroundCoverage,GroundFace,cross,hull
+from .portal_precision import PrecisionCheck,SourceSupport,plane,retry_precision_gap,source_support
 from .source_floor_chain import FloorChainStep
 from .fixed_route_follower import FixedRoute
 
@@ -58,14 +58,31 @@ class FloorTrial:
     source_support: SourceSupport | None = None
     precision_retry: PrecisionCheck | None = None
     excluded_baked_detail_ids: tuple[int, ...] = ()
+    reference_gap_seam_indices: tuple[int, ...] = ()
     input_authorized: bool = False
     real_client_accepted: bool = False
+
+
+def reference_gap_seams(faces,seams,reference,vertical_window):
+    """Attribute missing XY support to an exact modeled gap, never a Z mismatch."""
+    for face in faces:
+        triangle=hull(p[:2] for p in face.vertices)
+        surface=plane(face.vertices)
+        if (len(triangle)==3 and surface is not None
+                and all(cross(p,triangle[(i+1)%3],reference[:2])>=-1e-10 for i,p in enumerate(triangle))
+                and abs(surface[2](reference[:2])-reference[2])<=vertical_window):
+            return ()  # Existing in-window XY support means this is not a gap.
+    return tuple(i for i,seam in enumerate(seams)
+                 if seam.tile_boundary is not None
+                 and seam.tile_boundary.lower_tile_maximum<reference[seam.axis]<seam.tile_boundary.upper_tile_minimum
+                 and seam.span[0]<reference[1-seam.axis]<seam.span[1])
 
 
 def check_floor_trial(view, chain, original, footprint, detail_ids, *, reference,
                       component,vertical_window,maximum_source_z_difference,allow_overlap=False):
     """Return (proposed chain or None, complete conditional trial evidence)."""
-    allowed=('uncovered_ground_area','overlapping_ground_faces') if allow_overlap is True else ('uncovered_ground_area',)
+    allowed=('uncovered_ground_area','reference_ground_not_supported')
+    if allow_overlap is True:allowed+=('overlapping_ground_faces',)
     if not original.candidate and original.reason not in allowed:
         return None,FloorTrial(False,original.reason,original)
     try:
@@ -97,7 +114,7 @@ def check_floor_trial(view, chain, original, footprint, detail_ids, *, reference
     kept=tuple((face,poly) for i,face,poly in zip(detail_ids,faces,polygons) if i not in excluded)
     faces=tuple(face for face,_ in kept)
     polygons=tuple(poly for _,poly in kept)
-    coverage=original;precision=None
+    coverage=original;precision=None;reference_gaps=()
     if original.candidate:
         support=source_support(footprint,selected,faces,maximum_z_difference=maximum_source_z_difference)
     else:
@@ -105,16 +122,26 @@ def check_floor_trial(view, chain, original, footprint, detail_ids, *, reference
         possible=set().union(*(view.by_polygon.get(poly,set()) for poly in present))
         seams=tuple(view.seams[i] for i in sorted(possible)
                     if view.seams[i].source in present and view.seams[i].target in present)
+        retry_basis=original
+        if original.reason=='reference_ground_not_supported':
+            reference_gaps=reference_gap_seams(faces,seams,reference,vertical_window)
+            if not reference_gaps:
+                return None,FloorTrial(False,'reference_not_in_exact_tile_gap',original,step,
+                                       excluded_baked_detail_ids=excluded)
+            # The same original coverage has a proved XY gap at its reference.
+            # Preserve that attribution and require all usual corrected-height,
+            # coverage, source, area, component and exact-side checks below.
+            retry_basis=replace(original,reason='uncovered_ground_area')
         if not 1<=len(seams)<=8:
             precision=PrecisionCheck(False,'no_bounded_reciprocal_seam_set')
         else:
-            precision=retry_precision_gap(original,footprint,faces,polygons,seams,selected,
+            precision=retry_precision_gap(retry_basis,footprint,faces,polygons,seams,selected,
                 reference=reference,component=component,vertical_window=vertical_window,
                 maximum_source_z_difference=maximum_source_z_difference,allow_overlap=allow_overlap)
         if not precision.candidate:
-            return None,FloorTrial(False,precision.reason,original,step,precision.source_support,precision,excluded)
+            return None,FloorTrial(False,precision.reason,original,step,precision.source_support,precision,excluded,reference_gaps)
         coverage=precision.coverage;support=precision.source_support
     if support is None or not support.candidate:
         return None,FloorTrial(False,'source_support_missing' if support is None else support.reason,
-                               coverage,step,support,precision,excluded)
-    return proposed,FloorTrial(True,'conditional_source_and_baked_footprint_only',coverage,step,support,precision,excluded)
+                               coverage,step,support,precision,excluded,reference_gaps)
+    return proposed,FloorTrial(True,'conditional_source_and_baked_footprint_only',coverage,step,support,precision,excluded,reference_gaps)
