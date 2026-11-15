@@ -277,4 +277,10 @@ assert len(checks) == 35
         assert sha256((draft / name).read_bytes()).digest() == sha256((source / name).read_bytes()).digest()
     assert sha256((draft / 'rotation_engine.py').read_bytes()).hexdigest() == (
         'd4925d8250e69d6e631f64b4c7eea115b34473aef90d86c9838c045ad355309e')
-    assert json.loads((draft / 'BUILD_INFO.json').read_text())['version'] == '0.39.43'
+    info = json.loads((draft / 'BUILD_INFO.json').read_text())
+    assert info['version'] == '0.39.43' and info['source_version'] == '0.42.95'
+    assert 'F8 owner-targeted assist' in info['mode']
+    assert 'Butcherblock → Greater Faydark → Clan Crushbone itinerary, then stop without camping' in info['mode']
+    assert info['real_itinerary_acceptance'] is False
+    assert info['source_manifest_sha256'] == sha256((draft / 'SOURCE_HASHES.json').read_bytes()).hexdigest()
+    assert info['entry_sha256'] == sha256((draft / 'owner_nov12_entry.py').read_bytes()).hexdigest()

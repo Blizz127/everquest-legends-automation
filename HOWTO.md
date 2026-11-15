@@ -1,47 +1,59 @@
 # EverQuest Legends automation — current owner guide
 
-> **Development branch (`carbon/continue`, source `0.42.94`):** An optional
-> owner-command adapter now connects multiple crossings through fresh destination
-> measurements. It is an offline development API; no packaged GUI starts it yet.
-> The existing local preview **0.39.42 / source 0.42.92** remains separate and has
-> not been installed on Alienware. The last recorded installed helper remains
-> **0.39.41 / runtime 0.42.87**, described afterward. Full 1–50 automation remains
-> unfinished.
+> **Local preview 0.39.43 / source 0.42.95 (`carbon/continue`):** A separate
+> itinerary control requests Butcherblock → Greater Faydark → Clan Crushbone.
+> This development build has not been installed on Alienware. The last recorded
+> installed helper remains **0.39.41 / runtime 0.42.87**, described below.
+> Full 1–50 automation remains unfinished; real routes and server arrivals remain
+> unverified. STATUS.md records the current test results and limitations.
 
-An explicitly configured engine can accept this development command:
+In **Travel and camp test**, select **Butcherblock → Greater Faydark → Clan
+Crushbone…** to open the separate itinerary dialog. It starts near Goblin Camp
+in Butcherblock. Both declarations must be checked: the initial ground is open,
+flat and clear, and the owner will supervise the continuation. Cancelling the
+dialog sends no request. The trip uses its own fixed plan; the ordinary travel
+selector and next-camp checkbox do not select its route.
+
+One request covers two crossings and ten walking sections. The helper measures
+movement at intermediate stops and after entering Greater Faydark. The whole
+trip has a **5 hour 28 minute maximum**, including preparation; this is a limit,
+not an estimated travel time. Smaller child limits also apply. An unsupported
+arrival, changed owner state or failed check stops the trip. The final crossing
+stops in Clan Crushbone without combat or a camp. There is no saved-trip resume.
+
+The status badge shows the leg and stage, including initial preparation and
+release after cancellation. Other start controls are disabled while navigation
+is busy. **F8** requests assist after movement and its input lease are released.
+**F9 or F11** stops an active trip. F7 retains its assist toggle, and F10 retains
+its heal control. Assist uses the owner's current target and does not move,
+retarget, loot, sell or start a camp. These controls need no restart or login.
+
+For an explicitly configured development engine, the equivalent request is:
 
 ```python
 engine.post('zone_itinerary', {
-    'itinerary_id': selected_itinerary_id,
+    'itinerary_id': 'butcher-gfay-crushbone',
     'open_flat_clear': True,
     'owner_supervised_continuation': True,
 })
 ```
 
-This requires a `zone_itinerary_provider` passed to `make_owner_journey_engine()`.
-The provider must return an exact `ZoneItineraryPlan` with pinned adjacent legs,
-independent movement hypotheses, lazy destination assets and finite trip limits.
-There is no default provider or saved-trip resume. A command without that engine
-configuration does not start an itinerary. These declarations are requirements
-of the supervised development test, not evidence that an actual spawn is safe.
+The 0.39.43 entry wires `load_owner_zone_itinerary` into
+`make_owner_journey_engine(zone_itinerary_provider=...)`. Other callers must
+supply that optional provider explicitly. It checks the copied catalog, guide,
+section and crossing records before creating the trip; native destination
+geometry is loaded lazily under the same owner and budget. The plan's motion
+bounds remain hypotheses to check against fresh measurements.
 
-The adapter creates one trip budget before the initial measurement. It charges
-those seven probes, walking, section measurements, crossings and destination
-probes against the same original deadline and input limits. Each destination
-uses fresh planning, floor-capture and height pairs, seven new motion probes and
-a newly fitted onward route. The physical input observer and hazard history stay
-continuous; source-zone floor and steering state are discarded. The final
-crossing stops without starting a camp. The copied-file itinerary currently
-verified for adjacency is Butcherblock → Greater Faydark → Clan Crushbone;
-actual server arrivals and any transition-region egress remain unverified.
+The root budget starts before the original seven motion probes and charges all
+walking, section measurements, crossings and destination probes. After each
+intermediate crossing, fresh planning, floor-capture and height pairs and seven
+new probes establish the onward route. The physical input observer and hazard
+history stay continuous. A mode change revokes this job instead of posting a
+second one. Start, completion and stage changes appear in logs and trace records.
 
-F8 requests assist after navigation has released its keys and lease. F9 or F11
-stops an active itinerary; changing modes never starts a second trip job. The
-adapter emits itinerary start/completion messages and trace records. Existing
-single-crossing GUI choices below retain their current stop behavior.
-
-Local preview 0.39.42 keeps F8 assist, F7 toggle, F9 stop, F10 heal and F11
-camp/cancel. It adds these explicit choices in **Travel and camp test**:
+The ordinary choices introduced in 0.39.42 remain available in 0.39.43 under
+**Travel and camp test**:
 
 | Start | Destination choices | Result |
 | --- | --- | --- |
@@ -50,8 +62,8 @@ camp/cancel. It adds these explicit choices in **Travel and camp test**:
 | Near Orc Camps in GFay | Crushbone approach or cross into Crushbone | Stop before the line, or cross and stop after two fresh destination location replies. |
 | Inside GFay near the Butcherblock entrance | Crushbone approach or cross into Crushbone | Follow the longer GFay route, then stop before the line or after confirmed crossing. |
 
-Movement and crossing choices disable next-camp continuation. A crossing starts
-no camp and does not continue into another zone. Travel rechecks the current
+These individual movement and crossing choices disable next-camp continuation.
+An individual crossing starts no camp and stops after that crossing. Travel rechecks the current
 position and measures movement for each section; a failed or cancelled trip
 stops. Orc Camps requires observed GFay NPC history and fresh target checks.
 The next-camp lookup uses GFay's own pinned annotations and currently finds no
@@ -61,16 +73,16 @@ suitability remain unverified.
 For a **local build only**, from this checkout (use a new output directory):
 
 ```bash
-python3 tools/build_nov12_preview_03942.py \
+python3 tools/build_nov12_preview_03943.py \
   --source "$HOME/.local/share/eql-automation/owner-assist/0.39.13" \
-  --output "$HOME/.local/share/eql-automation/owner-build-drafts/0.39.42-local"
+  --output "$HOME/.local/share/eql-automation/owner-build-drafts/0.39.43-local"
 ```
 
 This creates a separate pinned preview from the retained helper; it does not
 install it on Alienware or start an engine. The existing installed launch command
 and controls remain below.
 
-**This guide describes owner 0.39.41 / runtime 0.42.87.**
+**Installed helper instructions: owner 0.39.41 / runtime 0.42.87.**
 Installation status is recorded in STATUS.md. After installation, the receipt
 on Alienware is `~/.local/share/eql-automation/owner-build-drafts/eql-owner-journey-0.39.41-installed.json`.
 Owner 0.39.40 / runtime 0.42.86 remains available at its prior versioned path.
