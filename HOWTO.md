@@ -1,47 +1,82 @@
 # EverQuest Legends automation — current owner guide
 
-> **Local preview 0.39.43 / source 0.42.95 (`carbon/continue`):** A separate
-> itinerary control requests Butcherblock → Greater Faydark → Clan Crushbone.
+> **Local preview 0.39.44 / source 0.42.96 (`carbon/continue`):** Separate
+> itinerary controls either stop in Clan Crushbone or continue to Slave Mines
+> and start a stationary camp.
 > This development build has not been installed on Alienware. The last recorded
 > installed helper remains **0.39.41 / runtime 0.42.87**, described below.
-> Full 1–50 automation remains unfinished; real routes and server arrivals remain
-> unverified. With synthetic game feedback, an unprofiled private-display test
-> reaches the first crossing and releases for assist. Profiled runs still hit
-> input deadlines. This preview has no accepted real-client itinerary run.
+> Full 1–50 automation remains unfinished; real routes, server arrivals and camp
+> suitability remain unverified. This preview has no accepted real-client
+> itinerary or terminal-camp run and has not been deployed.
 > STATUS.md records the test results and next work.
 
-In **Travel and camp test**, select **Butcherblock → Greater Faydark → Clan
-Crushbone…** to open the separate itinerary dialog. It starts near Goblin Camp
-in Butcherblock. Both declarations must be checked: the initial ground is open,
-flat and clear, and the owner will supervise the continuation. Cancelling the
-dialog sends no request. The trip uses its own fixed plan; the ordinary travel
-selector and next-camp checkbox do not select its route.
+In **Travel and camp test**, both itinerary actions start near Goblin Camp in
+Butcherblock. Each opens its own dialog and uses a fixed route. The ordinary
+travel selector and next-camp checkbox do not select either itinerary's route.
 
-One request covers two crossings and ten walking sections. The helper measures
-movement at intermediate stops and after entering Greater Faydark. The whole
-trip has a **5 hour 28 minute maximum**, including preparation; this is a limit,
-not an estimated travel time. Smaller child limits also apply. An unsupported
-arrival, changed owner state or failed check stops the trip. The final crossing
-stops in Clan Crushbone without combat or a camp. There is no saved-trip resume.
+| Action | Result |
+| --- | --- |
+| **Butcherblock → Greater Faydark → Clan Crushbone…** | The existing stop-only itinerary: cross both zone lines, then stop in Clan Crushbone without combat or camping. Confirm with **Start itinerary, then stop**. |
+| **Butcherblock → Greater Faydark → Crushbone → Slave Mines camp…** | Cross both zone lines, measure movement again in Crushbone, travel to Slave Mines, then prepare learned spells and start stationary camping. Confirm with **Start itinerary, then camp**. |
 
-The status badge shows the leg and stage, including initial preparation and
-release after cancellation. Other start controls are disabled while navigation
-is busy. **F8** requests assist after movement and its input lease are released.
-**F9 or F11** stops an active trip. F7 retains its assist toggle, and F10 retains
-its heal control. Assist uses the owner's current target and does not move,
-retarget, loot, sell or start a camp. These controls need no restart or login.
+Both dialogs require declarations that the starting area is clear, flat and
+open and that the owner will supervise the trip, including new measurements.
+The terminal-camp dialog explicitly includes supervising the stationary camp.
+Start stays disabled until both declarations are checked. Cancelling sends no
+request. Test the configured `/location` hotbutton first, then close the map
+and chat, clear your target and turn native melee off. Focus the game during
+the four-second countdown; seven short motion probes follow. Stay present.
 
-For an explicitly configured development engine, the equivalent request is:
+The original stop-only request still covers two crossings and ten walking
+sections, with fresh measurements at intermediate stops and after entering
+Greater Faydark. Its **5 hour 28 minute maximum** includes preparation and is
+a limit, not an estimated travel time. Its behavior is unchanged, and it stays
+available at configured levels 20 and 50.
+
+The new terminal-camp action requires a configured **integer level 1–19**.
+The button and provider reject any other value; acceptance rechecks the level
+when the dialog closes. This admission range is not a camp-suitability claim.
+After the second crossing, fresh Crushbone position, floor and height readings
+and seven new motion probes establish the third leg to Slave Mines. Ordinary
+conditional steps along that guide require current position, floor and motion
+checks and share the original navigation limits.
+
+The terminal itinerary has a **6 hour 18 minute navigation maximum**, covering
+initial preparation, both crossings, intermediate measurements and travel to
+Slave Mines. This is not an ETA and excludes subsequent stationary camping,
+which retains its own existing limits. Smaller limits within each stage still
+apply. A fresh stopped arrival transfers to new learned-spell preparation and
+stationary camping using observed NPC names and fresh target checks. Camping
+stops at an **observed level 20** or a failed check. Next-camp continuation is
+always off (`continue_camps=False`), regardless of the ordinary checkbox; this
+action never automatically relocates to a later camp.
+
+An unsupported arrival, changed owner state or failed check stops either trip.
+There is no saved-trip resume. The existing stop-only action never starts the
+third leg or a camp.
+
+Both status badges show the leg and stage, including initial preparation and
+release after cancellation. The terminal approach shows **leg 3/3**, then the
+usual **CAMP TEST** status after camp startup. Other travel-start controls are disabled
+while navigation is busy. **F8** requests assist after movement and its input
+lease are released. **F9 or F11** stops an active trip or camp. F7 retains its
+assist toggle, and F10 retains its heal control. Assist uses the owner's
+current target and does not move, retarget, loot, sell or start a camp. These
+controls need no restart or login. F12 remains disabled.
+
+For an explicitly configured development engine, the terminal-camp request is:
 
 ```python
 engine.post('zone_itinerary', {
-    'itinerary_id': 'butcher-gfay-crushbone',
+    'itinerary_id': 'butcher-gfay-crushbone-slave-mines-camp',
     'open_flat_clear': True,
     'owner_supervised_continuation': True,
 })
 ```
 
-The 0.39.43 entry wires `load_owner_zone_itinerary` into
+Use `itinerary_id='butcher-gfay-crushbone'` with the same two declarations for
+the unchanged stop-only request. The 0.39.44 entry wires the same
+`load_owner_zone_itinerary` provider into
 `make_owner_journey_engine(zone_itinerary_provider=...)`. Other callers must
 supply that optional provider explicitly. It checks the copied catalog, guide,
 section and crossing records before creating the trip; native destination
@@ -55,7 +90,12 @@ new probes establish the onward route. The physical input observer and hazard
 history stay continuous. A mode change revokes this job instead of posting a
 second one. Start, completion and stage changes appear in logs and trace records.
 
-The ordinary choices introduced in 0.39.42 remain available in 0.39.43 under
+Historical **0.39.43 / source 0.42.95** evidence used synthetic game feedback:
+the unprofiled private-display checks reached the first crossing and released
+for assist, while a profiled run still hit an input deadline. That evidence
+does not establish actual client travel or the new terminal-camp route.
+
+The ordinary choices introduced in 0.39.42 remain available in 0.39.44 under
 **Travel and camp test**:
 
 | Start | Destination choices | Result |
@@ -76,9 +116,9 @@ suitability remain unverified.
 For a **local build only**, from this checkout (use a new output directory):
 
 ```bash
-python3 tools/build_nov12_preview_03943.py \
+python3 tools/build_nov12_preview_03944.py \
   --source "$HOME/.local/share/eql-automation/owner-assist/0.39.13" \
-  --output "$HOME/.local/share/eql-automation/owner-build-drafts/0.39.43-local"
+  --output "$HOME/.local/share/eql-automation/owner-build-drafts/0.39.44-local"
 ```
 
 This creates a separate pinned preview from the retained helper; it does not

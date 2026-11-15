@@ -1,0 +1,137 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -76,6 +76,33 @@
+             "This is a maximum limit, not a travel-time estimate. "
+             "Actual routes and server arrivals remain unverified. Stay present throughout. "
+             "F8 switches to assist after movement releases; F9/F11 stops.")
++
++
++def owner_terminal_itinerary_help():
++    """Describe the separate terminal-camp selection without opening assets."""
++    from eql_automation.owner_zone_itinerary_assets import OWNER_TERMINAL_ITINERARY_MAXIMUM_SECONDS
++    minutes = int((OWNER_TERMINAL_ITINERARY_MAXIMUM_SECONDS + 59) // 60)
++    hours, minutes = divmod(minutes, 60)
++    duration = f"{hours} hours {minutes} minutes" if hours else f"{minutes} minutes"
++    return ("Start near Goblin Camp in Butcherblock Mountains. Cross Greater Faydark and enter Clan Crushbone, "
++            "measure movement again, then travel to Slave Mines. After a fresh stopped arrival, the helper "
++            "prepares learned spells again and starts a stationary camp using observed NPC names and fresh target checks. "
++            "The configured level must be 1–19. Camping stops at observed level 20 or a failed check; it never travels "
++            "to another camp. "
++            f"Navigation is capped at {duration}, including measurements and crossings. This maximum is not a "
++            "travel-time estimate and does not include subsequent camping. "
++            "Actual routes, arrivals and camp suitability remain unverified; this is not verified 1–50 automation. "
++            "Stay present. F8 switches to assist after movement releases; F9/F11 stops travel or camping.")
++
++
++def owner_terminal_itinerary_selected(autopilot):
++    from eql_automation.owner_zone_itinerary_assets import OWNER_TERMINAL_ITINERARY_ID
++    trip = autopilot.get("zone_itinerary")
++    return isinstance(trip, dict) and trip.get("record_id") == OWNER_TERMINAL_ITINERARY_ID
++
++
++def terminal_itinerary_level_allowed(level):
++    return type(level) is int and 1 <= level < 20
+ 
+ 
+ def owner_itinerary_progress(autopilot):
+@@ -433,6 +460,9 @@
+                 widget.currentIndexChanged.connect(self.changed)
+             for widget in [self.smart_heal, self.stuns, self.bash]:
+                 widget.toggled.connect(self.changed)
++            if not measurement_only:
++                self.level.valueChanged.connect(lambda *_: self.render_autopilot(
++                    self.last_state.get("autopilot") or {"state": "off"}))
+             if smoke_path is None:
+                 self.worker = Worker(settings)
+                 self.worker.updated.connect(self.update_state)
+@@ -522,6 +552,16 @@
+             self.zone_itinerary_help.setObjectName("zoneItineraryHelp")
+             self.zone_itinerary_help.setWordWrap(True)
+             column.addWidget(self.zone_itinerary_help)
++            self.terminal_itinerary_start = QPushButton("Butcherblock → Greater Faydark → Crushbone → Slave Mines camp…")
++            self.terminal_itinerary_start.setObjectName("terminalItineraryButton")
++            self.terminal_itinerary_start.setToolTip("Requires configured level 1–19. After travel, prepare learned spells and camp; stop at observed level 20. F8 assist; F9/F11 stop.")
++            self.terminal_itinerary_start.setEnabled(terminal_itinerary_level_allowed(self.settings.level))
++            self.terminal_itinerary_start.clicked.connect(self.configure_terminal_itinerary)
++            column.addWidget(self.terminal_itinerary_start)
++            self.terminal_itinerary_help = QLabel(owner_terminal_itinerary_help())
++            self.terminal_itinerary_help.setObjectName("terminalItineraryHelp")
++            self.terminal_itinerary_help.setWordWrap(True)
++            column.addWidget(self.terminal_itinerary_help)
+             column.addWidget(QLabel("Travel destination"))
+             self.source_destination = QComboBox()
+             self.source_destination.setObjectName("journeyDestinationBox")
+@@ -788,6 +828,7 @@
+                 self.supervised_source.setEnabled(not busy)
+                 self.test_location_hotkey.setEnabled(not busy)
+                 self.zone_itinerary_start.setEnabled(not busy)
++                self.terminal_itinerary_start.setEnabled(not busy and terminal_itinerary_level_allowed(self.settings.level))
+                 self.stationary_camp.setText("Stop travel  ·  F11" if itinerary is not None or autopilot.get("journey_phase") in
+                     {"setup", "travel", "handoff", "source_crossing_handoff", "source_crossing", "zone_itinerary"}
+                     else "Repeat stationary camp  ·  F11")
+@@ -829,7 +870,9 @@
+             parts = [f"Zone: {guide.zone_long(zone) if guide and zone else zone or 'unknown'}",
+                      f"Position: {loc[0]:.0f}, {loc[1]:.0f}" if loc else "Position: —"]
+             if itinerary is not None:
+-                self.ap_info.setText("   ·   ".join(parts + [itinerary, "Finish in Clan Crushbone, then stop · no camp"]))
++                ending = ("Slave Mines · prepare learned spells, then stationary camp · stops at observed level 20"
++                          if owner_terminal_itinerary_selected(autopilot) else "Finish in Clan Crushbone, then stop · no camp")
++                self.ap_info.setText("   ·   ".join(parts + [itinerary, ending]))
+                 return
+             if not measurement_only:
+                 arrived = autopilot.get("arrival_destination")
+@@ -940,6 +983,43 @@
+                 description = gfay_destination_help(self.source_destination.currentData())
+                 if description is not None:
+                     self.travel_help.setText(description)
++
++        def configure_terminal_itinerary(self):
++            from eql_automation.owner_zone_itinerary_assets import OWNER_TERMINAL_ITINERARY_ID
++            if (not self.terminal_itinerary_start.isEnabled()
++                    or not terminal_itinerary_level_allowed(self.settings.level)):
++                return
++            dialog = QDialog(self)
++            dialog.setObjectName("terminalItineraryDialog")
++            dialog.setMinimumWidth(640)
++            dialog.setWindowTitle("Butcherblock → Greater Faydark → Slave Mines in Crushbone, then camp")
++            layout = QVBoxLayout(dialog)
++            text = QLabel(owner_terminal_itinerary_help() + "\n\nFirst test your /location hotbutton with the map visible. "
++                          "Then close the map and chat, clear your target and turn melee off. "
++                          "Seven short calibration presses follow the four-second focus countdown.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            ground = QCheckBox("The starting area is clear, flat and open.")
++            ground.setObjectName("terminalItineraryGroundDeclaration")
++            supervision = QCheckBox("I will supervise all travel, new measurements and the stationary camp.")
++            supervision.setObjectName("terminalItinerarySupervisionDeclaration")
++            layout.addWidget(ground)
++            layout.addWidget(supervision)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Start itinerary, then camp")
++            ok.setEnabled(False)
++            def ready():
++                ok.setEnabled(ground.isChecked() and supervision.isChecked())
++            ground.toggled.connect(ready)
++            supervision.toggled.connect(ready)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if (dialog.exec() == QDialog.DialogCode.Accepted and ground.isChecked() and supervision.isChecked()
++                    and self.terminal_itinerary_start.isEnabled() and terminal_itinerary_level_allowed(self.settings.level)):
++                self.post("zone_itinerary", dict(itinerary_id=OWNER_TERMINAL_ITINERARY_ID,
++                    open_flat_clear=True, owner_supervised_continuation=True))
+ 
+         def configure_zone_itinerary(self):
+             from eql_automation.owner_zone_itinerary_assets import OWNER_ITINERARY_ID
+@@ -1252,6 +1332,10 @@
+                     "itinerary_button_enabled": window.zone_itinerary_start.isEnabled(),
+                     "itinerary_button_text": window.zone_itinerary_start.text(),
+                     "itinerary_help": window.zone_itinerary_help.text(),
++                    "terminal_itinerary_button_visible": window.terminal_itinerary_start.isVisible(),
++                    "terminal_itinerary_button_enabled": window.terminal_itinerary_start.isEnabled(),
++                    "terminal_itinerary_button_text": window.terminal_itinerary_start.text(),
++                    "terminal_itinerary_help": window.terminal_itinerary_help.text(),
+                     "journey_destination_ids": [window.source_destination.itemData(i) for i in range(window.source_destination.count())],
+                     "journey_destination_current": window.source_destination.currentData(),
+                     "journey_destination_help": window.travel_help.text(),
