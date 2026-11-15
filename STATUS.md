@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-15 00:28 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 00:40 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -54,12 +54,16 @@ Updated 2026-11-15 00:28 UTC for coordinator task `829a00229b29`.
   `ea6b6e0a612e514f30a5ad0111dff7553cd82b448ba564d98020d41b7923374d`.
   No body, region, source-layer or input bound was widened. No complete Goblin
   route or new owner destination is enabled; timeout is not disconnection proof.
-- **Next:** apply bounded fixed-center exclusions to the retained continuation;
-  investigate its actual carried edge if centers are clear. Require complete
-  geometry/startup checks before owner registration. Skeleton camp, Trainer
-  and zone crossings remain gaps. Real level, XP, XP/hour, deaths and camp stay
-  unknown; owner trace unchanged after 2026-11-14 19:31 UTC. G0 passed.
-  No lead input, login, helper restart, character or prefix change.
+- **Source 0.42.78 built locally; publication in progress.** VERIFIED 23
+  focused checks. All 167 remaining graph centers are clear; all seven initial
+  direct shortcuts hit static geometry. Checked alternative departures reject
+  four blocked options, then reach face (822,51). Full checking gets to operation
+  504 before another static refusal. No full Goblin route is enabled.
+- **Next:** run a navmesh continuation from the replayed source prefix, using
+  its source height and the same full geometry checks. Alienware capacity allows
+  one low-priority offline job; keep client/prefix untouched. Whole-route and
+  owner startup checks remain required before registration. Real level, XP,
+  XP/hour, deaths and camp stay unknown. G0 passed; no repeat.
 
 
 

@@ -1,10 +1,10 @@
 # EverQuest Legends automation — current owner guide
 
-Owner test **0.39.35** · runtime **0.42.75** · offline tools **0.42.77** · retained assist **0.39.13**.
+Owner test **0.39.35** · runtime **0.42.75** · offline tools **0.42.78** · retained assist **0.39.13**.
 Publication status and evidence are recorded in STATUS.md.
 
-Offline tools 0.42.77 improve route discovery and retain checked detours across
-search attempts. This adds no owner destination or new test requirement; use
+Offline tools 0.42.78 search alternative departures and navmesh continuations
+while preserving checked route prefixes. This adds no owner destination or new test requirement; use
 the existing 0.39.35 launch command below. The complete 1–20 route remains unfinished.
 
 **G0 passed, including the visible stop. Do not repeat it.** The complete 1–20

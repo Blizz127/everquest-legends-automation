@@ -1,5 +1,54 @@
 # FINDINGS
 
+## 2026-11-15 00:40 UTC — source 0.42.78 alternate departures and suffix searches
+
+VERIFIED **23 focused checks pass** for shortcuts, retained-prefix replay,
+checkpoint writing and alternate departures. Source commit `37e602b`.
+The default source graph remains unchanged. Optional suffix smoothing checks
+terrain/static direct sweeps up to 40 units; the final complete source/BSP/native
+rebuild remains mandatory. Only new suffix hints are compacted, preserving every
+replayed detour cap. Provenance binds the input/output suffix, evidence and carried
+floor proof. Distant-endpoint scans check context at bounded intervals and before
+every geometry query, avoiding unnecessary complete-guide snapshots.
+
+Actual copied-data results, all **refused** with no owner destination enabled:
+
+- `butcher-newbie-goblin-transit-20261115-center-filter.json`, SHA
+  `5668b26dd24e97c55898c397cf20b753d561bab84ca0c9dc87062748d4f900e0`:
+  all 167 suffix centers have clear footprints; full route still hits a placed
+  object at 454. The center itself is not a demonstrated obstruction.
+- `…-smooth-suffix.json`, SHA
+  `2499dadde3c52aedbc6d90c7cc49605ed33f7ae9630ca04446b7e298525f5e03`:
+  all seven direct first-shortcut candidates fail explicit static checking.
+- `…-departure-filter.json`, SHA
+  `403dae702caff295059d2d95883923301bf9f01b35392c9bac4a8822c3157716`:
+  four checked departure attempts hit static geometry; the fifth passes all
+  departure source/static/BSP/native checks. There are 32 checked queries across
+  the attempts. Its end is `(-395.3958333333333,404.5833333333333)` on source face
+  `(822,51)`, matching the proposal destination and the sole actually selected
+  end face. Complete route checking advances to operation **504**, then refuses
+  another static collision (143.27 wall / 70.21 CPU seconds).
+
+The last run used the prototype departure checker. Before release, an explicit
+point-specific destination-floor guard was added, shared graph time is limited to
+the remaining departure budget, and requested/effective start-attachment flags are
+distinguished. The new mismatched-destination regression passes. Query, region,
+layer and resource failures never become obstacle exclusions. Negative witnesses
+stay scoped to the original carried prefix; no new seed or physical-disconnection
+claim is produced. Earlier local-detour body-band counters merge terrain/static;
+only their initial explicit static errors were proven static.
+
+Mesh proposals can now restart from a replayed prefix using its actual source
+height instead of the original Newbie start. This remains proposal data: complete
+geometry checks from the original source prefix are required. The next run will
+exercise this continuation. Alienware has 24 CPUs, load about 2.02 and 14.2 GiB
+available memory; one low-priority, single-thread offline job fits the observed
+capacity. No client input or installed-game writes are involved.
+
+Source 0.42.78 is built locally; private publication follows. Owner 0.39.35 /
+runtime 0.42.75 remains unchanged. The real 1–20 and fresh 1–50 goals remain unmet;
+level, XP/hour, deaths and camp are unknown. G0 stays passed and must not repeat.
+
 ## 2026-11-15 00:28 UTC — source tools 0.42.77 privately installed; continuation remains refused
 
 VERIFIED additive installation at Alienware
