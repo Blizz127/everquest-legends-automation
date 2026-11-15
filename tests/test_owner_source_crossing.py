@@ -101,7 +101,14 @@ def test_staged_butcher_gfay_corridor_spec_rebuilds_live_crossing_cells_on_butch
     assert cells[-1].record()['possible_transition_regions'] == [3077]
 
 
-def _configure_sectioned_crossing(h, monkeypatch, *, sectioned=False):
+def _configure_sectioned_crossing(h, monkeypatch, *, sectioned=False,
+                                  destination_id='butcher-gfay-crossing'):
+    source = destination_spec(destination_id)
+    destination_zone, destination_zone_id, destination_name = {
+        'butcher-gfay-crossing': ('gfaydark', 54, 'The Greater Faydark'),
+        'gfay-crushbone-crossing': ('crushbone', 58, 'Clan Crushbone'),
+    }[destination_id]
+    source_name = 'Fixture' if source.zone == 'butcher' else 'The Greater Faydark'
     model = files(h.game, monkeypatch)
     old = h.loader
     split_y = 278. if sectioned else 228.
@@ -116,16 +123,16 @@ def _configure_sectioned_crossing(h, monkeypatch, *, sectioned=False):
     )
     classifier = view(nodes, wld_pin=old.pins[2])
     ordinary = NativeZeroRegionTrialPolicy(
-        *old.pins, bsp.inventory_sha256, classifier.inventory_sha256, classifier, zone='butcher',
+        *old.pins, bsp.inventory_sha256, classifier.inventory_sha256, classifier, zone=source.zone,
     )
     line = ExpectedZoneLine(
-        'butcher-gfay-synthetic-v1', 'butcher',
+        destination_id.removesuffix('-crossing') + '-synthetic-v1', source.zone,
         old.pins[0], old.pins[1], old.pins[2], bsp.inventory_sha256, 'f' * 64,
         'DRNTP00255000001', 2, (1,), (2,),
     )
     planner = CurrentStartPlanner(
         mesh=old.mesh, ground=old.ground, source=old.source, static=old.static, bsp=bsp,
-        zone_short_name='butcher', expected_zone_id=68, expected_zone_name='Fixture',
+        zone_short_name=source.zone, expected_zone_id=source.zone_id, expected_zone_name=source_name,
         mesh_sha256=old.pins[0], source_archive_sha256=old.pins[1],
         source_wld_sha256=old.pins[2], static_inventory_sha256=old.pins[3],
         region_policy=ordinary,
@@ -134,10 +141,10 @@ def _configure_sectioned_crossing(h, monkeypatch, *, sectioned=False):
     h.loading[0] = lambda: planner
     h.engine._close_zone_tracker()
     (h.game / 'Resources/ZoneNames.txt').write_text(
-        '68^Fixture^0^0\n54^The Greater Faydark^0^0\n'
+        f'{source.zone_id}^{source_name}^0^0\n{destination_zone_id}^{destination_name}^0^0\n'
     )
     h.engine._service_zone_tracker()
-    h.append('You have entered Fixture.')
+    h.append(f'You have entered {source_name}.')
     h.engine._service_zone_tracker()
 
     from eql_automation.source_itinerary import SourceItineraryGuide
@@ -165,18 +172,18 @@ def _configure_sectioned_crossing(h, monkeypatch, *, sectioned=False):
         )
 
     itinerary_guide = SourceItineraryGuide(
-        'butcher', planner.pins[2], planner.pins[3], 'e' * 64, 1.2, 6.,
+        source.zone, planner.pins[2], planner.pins[3], 'e' * 64, 1.2, 6.,
         (396.5, goal_y),
         tuple(SourceWalkHint((396.5, a), (396.5, b)) for a, b in zip(waypoints, waypoints[1:])),
     )
     assets = SourceDestinationAssets(
-        planner, itinerary_guide, 'Synthetic Butcher -> GFay crossing',
+        planner, itinerary_guide, f'Synthetic {source.zone} -> {destination_zone} crossing',
         encoded(dict(
             synthetic=True,
-            destination_id='butcher-gfay-crossing',
+            destination_id=destination_id,
             guide_sha256=sha256(encoded(itinerary_guide.record())).hexdigest(),
         )),
-        'butcher-gfay-crossing',
+        destination_id,
     )
     if sectioned:
         prefix = SourceFloorChain(
@@ -202,24 +209,24 @@ def _configure_sectioned_crossing(h, monkeypatch, *, sectioned=False):
         h.engine._test_walking_partition = lambda _d: None
 
     corridor_spec = PinnedSourceCrossingSpec(
-        destination_id='butcher-gfay-crossing',
-        zone='butcher',
-        destination='The Greater Faydark',
-        destination_zone_id=54,
-        destination_zone='gfaydark',
+        destination_id=destination_id,
+        zone=source.zone,
+        destination=destination_name,
+        destination_zone_id=destination_zone_id,
+        destination_zone=destination_zone,
         provenance_sha256='e' * 64,
         start_xy=(396.5, goal_y),
         transition_endpoint=(396.5, end_y),
         cell_segments=cell_segments,
         expected_zone_line=line,
         corridor_file_sha256='d' * 64,
-        source_evidence=encoded(dict(synthetic=True, destination='The Greater Faydark')),
+        source_evidence=encoded(dict(synthetic=True, destination=destination_name)),
     )
 
     h.source_loading[0] = lambda: assets
     monkeypatch.setattr(
         h.engine, '_source_crossing_spec',
-        lambda dest_id: corridor_spec if dest_id == 'butcher-gfay-crossing' else None,
+        lambda dest_id: corridor_spec if dest_id == destination_id else None,
     )
 
     import eql_automation.owner_source_runtime as initial_route
@@ -257,8 +264,8 @@ def _configure_sectioned_crossing(h, monkeypatch, *, sectioned=False):
         if not zoned[0] and res['touches_line']:
             zoned[0] = True
             h.append('LOADING, PLEASE WAIT...')
-            h.append('You have entered The Greater Faydark.')
-            # Destination spawn coordinates in GFaydark:
+            h.append(f'You have entered {destination_name}.')
+            # Deliberately unrelated synthetic spawn, not a real server spawn.
             h.point = [-1628., 2642., .5]
         return res
 
@@ -299,9 +306,15 @@ def _finish_journey(h, timeout=240.):
 
 
 @pytest.mark.parametrize('h', ['walking_sections'], indirect=True)
-@pytest.mark.parametrize('sectioned', [False, True])
-def test_owner_sectioned_travel_crosses_zone_and_discards_source_floor(h, monkeypatch, sectioned):
-    _configure_sectioned_crossing(h, monkeypatch, sectioned=sectioned)
+@pytest.mark.parametrize('destination_id,sectioned', [
+    ('butcher-gfay-crossing', False),
+    ('butcher-gfay-crossing', True),
+    ('gfay-crushbone-crossing', False),
+])
+def test_owner_sectioned_travel_crosses_zone_and_discards_source_floor(
+        h, monkeypatch, destination_id, sectioned):
+    spec = _configure_sectioned_crossing(h, monkeypatch, sectioned=sectioned,
+                                        destination_id=destination_id)
     e = h.engine
     captured_runs = []
     orig_start = e._start_source_crossing_from_arrival
@@ -313,16 +326,17 @@ def test_owner_sectioned_travel_crosses_zone_and_discards_source_floor(h, monkey
 
     monkeypatch.setattr(e, '_start_source_crossing_from_arrival', capture_start)
 
-    start(h, 'butcher-gfay-crossing')
+    start(h, destination_id)
     h.due_trial()
     result = _finish_journey(h)
 
     assert result is not None and result['phase'] == 'crossed_zone', (
         '\n'.join(map(str, h.notices)) + '\n' + str(result)
     )
-    assert result['destination'] == 'The Greater Faydark'
-    assert result['destination_zone'] == 'gfaydark'
-    assert result['destination_zone_id'] == 54
+    assert result['destination_id'] == destination_id
+    assert result['destination'] == spec.destination
+    assert result['destination_zone'] == spec.destination_zone
+    assert result['destination_zone_id'] == spec.destination_zone_id
     assert result['source_floor_discarded'] is True
     assert result['source_navigation_state_reused'] is False
     assert result['camp_started'] is False
@@ -330,10 +344,14 @@ def test_owner_sectioned_travel_crosses_zone_and_discards_source_floor(h, monkey
     assert len(captured_runs) == 1
     cr = captured_runs[0]
     assert cr.closed and cr.monitor.closed and not cr.checkpoint.valid
-    assert e.zone == 'gfaydark'
+    assert cr.checkpoint._policy.zone == destination_spec(destination_id).zone
+    assert e.zone == spec.destination_zone
     assert e.journey is None and e.source_crossing_run is None and e.section_run is None
     assert e.live_zone_tracker.lease is None
-    assert e.live_zone_tracker.reader.zone_id == 54
+    assert e.live_zone_tracker.reader.zone_id == spec.destination_zone_id
+    assert len(result['arrival_positions']['raw_fixes']) == 2
+    assert all(fix['zone_id'] == spec.destination_zone_id
+               for fix in result['arrival_positions']['raw_fixes'])
     assert not h.sender.held and h.observer_closed and not h.commands
 
 
@@ -369,3 +387,122 @@ def test_owner_stop_and_assist_cancel_active_source_crossing_immediately(h, monk
     h.drain()
     assert e.active is (action == 'arm')
     assert not h.commands
+
+
+@pytest.mark.parametrize('boundary,action', [
+    ('snapshot', 'stop'), ('snapshot', 'arm'),
+    ('positions', 'stop'), ('positions', 'arm'),
+    ('release', 'stop'), ('release', 'arm'),
+    (None, None),
+])
+def test_owner_crossing_completion_preserves_owner_mode(h, action, boundary):
+    """Exercise terminal ownership transfer separately from timed pipe movement."""
+    from eql_automation.owner_journey_runtime import Journey
+    from eql_automation.owner_navigation_preflight import settings_identity
+
+    e = h.engine
+    e.prepared = True
+    e.prepared_level = 7
+    e.cancelled = False
+    j = Journey(e.cancel_generation, settings_identity(e.settings), 'source_crossing',
+                destination_id='butcher-gfay-crossing')
+    e.journey = j
+    seen = []
+
+    def interrupt(where):
+        if where == boundary and not seen:
+            seen.append(where)
+            if action == 'arm':
+                e.handle_job('arm', e.cancel_generation)
+            else:
+                e.stop_action('F9 during crossing completion')
+
+    def positions():
+        interrupt('positions')
+        return {'outcome': 'complete'}
+
+    class CompletedCrossing:
+        """Terminal producer only; the real engine owns stop/assist behavior."""
+        journey = j
+        generation = j.generation
+        destination_id = j.destination_id
+        phase, closed, busy = 'complete', False, False
+        corridor_spec = SimpleNamespace(destination='The Greater Faydark',
+            destination_zone='gfaydark', destination_zone_id=54)
+        corridor = SimpleNamespace(corridor_sha256='a'*64,
+            line=SimpleNamespace(sha256='b'*64),
+            arrival=SimpleNamespace(collector=SimpleNamespace(snapshot=positions)))
+
+        def snapshot(self):
+            snapshot = {'phase': self.phase}
+            interrupt('snapshot')
+            return snapshot
+
+        def cancel(self, reason):
+            if not self.closed:
+                self.phase = 'stopped'
+
+        def release(self, *, close_observer=True):
+            if not self.closed:
+                assert not h.sender.held
+                self.closed = True
+                interrupt('release')
+
+    r = CompletedCrossing()
+    e.source_crossing_run = r
+    e._finish_source_crossing(r)
+    h.tick()
+    h.drain()
+    assert seen == ([] if boundary is None else [boundary])
+    assert e.active is (action == 'arm')
+    assert e.source_crossing_run is None and e.journey is None and r.closed
+    assert e.journey_last_result['phase'] == ('crossed_zone' if boundary is None else 'stopped')
+    assert any(name == 'journey_zone_crossing_completed' for name, _ in h.traces) is (boundary is None)
+    assert not h.sender.held and not h.commands
+
+
+@pytest.mark.parametrize('cause', ('focus', 'owner'))
+@pytest.mark.parametrize('outcome', ('ready', 'complete'))
+def test_crossing_tick_rechecks_physical_state_before_movement_or_completion(cause, outcome):
+    from eql_automation.g2_safety_provider import GameWindowIdentity
+    from eql_automation.g2_scene_observer import G2ObservationUnavailable
+    from eql_automation.owner_input_observer import OwnerInputObservation
+    from eql_automation.owner_source_crossing import OwnerSourceCrossingRuntime
+
+    state = {'changed': False}
+    r = OwnerSourceCrossingRuntime.__new__(OwnerSourceCrossingRuntime)
+    r.closed, r.busy, r.phase = False, False, 'crossing'
+    r.owner_binding, r.topology = ('synthetic-owner',), 1
+    r.window = GameWindowIdentity(42, 10, 100)
+    window = SimpleNamespace(id=42)
+    r.gate = SimpleNamespace(windows=lambda: [window],
+        focused_window=lambda: None if state['changed'] and cause == 'focus' else window,
+        game_session=lambda: {'pid': 10, 'start_ticks': '100'}, controls_ready=lambda: True)
+
+    def context():
+        r.last_at = time.monotonic()
+        return r.owner_binding
+
+    def sample():
+        now = time.monotonic()
+        return OwnerInputObservation(now, now, 1, True, 1, 0,
+            state['changed'] and cause == 'owner', 0, 'synthetic-device')
+
+    def tick():
+        state['changed'] = True
+        return None
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError('Movement or completion reached after physical state changed')
+
+    def cancel(reason):
+        r.phase, r.reason = 'stopped', str(reason)
+
+    r._check_context = context
+    r.owner_input = SimpleNamespace(sample=sample)
+    r.corridor = SimpleNamespace(tick=tick, phase=outcome, next_command=forbidden)
+    r._discard_source_floor = forbidden
+    r.cancel = cancel
+    with pytest.raises((ValueError, G2ObservationUnavailable), match='focus|owner activity'):
+        r.tick()
+    assert r.phase == 'stopped' and not r.busy

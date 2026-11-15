@@ -607,7 +607,10 @@ class OwnerSourceCrossingRuntime:
             ready_for_location=lambda: (
                 self.clock() >= self.engine.zone_loading_until and self.gate.controls_ready()
             ),
-            check_current=self.check_current,
+            # Physical/focus checks bracket tick and each location send;
+            # movement policy samples them at admission and through release.
+            # Nested corridor checks retain identity without resampling input.
+            check_current=self._check_context,
             maximum_source_seconds=remaining_source,
             maximum_arrival_seconds=90.,
             walk_half_width=self.walk_half_width,
@@ -674,6 +677,7 @@ class OwnerSourceCrossingRuntime:
             elif self.phase == 'crossing':
                 c = self.corridor
                 action = c.tick()
+                self.check_current()
                 if not self._source_active():
                     self._discard_source_floor(
                         'Source crossing observed expected loading; source floor discarded'
@@ -972,36 +976,73 @@ def make_source_crossing_engine(base, *, corridor_provider, clock=time.monotonic
             r = self.source_crossing_run
             if r is None or r.busy:
                 return
-            if r.phase == 'stopped':
+            if r.closed:
+                self.source_crossing_run = None
+            elif r.phase == 'stopped':
                 r.release()
                 self.source_crossing_run = None
 
         def _finish_source_crossing(self, r):
-            snapshot = r.snapshot()
-            positions = r.corridor.arrival.collector.snapshot()
-            self.zone = r.corridor_spec.destination_zone
-            r.release(close_observer=True)
-            self.source_crossing_run = None
-            result = dict(
-                phase='crossed_zone',
-                destination_id=r.destination_id,
-                destination=r.corridor_spec.destination,
-                destination_zone=r.corridor_spec.destination_zone,
-                destination_zone_id=r.corridor_spec.destination_zone_id,
-                corridor_sha256=r.corridor.corridor_sha256,
-                expected_zone_line_sha256=r.corridor.line.sha256,
-                arrival_positions=positions,
-                crossing=snapshot,
-                camp_started=False,
-                source_floor_discarded=True,
-                source_navigation_state_reused=False,
-                real_client_accepted=False,
-            )
-            self.stop_action(f'Reached {r.corridor_spec.destination} · movement stopped')
-            self.journey_last_result = result
-            self.trace('journey_zone_crossing_completed', **result)
-            self.emit(f'Reached {r.corridor_spec.destination} · movement stopped.')
-            return result
+            with self.g0_stop_lock:
+                j, generation = r.journey, r.generation
+
+                def current(slot):
+                    # Snapshot/release providers can reenter an owner stop even
+                    # under this RLock. Never retire a newer F8/F9 decision.
+                    if (self.journey is not j or self.cancel_generation != generation
+                            or self.source_crossing_run is not slot):
+                        return False
+                    if (j.generation != generation or j.phase != 'source_crossing'
+                            or j.destination_id != r.destination_id
+                            or j.settings != settings_identity(self.settings)
+                            or j.continue_camps is not j._continue_camps
+                            or self.stopping or self.cancelled or r.busy
+                            or r.phase != 'complete'):
+                        raise ValueError('Completed source crossing lost its owner binding')
+                    return True
+
+                if not current(r):
+                    return None
+                snapshot = r.snapshot()
+                if not current(r):
+                    return None
+                positions = r.corridor.arrival.collector.snapshot()
+                if not current(r):
+                    return None
+                try:
+                    r.release(close_observer=True)
+                finally:
+                    # release marks closed before closing the input observer;
+                    # a callback or cleanup failure must not leave it busy.
+                    if r.closed and self.source_crossing_run is r:
+                        self.source_crossing_run = None
+                if not current(None):
+                    return None
+                self.zone = r.corridor_spec.destination_zone
+                result = dict(
+                    phase='crossed_zone',
+                    destination_id=r.destination_id,
+                    destination=r.corridor_spec.destination,
+                    destination_zone=r.corridor_spec.destination_zone,
+                    destination_zone_id=r.corridor_spec.destination_zone_id,
+                    corridor_sha256=r.corridor.corridor_sha256,
+                    expected_zone_line_sha256=r.corridor.line.sha256,
+                    arrival_positions=positions,
+                    crossing=snapshot,
+                    camp_started=False,
+                    source_floor_discarded=True,
+                    source_navigation_state_reused=False,
+                    real_client_accepted=False,
+                )
+                self.stop_action(f'Reached {r.corridor_spec.destination} · movement stopped')
+                if (self.cancel_generation != generation + 1 or self.journey is not None
+                        or self.source_crossing_run is not None
+                        or self._journey_assist is not None or self.active):
+                    return None
+                self.journey_last_result = result
+                self.trace('journey_zone_crossing_completed', **result)
+                self.emit(f'Reached {r.corridor_spec.destination} · movement stopped.')
+                return result
 
         def stop_action(self, reason, *, keep_autopilot=False):
             self._crossing_handoff_binding = None

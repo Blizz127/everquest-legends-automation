@@ -1,5 +1,44 @@
 # FINDINGS
 
+## 2026-11-15 14:28 UTC — crossing completion ownership and fresh scene checks (0.42.92)
+
+VERIFIED the completion race reproduced before its fix: F8 during result
+snapshot or observer release lost pending assist, while F9's stopped result
+was overwritten by `crossed_zone`. Completion now holds the stop lock and
+rechecks journey identity, cancellation generation and settings after snapshot,
+position capture and release. A newer owner action wins; closed runtimes leave
+no occupied navigation slot. Seven focused handoff cases cover these boundaries
+and normal completion.
+
+VERIFIED nested crossing checks now retain context without repeating physical
+input sampling. Full physical/focus checks bracket every outer crossing tick;
+location senders and movement policy retain their own checks. Four regression
+cases inject focus loss or owner activity during a tick and require cancellation
+before movement or completion. No timing, freshness, geometry or budget limit
+was widened.
+
+VERIFIED 100 final local checks pass, including GFay assets/sections/corridors,
+map selection, arrival policy, cancellation and offscreen GUI controls. JUnit
+`releases/eql-0.42.92-astra-local-final.xml` SHA
+`a5c3721b5a7752c0278e6a662ae9885997526b95cc7b877df689966077405490`.
+A separate bounded Alienware `/tmp` snapshot passes 15 isolated pipe tests in
+119.43 seconds, including actual retained-engine single/sectioned Butcher-to-GFay
+travel and F8/F9 cancellation. Receipt
+`releases/eql-0.42.92-astra-crossing-alienware-a.json` SHA
+`86751e18d647795361780c84e9e51c56d49a18dd3b93d1bb9891ce014d5220e9`;
+JUnit SHA `64d5ff6c9b7bc23cb9b6f052921d31c6b94279d9d6c301914c7cec3bb978738c`.
+The receipt's runtime source hash matches the final local runtime. All game
+state is synthetic, all input is to anonymous pipes; no game/helper was started
+or restarted, and no protected prefix/config/character was touched.
+
+The initial Devbox run's 35 passes / five failures are retained separately in
+`releases/eql-0.42.92-astra-devbox-initial.json`, SHA
+`20e480c2cd35327699408dfd019c3ad200f6a8f6d8684f563d58d4bccc4a037f`.
+One was the corrected tamper fixture; four timed integration cases stopped
+before their intended assertion/injection because of unchanged freshness/permit
+limits. They are not counted as passing. GFay-to-Crushbone runtime coverage is
+being added separately using the same synthetic pipeline and real copied IDs.
+
 ## 2026-11-15 14:24 UTC — local GFay destination preview (owner 0.39.42)
 
 VERIFIED the new builder/entry/GUI patch exposes all 16 registered destinations,
