@@ -1,5 +1,46 @@
 # STATUS
 
+Updated 2026-11-15 03:49 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met. G0 passed; never repeat it.** Actual level, XP,
+  XP/hour, deaths and camp remain unknown. No accepted real-client 1–20/1–50 run.
+- **Installed remains 0.39.40 / 0.42.86. Candidate 0.39.41 / 0.42.87 is ready**
+  for additive private installation. Observed level-up camp relocation can use
+  the Goblin sections, with a single original budget including departure probes,
+  a retired old camp, fresh section measurements and final-only camp startup.
+- **VERIFIED:** 103 focused checks pass (96 local plus seven isolated Alienware
+  pipe checks); final startup and all eight destinations / nine section guides
+  pass. F8/F9 cancellation, final-release F8, 1,057-operation first-probe timing,
+  and the existing unsectioned camp path pass. Validation SHA
+  `62dd22aaeb98de9796cb558ab0824d1429a4c0fa29df7e3393b8fdf48eec20d6`.
+- **Next:** install without restarting the owner's helper, then build native-region
+  crossing support toward GFay/Crushbone. The copied Butcher maps provide no
+  post-level-8 camp hint. Actual Goblin travel/camp acceptance still needs the
+  owner-started client run. No game input or character/prefix modification occurred.
+
+## Prior status
+
+Updated 2026-11-15 03:41 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met. G0 passed; never repeat it.** Current actual level,
+  XP, XP/hour, deaths and camp remain unknown. No accepted real-client 1–20/1–50 run.
+- **Installed remains owner 0.39.40 / source 0.42.86.** Candidate owner 0.39.41 /
+  source 0.42.87 adds ordered camp-origin sections after observed level-up/recovery,
+  one budget covering initial probes and all sections, retired originating camp,
+  and final-only fresh camp adoption. It uses the existing rotation and input sender.
+- **VERIFIED:** 96 focused local planning/arrival/partition checks pass. Earlier
+  candidate c passed four isolated Alienware pipeline/F8/F9 tests in 285 seconds;
+  the final snapshot's checks, including final-release F8 and full-size admission,
+  are running. Startup help passes without starting the engine. Two earlier
+  failures (historical journey level and a field/method name collision) were fixed.
+- **Next:** finish final snapshot checks and publish the immutable private preview;
+  then extend later camp continuity. Owner-started Goblin movement in Butcherblock
+  remains the next live acceptance. No game input, login, character change or
+  protected install modification occurred. Full 1–20 routing, cross-zone travel,
+  later camps, loot/vendors and recovery remain incomplete or unverified.
+
+## Prior status
+
 Updated 2026-11-15 03:22 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed; never repeat it.** Current level, XP,

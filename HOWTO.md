@@ -1,19 +1,30 @@
 # EverQuest Legends automation — current owner guide
 
-**This guide describes owner 0.39.40 / runtime 0.42.86.**
-Project status is recorded in STATUS.md. On Alienware, this build's installation
-receipt is `~/.local/share/eql-automation/owner-build-drafts/eql-owner-journey-0.39.40-installed.json`.
-Owner 0.39.39 / runtime 0.42.85 remains available at its prior versioned path.
+**This guide describes owner 0.39.41 / runtime 0.42.87.**
+Installation status is recorded in STATUS.md. After installation, the receipt
+on Alienware is `~/.local/share/eql-automation/owner-build-drafts/eql-owner-journey-0.39.41-installed.json`.
+Owner 0.39.40 / runtime 0.42.86 remains available at its prior versioned path.
 
 Once this version is installed, close the old helper yourself
 and run only one helper on Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.40/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.41/launch.sh
 ```
 
 This build retains F8 assist, F9 stop, eight destination choices and automatic
 Goblin route sections. G0 passed; do not repeat it.
+
+0.39.41 connects the optional **continue to the next camp** setting to the same
+Goblin walking sections. After a newly observed level-up and completed recovery
+at Newbie Hills, the helper can select the packaged Goblin route for the copied
+level 5–8 hint. It measures movement, joins the route from the actual position,
+and checks each section before continuing. The original departure probes and
+all later sections share one fixed movement budget. It retires the old camp at
+the first section arrival and starts a fresh camp only at the final arrival.
+F8 changes to manual-movement assist after navigation releases; F9 stops it.
+This does not supply a cross-zone route or the missing later portions of 1–20.
+Actual camp suitability and automated level gains remain unverified.
 
 0.39.40 adds camp progress in the camp panel and local status files. During a
 camp, it records matching kills, XP award messages, observed deaths and elapsed
@@ -137,7 +148,7 @@ cancel the handoff. This is supervised testing, not the full 1–20 path.
 After installing 0.39.40, close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.40/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.41/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.

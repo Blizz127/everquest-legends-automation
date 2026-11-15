@@ -1,5 +1,69 @@
 # FINDINGS
 
+## 2026-11-15 03:49 UTC — camp-origin section continuation ready
+
+VERIFIED candidate owner 0.39.41 / source 0.42.87: 103 focused checks pass,
+including seven isolated Alienware watchdog/pipe tests in 511 seconds. The
+actual synthetic camp level advance retains one budget before its first probe,
+selects a section from its fresh reached position, retires the old camp after
+its first stopped arrival, and starts a fresh camp only at the final section.
+F8/F9 and final-release F8 preserve release/assist ownership. A 1,057-operation
+plan passes first-probe admission with the original timing limits. Existing
+unsectioned camp relocation and 96 local preparation/arrival/partition checks
+pass. Synthetic geometry and logs are not real-client acceptance.
+
+The final source snapshot has 619 Python files and matches every remote check
+pin. Validation `releases/eql-0.42.87-validation.json` SHA
+`62dd22aaeb98de9796cb558ab0824d1429a4c0fa29df7e3393b8fdf48eec20d6`.
+Owner snapshot `owner-build-drafts/0.39.41-publish87/SOURCE_HASHES.json` SHA
+`a3eac6d565f5d8f1c340458fe65bf5b5e537f8f866f01547d4025d361371d2d4`.
+Startup returns zero; eight copied destinations and nine section guides load.
+The rotation engine/core, GUI and launch script match 0.39.40 byte for byte.
+Earlier failed snapshots a/b remain recorded; the historical journey-level
+binding and field/method name collision were fixed before the final checks.
+No engine was started against the game, and no client install or character was
+modified. Read-only Alienware check found no camp-progress report; journey trace
+still ends at 2026-11-14 19:31:12 UTC. Actual current metrics remain unknown.
+
+
+## 2026-11-15 — remaining level 1–20 camp continuity
+
+OBSERVED by read-only retained-artifact inspection: copied Butcherblock solo
+annotations have Newbie Hills 1–4, Dwarf Skeletons 5–8, Goblin Camp 5–8, and
+`GO_TO_GFAY_THEN_CRUSHBONE` 4–10. They provide no Butcherblock 9–20 camp hint.
+Source `~/.local/share/eql-automation/client-data/retail-full/maps/Solo_Leveling/butcher_3.txt`
+SHA `96b4c8c3efd7d8209fa4820008b4db4e766195cfa7544ea39aca7b3e5341bf1d`;
+the runtime copy matches. The Skeletons package XY `(884,-1540)` is a same-level
+alternative, with an offline endpoint footprint in
+`nav-candidates/butcher-camp-source-20261114-cap-fix.json`, SHA
+`3c70caf431ef88c5afa9179764ea26263ec13c5e9ee12d542b068475c0a8a85e`.
+There is no connecting Skeletons guide or registered runtime destination.
+
+The current next-camp selector therefore has no Butcherblock destination for
+level 9–20. The copied exit hint supports investigating GFay/Crushbone continuity;
+it does not prove a traversable route, zone-line destination, spawn, label Z
+floor, or live camp suitability. Existing `ZoneArrivalHandoff`/crossing code is
+not connected in the current owner entry. `plan_destination` rejects the native
+region policy used by Butcherblock, and `RouteGeometryPreparer` rejects that
+policy combined with an expected zone line. Adapting this actual dependency is
+required before announcing automatic cross-zone progression. No client input,
+removed working-copy access, or character modification was performed.
+
+Read-only retained transition detail: Butcher area 2 has seven polygons with
+`DRNTP00255000001_ZONE`, center XY approximately `(-3096.5511,-1320.3888)`;
+`owner-route-data/butcher-camps-20261114/butcher.json` SHA
+`64f3b3d8673a61424268172b3b9c6989921c77e49d5b0f4d55fa034f2d8ef792`.
+GFay area 4 / polygon 19256 / BSP region 2884 uses
+`DRNTP00255000004_ZONE`, center XY approximately `(-51.0243,2618.9152)`;
+`owner-route-data/gfay-destination-20261114-tiles/gfaydark.json` SHA
+`ac9591eb63e1394363ad37d7d0ca6609a1ebe11fd8786bedb5b165b833e2eb82`.
+These are candidate regions; destination/spawn and traversability are unverified.
+The next implementation seam is a native-region-compatible source approach and
+crossing descriptor, then a typed actual `ZoneArrivalHandoff` continuation that
+loads the observed destination zone and measures movement afresh. Adding only a
+loader would not resolve the existing native-policy incompatibility.
+
+
 ## 2026-11-15 03:22 UTC — owner 0.39.40 privately installed
 
 VERIFIED additive Alienware installation: owner 0.39.40 / source 0.42.86,
