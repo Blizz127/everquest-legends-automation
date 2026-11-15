@@ -47,6 +47,7 @@ from .supervised_corridor import SupervisedCorridorDeclaration
 from .supervised_route import scope_limits
 from .supervised_source_crossing import SupervisedSourceCrossingPolicy
 from .zone_line import ExpectedZoneLine
+from .zone_itinerary_budget import ZoneItineraryBudget
 
 BUTCHER_GFAY_CORRIDOR_FILE = 'butcher-gfay-crossing-carbon-corridor-v1.json'
 BUTCHER_GFAY_CORRIDOR_SHA256 = '092735a84716e7340731d376e008314e0e55daec675aabc10f08486b625f2fb0'
@@ -195,6 +196,149 @@ def load_owner_source_crossing(engine, destination_id):
     return load_source_crossing_spec(destination_id)
 
 
+@dataclass(frozen=True)
+class CrossingDestinationTransfer:
+    """One claim on the exact live destination reader; no movement authority."""
+    source_runtime: object
+    arrival: object
+    lease: object
+    reader: object
+    sender: object
+    hotkey: object
+    owner_input: object
+    topology: int
+    gate: object
+    window: object
+    generation: int
+    source_generation: int
+    first: object
+    second: object
+    log_veto: object
+    journey_budget: object
+    stage: object
+    expires_at: float
+    clock: object
+    wall: object
+    lock: object
+    check_current: object
+    generation_reader: object
+    crossing_evidence: bytes
+    arrival_evidence: bytes
+
+    @property
+    def input_authorized(self):
+        return False
+
+    def _state(self):
+        from .flat_record import flat_record_state
+        objects = (self.source_runtime, self.arrival, self.lease, self.reader,
+            self.sender, self.hotkey, self.owner_input, self.gate, self.window,
+            self.first, self.second, self.log_veto, self.journey_budget, self.stage,
+            self.clock, self.wall, self.lock, self.check_current, self.generation_reader)
+        return (tuple(map(id, objects)), self.topology, self.generation,
+            self.source_generation, self.expires_at, flat_record_state(self.first),
+            flat_record_state(self.second), self.crossing_evidence, self.arrival_evidence)
+
+    def _assert_intact(self):
+        r, reader = self.source_runtime, self.reader
+        if (type(self) is not CrossingDestinationTransfer
+                or r._destination_transfer is not self or self._state() != r._destination_transfer_state
+                or r.phase != 'transferred' or not r.closed or r.busy
+                or r.lease is not self.lease or r.reader is not reader
+                or r.owner_input is not self.owner_input or r.hotkey is not self.hotkey
+                or r.sender is not self.sender or self.sender.ui is not r.ui
+                or r.ui.fileno() != r.fd or _fd_identity(r.fd) != r.fd_identity
+                or r.generation != self.generation or r.gate is not self.gate
+                or r.window is not self.window or r.topology != self.topology
+                or r.clock is not self.clock or r.wall is not self.wall or r.lock is not self.lock
+                or r._times is not r._destination_transfer_times
+                or (r.started, r.expires_at) != r._destination_transfer_times
+                or self.expires_at != r._destination_transfer_times[1]
+                or r.journey_budget is not self.journey_budget
+                or self.lease.reader is not reader or not self.lease.active
+                or self.lease._tracker.lease is not self.lease
+                or self.lease._tracker.reader is not reader or self.lease._tracker.closed
+                or (zone_binding(reader), id(reader.tail), reader.tail.path, reader.tail.position,
+                    reader.log_line_seq, id(reader.latest)) != r._destination_reader_state
+                or reader.latest is not self.second or reader.tail.partial
+                or self.arrival.collector.first is not self.first
+                or self.arrival.collector.second is not self.second
+                or self.arrival.collector.phase != 'complete'
+                or self.arrival.phase != 'stopped'
+                or self.arrival.source_generation != self.source_generation
+                or r.source_zone[-1] != self.source_generation
+                or self.arrival._destination_log_veto is not self.log_veto
+                or type(self.log_veto) is not SceneLogVeto
+                or (self.log_veto, self.log_veto.tail, self.log_veto.tail.path,
+                    self.log_veto.clock, self.log_veto.cancel_generation,
+                    self.log_veto.tail.identity, self.log_veto.tail.epoch) != r._destination_veto_state
+                or self.log_veto.cancel_generation != self.generation
+                or self.log_veto.clock is not self.clock
+                or self.log_veto.tail.path != reader.tail.path
+                or self.sender.held or self.sender.unfinished or self.sender.dismissed
+                or getattr(self.sender, '_eql_route_operation', None) is not None
+                or r.checkpoint.valid or r.monitor is not r._destination_monitor
+                or not r.monitor.closed or r.monitor.valid or r.monitor.observer is not self.owner_input):
+            raise ValueError('Destination transfer lost its exact owner, reader or stopped pair')
+        root = self.journey_budget
+        if root is not None:
+            root._assert_intact()
+            stage = root.stage
+            if (stage is not self.stage and not (
+                    stage.phase == 'bootstrap' and stage.leg_index == self.stage.leg_index+1
+                    and stage.epoch == self.stage.epoch+1
+                    and root.leg.source_zone_id == reader.zone_id)):
+                raise ValueError('Destination transfer root stage changed')
+
+    def check(self):
+        """Check before consuming the destination reader, using the new owner."""
+        from .owner_input_observer import OwnerInputObservation
+        with self.lock:
+            self._assert_intact()
+            self.check_current()
+            self.lease.check()
+            self.hotkey.check()
+            if self.journey_budget is not None:
+                self.journey_budget.check()
+            sample = self.owner_input.sample()
+            window = focused_game_identity(self.gate)
+            hazard = self.log_veto.poll()
+            self.check_current()
+            self.lease.check()
+            # Final owner callbacks may append a hazard or change focus after
+            # the first observation. Preserve the same cursor for the recheck.
+            after = self.owner_input.sample()
+            after_window = focused_game_identity(self.gate)
+            hazard = self.log_veto.poll() if hazard.reason is None else hazard
+            generation = self.generation_reader()
+            now = self.clock()
+            self._assert_intact()
+            if (type(generation) is not int or generation != self.generation
+                    or not finite(now) or not self.second.received_monotonic <= now <= self.expires_at
+                    or not all(type(v) is OwnerInputObservation and v.clear_at(now)
+                        and v.topology_generation == self.topology for v in (sample, after))
+                    or window != self.window or after_window != self.window
+                    or not hazard.continuity_available or hazard.reason is not None):
+                raise ValueError('Destination transfer cancelled, expired or observation vetoed')
+            return self
+
+    def claim(self):
+        """Consume once before the successor starts polling the same reader."""
+        with self.lock:
+            r = self.source_runtime
+            if r._destination_transfer_claimed or r._destination_claim_busy:
+                raise ValueError('Destination transfer was already claimed')
+            r._destination_claim_busy = True
+            try:
+                self.check()
+                if r._destination_transfer_claimed:
+                    raise ValueError('Destination transfer claim reentered')
+                r._destination_transfer_claimed = True
+                return self
+            finally:
+                r._destination_claim_busy = False
+
+
 class OwnerSourceCrossingRuntime:
     """Self-owned crossing runtime on a reached pre-line CampFloorCheckpoint."""
 
@@ -203,7 +347,8 @@ class OwnerSourceCrossingRuntime:
                  lease, sender, hotkey, owner_input, topology, gate, window,
                  released_at, owner_binding, binding_reader, generation_reader,
                  pump, command_state_clear, clock=time.monotonic,
-                 local_wall_clock=datetime.now, walk_half_width=.25):
+                 local_wall_clock=datetime.now, walk_half_width=.25, journey_budget=None,
+                 log_veto=None):
         if (type(corridor_spec) is not PinnedSourceCrossingSpec
                 or corridor_spec.destination_id != destination_id
                 or type(checkpoint) is not CampFloorCheckpoint
@@ -214,6 +359,9 @@ class OwnerSourceCrossingRuntime:
                 or not finite(heading) or not 0 <= heading < 360
                 or not finite(walk_half_width) or not .05 <= walk_half_width <= 6.
                 or not immutable_binding(owner_binding)
+                or journey_budget is not None and (type(journey_budget) is not ZoneItineraryBudget
+                    or journey_budget.clock is not clock or journey_budget.lock is not engine.g0_stop_lock)
+                or log_veto is not None and type(log_veto) is not SceneLogVeto
                 or not all(callable(f) for f in (binding_reader, generation_reader,
                                                  pump, command_state_clear, clock, local_wall_clock))):
             raise ValueError('Reached pre-line floor, calibrated motion, lease and callbacks required')
@@ -235,9 +383,13 @@ class OwnerSourceCrossingRuntime:
         self.fd = self.ui.fileno()
         self.fd_identity = _fd_identity(self.fd)
         self.generation = generation_reader()
+        self.journey_budget = self._journey_root = journey_budget
+        self._journey_stage = None if journey_budget is None else journey_budget.stage
         self.started = self.last_at = clock()
         seconds = scope_limits('zone_crossing_corridor')[0]
         self.expires_at = self.started + seconds + 90.
+        if journey_budget is not None:
+            self.expires_at = journey_budget.cap_deadline(self.expires_at)
         self._times = (self.started, self.expires_at)
         self.phase, self.reason, self.busy, self.closed = 'collect_height', '', False, False
         self.collector = self.preparation = self.source_observer = None
@@ -248,6 +400,11 @@ class OwnerSourceCrossingRuntime:
         self.sending_location = False
         self.location_request = None
         self.sending_movement = None
+        self._destination_transfer = self._destination_transfer_state = None
+        self._destination_transfer_pending = self._destination_reader_state = None
+        self._destination_veto_state = self._destination_monitor = None
+        self._destination_transfer_claimed = self._destination_transfer_busy = False
+        self._destination_claim_busy = False
         with self.lock:
             checkpoint.check()
             lease.check()
@@ -267,13 +424,21 @@ class OwnerSourceCrossingRuntime:
                 maximum_step_seconds=.2,
             )
             self.source_zone = zone_binding(self.reader)
-            self.startup_veto = SceneLogVeto(
+            self.startup_veto = log_veto if log_veto is not None else SceneLogVeto(
                 self.reader.tail.path,
                 expected_character=self.reader.expected_character,
                 expected_server=self.reader.expected_server,
                 cancel_generation=self.generation,
                 clock=clock,
             )
+            if (self.startup_veto.clock is not clock
+                    or self.startup_veto.cancel_generation != self.generation
+                    or self.startup_veto.tail.path != self.reader.tail.path
+                    or (self.startup_veto.tail.identity, self.startup_veto.tail.epoch)
+                        != (self.reader.tail.identity, self.reader.tail.epoch)):
+                raise ValueError('Crossing must retain the current log observer and generation')
+            self._startup_veto = (self.startup_veto, self.startup_veto.tail,
+                self.startup_veto.tail.path, self.startup_veto.clock, self.startup_veto.cancel_generation)
             self.monitor = CampInputContinuity(
                 owner_input,
                 topology=topology,
@@ -337,17 +502,93 @@ class OwnerSourceCrossingRuntime:
         if self.binding_reader() != self.owner_binding or self.generation_reader() != self.generation:
             raise ValueError('Source crossing owner binding or generation changed')
 
+    def _assert_journey_stage(self):
+        root = self.journey_budget
+        if root is not self._journey_root:
+            raise ValueError('Crossing root itinerary changed')
+        if root is None:
+            return
+        root._assert_intact()
+        stage, initial, leg = root.stage, self._journey_stage, root.leg
+        if (initial.phase != 'crossing' or stage.leg_index != initial.leg_index
+                or stage.destination_id != self.destination_id
+                or leg.destination_id != self.destination_id
+                or (leg.source_zone_id, leg.source_name) != self.source_zone[:2]
+                or leg.source_zone != self.corridor_spec.zone
+                or (leg.destination_zone_id, leg.destination_name)
+                    != (self.corridor_spec.destination_zone_id, self.corridor_spec.destination)
+                or leg.corridor_sha256 != self.corridor_spec.corridor_file_sha256
+                or leg.expected_zone_line_sha256 != self.corridor_spec.expected_zone_line.sha256):
+            raise ValueError('Crossing differs from its original itinerary leg')
+        if stage is initial:
+            return
+        a = None if self.corridor is None else self.corridor.arrival
+        if (a is None or a.loading is None or self._source_active()
+                or stage.phase not in ('loading', 'arrival')
+                or stage.epoch != initial.epoch + (1 if stage.phase == 'loading' else 2)):
+            raise ValueError('Crossing root stage lacks its observed loading boundary')
+        if stage.phase == 'arrival' and (self.corridor.phase != 'complete'
+                or a.entry is None or a.collector is None or a.collector.phase != 'complete'
+                or a.collector.second is not self.reader.latest
+                or (self.reader.zone_id, self.reader.zone_display_name, self.reader.zone_generation)
+                    != (a.destination_id, a.destination, a.entry.zone_generation)
+                or a.phase != 'complete' and self._destination_transfer_pending is not a):
+            raise ValueError('Crossing root stage lacks its completed destination pair')
+
+    def _check_journey(self):
+        if self.journey_budget is not None:
+            self.journey_budget.check()
+        self._assert_journey_stage()
+
+    def observed_itinerary_phase(self):
+        """Report caller-proven root progress without advancing the root itself."""
+        with self.lock:
+            self._check_context()
+            a = None if self.corridor is None else self.corridor.arrival
+            if (self.phase == 'complete' and a is not None and a.phase == 'complete'
+                    and a.collector is not None and a.collector.phase == 'complete'):
+                return 'arrival'
+            return 'loading' if a is not None and a.loading is not None else 'crossing'
+
+    def _advance_observed_journey(self):
+        """Only advance after the sender has finished releasing its operation."""
+        root = self.journey_budget
+        if root is None or self.corridor is None:
+            return
+        with self.lock:
+            self._check_context()
+            a = self.corridor.arrival
+            if a.loading is None:
+                return
+            if self.sender.held or getattr(self.sender, '_eql_route_operation', None) is not None:
+                raise ValueError('Observed crossing cannot advance before input cleanup')
+            if root.stage is self._journey_stage:
+                root.advance(root.stage, 'loading', zone_id=None)
+                self._check_context()
+            if self.corridor.phase == 'complete':
+                if (a.phase != 'complete' or a.entry is None or a.collector is None
+                        or a.collector.phase != 'complete' or a.collector.second is not self.reader.latest
+                        or (self.reader.zone_id, self.reader.zone_display_name, self.reader.zone_generation)
+                            != (a.destination_id, a.destination, a.entry.zone_generation)):
+                    raise ValueError('Completed crossing lost its final destination pair')
+                if root.stage.phase == 'loading':
+                    root.advance(root.stage, 'arrival', zone_id=a.destination_id)
+                    self._check_context()
+
     def _check_context(self):
         if self.phase == 'stopped' or self.closed:
             raise ValueError(self.reason or 'Source crossing closed')
         binding = self.binding_reader()
         self.lease.check()
         self.hotkey.check()
+        self._check_journey()
+        clear = self.command_clear()
+        generation = self.generation_reader()
         now = self.clock()
         key = self.current_input_key()
         if (self.phase == 'stopped' or self.closed
                 or binding != self.owner_binding
-                or self.generation_reader() != self.generation
+                or type(generation) is not int or generation != self.generation
                 or (self.started, self.expires_at) != self._times
                 or self.lease.reader is not self.reader
                 or self.sender.ui is not self.ui
@@ -355,7 +596,9 @@ class OwnerSourceCrossingRuntime:
                 or _fd_identity(self.fd) != self.fd_identity
                 or self.sender.unfinished or self.sender.dismissed
                 or self.sender.held - ({key} if key is not None else set())
-                or not self.command_clear()
+                or not clear
+                or (self.startup_veto, self.startup_veto.tail, self.startup_veto.tail.path,
+                    self.startup_veto.clock, self.startup_veto.cancel_generation) != self._startup_veto
                 or not finite(now)
                 or not self.started <= self.last_at <= now <= self.expires_at):
             raise ValueError('Source crossing owner, lease, sender or deadline changed')
@@ -366,6 +609,7 @@ class OwnerSourceCrossingRuntime:
             self.checkpoint._model.check_policy(self.checkpoint._policy)
         else:
             self._discard_source_floor('Source crossing observed expected loading; source floor discarded')
+        self._assert_journey_stage()
         self.last_at = now
         return self.owner_binding
 
@@ -390,7 +634,11 @@ class OwnerSourceCrossingRuntime:
         began = self.clock()
         for key in tuple(self.sender.held):
             self.sender.release(key)
-        return CommandReceipt(began, self.clock())
+        receipt = CommandReceipt(began, self.clock())
+        # Expiry must never prevent the unconditional key release above.
+        if self.phase != 'stopped' and not self.closed:
+            self._check_journey()
+        return receipt
 
     def cancel(self, reason):
         with self.lock:
@@ -413,6 +661,8 @@ class OwnerSourceCrossingRuntime:
                 self.policy.cancel(reason)
             if self.corridor is not None:
                 self.corridor.cancel(reason)
+            if self.journey_budget is not None:
+                self.journey_budget.cancel(reason)
             self.lease.active = False
 
     def release(self, *, close_observer=True):
@@ -428,6 +678,129 @@ class OwnerSourceCrossingRuntime:
             self.closed = True
             if close_observer:
                 self.monitor.close(self.reason or 'Zone crossing ended')
+
+    def transfer_destination(self, *, check_current):
+        """Detach a completed arrival once; keep its reader and observer alive.
+
+        ``check_current`` belongs to the itinerary controller and must remain
+        valid after this runtime retires. The returned token must be claimed
+        before its successor consumes the reader. Failure uses ordinary cancel
+        semantics; caller cleanup still owns the final release/observer close.
+        """
+        from .destination_arrival_veto import continue_destination_veto
+        from .owner_input_observer import OwnerInputObservation
+        from .zone_arrival import ZoneArrivalHandoff
+        with self.lock:
+            if (not callable(check_current) or getattr(check_current, '__self__', None) is self
+                    or self._destination_transfer_busy
+                    or self._destination_transfer is not None or self.closed):
+                raise ValueError('One current destination transfer and independent owner callback required')
+            self._destination_transfer_busy = True
+            original_times = self._times
+            original = (self.lease, self.reader, self.sender, self.ui, self.hotkey,
+                self.owner_input, self.topology, self.gate, self.window, self.generation,
+                self.clock, self.wall, self.lock, self.journey_budget, self.corridor,
+                None if self.corridor is None else self.corridor.arrival,
+                self.binding_reader, self.generation_reader, self.command_clear,
+                self.owner_binding, self.monitor, self.corridor_spec, self.source_zone)
+            try:
+                self.check_current()
+                self._advance_observed_journey()
+                a = None if self.corridor is None else self.corridor.arrival
+                if (type(a) is not ZoneArrivalHandoff or self.phase != 'complete' or self.busy
+                        or self.corridor.phase != 'complete' or a.phase != 'complete'
+                        or self.collector is not None or self.sending_location
+                        or self.sending_movement is not None or self.location_request is not None
+                        or self.sender.held or getattr(self.sender, '_eql_route_operation', None) is not None
+                        or a.lease is not self.lease or a.reader is not self.reader
+                        or a.source != self.source_zone[:2]
+                        or a.source_generation != self.source_zone[-1]
+                        or a.veto.cancel_generation != self.generation
+                        or self.journey_budget is not None and self.journey_budget.stage.phase != 'arrival'):
+                    raise ValueError('Idle completed crossing and exact destination lease required')
+                crossing_evidence = encoded(self.snapshot())
+                arrival_evidence = encoded(a.collector.snapshot())
+                self.check_current()
+                check_current()
+                reader_state = (zone_binding(self.reader), id(self.reader.tail), self.reader.tail.path,
+                    self.reader.tail.position, self.reader.log_line_seq, id(self.reader.latest))
+                first, second = a.collector.first, a.collector.second
+                veto = continue_destination_veto(a)
+                veto_binding = (veto.tail, veto.tail.path, veto.clock,
+                    veto.cancel_generation, veto.tail.identity, veto.tail.epoch)
+                self._destination_transfer_pending = a
+                self.check_current()
+                check_current()
+                # Independent callbacks may append hazards after the arrival's
+                # last check; the transferred strict cursor sees every byte.
+                hazard = veto.poll()
+                self._check_context()
+                check_current()
+                command_clear = self.command_clear()
+                # This is the final independent owner callback. Observe input
+                # and focus after it, then validate scalar pins before retiring
+                # the old owner; an unsafe callback must retain normal cleanup.
+                before = self.owner_input.sample()
+                before_window = focused_game_identity(self.gate)
+                hazard = veto.poll() if hazard.reason is None else hazard
+                after = self.owner_input.sample()
+                after_window = focused_game_identity(self.gate)
+                generation = self.generation_reader()
+                now = self.clock()
+                self._assert_journey_stage()
+                if (self.phase != 'complete' or self.closed or self.busy
+                        or not self._destination_transfer_busy or self._destination_transfer is not None
+                        or self._times is not original_times
+                        or (self.started, self.expires_at) != original_times
+                        or any(x is not y for x, y in zip(original,
+                            (self.lease, self.reader, self.sender, self.ui, self.hotkey,
+                             self.owner_input, self.topology, self.gate, self.window, self.generation,
+                             self.clock, self.wall, self.lock, self.journey_budget, self.corridor, a,
+                             self.binding_reader, self.generation_reader, self.command_clear,
+                             self.owner_binding, self.monitor, self.corridor_spec, self.source_zone)))
+                        or (zone_binding(self.reader), id(self.reader.tail), self.reader.tail.path, self.reader.tail.position,
+                            self.reader.log_line_seq, id(self.reader.latest)) != reader_state
+                        or not self.lease.active or self.lease._tracker.lease is not self.lease
+                        or self.lease._tracker.closed or self.reader.latest is not second
+                        or self.reader.tail.partial or a.collector.first is not first
+                        or a.collector.second is not second or a.collector.phase != 'complete'
+                        or (veto.tail, veto.tail.path, veto.clock, veto.cancel_generation,
+                            veto.tail.identity, veto.tail.epoch) != veto_binding
+                        or self.sender.ui is not self.ui or self.ui.fileno() != self.fd
+                        or _fd_identity(self.fd) != self.fd_identity
+                        or self.sender.held or getattr(self.sender, '_eql_route_operation', None) is not None
+                        or self.sender.unfinished or self.sender.dismissed or not command_clear
+                        or type(generation) is not int or generation != self.generation
+                        or not finite(now) or not self.last_at <= now <= self.expires_at
+                        or not all(type(v) is OwnerInputObservation and v.clear_at(now)
+                            and v.topology_generation == self.topology for v in (before, after))
+                        or before_window != self.window or after_window != self.window
+                        or not hazard.continuity_available or hazard.reason is not None):
+                    raise ValueError('Destination transfer changed, expired or hazard vetoed')
+                token = CrossingDestinationTransfer(self, a, self.lease, self.reader, self.sender,
+                    self.hotkey, self.owner_input, self.topology, self.gate, self.window,
+                    self.generation, a.source_generation, first, second, veto, self.journey_budget,
+                    None if self.journey_budget is None else self.journey_budget.stage,
+                    self.expires_at, self.clock, self.wall, self.lock, check_current,
+                    self.generation_reader, crossing_evidence, arrival_evidence)
+                self._destination_reader_state = reader_state
+                self._destination_transfer_times = original_times
+                self._destination_veto_state = (veto, *veto_binding)
+                self._destination_monitor = self.monitor
+                self._destination_transfer_state = token._state()
+                self._destination_transfer = token
+                # Loading already invalidated the source floor. Retire only
+                # this monitor's ownership, without closing its shared device.
+                self.monitor.invalidate('Input observer transferred to destination bootstrap')
+                self.monitor.closed = True
+                self.phase, self.closed = 'transferred', True
+                self.reason = 'Destination reader and input observer transferred'
+                return token
+            except BaseException as error:
+                self.cancel(error)
+                raise
+            finally:
+                self._destination_transfer_busy = False
 
     def _send_startup_location(self, request, collector):
         def current():
@@ -448,6 +821,7 @@ class OwnerSourceCrossingRuntime:
                 lock=self.lock,
                 clock=self.clock,
                 expires_at=min(request.expires_at, self.expires_at),
+                release_deadline=self.expires_at,
                 ensure_current=current,
                 cancel=self.cancel,
                 pump=self.pump,
@@ -483,6 +857,7 @@ class OwnerSourceCrossingRuntime:
                 lock=self.lock,
                 clock=self.clock,
                 expires_at=min(request.expires_at, self.expires_at),
+                release_deadline=self.expires_at,
                 ensure_current=current,
                 cancel=self.cancel,
                 pump=self.pump,
@@ -616,6 +991,13 @@ class OwnerSourceCrossingRuntime:
             walk_half_width=self.walk_half_width,
             local_wall_clock=self.wall,
         )
+        # Its expected-arrival observer has just established a baseline. Poll
+        # the retained ordinary cursor afterwards to cover the setup interval;
+        # no movement or expected loading is authorized during construction.
+        startup = self.startup_veto.poll()
+        self._check_context()
+        if not startup.continuity_available or startup.reason is not None:
+            raise ValueError('Crossing observer handoff veto: '+str(startup.reason))
         declaration = SupervisedCorridorDeclaration(
             self.corridor.line.crossing_id,
             self.corridor.corridor_sha256,
@@ -638,6 +1020,7 @@ class OwnerSourceCrossingRuntime:
             expected_window=self.window,
             topology_generation=self.topology,
             check_current=self._check_context,
+            journey_budget=self.journey_budget,
         )
         self.phase = 'crossing'
 
@@ -705,7 +1088,9 @@ class OwnerSourceCrossingRuntime:
                         self._discard_source_floor(
                             'Source crossing observed expected loading; source floor discarded'
                         )
+                self._advance_observed_journey()
                 if c.phase == 'complete':
+                    self.check_current()
                     self._discard_source_floor('Zone crossing completed; source floor discarded')
                     self.phase = 'complete'
             else:
@@ -730,6 +1115,7 @@ class OwnerSourceCrossingRuntime:
             source_floor_discarded=not self.checkpoint.valid,
             source_navigation_state_reused=False,
             ordinary_route_driver_used=False,
+            journey_budget=None if self.journey_budget is None else self.journey_budget.snapshot(),
             real_client_accepted=False,
         )
 
@@ -746,6 +1132,9 @@ def make_source_crossing_engine(base, *, corridor_provider, clock=time.monotonic
 
         def _source_crossing_spec(self, destination_id):
             return corridor_provider(self, destination_id)
+
+        def _source_crossing_budget(self, journey, destination_id):
+            return None
 
         def _crossing_owner_binding(self, j, destination_id, sender, ui, tracker, reader, window):
             if (self.journey is not j
@@ -817,6 +1206,7 @@ def make_source_crossing_engine(base, *, corridor_provider, clock=time.monotonic
                         ),
                         clock=clock,
                         local_wall_clock=getattr(self, 'camp_wall', datetime.now),
+                        journey_budget=self._source_crossing_budget(j, token.destination_id),
                     )
                     self.source_crossing_run = runtime
                     j.phase = 'source_crossing'
@@ -901,6 +1291,7 @@ def make_source_crossing_engine(base, *, corridor_provider, clock=time.monotonic
                         ),
                         clock=clock,
                         local_wall_clock=getattr(self, 'camp_wall', datetime.now),
+                        journey_budget=self._source_crossing_budget(j, w.destination_id),
                     )
                     prior = w.monitor.last_observed_at
                     if prior is not None and (runtime.monitor.last_observed_at is None
