@@ -1,5 +1,38 @@
 # FINDINGS
 
+## 2026-11-15 16:36 UTC — terminal matrix finished; progression integration next
+
+VERIFIED the terminal route checks finished with **18 passes across four runs**,
+zero failures/errors/skips. They cover 16 current named scenarios: 11 collected
+from the final test file, five bootstrap-fault scenarios from an earlier file,
+plus two obsolete duplicate generation checks. This is not one frozen 16-case
+suite. The six-case core passes ordinary, conditional-step and sectioned routes,
+a stop during terminal probes, late publication stop and direct reentry. Four
+final transfer faults and a separately collected current-generation bootstrap
+check pass. Source versions and each case are retained explicitly.
+
+The report, CSV, four JUnits and four source manifests are preserved under
+`~/.local/share/eql-automation/releases/eql-0.42.96-astra-terminal-integration-final/`.
+Consolidated report SHA
+`6766cbb62eee16f987ae3d96a15c337f9cd99dedc4ff77fe9dff405e8f3b2613`;
+per-case table SHA
+`e46256021186e876f3b20cdf2b7ac887098df21ef89d4ea02ae9ecff9d7fea63`.
+All heavy processes finished. The final preview receipt is now
+`owner-build-drafts/0.39.44-astra-candidate-z6vzxsw9/verification-final.json`,
+SHA `6450b9ac9e44ce392cd887ae6d6ba3d6df5c21887094dc5e89bff82c60f4040b`.
+All 246 packaged runtime files match both the frozen source and commit `019d9bf`;
+the 274 pins and 42 GUI scenarios remain the same verified snapshot. The prior
+candidate receipt is preserved. The focused 632-case coverage below is unchanged.
+No real client, deployment, game input or 1–50 acceptance is established.
+
+OBSERVED next development is a typed, explicit Newbie → Goblin → Slave Mines
+progression. Only new, previously unimported module/test/preview files were
+written during the runtime freeze; none are included in the 0.42.96 snapshot.
+The copied-metadata provider has 55 new passing cases, and preview 0.39.45's
+draft controls pass 58 offscreen scenarios. These are component checks, not
+connected progression execution. The actual retained-engine composed test is
+written but has not run; existing runtime hooks are the next integration work.
+
 ## 2026-11-15 16:19 UTC — explicit terminal camp itinerary (0.42.96)
 
 OBSERVED local commits `cc2d09b`, `d89ad1d`, `a6e06ae`, `4ed1c89`,

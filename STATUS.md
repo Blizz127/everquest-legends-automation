@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-15 16:19 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
+Updated 2026-11-15 16:36 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
 
 - **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,
   XP, XP/hour, deaths and camp remain unknown. No accepted hands-off 1–50 run.
@@ -16,18 +16,20 @@ Updated 2026-11-15 16:19 UTC by `codex-everquest-legends-astra` on `carbon/conti
   batch was interrupted to keep only two long geometry processes; no observed
   assertion failures. Receipt SHA
   `fd6618f8136d0a4a3028c0c1d3267430e1ebd6e738395a4faf1b05515162895a`.
-- **Long integration validation is still running.** Earlier ordinary and
-  conditional-step terminal routes reached actual capture/transfer contracts
-  using synthetic feedback. Published-monitor stop, direct reentry and the
-  earlier bootstrap-fault batch pass. Sectioned travel, a mid-probe stop and
-  remaining transfer faults are still being checked. No full final-matrix
-  result or real-client route acceptance is claimed.
-- **VERIFIED local candidate:** preview **0.39.44** under
+- **VERIFIED terminal integration:** **18 passes across four recorded runs**,
+  covering 16 current named scenarios: 11 from the final test file, five from
+  an earlier collection, plus two obsolete duplicate checks. Ordinary, step and
+  sectioned routes, probe/transfer cancellation, reentry and cleanup pass using
+  synthetic feedback. This is not one frozen 16-case suite. All heavy processes
+  finished. Exact per-case/source provenance is preserved; no real-client route
+  acceptance is claimed. Consolidated report SHA
+  `6766cbb62eee16f987ae3d96a15c337f9cd99dedc4ff77fe9dff405e8f3b2613`.
+- **VERIFIED local artifact:** preview **0.39.44** under
   `owner-build-drafts/0.39.44-astra-candidate-z6vzxsw9/` passes 274 file pins and
   42 GUI scenarios without an engine or settings writes. Runtime bytes match
-  the focused suite. Candidate receipt SHA
-  `aeaec4684457ca1a322d7ebe0a45a118c346479eb25694c65050d7bdffddaab8`.
-  It records pending long checks and no real itinerary/terminal-camp acceptance.
+  the focused suite and commit `019d9bf`. Final receipt SHA
+  `6450b9ac9e44ce392cd887ae6d6ba3d6df5c21887094dc5e89bff82c60f4040b`.
+  It records complete versioned integration evidence and no real acceptance.
 - The new action admits configured integer levels 1–19. Fresh stopped arrival
   transfers the same physical-input observer into existing stationary camping,
   with fresh learned-spell preparation and target checks. Camping stops at
@@ -39,10 +41,12 @@ Updated 2026-11-15 16:19 UTC by `codex-everquest-legends-astra` on `carbon/conti
   changes; no push. Other sessions remain untouched. The earlier profiled
   timing failures and limited unprofiled private-window success remain evidence,
   not proof of this new terminal route on the actual client/compositor.
-- **Next:** finish the long matrix and record its exact per-case provenance.
-  Then connect an explicit camp-origin progression choice from Goblin's fresh
+- **Next:** connect an explicit Newbie/Goblin progression choice from Goblin's fresh
   level 9/10 advance to this itinerary, preserving observed-level event, floor,
-  input, hazard history and the original continuation intent. The Trainer
+  input, hazard history and the original continuation intent. New metadata and
+  GUI components pass 55 and 58 checks respectively; the composed runtime test
+  is written but not yet run. These new files were kept outside the frozen .96
+  snapshot. The Trainer
   connector remains unsupported; do not repeat its closed negative search.
   Later routes, loot/vendors, death/relogin execution and fresh 1–50 acceptance
   remain incomplete. The previously reported official-service rule conflict
