@@ -153,6 +153,17 @@ class ZoneItineraryReservation:
     input_authorized: bool = field(default=False, init=False)
 
 
+@dataclass(frozen=True)
+class ZoneInitialMeasurementReservation:
+    account: object
+    request: object
+    stage: ZoneItineraryStage
+    serial: int
+    maximum_hold: float
+    maximum_displacement: float
+    input_authorized: bool = field(default=False, init=False)
+
+
 def _ticket_state(ticket):
     from .camp_probe_transaction import CampProbeTicket
     from .source_crossing_corridor import SourceCrossingGeometry, SourceCrossingTicket
@@ -215,6 +226,7 @@ class ZoneItineraryBudget:
         self._hold = self._distance = 0.
         self._balance = (self._pulses, self._hold, self._distance)
         self._checking = self._mutating = False
+        self._initial_measurement = self._initial_measurement_identity = None
         self.check()
 
     @property
@@ -236,6 +248,7 @@ class ZoneItineraryBudget:
                 or self.last_at != self._last_at
                 or flat_record_state(self.stage) != self._stage_state
                 or self._reservations is not self._reservation_store
+                or self._initial_measurement is not self._initial_measurement_identity
                 or (self._pulses, self._hold, self._distance) != self._balance
                 or len(self._reservations) != self._pulses):
             raise ValueError(self.reason or 'Root itinerary owner, stage, declaration or accounting changed')
@@ -258,17 +271,32 @@ class ZoneItineraryBudget:
                         or not self.started <= self.last_at <= began <= now <= self.expires_at):
                     raise ValueError('Root itinerary owner or fixed deadline changed')
                 if reservation is not None:
-                    if type(reservation) is not ZoneItineraryReservation:
+                    if type(reservation) is ZoneInitialMeasurementReservation:
+                        from .initial_itinerary_measurement import initial_request_state
+                        row = self._reservations.get(id(reservation.request))
+                        if (row is None or len(row) != 6 or reservation is not row[0]
+                                or reservation.stage is not self.stage
+                                or reservation.account is not self._initial_measurement
+                                or (id(reservation.account), id(reservation.request), id(reservation.stage),
+                                    reservation.serial, reservation.maximum_hold,
+                                    reservation.maximum_displacement, reservation.input_authorized) != row[1]
+                                or initial_request_state(reservation.request) != row[2]
+                                or flat_record_state(row[3]) != row[4]
+                                or reservation.account.bounds_basis is not row[5]):
+                            raise ValueError('Initial measurement reservation changed or its stage retired')
+                        reservation.account._assert_intact()
+                    elif type(reservation) is not ZoneItineraryReservation:
                         raise ValueError('Exact root itinerary reservation required')
-                    row = self._reservations.get(id(reservation.ticket))
-                    if (row is None or reservation is not row[0]
+                    else:
+                        row = self._reservations.get(id(reservation.ticket))
+                        if (row is None or reservation is not row[0]
                             or reservation.stage is not self.stage
                             or (id(reservation.ticket), id(reservation.stage), reservation.serial,
                                 reservation.maximum_hold, reservation.maximum_displacement,
                                 reservation.input_authorized) != row[1]
                             or _ticket_state(reservation.ticket) != row[2]
                             or flat_record_state(row[3]) != row[4]):
-                        raise ValueError('Root reservation is changed, copied or belongs to a retired stage')
+                            raise ValueError('Root reservation is changed, copied or belongs to a retired stage')
                 self.last_at = self._last_at = now
                 return now
             except Exception as error:
@@ -283,12 +311,81 @@ class ZoneItineraryBudget:
             raise ValueError(self.reason)
         self._mutating = True
 
+    def _claim_initial_measurement(self, account):
+        from .initial_itinerary_measurement import InitialItineraryMeasurement
+        with self.lock:
+            self._begin_mutation()
+            try:
+                self.check()
+                if (type(account) is not InitialItineraryMeasurement or account.root is not self
+                        or account.stage is not self.stage or account._registered
+                        or self.stage.leg_index != 0 or self.stage.phase != 'walking' or self.stage.epoch != 0
+                        or self._initial_measurement is not None or self._pulses != 0):
+                    raise ValueError('Only one initial measurement may own the untouched first itinerary stage')
+                account._assert_intact()
+                self._assert_intact()
+                self._initial_measurement = self._initial_measurement_identity = account
+            except Exception as error:
+                self.cancel(error)
+                raise
+            finally:
+                self._mutating = False
+
+    def reserve_initial_measurement(self, account, request):
+        """Charge an actual original relative-experiment request before DOWN."""
+        from .initial_itinerary_measurement import InitialItineraryMeasurement, initial_request_state
+        with self.lock:
+            self._begin_mutation()
+            try:
+                self.check()
+                if (type(account) is not InitialItineraryMeasurement
+                        or account is not self._initial_measurement or not account._registered
+                        or self.stage is not account.stage or self.stage.leg_index != 0
+                        or self.stage.phase != 'walking' or self.stage.epoch != 0):
+                    raise ValueError('Original claimed initial measurement scope required')
+                now = account._pending(request)
+                state = initial_request_state(request)
+                bounds = account.bounds
+                bounds.validate_values(calibration_record_id=bounds.calibration_record_id, maximum_step_seconds=.2)
+                if (account._phase not in ('new', 'released') or request.index != len(account.reservations)
+                        or self._pulses != request.index or id(request) in self._reservations
+                        or not request.issued_at <= now <= request.expires_at
+                        or now+ bounds.maximum_actual_hold > self.expires_at):
+                    raise ValueError('Initial measurement request is repeated, out of order or outside its deadline')
+                hold = bounds.maximum_actual_hold
+                displacement = (bounds.forward_speed_upper_bound*hold if request.probe.key == 'forward'
+                                else bounds.pivot_displacement_upper_bound)+bounds.post_release_drift
+                d = self.declaration
+                if (self._pulses+1 > d.maximum_pulses or self._hold+hold > d.maximum_total_hold
+                        or self._distance+displacement > d.maximum_displacement_reserve):
+                    raise ValueError('Root itinerary initial measurement reservation budget exhausted')
+                account._assert_intact()
+                self._assert_intact()
+                result = ZoneInitialMeasurementReservation(account, request, self.stage,
+                    self._pulses+1, hold, displacement)
+                self._reservations[id(request)] = (result,
+                    (id(account), id(request), id(self.stage), result.serial, hold, displacement, False),
+                    state, bounds, flat_record_state(bounds), account.bounds_basis)
+                self._pulses += 1
+                self._hold += hold
+                self._distance += displacement
+                self._balance = (self._pulses, self._hold, self._distance)
+                return result
+            except Exception as error:
+                self.cancel(error)
+                raise ValueError(self.reason) from error
+            finally:
+                self._mutating = False
+
     def reserve(self, ticket, *, bounds):
         """Charge before DOWN; child scene/geometry/receipt checks remain mandatory."""
         with self.lock:
             self._begin_mutation()
             try:
                 now = self.check()
+                if (self.stage.leg_index == 0 and self.stage.phase == 'walking' and self._initial_measurement is not None
+                        and not self._initial_measurement.complete):
+                    raise ValueError('Initial measurement must finish before source navigation reserves input')
                 state = _ticket_state(ticket)
                 allowed = {'walking': ('walking', 'probe'), 'crossing': ('crossing',),
                            'bootstrap': ('probe',)}.get(self.stage.phase, ())
@@ -342,6 +439,9 @@ class ZoneItineraryBudget:
                 now = self.check()
                 if type(stage) is not ZoneItineraryStage or stage is not self.stage:
                     raise ValueError('Exact unconsumed itinerary stage required')
+                if (stage.leg_index == 0 and stage.phase == 'walking'
+                        and self._initial_measurement is not None and not self._initial_measurement.complete):
+                    raise ValueError('Initial measurement must finish before the first crossing')
                 leg = self.leg
                 next_index = stage.leg_index
                 transitions = {

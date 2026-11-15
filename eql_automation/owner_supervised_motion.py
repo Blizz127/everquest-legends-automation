@@ -43,6 +43,10 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
         def _prepare_supervised_job(self, name):
             return None
 
+        def _supervised_measurement_account(self, pending, session):
+            """Optional persistent itinerary accounting; ordinary measurements retain their scope."""
+            return None
+
         def _handoff_completed_motion(self, pending, session, record):
             # Ordinary motion measurement always finishes stopped. A concrete
             # route wrapper may adopt only its separate explicit owner job.
@@ -166,8 +170,11 @@ def make_owner_nov12_engine(base_engine, *, clock=time.monotonic,
                 location_test_record_id=p['setup_record_id'], owner_declaration=dict(p['declaration']),
                 hotkey=asdict(p['binding']), independent_clearance_verified=False,
                 horizontal_error_assumed=.01, movement_clearance='owner_declared_open_flat_ground'))
+            account = self._supervised_measurement_account(p, session)
+            if account is not None:
+                self._supervised_current(p, active=True)
             executors = SupervisedMotionExecutors(self, session, hotkey=p['binding'], owner_input=p['observer'],
-                check_current=lambda: self._supervised_current(p, active=True))
+                check_current=lambda: self._supervised_current(p, active=True), measurement_account=account)
             driver = MotionExperimentDriver(session, request_location=executors.request_location,
                                             run_pulse=executors.run_pulse)
             self.attach_motion_collection(driver)
