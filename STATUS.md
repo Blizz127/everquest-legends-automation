@@ -1,5 +1,55 @@
 # STATUS
 
+Updated 2026-11-15 16:19 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
+
+- **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,
+  XP, XP/hour, deaths and camp remain unknown. No accepted hands-off 1–50 run.
+- Development source **0.42.96**, committed through `019d9bf`, adds a separate
+  Butcherblock → Greater Faydark → Clan Crushbone → Slave Mines camp itinerary.
+  The original stop-only trip is unchanged. Both crossings, fresh Crushbone
+  measurements and conditional source steps retain the original root budget.
+  The maximum is **6 hours 18 minutes of navigation**, not an ETA or camp duration.
+- **VERIFIED:** **632 focused cases pass** with unchanged source/test bytes.
+  Exact node-ID coverage combines 521 completed applicable cases from an
+  interrupted broader batch with 111 remaining cases. The optional unchanged
+  full owner-journey module and two timed owner cases are excluded. The broader
+  batch was interrupted to keep only two long geometry processes; no observed
+  assertion failures. Receipt SHA
+  `fd6618f8136d0a4a3028c0c1d3267430e1ebd6e738395a4faf1b05515162895a`.
+- **Long integration validation is still running.** Earlier ordinary and
+  conditional-step terminal routes reached actual capture/transfer contracts
+  using synthetic feedback. Published-monitor stop, direct reentry and the
+  earlier bootstrap-fault batch pass. Sectioned travel, a mid-probe stop and
+  remaining transfer faults are still being checked. No full final-matrix
+  result or real-client route acceptance is claimed.
+- **VERIFIED local candidate:** preview **0.39.44** under
+  `owner-build-drafts/0.39.44-astra-candidate-z6vzxsw9/` passes 274 file pins and
+  42 GUI scenarios without an engine or settings writes. Runtime bytes match
+  the focused suite. Candidate receipt SHA
+  `aeaec4684457ca1a322d7ebe0a45a118c346479eb25694c65050d7bdffddaab8`.
+  It records pending long checks and no real itinerary/terminal-camp acceptance.
+- The new action admits configured integer levels 1–19. Fresh stopped arrival
+  transfers the same physical-input observer into existing stationary camping,
+  with fresh learned-spell preparation and target checks. Camping stops at
+  observed level 20; next-camp continuation stays off. F8 waits for movement
+  release before assist, while F9/F11 stop. Assist remains owner-targeted only.
+- **No deployment or game input.** Last recorded installed helper remains
+  **0.39.41 / source 0.42.87**. No new remote test this increment. No character,
+  prefix/install, Lutris, credentials, existing display/server or agent-config
+  changes; no push. Other sessions remain untouched. The earlier profiled
+  timing failures and limited unprofiled private-window success remain evidence,
+  not proof of this new terminal route on the actual client/compositor.
+- **Next:** finish the long matrix and record its exact per-case provenance.
+  Then connect an explicit camp-origin progression choice from Goblin's fresh
+  level 9/10 advance to this itinerary, preserving observed-level event, floor,
+  input, hazard history and the original continuation intent. The Trainer
+  connector remains unsupported; do not repeat its closed negative search.
+  Later routes, loot/vendors, death/relogin execution and fresh 1–50 acceptance
+  remain incomplete. The previously reported official-service rule conflict
+  still prevents a permitted live acceptance path; independent work continues.
+
+## Prior status
+
 Updated 2026-11-15 15:54 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
 
 - **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,

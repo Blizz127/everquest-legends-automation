@@ -1,5 +1,118 @@
 # FINDINGS
 
+## 2026-11-15 16:19 UTC — explicit terminal camp itinerary (0.42.96)
+
+OBSERVED local commits `cc2d09b`, `d89ad1d`, `a6e06ae`, `4ed1c89`,
+`0625908` and `019d9bf` add a separate
+`butcher-gfay-crushbone-slave-mines-camp` selection. The original stop-only
+itinerary is unchanged. The new selection carries one root through both zone
+crossings, fresh Crushbone position/height evidence and seven motion probes,
+then the copied Slave Mines guide. Its ordinary conditional steps charge the
+same child and root budgets. No crossing corridor is loaded for a camp target.
+
+The terminal guide has 1,053 operations, including seven conditional steps;
+copied guide-file SHA
+`88aecac52585363add569d3f66ed9ba19921725e81e3a1626e96c50cfdc847e7`.
+Its start is not evidence of the server spawn. A fresh observed connector remains
+required. The profile caps navigation at 22,680 seconds, 39,021 pulses,
+7,804.2 seconds of held input and 130,077.7 displacement reserve. These are
+accounting limits, not measured motion, travel time or camp suitability.
+Stationary combat is outside that navigation budget.
+
+OBSERVED the terminal handoff captures the actual completed source receipt and
+an independent reached-floor checkpoint before retiring navigation. The same
+physical-input observer passes to a provisional cleanup owner, then to the
+existing stationary camp. The reader lease is released, the child budget is
+retired and the root advances walking → arrival → complete without renewed
+time or movement reserves. Historical checks do not call retired scopes.
+Direct transfer reentry cancels the trip; nested owner ticks cannot start
+navigation or combat during camp adoption. Late owner, window, queue, receipt,
+floor and deadline changes prevent publication. The intentional camp-start stop
+alone may advance the generation once. F8/F9 remain independent stop paths.
+
+VERIFIED focused coverage comprises **632 distinct passing cases**, with all
+runtime and selected-test bytes unchanged. The first batch completed 522 cases
+before I interrupted an optional unchanged full owner-journey module to avoid
+a third long geometry process. One completed owner-journey case and its
+interrupted successor are excluded from this focused result. Exact collected
+node IDs account for 521 completed applicable cases plus 111 remaining cases;
+no applicable case was rerun or inferred. Two timed `real_owner` cases remain
+excluded. The complete focused coverage receipt is
+`releases/eql-0.42.96-astra-remaining-final-b.json`, SHA
+`fd6618f8136d0a4a3028c0c1d3267430e1ebd6e738395a4faf1b05515162895a`;
+source-manifest SHA
+`4dbe0008eaf1d4db917262d4a065cd1de439eb9ed7e010a4566aee832864bac7`.
+The interrupted batch is retained separately, SHA
+`58c4d72988cc706b058e65ae06a41d73788b1ca6d38fa55377b69668c369af08`.
+It has no observed assertion failures and is not reported as a completed suite.
+
+VERIFIED the adapter's 57 tests include actual retained camp startup with
+synthetic navigation shells; the wrapper's 34 new cases use protocol stubs.
+Actual crossing/bootstrap/source integration is separate: earlier ordinary and
+conditional-step terminal variants reached capture and transfer successfully.
+The long final matrix is **still running**, including sectioned travel, a stop
+during destination probes and late transfer failures. Published-monitor stop,
+direct reentry and the earlier seven-case bootstrap batch have passed. These
+are synthetic game feedback and low-level receipts, not a client run. No complete
+final-matrix result is claimed yet.
+
+VERIFIED a reproduced late receipt mutation could previously reach camp
+attribution after `_camp_current()`. The adapter now rechecks immutable receipt,
+root, reached floor, owner, progress object and original freshness/deadline after
+that callback. All eight new late-mutation cases refuse attribution. The fix
+changes only `continue_itinerary_camp_arrival`; all other adapter scopes match
+the preserved pre-fix source, SHA
+`39f9920f74912d2f69b3db04f7a0ffff028f712dfd77571a3e70b2a3912b837d`.
+Current adapter SHA
+`af1cd4c25b7d0638d7caa2187791bb53ccb43ae7551ff2ab1bb5f8f0606eadea`.
+Thus the separate capture/transfer checks retain their exact exercised code.
+
+VERIFIED preview **0.39.44** was built locally at
+`~/.local/share/eql-automation/owner-build-drafts/0.39.44-astra-candidate-z6vzxsw9/preview`.
+Its actual entry verifier accepts all **274 pins**, including 246 runtime files;
+the GUI test passed **42 scenarios** with engine construction and settings writes
+forbidden. Runtime bytes match the focused coverage and commit `019d9bf`.
+The distinct terminal button requires configured integer level 1–19 and both
+supervision declarations. The stop-only action remains available at 20 and 50.
+Leg 3/3 becomes the ordinary camp indicator after handoff. Camping prepares
+learned spells anew, stops at observed level 20 and does not relocate again.
+`continue_camps` remains false for both existing itinerary selections.
+
+Candidate verification receipt SHA
+`aeaec4684457ca1a322d7ebe0a45a118c346479eb25694c65050d7bdffddaab8`;
+source-manifest SHA
+`4a8563d8a859047332c553c53b36d53a275af918f3dd22e39f8743765d69649e`;
+entry SHA `6621d153cb5a2a14a9ab18eabc1758b21d0baab987b1f020f5f63dd0492f811c`;
+BUILD_INFO SHA `e7a25602ac12bf7e7c6e9564612af23229eacd99254b7c2a9427337197417d9d`;
+HOWTO SHA `66c05cd237dcac5c7ee440c20434595f173eff52be844764739e44d180f963ef`.
+It explicitly records the long matrix as pending, `movement_ready=false` and
+no real itinerary or terminal-camp acceptance. No deployment or remote input
+occurred; last recorded installed helper remains 0.39.41 / source 0.42.87.
+
+INFERRED next useful increment is an explicitly selected camp-origin progression
+contract: Newbie Hills → Goblin Camp, then this itinerary after a fresh observed
+Goblin level increase to 9 or 10. The copied Butcher map gives ranges 1–4, 5–8
+and travel hint 4–10, SHA
+`96b4c8c3efd7d8209fa4820008b4db4e766195cfa7544ea39aca7b3e5341bf1d`.
+The pinned first crossing guide starts at Goblin's exact package XY
+`(-2069,-298)`, has 314 operations/two sections, and file SHA
+`c1c20af83d12fc6397edfc5aecae285b2ed68596ae6eea2d6d7e0fadea5eb5a3`.
+This would connect existing supported routes without guessing new geometry.
+It needs a typed active-camp admission, exact observed level-event identity,
+one root before fresh probes, continuous observer/floor/hazard ownership and
+the existing deliberate settings-snapshot transition at crossing. It must not
+simulate a stop followed by a queued GUI request or silently flip pinned
+continuation flags. Existing camp-section crossing startup should explicitly
+carry its original hazard veto rather than create a new tail there.
+
+VERIFIED read-only review rehashed the later Trainer 0.42.84 negative search,
+SHA `2a13b04cdeb0e97f6f3f872188e5ac1493be687009e69da5661a646acbbfea4d`.
+Its 71-boundary/6,474-face search and internal fire geometry still do not give
+a checked Trainer connector. Repeating that search or widening step hypotheses
+does not establish a route. Copied later-zone level labels extend through 50,
+but are not executable routes or proof of live suitability. Actual level, XP,
+XP/hour, deaths and camp remain unknown; the standing 1–50 goal is unmet.
+
 ## 2026-11-15 — pinned itinerary preview and measured input timing (0.42.95)
 
 VERIFIED the final frozen local suite passes **422 tests** in 307.39 seconds,
