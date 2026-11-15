@@ -41,11 +41,16 @@ only because the watchdog performs the mandatory final check under the same
 GO lock. Local cancellation-before-GO checks passed previously.
 
 G0 is VERIFIED passed, including the owner visible-stop confirmation. No new
-G0 or lead-operated game test is needed. Owner 0.39.36 remains unchanged; this
+G0 or lead-operated game test is needed. Previous owner 0.39.36 remains unchanged; this
 is not real-client 1–20/1–50 acceptance. Level/XP/hour/deaths/current camp remain
-unknown. Owner 0.39.37 carries the exact seam fix but does not connect automatic
-sections yet; its additive private publication is in progress. No game input,
-account login, client-prefix write or session restart.
+unknown. VERIFIED owner 0.39.37 / source 0.42.82 is now privately installed:
+596 Python pins, 252 owner files, eight destination and nine section guides,
+read-only client pins and installed launcher startup all pass. It carries the
+exact seam fix but does not connect automatic sections yet. Source revision
+`d974023f8151160f57f43131ff59119ae1e642f5`; archive SHA
+`13c9190565c2d5a249175f456e20ddea17b1dabafa67924050ac3e67a21cb8f3`;
+receipt SHA `f85fa93fb8809100800d79c73078f27b42745b745ab147b62f13dc31d9061f85`.
+No game input, account login, client-prefix write or session restart.
 
 ## 2026-11-15 01:11 UTC — shared whole-trip input accounting
 

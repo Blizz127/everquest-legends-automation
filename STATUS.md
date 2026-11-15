@@ -1,14 +1,15 @@
 # STATUS
 
-Updated 2026-11-15 01:31 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 01:36 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** The owner confirmed the visible stop: **G0 passed**;
   do not repeat it. Current level, XP, XP/hour, deaths and camp remain **unknown**.
   No real-client 1–20 acceptance, automated level gain or hands-off 1–50 run.
-- Owner **0.39.36 / runtime 0.42.79** remains installed and unchanged. It extends
-  the existing rotation bot, with strict assist and supervised Butcherblock /
-  Crushbone destination tests. Automatic route sections are not owner-wired.
-- **Source 0.42.82 verified; private publication in progress:** healthy ordinary arrival can capture its
+- Owner **0.39.37 / runtime 0.42.82** is privately installed on Alienware. It
+  extends the existing rotation bot, with strict assist and supervised Butcherblock /
+  Crushbone destination tests. Previous 0.39.36 remains unchanged; no running
+  helper was restarted. Automatic route sections are not owner-wired.
+- **Source 0.42.82 verified and privately installed:** healthy ordinary arrival can capture its
   actual floor, retain the same sender, observer and fixed whole-trip budget,
   check the entire seven-probe reserve at the actual stopped position, collect
   fresh measurements, fit motion and walk one onward section without a camp.
@@ -27,11 +28,16 @@ Updated 2026-11-15 01:31 UTC for coordinator task `829a00229b29`.
   separately, including seven failed pre-fix regressions and the exact failed
   runtime footprint. Validation SHA
   `a6ec90546cf07d930fc9a22178ec463a19ebe3076f99df1f5d53adf07d070ac6`.
-- **Owner 0.39.37 built; publication in progress.** Includes the boundary fix and
-  existing eight destinations/assist controls. All GUI controls, dialogs and
-  manifest verification pass without starting an engine or saving settings.
+- **VERIFIED private installation/startup:** all 596 source Python hashes,
+  252 owner snapshot files, eight destination guides, nine section guides and
+  installed client pins match. Installed `launch.sh --help` returns 0; GUI
+  controls/dialogs pass without an engine or settings write. Source revision
+  `d974023f8151160f57f43131ff59119ae1e642f5`; archive SHA
+  `13c9190565c2d5a249175f456e20ddea17b1dabafa67924050ac3e67a21cb8f3`;
+  installed receipt SHA
+  `f85fa93fb8809100800d79c73078f27b42745b745ab147b62f13dc31d9061f85`.
   No game input, helper restart, login, character or prefix change occurred.
-- **Next:** publish 0.39.37, then connect ordered sections to owner travel. Preserve the same parent budget
+- **Next:** connect ordered sections to owner travel. Preserve the same parent budget
   and observer across healthy arrivals; final destination alone may stop/camp.
   Real travel, camp suitability and leveling remain owner-test gates; cross-zone
   travel, later camps, looting/vendors and recovery remain unfinished.
