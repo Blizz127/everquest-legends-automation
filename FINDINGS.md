@@ -1,5 +1,24 @@
 # FINDINGS
 
+## 2026-11-15 00:10 UTC — offline source tools 0.42.76 privately installed
+
+VERIFIED additive installation at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.76/source` from source revision
+`00905a9e33716e4251caff559c9c2ad542fef401`. All **574 source Python files** and
+all packaged code/docs/evidence hashes match. Installed tool CLI startup returns
+0; synthetic guide startup preserves both Butcher and default Crushbone identity.
+Owner **0.39.35 / runtime 0.42.75** remains unchanged, including its manifest;
+no running helper was restarted or game input sent.
+
+Private archive `releases/eql-source-tools-0.42.76.tar.gz`, SHA
+`c500cbeb7b4921d859097ef1f17d7fe2f8d248456f7b34652304ddc41fe5d62f`.
+Receipt SHA `e7acb4ca6da85a4eefa96c31a307550613ce52fa2b23a0fc2185581b055391f5`.
+Validation SHA `6c7781c0cb413ceaea187299bc5d85a4cd43a5b6da3d535c6f2e21388ab11afb`.
+This is a source/tools increment, not a new enabled Goblin route. All five
+copied-geometry long-route diagnostics remain refused. Nineteen focused tests
+pass; real travel, camp suitability, level gain and the full 1–20/1–50 goals
+remain unverified/unfinished. G0 stays passed; no repeat requested.
+
 ## 2026-11-15 00:09 UTC — Butcherblock long-route proposals and exact refusals
 
 VERIFIED offline tools **0.42.76** produce ordinary-walking Butcher guides from

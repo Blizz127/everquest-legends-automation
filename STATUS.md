@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-15 00:09 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 00:10 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -39,13 +39,17 @@ Updated 2026-11-15 00:09 UTC for coordinator task `829a00229b29`.
   Source revision `7686bfb7ba4dda23f69d9826ca67363c7bf7ae81`.
   The install preflight initially rejected Bazzite's standard /home→/var/home
   mapping before any changes; using the resolved private store fixed it.
-- **Offline tools 0.42.76 built; private publication pending.** VERIFIED 19
+- **Offline tools 0.42.76 privately installed on Alienware.** VERIFIED 19
   focused checks and CLI startup. Source and retained-mesh long-route proposals
   exist to Goblin Camp, but none passes complete source/static checks. The mesh
   proposal's first 154 operations pass. Rebuilding that prefix reproduces every
   floor proof; the source-graph continuation then hits a placed object at 155.
   All five real copied-geometry diagnostics retain their explicit refusals.
-  The owner helper and its six destinations remain unchanged.
+  The owner helper and its six destinations remain unchanged. All 574 source
+  Python files verify and installed CLI/zone-guide startup passes. Source
+  revision `00905a9e33716e4251caff559c9c2ad542fef401`; archive SHA
+  `c500cbeb7b4921d859097ef1f17d7fe2f8d248456f7b34652304ddc41fe5d62f`;
+  install receipt SHA `e7acb4ca6da85a4eefa96c31a307550613ce52fa2b23a0fc2185581b055391f5`.
 - **Next:** make source-graph proposals avoid those exact static collisions,
   then recheck the whole Goblin route before owner registration. Skeleton camp,
   Trainer and zone crossings remain gaps. Real level, XP/hour, deaths and camp
