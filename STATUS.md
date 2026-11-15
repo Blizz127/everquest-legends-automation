@@ -1,33 +1,40 @@
 # STATUS
 
-Updated 2026-11-15 14:31 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
+Updated 2026-11-15 14:48 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
 
 - **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,
   XP, XP/hour, deaths and camp remain unknown. No accepted hands-off 1–50 run.
-- Development source **0.42.92** fixes GFay's pinned camp-annotation lookup and
-  preserves F8 assist / F9 stop through crossing completion. Nested crossing
-  checks avoid repeated physical sampling while full checks bracket each tick
-  and remain at input boundaries. Timing/geometry limits are unchanged.
-- **VERIFIED:** 100 local tests pass. An isolated Alienware pipe batch passes
-  15 crossing regressions; a final three-case batch passes single/sectioned
-  Butcher-to-GFay and GFay-to-Crushbone travel with two fresh destination fixes,
-  discarded source floors, released input and no camp startup. These are
-  synthetic logs/geometry and anonymous pipes, not real-client acceptance.
-- Local preview **0.39.42** exposes all 16 destinations (eight new choices).
-  Offscreen Qt controls, pinned startup and all 264 package / 236 runtime source
-  hashes pass. Final draft: `~/.local/share/eql-automation/owner-build-drafts/0.39.42-astra-final-20261115`.
-  Manifest SHA `66fddbb51e89e7da76968a48838ff095046fd915557887e46cc09385bca47825`.
-- **No deployment or game input.** Last recorded installed Alienware owner
-  **0.39.41 / source 0.42.87** was not changed. No character, Lutris/prefix,
-  credentials/access, server or agent-config changes; no push. Paused Codex and
-  idle Flash remain untouched. HOWTO documents current and local-preview controls.
-- **Next:** destination bootstrap for an explicitly selected bounded
-  Butcher→GFay→Crushbone itinerary, using fresh destination floor/motion evidence
-  and one fixed itinerary budget. Existing crossings still stop at arrival.
-  `CurrentStartPlanner.plan_probe_envelope()` has no runtime consumer; calling a
-  new `SOURCE_JOB` would reuse the old open-ground declaration. Actual spawn and
-  any required transition-region egress remain unverified. Automatic cross-zone
-  camps, full leveling, loot/vendors and recovery remain incomplete.
+- Development source **0.42.93** adds a fresh destination bootstrap: separate
+  planning/capture/height pairs, seven fresh motion probes, a sealed conditional
+  fit and a new onward route start. Source-zone floors and steering are not reused.
+- A claim-once hazard handoff preserves the arrival log cursor and latches while
+  ending expected-transition exemptions. A fixed root itinerary budget retains
+  time, movement count, hold and displacement reserves through every leg.
+  Child policies retain their own limits and bind the active stage and zone.
+- The supported copied-file itinerary is Butcherblock → Greater Faydark → Clan
+  Crushbone. Catalog and pinned guide/corridor adjacency are verified; actual
+  server destinations, spawn position and transition-region egress are unverified.
+- **VERIFIED:** the consolidated source 0.42.93 suite passes **286 tests** in
+  145.16 seconds, with zero failures/errors/skips. All source hashes remained
+  unchanged during testing and match source commit `4488a87`. Coverage includes
+  destination measurements, fresh onward planning, stage/zone binding, delayed
+  DOWN deadlines, cancellation, real pipe policy release and legacy defaults.
+  Destination runtime sender receipts are synthetic; no real-client acceptance.
+  Receipt: `releases/eql-0.42.93-astra-destination-final-a.json` under the private
+  `~/.local/share/eql-automation/` store, SHA
+  `042f8206482097b61e58f35a64d157f7f7c692fca5efb6bcc898cb85e3cabb49`.
+- **No deployment or game input.** The existing local preview remains
+  **0.39.42 / source 0.42.92**; last recorded installed Alienware helper remains
+  **0.39.41 / source 0.42.87**. No character, install/prefix, Lutris, credentials,
+  server or agent-config changes; no push. Paused Codex and idle Flash untouched.
+- **Next:** connect an explicitly selected two-leg controller to the completed
+  crossing before its lease is released. Preserve the physical observer, check
+  the root after loading/release, bootstrap the actual destination, and adopt
+  the fresh route under the same deadline. Current owner controls still stop
+  after each crossing; no automatic multi-zone camp continuation is enabled.
+  Leveling, loot/vendors and recovery remain incomplete. The previously reported
+  official-service rule conflict still prevents a permitted live 1–50 test path;
+  independent offline implementation continues.
 
 ## Prior status
 

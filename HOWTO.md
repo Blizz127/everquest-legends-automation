@@ -1,9 +1,18 @@
 # EverQuest Legends automation — current owner guide
 
-> **Development branch (`carbon/continue`, source `0.42.92`):** Local preview
-> **0.39.42** adds the destinations below. It has not been installed on Alienware.
+> **Development branch (`carbon/continue`, source `0.42.93`):** New destination
+> floor/probe and itinerary-budget components are tested offline and are not
+> connected to owner controls. The existing local preview **0.39.42 / source
+> 0.42.92** adds the destinations below. It has not been installed on Alienware.
 > The installed helper remains **0.39.41 / runtime 0.42.87**, described afterward.
 > Full 1–50 automation and automatic cross-zone camp continuation remain unfinished.
+
+The new destination adapter collects fresh planning, floor-capture and height
+pairs before seven movement probes, then prepares a new route start. It requires
+an explicit supervision declaration and retains the trip's original deadline,
+input limits and hazard history. No new hotkey or automatic continuation is
+enabled by these development components; the crossing choices below still stop
+at their destination. A controller connecting the two crossings is the next step.
 
 Local preview 0.39.42 keeps F8 assist, F7 toggle, F9 stop, F10 heal and F11
 camp/cancel. It adds these explicit choices in **Travel and camp test**:

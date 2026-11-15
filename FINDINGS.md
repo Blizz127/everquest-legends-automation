@@ -1,5 +1,76 @@
 # FINDINGS
 
+## 2026-11-15 14:46 UTC — fresh destination bootstrap and fixed itinerary scope (0.42.93)
+
+VERIFIED the final consolidated suite passes **286 tests** in 145.16 seconds,
+with zero failures, errors or skips. Source/test hashes were unchanged during
+execution and match source commit `4488a87`. Private receipt
+`releases/eql-0.42.93-astra-destination-final-a.json` SHA
+`042f8206482097b61e58f35a64d157f7f7c692fca5efb6bcc898cb85e3cabb49`;
+JUnit SHA `29450887299937d7496a67224aaa7f9421aee0d0ce91ec0bfe8463767be91938`;
+source-manifest SHA
+`304af74b34cf820a73b4019e0c99b3ffe30b9eb27bac8685c5685c7e7826d840`.
+The final batch includes 32 destination runtime cases and adjacent floor, veto,
+budget, hotkey, camp-probe and source-observer regressions. It uses synthetic
+logs/geometry and anonymous pipes; destination runtime send receipts are
+explicitly synthetic. No real game/helper/device execution occurred.
+
+VERIFIED offline destination preparation now uses the actual
+`CurrentStartPlanner.plan_probe_envelope()` consumer, an exclusive destination
+reader, independently declared bounds and a checked installed-region model.
+It collects separate planning, capture and stopped-height pairs before creating
+seven fresh probe transactions. The resulting conditional fit is sealed to the
+actual transaction chain; onward planning obtains another fresh start pair.
+Source-zone floor, height, heading and speed objects are not reused. Historical
+floor ancestry alone grants no input; dynamic owner/generation checks remain at
+input boundaries. The adapter requires an explicit supervision declaration.
+
+VERIFIED the claim-once destination hazard handoff copies the arrival observer's
+cursor, epoch, timestamp history and hazard latch without starting a new EOF
+baseline. Expected-loading exemptions end at transfer. The original arrival
+retires without issuing input or clearing its retained destination lease/pair.
+
+VERIFIED a root itinerary budget retains its original absolute deadline and
+movement count/hold/displacement reservations across ordered walking, crossing,
+loading, arrival and bootstrap stages. Walking/probe policies bind the active
+stage and source zone; crossing also binds destination and zone-line identity.
+Each child retains its own limits. Movement DOWN permits reserve enough time for
+the declared maximum hold; optional location-key deadlines reserve the existing
+watchdog's accepted 0.25-second receipt envelope and reject late receipts while
+preserving unconditional UP cleanup. These are admission and receipt checks,
+not an operating-system scheduling guarantee.
+
+VERIFIED the copied catalog and registered pinned specifications connect
+`butcher-gfay-crossing` (68 → 54) to
+`gfay-butcher-crushbone-crossing` (54 → 58). Catalog file SHA
+`0a5c0ff78c452a1895af2ac3014254d29aee996a36a2d4e907e717e2180c422d`;
+normalized catalog SHA
+`0ed2f1d70229605b9fc81851c21981b634f1f1066cb57669e700c5f719e24ce0`.
+These checks prove copied-file adjacency, not actual server arrival or spawn.
+
+No owner control starts this multi-leg sequence yet. The next controller must
+claim the completed arrival before existing crossing cleanup releases its lease,
+retain the physical observer and strict veto, recheck the root after loading/UP,
+and adopt fresh destination source execution before the next crossing. A spawn
+inside a nonzero transition region still requires a separate proven egress path.
+The existing 0.39.42/source0.42.92 local preview and last recorded installed
+0.39.41/source0.42.87 helper remain unchanged. No game input, character progress,
+Lutris/prefix/install, credentials, server or agent-config changes, or remote push.
+The real 1–50 result remains unverified and incomplete.
+
+
+OBSERVED integration points for the next change: branch in
+`SourceCrossingEngine._finish_source_crossing()` before `release()`, using a
+one-use transfer that preserves the actual lease. `release(close_observer=False)`
+still releases that lease and clears the latest reply. Existing
+`CampInputContinuity.transfer_to()` cannot transfer an invalidated source floor
+to a floor-less destination monitor. `OwnerSourceCrossingRuntime` needs root
+budget passthrough/capped expiry. Walking-section ownership still uses the exact
+`JourneyInputBudget` type and cancels that child before crossing; preserve its
+section rules while adding the persistent parent budget. Model onward adoption
+on `SectionContinuation._start_route()` and capture a fresh independent
+`CampFloorCheckpoint` before retiring the destination bootstrap ancestry.
+
 ## 2026-11-15 14:31 UTC — final crossing verification and local preview (0.42.92 / 0.39.42)
 
 VERIFIED the final isolated Alienware `/tmp` batch passes all three route cases
