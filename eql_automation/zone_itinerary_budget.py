@@ -1,4 +1,4 @@
-"""Fixed accounting across adjacent source crossings and fresh destination probes.
+"""Fixed accounting across source crossings and optional terminal camp travel.
 
 This root is additional to each child's geometry, observation and input policy.
 Its stage changes record caller-proven handoffs; they neither prove arrival nor
@@ -34,6 +34,9 @@ class ZoneItineraryLeg:
     expected_zone_line_sha256: str
     catalog_sha256: str
 
+    @property
+    def arrival_mode(self):return 'zone_crossing'
+
     def validate(self):
         spec = destination_spec(self.destination_id)
         if (spec.arrival_mode != 'zone_crossing'
@@ -49,6 +52,48 @@ class ZoneItineraryLeg:
                            (self.guide_sha256, self.corridor_sha256,
                             self.expected_zone_line_sha256, self.catalog_sha256))):
             raise ValueError('Pinned crossing guide, distinct catalog zones and source identities required')
+
+
+@dataclass(frozen=True)
+class ZoneItineraryTerminalCamp:
+    """Registered final camp route, distinct from a zone-crossing leg."""
+    destination_id: str
+    source_zone: str
+    source_zone_id: int
+    source_name: str
+    guide_sha256: str
+    catalog_sha256: str
+
+    @property
+    def arrival_mode(self):return 'camp'
+
+    def validate(self):
+        spec = destination_spec(self.destination_id)
+        if (spec.arrival_mode != self.arrival_mode
+                or (self.source_zone, self.source_zone_id, self.guide_sha256)
+                    != (spec.zone, spec.zone_id, spec.file_sha256)
+                or type(self.source_zone_id) is not int
+                or type(self.source_name) is not str or not self.source_name
+                or not digest(self.guide_sha256) or not digest(self.catalog_sha256)):
+            raise ValueError('Pinned registered terminal camp guide and source catalog identity required')
+
+
+def load_terminal_camp(destination_id, *, zone_catalog):
+    """Resolve one camp's registered guide and unique copied source-zone name."""
+    if not isinstance(zone_catalog, Mapping):
+        raise ValueError('Copied terminal camp zone catalog required')
+    catalog = dict(zone_catalog)
+    if (not catalog or any(type(name) is not str or not name or type(zone_id) is not int
+                           or zone_id <= 0 for name, zone_id in catalog.items())):
+        raise ValueError('Exact display-name to integer zone catalog required')
+    spec = destination_spec(destination_id)
+    names = [name for name, zone_id in catalog.items() if zone_id == spec.zone_id]
+    if spec.arrival_mode != 'camp' or len(names) != 1:
+        raise ValueError('Registered terminal camp and unique copied source-zone name required')
+    terminal = ZoneItineraryTerminalCamp(destination_id, spec.zone, spec.zone_id,
+        names[0], spec.file_sha256, sha256(encoded(catalog)).hexdigest())
+    terminal.validate()
+    return terminal
 
 
 def load_zone_itinerary(identifiers, *, zone_catalog, crossing_provider=None):
@@ -112,11 +157,16 @@ class ZoneItineraryDeclaration:
     maximum_pulses: int
     maximum_total_hold: float
     maximum_displacement_reserve: float
+    terminal_camp: ZoneItineraryTerminalCamp | None = None
+
+    @property
+    def target_count(self):return len(self.legs) + int(self.terminal_camp is not None)
 
     def validate(self):
         if (type(self.record_id) is not str or not 1 <= len(self.record_id) <= 128
                 or type(self.legs) is not tuple or not 1 <= len(self.legs) <= 8
                 or any(type(leg) is not ZoneItineraryLeg for leg in self.legs)
+                or self.terminal_camp is not None and type(self.terminal_camp) is not ZoneItineraryTerminalCamp
                 or len({leg.destination_id for leg in self.legs}) != len(self.legs)
                 or type(self.maximum_pulses) is not int or self.maximum_pulses <= 0
                 or not all(finite(value) and value > 0 for value in
@@ -132,6 +182,13 @@ class ZoneItineraryDeclaration:
             if (previous.destination_zone, previous.destination_zone_id, previous.destination_name) != (
                     current.source_zone, current.source_zone_id, current.source_name):
                 raise ValueError('Ordered crossing legs are not adjacent in the copied catalog')
+        if self.terminal_camp is not None:
+            terminal, last = self.terminal_camp, self.legs[-1]
+            terminal.validate()
+            if ((terminal.source_zone, terminal.source_zone_id, terminal.source_name)
+                    != (last.destination_zone, last.destination_zone_id, last.destination_name)
+                    or terminal.catalog_sha256 != last.catalog_sha256):
+                raise ValueError('Terminal camp must be adjacent to the final crossing in the same catalog')
 
 
 @dataclass(frozen=True)
@@ -141,6 +198,7 @@ class ZoneItineraryStage:
     phase: str
     epoch: int
     started_at: float
+    kind: str = 'crossing'
 
 
 @dataclass(frozen=True)
@@ -189,7 +247,8 @@ def _declaration_state(declaration):
     return (id(declaration), declaration.record_id, type(declaration.legs), id(declaration.legs),
             tuple(flat_record_state(leg) for leg in declaration.legs),
             declaration.maximum_seconds, declaration.maximum_pulses,
-            declaration.maximum_total_hold, declaration.maximum_displacement_reserve)
+            declaration.maximum_total_hold, declaration.maximum_displacement_reserve,
+            None if declaration.terminal_camp is None else flat_record_state(declaration.terminal_camp))
 
 
 class ZoneItineraryBudget:
@@ -230,8 +289,16 @@ class ZoneItineraryBudget:
         self.check()
 
     @property
-    def leg(self):
-        return self.declaration.legs[self.stage.leg_index]
+    def leg(self) -> ZoneItineraryLeg | ZoneItineraryTerminalCamp:
+        stage, declaration = self.stage, self.declaration
+        if type(stage.leg_index) is int:
+            if stage.kind == 'crossing' and 0 <= stage.leg_index < len(declaration.legs):
+                leg = declaration.legs[stage.leg_index]
+                if type(leg) is ZoneItineraryLeg:return leg
+            elif (stage.kind == 'terminal_camp' and stage.leg_index == len(declaration.legs)
+                    and type(declaration.terminal_camp) is ZoneItineraryTerminalCamp):
+                return declaration.terminal_camp
+        raise ValueError('Root stage does not select an exact crossing leg or terminal camp')
 
     def cancel(self, reason):
         with self.lock:
@@ -447,26 +514,37 @@ class ZoneItineraryBudget:
                     raise ValueError('Initial measurement must finish before the first crossing')
                 leg = self.leg
                 next_index = stage.leg_index
-                transitions = {
-                    'walking': ('crossing', leg.source_zone_id),
-                    'crossing': ('loading', None),
-                    'loading': ('arrival', leg.destination_zone_id),
-                    'bootstrap': ('walking', leg.source_zone_id),
-                }
-                if stage.phase == 'arrival':
+                next_kind, next_leg = stage.kind, leg
+                if type(leg) is ZoneItineraryTerminalCamp:
+                    expected = {
+                        'bootstrap': ('walking', leg.source_zone_id),
+                        'walking': ('arrival', leg.source_zone_id),
+                        'arrival': ('complete', leg.source_zone_id),
+                    }.get(stage.phase)
+                elif stage.phase == 'arrival':
                     if stage.leg_index + 1 < len(self.declaration.legs):
                         next_index += 1
-                        expected = ('bootstrap', self.declaration.legs[next_index].source_zone_id)
+                        next_leg = self.declaration.legs[next_index]
+                        expected = ('bootstrap', next_leg.source_zone_id)
+                    elif self.declaration.terminal_camp is not None:
+                        next_index = len(self.declaration.legs)
+                        next_kind, next_leg = 'terminal_camp', self.declaration.terminal_camp
+                        expected = ('bootstrap', next_leg.source_zone_id)
                     else:
                         expected = ('complete', leg.destination_zone_id)
                 else:
-                    expected = transitions.get(stage.phase)
+                    expected = {
+                        'walking': ('crossing', leg.source_zone_id),
+                        'crossing': ('loading', None),
+                        'loading': ('arrival', leg.destination_zone_id),
+                        'bootstrap': ('walking', leg.source_zone_id),
+                    }.get(stage.phase)
                 if (expected is None or (next_phase, zone_id) != expected
                         or zone_id is not None and type(zone_id) is not int):
                     raise ValueError('Itinerary phase or observed zone is out of order')
                 self._assert_intact()
                 self.stage = ZoneItineraryStage(next_index,
-                    self.declaration.legs[next_index].destination_id, next_phase, stage.epoch + 1, now)
+                    next_leg.destination_id, next_phase, stage.epoch + 1, now, next_kind)
                 self._stage_state = flat_record_state(self.stage)
                 return self.stage
             except Exception as error:

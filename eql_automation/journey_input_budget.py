@@ -135,7 +135,7 @@ class JourneyInputBudget:
                 or parent.clock is not self.clock or parent.lock is not self.lock
                 or parent.stage.phase != 'walking'
                 or self.declaration.destination_id != parent.leg.destination_id
-                or self.declaration.arrival_mode != 'zone_crossing'):
+                or self.declaration.arrival_mode != parent.leg.arrival_mode):
             # A healthy root may already have advanced. Do not submit an old
             # reservation to it, which would cancel the newly active stage.
             raise ValueError('Journey child belongs to a retired or different itinerary walking stage')
