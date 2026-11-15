@@ -87,10 +87,16 @@ def run_checked_source_step(sender,ledger,*,policy,kind,requested_seconds,
             if (sender.held or ledger.phase!='ready'
                     or (sender.codes.KEY_UP,sender.codes.KEY_LEFT,sender.codes.KEY_RIGHT)!=(103,105,106)):
                 raise RouteHalt('Source sender is not idle or key bindings differ')
-            scene()
+            # Preparation sends no input and validates its own geometry and
+            # reference. Keep sender/ledger ownership current without spending
+            # the position's freshness on an unused physical scene.
+            check_sender()
         geometry=ledger.prepare(kind)  # No keys; OFF may acquire the shared lock.
         with ledger.lock:
-            scene();pinned_fd=os.dup(original_fd)
+            # Refuse changes or expiry before starting the READY-only child.
+            # Selection and every GO/held/release boundary still observe a
+            # complete fresh scene before permitting or accepting any input.
+            check_sender();ledger.validate_reference();pinned_fd=os.dup(original_fd)
         try:
             receipt=selected_key_pulse_receipt(pinned_fd,select,pump=pump,
                 should_stop=should_stop,go_lock=ledger.lock)

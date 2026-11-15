@@ -223,7 +223,10 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             def bound():
                 self._check_region_model(p['continuation'])
                 self._trial_scope_current(p)
-            bound()
+            # These providers only read state. Retain the model precheck and
+            # validate the complete owner scope after their last callback;
+            # an extra window/root query before them adds no input boundary.
+            self._check_region_model(p['continuation'])
             if p['continuation']['destination'] is not None:
                 p['continuation']['destination'].check()
             p['binding'].check()
@@ -253,8 +256,9 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
         def _trial_binding(self,p):
             runtime=p.get('source_runtime')
             if runtime is not None:
-                self._trial_scope_current(p)
                 binding=runtime.observation_binding()
+                # observation_binding reads the exclusive lease/descriptor.
+                # Recheck job, window and root after all of those callbacks.
                 self._trial_scope_current(p)
                 return binding
             self._trial_current(p)

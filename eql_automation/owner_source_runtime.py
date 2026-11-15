@@ -73,7 +73,7 @@ class OwnerSourceRuntime(SourceExecutionLoop):
     def observation_binding(self):
         """Reader/owner identity only; full scene checks belong to the sender.
 
-        The engine brackets this with its current mode/generation/job/window
+        The engine follows this with its current mode/generation/job/window
         check. Avoid recursively reading physical input and files inside each
         source observation check; the policy still checks those at admission,
         immediately before DOWN, during the pulse and after release.
@@ -86,11 +86,12 @@ class OwnerSourceRuntime(SourceExecutionLoop):
     def check_current(self):
         # Never enter ledger._check here: it calls back through the observer.
         e, p = self.engine, self.pending
-        e._trial_common_current(p)
         self.observation_binding()
         veto = self.veto.poll()
         if not veto.continuity_available or veto.reason is not None:
             raise ValueError('Source route log hazard or coverage changed')
+        # Lease and log reads send no input. Check the full scene after their
+        # callbacks so owner events remain queued for this final input sample.
         e._trial_common_current(p)
         self._exclusive()
         self.check_contact_boundary()
