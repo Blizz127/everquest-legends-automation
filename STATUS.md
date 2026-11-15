@@ -1,5 +1,29 @@
 # STATUS
 
+Updated 2026-11-15 03:22 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met. G0 passed; never repeat it.** Current level, XP,
+  XP/hour, deaths and camp remain unknown. No accepted real-client 1–20 or 1–50 run.
+- **Privately installed: owner 0.39.40 / source 0.42.86.** Existing rotation,
+  F8 assist/F9 stop, historical Butcherblock search and Goblin sections remain.
+  Camp progress now records observed kills, XP award events, deaths and elapsed
+  time; labels gross logged percentage/hour separately from unknown raw/net XP;
+  retains level windows and checked camp-start attribution; and writes private
+  timestamped `owner-status/STATUS.md` / `camp-progress.json` during owner runs.
+- **VERIFIED:** 107 final local tests plus two isolated Alienware travel tests,
+  eight GUI checks, and installed startup pass. All 613 source / 923 package /
+  257 owner files verify, along with eight destinations and nine section guides.
+  Receipt SHA `91d8c9166b75819dc576ca51dadd125d14a8c4b144300f87442dc3d7781f5f10`.
+  Previous 0.39.39 and historical data are unchanged; no helper was restarted.
+- **Next:** productive-camp decisions and later/cross-zone continuity. Actual
+  owner-started Goblin movement remains the next live check inside Butcherblock.
+  Metrics do not yet drive XP-based relocation. No live camp report or automated
+  level gain was produced by this installation. Actual movement/camp suitability,
+  full leveling, loot/vendors and recovery remain unverified. No lead game input,
+  login, character change or prefix modification occurred.
+
+## Prior status
+
 Updated 2026-11-15 03:20 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed; never repeat it.** Current level, XP,

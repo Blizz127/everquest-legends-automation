@@ -1,5 +1,26 @@
 # FINDINGS
 
+## 2026-11-15 03:22 UTC — owner 0.39.40 privately installed
+
+VERIFIED additive Alienware installation: owner 0.39.40 / source 0.42.86,
+source revision `6dbb5e419b77824a884d5c5f5839a3dff78f7b2c`.
+Archive SHA `7f607bcb077a4190d1217f2d06a8bd148e14173997f323220092eeac3efaae2a`;
+package-manifest SHA `2d60499725a9db5dd5bdd2cc911da00644caec9d01df1bef6aac91db6f0acbcf`.
+All 613 source files, 923 package files and 257 owner files verify. Eight
+historical search candidates, eight destinations, nine section guides and the
+installed client executable pin also verify. Installed `launch.sh --help`
+returns zero. Previous 0.39.39 and both historical-name artifacts are unchanged.
+Receipt `releases/eql-owner-journey-0.39.40-installed.json`, SHA
+`91d8c9166b75819dc576ca51dadd125d14a8c4b144300f87442dc3d7781f5f10`.
+
+The new helper can write camp progress only after the owner starts it and begins
+a camp; installation generated no live camp report. It did not restart a helper,
+send game input, or change the game/prefix or character. G0 stays passed.
+Current character level, XP, XP/hour, deaths and camp remain unknown. Full real
+1–20 and fresh hands-off 1–50 remain unfinished. Next work: connect useful camp
+productivity decisions to actual supported routes, and extend later/cross-zone
+continuity without fabricating client acceptance.
+
 ## 2026-11-15 03:20 UTC — camp progress reporting verified for owner 0.39.40
 
 VERIFIED 107 final local focused cases pass, including receipt-window rates,
