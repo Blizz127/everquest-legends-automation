@@ -1,5 +1,60 @@
 # FINDINGS
 
+## 2026-11-15 00:51 UTC — complete copied Goblin route and owner preview 0.39.36
+
+VERIFIED the source 0.42.78 private installation: source revision
+`a330b05904a817f46d713051fce00c6dd2b6278c`, 580 Python hashes and 630 packaged
+files. CLI startup and synthetic Butcher/Crushbone guide round trips pass.
+Archive SHA `54b6300a62e0874e367b907c6b2b865ebf80dab6d10c56279033aad9e81b19d8`;
+receipt SHA `d5816f1b117c04e6cec2fc72ac9cf313b7329b760662442b253da66faec65d3a`.
+Owner 0.39.35 was unchanged. The first repair invocation failed before geometry
+loading because lexical `/home` code paths were compared with resolved `/var/home`.
+Resolved invocation fixed that run; source 0.42.79 also canonicalizes all sibling
+pin paths. A symlink-launch regression reaches the first checkpoint without any
+geometry/client access and passes.
+
+VERIFIED one low-priority, single-thread offline job at a time on Alienware:
+
+- Mesh continuation replays all 472 prior cells, then checks through operation
+  967/1,018 before a static refusal: SHA
+  `676e6840e1f7ffab09f82553f8c2408b9a33a0a2a370d05062ebfa1e4996ff5d`.
+- Local repair exhausts its narrow search box after 63 expansions/500 edges;
+  it is not a timeout or proof that the camp is unreachable. SHA
+  `0e55d1621f17a7bd7104387d28b0676fc614d2d86c21456d0a8357876d0fc70a`.
+- Source-graph resumption from the exact 967-cell prefix finds a checked local
+  detour and completes the entire Newbie Hills → Goblin Camp route in 29.96 wall
+  /29.89 CPU seconds: 1,057 operations/1,060 final cells, length 7,417.87 units.
+  Artifact `butcher-newbie-goblin-transit-20261115-final-source-alienware.json`, SHA
+  `3c396a3944c4aba7ad05def3c939d45d74c24f87ccd7409a2d048cb4c85be22e`;
+  plan SHA `387cd132ab06d67b7ac763d53fbcfd259ca0edddad0223db55e9a105f7458c48`.
+  Exact map goal (-2069,-298), carried floor height -3.1688731527093594,
+  source face wld:335:face:20. Both object libraries, terrain, BSP/native checks
+  remain required. No new floor seed, dimension or collision-bound relaxation.
+- The current-start producer independently rebuilds 1,060 cells using synthetic
+  location logs at Newbie Hills: 9.83 seconds, SHA
+  `ee1108f95527b83613f6781ee04a22abcad6669cac6e9d1d0f7d585cbd4ee49c`.
+  The final source registry subsequently adds Goblin entries; that is the sole
+  difference from this diagnostic's runtime code pins. Geometry code is unchanged.
+
+Owner 0.39.36 stages two new destination choices, retains strict assist and F9,
+allows Newbie level-up continuation toward the copied Goblin 5–8 hint, and keeps
+zone 68 throughout. Camp travel requires actual observed Butcher NPC history;
+stop-only does not. Eight focused core checks and GUI smoke pass. The initial
+GUI invocation used system Python without numpy; the existing python-ui environment
+passes without installing dependencies or starting the engine. Both synthetic
+OS-pipe handoff/stop fixtures pass on Alienware in 83.03 seconds; ten unique
+focused tests pass. Runtime receipt SHA
+`fb80b8cc29601832a681ee67451182b15556a80d439cd96a4959e22feaddd054`.
+Publication is not yet claimed.
+
+INFERRED runtime limitation: 7,418 units may exceed the existing 25-minute or
+3,000-pulse limit after turns and stopped feedback. Do not promise one-scope
+arrival. Fresh current-start joins near any guide point within the existing
+12-unit bound allow an owner restart; no saved location or floor is trusted.
+The whole route still needs real-client movement acceptance. Current level, XP,
+XP/hour, deaths and camp are unknown. G0 passed; no repeat. No game input,
+login, character mutation, helper restart or client/prefix write occurred.
+
 ## 2026-11-15 00:40 UTC — source 0.42.78 alternate departures and suffix searches
 
 VERIFIED **23 focused checks pass** for shortcuts, retained-prefix replay,

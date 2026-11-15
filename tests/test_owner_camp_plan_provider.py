@@ -54,11 +54,18 @@ def test_map_ranges_keep_current_camp_and_never_fill_unbuilt_level_gaps(annotati
 
 def test_butcher_level_increase_cannot_select_a_crushbone_route(tmp_path,monkeypatch):
     from eql_automation import butcher_assets
-    data=b'P 650, -2700, 0, 0, 0, 0, 2, L01-04_Newbie_Hills\n'
+    data=(b'P 650, -2700, 0, 0, 0, 0, 2, L01-04_Newbie_Hills\n'
+          b'P 2069, 298, 0, 0, 0, 0, 2, L05-08_Goblin_Camp\n')
     (tmp_path/'butcher_3.txt').write_bytes(data)
     monkeypatch.setitem(butcher_assets.DATA_PINS,'butcher_3.txt',sha256(data).hexdigest())
-    for level in (1,4,5,7,10,13,18,20):
+    for level in (1,4,9,10,13,18,20):
         assert provider.choose_next_destination(tmp_path,'newbie-hills',level) is None
+    for level in (5,7,8):
+        selected,evidence=provider.choose_next_destination(tmp_path,'newbie-hills',level)
+        assert selected.identifier=='goblin-camp' and selected.zone=='butcher'
+        assert json.loads(evidence)['level_hint']==[5,8]
+        assert provider.choose_next_destination(tmp_path,'goblin-camp',level) is None
+    assert provider.choose_next_destination(tmp_path,'goblin-camp-stop',5) is None
     assert provider.choose_next_destination(tmp_path,'newbie-hills-stop',1) is None
 
 

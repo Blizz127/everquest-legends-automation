@@ -18,7 +18,15 @@ DESTINATIONS = MappingProxyType({**crushbone.DESTINATIONS,
     'newbie-hills-stop': SourceGuideDestination('newbie-hills-stop', 'Newbie Hills movement test',
         'butcher-newbie-stop-source-guide-v1.json',
         '38a2f367aa2e515a249656e45012230101b3d8b8ba2bcca2794f596e21cb9dbd',
-        (-650.,2700.), '36b7d71b078ced64374e5ba2981cc2b751dc7f211155f422934f57ca0e5f0b4a', 'stop', 'butcher')})
+        (-650.,2700.), '36b7d71b078ced64374e5ba2981cc2b751dc7f211155f422934f57ca0e5f0b4a', 'stop', 'butcher'),
+    'goblin-camp': SourceGuideDestination('goblin-camp', 'Goblin Camp',
+        'butcher-goblin-source-guide-v1.json',
+        '1f80591a0a4835a7e7276d1d1b17e08fe801ed614634237afeb9bbb2da3f4aa8',
+        (-2069.,-298.), 'cbf65baf94b8ce069e457dfe47aa220303fd69baa3a0a1be7915e1be61d753f2', zone='butcher'),
+    'goblin-camp-stop': SourceGuideDestination('goblin-camp-stop', 'Goblin Camp movement test',
+        'butcher-goblin-stop-source-guide-v1.json',
+        '7d34ae25fca117206172b262fbc6f0f0f559331002611518e36c20381d547d1f',
+        (-2069.,-298.), 'cbf65baf94b8ce069e457dfe47aa220303fd69baa3a0a1be7915e1be61d753f2', 'stop', 'butcher')})
 
 
 def destination_spec(identifier):

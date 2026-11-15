@@ -19,7 +19,8 @@ import sys
 import tempfile
 import time
 
-PROJECT = Path(__file__).resolve().parents[1]
+SOURCE_SCRIPT = Path(__file__).resolve()
+PROJECT = SOURCE_SCRIPT.parents[1]
 STORE = Path.home()/'.local/share/eql-automation'
 sys.path[:0] = [str(PROJECT), str(STORE/'owner-assist/0.39.4')]
 
@@ -65,11 +66,11 @@ def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, re
     began, cpu_began = time.monotonic(), time.process_time()
     goal = DESTINATIONS[destination]
     pins = {str(p.relative_to(PROJECT)): sha256(p.read_bytes()).hexdigest()
-            for p in (Path(__file__).resolve(), Path(__file__).with_name('source_walk_repairs.py'),
-                      Path(__file__).with_name('source_transit_centers.py'),
-                      Path(__file__).with_name('source_walk_prefix.py'),
-                      Path(__file__).with_name('source_walk_shortcuts.py'),
-                      Path(__file__).with_name('source_transit_departures.py'),
+            for p in (SOURCE_SCRIPT, SOURCE_SCRIPT.with_name('source_walk_repairs.py'),
+                      SOURCE_SCRIPT.with_name('source_transit_centers.py'),
+                      SOURCE_SCRIPT.with_name('source_walk_prefix.py'),
+                      SOURCE_SCRIPT.with_name('source_walk_shortcuts.py'),
+                      SOURCE_SCRIPT.with_name('source_transit_departures.py'),
                       *sorted((PROJECT/'eql_automation').glob('*.py')))}
     record = dict(format='eql-offline-butcher-camp-transit-v1',
         origin='newbie-hills', destination=destination, start=START, goal=goal,

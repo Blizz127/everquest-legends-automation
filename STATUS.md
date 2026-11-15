@@ -1,5 +1,44 @@
 # STATUS
 
+Updated 2026-11-15 00:51 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met.** No accepted real-client 1–20 route, automated
+  level gain or fresh-character hands-off 1–50 run. Current level, XP, XP/hour,
+  deaths and camp remain **unknown**. **G0 passed**, including the owner's
+  visible-stop confirmation; do not repeat it.
+- **VERIFIED copied-data Newbie Hills → Goblin Camp route:** 1,057 ordinary
+  operations and 1,060 checked cells. The final source continuation bypasses
+  the last placed-object collision and retains the previously replayed floors.
+  Full source terrain, both static-object libraries, BSP and native region
+  checks pass. No bounds were widened. Diagnostic SHA
+  `3c396a3944c4aba7ad05def3c939d45d74c24f87ccd7409a2d048cb4c85be22e`;
+  checked-plan SHA `387cd132ab06d67b7ac763d53fbcfd259ca0edddad0223db55e9a105f7458c48`.
+- **VERIFIED synthetic current-start check on Alienware:** the owner startup
+  planner rebuilds all 1,060 cells from fresh synthetic location replies at
+  Newbie Hills, with unchanged two-unit source/detail correspondence. SHA
+  `ee1108f95527b83613f6781ee04a22abcad6669cac6e9d1d0f7d585cbd4ee49c`.
+  This is copied geometry and simulated observations, not live acceptance.
+- **Owner 0.39.36 / source 0.42.79 staged; publication pending.** Adds Goblin
+  Camp and movement-only choices to the existing rotation helper. Eight focused
+  core checks and eight-choice GUI/startup smoke pass. Both Goblin camp handoff
+  and stop-only OS-pipe fixtures pass on Alienware in 83.03 seconds: **10 unique
+  focused tests pass**. No game input is used.
+  Owner 0.39.35 remains installed and unchanged. The route is about 7,418 units;
+  existing 25-minute/3,000-pulse bounds may stop before arrival. Fresh-position
+  rejoin is supported; bounds remain unchanged. Camp travel requires observed
+  Butcher NPC history, while the movement-only choice does not.
+- **Source tools 0.42.78 privately installed.** All 580 source Python hashes
+  and 630 packaged files verify; CLI and synthetic zone-guide startup pass.
+  Receipt SHA `d5816f1b117c04e6cec2fc72ac9cf313b7329b760662442b253da66faec65d3a`.
+  The subsequent /home→/var/home alias bug in the offline pin builder is fixed
+  locally with a passing regression; installed immutable files were preserved.
+- **Next:** publish the additive owner preview and report its exact launch command. Real travel, camp suitability,
+  effective trip length and leveling remain owner-test gates. Cross-zone travel,
+  missing later camps and full-auto recovery remain unfinished. No helper restart,
+  login, character mutation or game-install/prefix modification occurred.
+
+## Earlier status (superseded by the current entry above)
+
 Updated 2026-11-15 00:40 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated

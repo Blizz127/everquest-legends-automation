@@ -1,11 +1,12 @@
 # EverQuest Legends automation — current owner guide
 
-Owner test **0.39.35** · runtime **0.42.75** · offline tools **0.42.78** · retained assist **0.39.13**.
+Owner test **0.39.36** · runtime/offline tools **0.42.79** · retained assist **0.39.13**.
 Publication status and evidence are recorded in STATUS.md.
 
-Offline tools 0.42.78 search alternative departures and navmesh continuations
-while preserving checked route prefixes. This adds no owner destination or new test requirement; use
-the existing 0.39.35 launch command below. The complete 1–20 route remains unfinished.
+0.39.36 adds **Goblin Camp** and **Goblin Camp · movement test** in Butcherblock.
+The approach starts near Newbie Hills and passes copied terrain, static-object,
+region and synthetic current-start checks. It has not been traversed in the
+real client. The complete 1–20 route remains unfinished.
 
 **G0 passed, including the visible stop. Do not repeat it.** The complete 1–20
 or 1–50 autopilot is not ready. This build extends the existing rotation bot;
@@ -17,7 +18,15 @@ followed by a stop without combat. The copied map suggests levels 1–4. Start
 near that marker inside Butcherblock; this is not a route from another zone.
 The camp choice requires NPC names already observed in your log in Butcherblock.
 Without that history it refuses before movement; the movement-only choice does
-not need NPC names. There is no packaged next Butcherblock camp yet.
+not need NPC names. Goblin Camp is the next packaged Butcherblock destination;
+its copied map hint is levels 5–8. Camp suitability still needs live testing.
+
+For the next route test, select **Goblin Camp · movement test** near Newbie Hills
+inside Butcherblock. It needs no combat history and stops without combat. This
+is a long route: the unchanged 25-minute, distance and input limits can stop it
+before arrival. Restarting travel checks a fresh position and can rejoin nearby
+route points. No zone crossing is included. Stay present; F9 stops and F8 returns
+to assist. This is not a repeat of G0.
 
 The approach was checked against copied terrain, static objects and region data.
 Its current-start planner passed using synthetic location replies. Real travel,
@@ -30,7 +39,7 @@ selection before the contact corridor. It starts near North Wall, disables
 camp continuation and starts no combat. Assist leaves movement and target
 selection to Blizz; F8 selects assist and F9 stops helper input.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.35 offers supervised local travel and camp tests in Butcherblock and Crushbone. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.36 offers supervised travel and camp tests in Butcherblock and Crushbone. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -44,13 +53,14 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 | Location-hotbutton test | Sends the configured location key, checks a fresh log reply; no movement or combat. | **Test /location hotbutton…**; F9/F11/Stop cancels. |
 | Travel and camp test | Measures motion, follows the selected route within its zone, then prepares spells and starts camping after stopped arrival. | **Travel to selected destination…**; F8 assist, F9/F11/Stop cancels. |
 | Newbie Hills movement test | Short local approach in Butcherblock, then stops without combat. | Select **Newbie Hills · movement test** and use the travel button. |
+| Goblin Camp movement test | Route from Newbie Hills within Butcherblock, then stops without combat. May stop at the trip limits first. | Select **Goblin Camp · movement test** and use the travel button. |
 | Stair-landing test | Travels from near North Wall to the top stair landing, then stops without combat. | Select **Throne stair landing · movement test** and use the travel button. |
 
 Run only one helper at a time. G0 is complete. Travel/camp and assist switch in
 the same process without a restart or re-login. The older separate diagnostic
-builds described later in this file are not additional buttons in 0.39.35.
+builds described later in this file are not additional buttons in 0.39.36.
 
-## Optional next-camp continuation — 0.39.35
+## Optional next-camp continuation — 0.39.36
 
 This release keeps the existing rotation and adds an unchecked
 **After level-ups, travel to the next supported camp** option beside the travel
@@ -63,19 +73,21 @@ The copied map supplies Slave Mines (7–10), North Wall/Castle (13–17), and
 Throne Room (17–22) with packaged guides. Levels 11–12 have no packaged next route;
 the current camp continues and still checks each live target. No route is
 invented from the gap. Next-camp selection stays in the current zone; it never
-routes from Newbie Hills to Crushbone. No next Butcherblock guide is packaged.
+routes from Newbie Hills to Crushbone. In Butcherblock, a newly observed level
+5–8 can select Goblin Camp after Newbie Hills. There is no later Butcherblock
+destination yet. These are map hints, not verified camp suitability.
 The extra trip has one 25-minute deadline, including its
 measurement and planning; the seven-probe measurement itself remains limited
 to 120 seconds. A fresh stopped arrival now starts a new camp session, prepares
 learned spells again and requires new target checks before combat. F8/F9 can
 cancel the handoff. This is supervised testing, not the full 1–20 path.
 
-## Choose a travel/camp destination — preview 0.39.35
+## Choose a travel/camp destination — preview 0.39.36
 
 Close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.35/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.36/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
@@ -89,6 +101,11 @@ In **Travel and camp test**, select the destination:
   Butcherblock NPC history; map labels are not used as NPC names.
 - **Newbie Hills · movement test**: the same approach, then stops without
   combat or camp continuation. It does not repeat G0.
+- **Goblin Camp · Butcherblock · map hint 5–8**: the checked approach from
+  Newbie Hills, then stationary camp. Requires observed Butcherblock NPC history.
+- **Goblin Camp · movement test**: the same approach, then stops without
+  combat. No NPC history or camp continuation. Fresh-position restart is supported
+  if a trip limit stops the helper before arrival.
 - **Slave Mines**: the original route. The copied map suggests levels 7–10.
 - **North Wall and Castle**: start near Slave Mines. The route retraces the
   corridor to reach this combined map destination. The copied map suggests
@@ -99,7 +116,7 @@ In **Travel and camp test**, select the destination:
 - **Throne stair landing · movement test**: same starting area, but stops on
   the top landing before the rug corridor and starts no combat.
 
-Start inside the destination's zone: Butcherblock for Newbie Hills, or Clan
+Start inside the destination's zone: Butcherblock for Newbie Hills/Goblin Camp, or Clan
 Crushbone for the other four selections. Open the map and run **Test /location hotbutton…**
 using your configured `/location` key. After focusing the game, release all keys,
 mouse buttons and touchpad contacts. **Waiting for still controls** means the

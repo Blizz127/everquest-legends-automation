@@ -61,7 +61,7 @@ def start(h,destination_id=None):
     return route_start(h)
 
 
-@pytest.mark.parametrize('destination_id', ('north-wall','newbie-hills'))
+@pytest.mark.parametrize('destination_id', ('north-wall','newbie-hills','goblin-camp'))
 def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,monkeypatch,destination_id):
     from eql_automation.source_destinations import destination_spec
     zone=destination_spec(destination_id).zone
@@ -120,7 +120,7 @@ def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,
     assert not checkpoint.valid and checkpoint._chain is None
 
 
-@pytest.mark.parametrize('destination_id', ('throne-stair-landing','newbie-hills-stop'))
+@pytest.mark.parametrize('destination_id', ('throne-stair-landing','newbie-hills-stop','goblin-camp-stop'))
 def test_movement_destination_needs_no_npc_history_and_stops_without_camp(h,monkeypatch,destination_id):
     configure(h,monkeypatch,destination_id=destination_id);e=h.engine
     import eql_automation.owner_camp_runtime as camp_runtime
