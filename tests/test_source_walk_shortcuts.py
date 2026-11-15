@@ -101,3 +101,42 @@ def test_walk_gap_repair_cannot_skip_a_step():
     prefix,guide,terrain,static,_,_=fixture()
     with pytest.raises(ValueError,match='walk-only detour range'):
         shortcut_walks(prefix,guide,terrain,static,check_context=lambda:None,detour_rejoin=(0,2))
+
+
+def test_smoothing_only_the_new_suffix_preserves_replayed_detour_caps():
+    from test_source_walk_prefix import repaired_prefix
+    from tools.source_walk_prefix import replay_walk_prefix
+    from tools.audit_butcher_camp_transit import join_source_suffix
+    prefix,guide,evidence,p=repaired_prefix();before=_chain_snapshot(prefix)
+    branch,position,retained=replay_walk_prefix(prefix,guide,evidence,p,check_context=lambda:None)
+    carried=_chain_snapshot(branch)
+    suffix=replace(guide,operations=guide.operations[evidence['completed_operations']:])
+    shorter,_=shortcut_walks(branch,suffix,p.source,p.static,check_context=lambda:None)
+    joined=join_source_suffix(retained,shorter)
+    assert joined.operations[:len(retained)]==retained and any(op.start==op.end for op in retained)
+    assert joined.operations[len(retained)].start==position
+    assert _chain_snapshot(prefix)==before and _chain_snapshot(branch)==carried
+    plan=plan_source_itinerary(prefix,guide.operations[0].start,joined,p.source,p.static,p.bsp,p.region_policy,
+        check_context=lambda:None,max_connect_distance=0,max_connect_attempts=1).record()
+    assert plan['goal']==[4.,0.] and not plan['real_client_accepted']
+    with pytest.raises(ValueError,match='adjoining'):
+        join_source_suffix(retained,replace(shorter,operations=(SourceWalkHint((90.,0.),(4.,0.)),)))
+
+
+def test_static_clear_shortcut_cannot_skip_native_region_rebuild():
+    from test_client_classification import view as native_view
+    from test_bsp_volume import leaf
+    _,guide,terrain,static,bsp,policy=fixture()
+    sources=rectangle(-5.,5.,0.,0);terrain.source_faces_for_footprint=lambda _:sources
+    prefix=SourceFloorChain(inventory_sha256='a'*64,seed_evidence_sha256='b'*64,
+        seed_ids=((1,1),),body_height=6.)
+    assert prefix.advance(swept_square((-2.,0.),(-2.,0.),.25),sources).candidate
+    guide=replace(guide,zone='butcher',radius=.25,goal=(2.,0.),operations=(
+        SourceWalkHint((-2.,0.),(-1.,1.)),SourceWalkHint((-1.,1.),(2.,0.))))
+    short,evidence=shortcut_walks(prefix,guide,terrain,static,check_context=lambda:None)
+    assert not evidence['bsp_regions_checked'] and not evidence['input_authorized']
+    model=native_view(((0.,1.,0.,.25,0,2,5),(0.,-1.,0.,.25,0,3,5),
+        (0.,0.,1.,-1.,0,4,5),leaf(2),leaf(1)),wld_pin='a'*64)
+    policy=replace(policy,zone='butcher',classifier=model,classification_inventory_sha256=model.inventory_sha256)
+    with pytest.raises(ValueError,match='native regions'):
+        plan_source_itinerary(prefix,(-2.,0.),short,terrain,static,bsp,policy,check_context=lambda:None)

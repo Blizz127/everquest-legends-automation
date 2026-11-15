@@ -119,7 +119,11 @@ def shortcut_walks(prefix, guide, terrain, static, *, check_context,
                 stop += 1
             chosen = None
             for end in range(stop-1, index-1, -1):
-                check()
+                # These scans call no providers. Recheck at bounded intervals
+                # and in walk() before every geometry query; avoid rebuilding
+                # the entire guide snapshot for every distant endpoint.
+                if (stop-1-end)%256 == 0:
+                    check()
                 goal = guide.operations[end].end
                 if math.dist(position, goal) > maximum_distance:
                     continue

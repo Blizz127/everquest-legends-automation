@@ -48,21 +48,36 @@ def write_checkpoint(output, record):
         temporary.unlink(missing_ok=True)
 
 
+def join_source_suffix(retained_ops, suffix):
+    """Compact only new hints; retain every reproduced detour cap/footprint."""
+    if (type(retained_ops) is not tuple or any(type(op) is not SourceWalkHint for op in retained_ops)
+            or retained_ops and retained_ops[-1].end != suffix.operations[0].start):
+        raise ValueError('An exactly adjoining ordinary source prefix is required')
+    compacted = compact_source_guide(suffix)
+    joined = replace(compacted, operations=retained_ops+compacted.operations)
+    joined.validate()
+    return joined
+
+
 def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, repair=False,
         proposal_model='source', prior_path=None, prior_pin=None, start_via_edges=False,
-        center_rounds=0):
+        center_rounds=0, smooth_suffix=False, departure_rounds=0):
     began, cpu_began = time.monotonic(), time.process_time()
     goal = DESTINATIONS[destination]
     pins = {str(p.relative_to(PROJECT)): sha256(p.read_bytes()).hexdigest()
             for p in (Path(__file__).resolve(), Path(__file__).with_name('source_walk_repairs.py'),
                       Path(__file__).with_name('source_transit_centers.py'),
                       Path(__file__).with_name('source_walk_prefix.py'),
+                      Path(__file__).with_name('source_walk_shortcuts.py'),
+                      Path(__file__).with_name('source_transit_departures.py'),
                       *sorted((PROJECT/'eql_automation').glob('*.py')))}
     record = dict(format='eql-offline-butcher-camp-transit-v1',
         origin='newbie-hills', destination=destination, start=START, goal=goal,
         status='running', stage='loading', completed=False, source_candidate=False,
         ordinary_walking_only=True, proposal_only=proposal_only, repair_walks=repair,
-        proposal_model=proposal_model, start_via_edges=start_via_edges, center_rounds=center_rounds,
+        proposal_model=proposal_model, start_via_edges=start_via_edges or departure_rounds>0,
+        requested_start_via_edges=start_via_edges, center_rounds=center_rounds,
+        smooth_suffix=smooth_suffix, departure_rounds=departure_rounds,
         synthetic_start=True, current_character_observation=False,
         historical_prefix_replayed=False, label_z_used_for_floor_selection=False,
         input_authorized=False, game_input_sent=False, real_client_accepted=False,
@@ -159,7 +174,11 @@ def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, re
             goal_floor = planner.source.propose_unique_diffuse_floor(goal, body_height=6.)
             record['mesh_goal_query_hypothesis'] = asdict(goal_floor)
             try:
-                path = mesh.find_path((*START, proposal.height), (*goal, goal_floor.height),
+                start_floor_height = transit_prefix.floor_at(transit_start)[0]
+                record['mesh_start_query'] = dict(point=transit_start, height=start_floor_height,
+                    source_floor_proof_sha256=transit_prefix.previous.proof_sha256,
+                    new_source_seed=False, mesh_z_used_for_floor_selection=False)
+                path = mesh.find_path((*transit_start, start_floor_height), (*goal, goal_floor.height),
                     water_cost=None, margin=1.2, allow_zone_lines=(), max_expansions=65536)
             except mesh_module.NavMeshError as error:
                 raise ValueError('Mesh XY proposal: '+str(error)) from error
@@ -168,7 +187,7 @@ def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, re
                 polygons=[int(p) for p in path.polys], length=float(path.length),
                 areas=sorted(int(v) for v in path.areas), mesh_z_used_for_floor_selection=False,
                 source_continuity_checked=False, input_authorized=False)
-            ops = []; position = START
+            ops = []; position = transit_start
             for point in (*path.points, goal):
                 end = tuple(float(v) for v in point[:2])
                 if end == position: continue
@@ -178,7 +197,7 @@ def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, re
                     ops.append(SourceWalkHint(position, next_point)); position = next_point
             guide = SourceItineraryGuide('butcher', planner.source.wld_sha256,
                 planner.static.inventory_sha256, seed_pin, 1.2, 6., goal, tuple(ops))
-            proposal_length = float(path.length)
+            proposal_length = float(path.length)+sum(math.dist(op.start, op.end) for op in retained_ops)
         else:
             stage('building_graph')
             graph = SourceTransitGraph(tuple(planner.source.sources),
@@ -188,7 +207,14 @@ def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, re
                 directed_edges=sum(len(v) for v in graph.adjacent.values()), step_links=0)
             record['goal_components'] = asdict(graph.components.goal(transit_prefix, goal))
             stage('proposing')
-            if center_rounds:
+            if departure_rounds:
+                from source_transit_departures import filter_transit_departures
+                def departure_progress(evidence):
+                    record['departure_evidence'] = evidence
+                    save()
+                transit = filter_transit_departures(graph, transit_prefix, transit_start, goal, planner,
+                    check_context=check, progress=departure_progress, rounds=departure_rounds)
+            elif center_rounds:
                 from source_transit_centers import filter_transit_centers
                 def center_progress(attempts, cache, excluded):
                     record['center_filter'] = dict(rounds=center_rounds, attempts=attempts,
@@ -210,14 +236,35 @@ def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, re
             record['proposal'] = asdict(transit)
             guide = transit.guide(static_inventory_sha256=planner.static.inventory_sha256,
                                   radius=1.2, body_height=6., zone='butcher')
-            guide = replace(guide, operations=retained_ops+guide.operations)
+            if smooth_suffix:
+                from source_walk_shortcuts import shortcut_walks
+                guide = compact_source_guide(guide)
+                record['source_suffix_guide'] = guide.record()
+                stage('smoothing_source_suffix')
+                def shortcut_progress(evidence):
+                    record['shortcut_evidence'] = evidence
+                    save()
+                guide, record['shortcut_evidence'] = shortcut_walks(transit_prefix, guide,
+                    planner.source, planner.static, check_context=check,
+                    maximum_distance=40., maximum_queries=2000, progress=shortcut_progress)
+                record['smoothed_suffix_guide'] = guide.record()
             proposal_length = sum(edge.cost for edge in transit.edges)+sum(math.dist(op.start, op.end) for op in retained_ops)
-        record['uncompacted_operations'] = len(guide.operations)
-        guide = compact_source_guide(guide)
+        record['uncompacted_operations'] = len(retained_ops)+len(guide.operations)
+        guide = join_source_suffix(retained_ops, guide)
         provenance = encoded(dict(proposal_sha256=sha256(encoded(record['proposal'])).hexdigest(),
             annotations=annotations, data_sha256=DATA_PINS, zone='butcher',
             maximum_compacted_length=8., label_z_used=False, requires_full_rebuild=True,
-            prefix_from=record.get('prefix_from')))
+            prefix_from=record.get('prefix_from'),
+            departure_evidence_sha256=(sha256(encoded(record['departure_evidence'])).hexdigest()
+                                      if departure_rounds else None),
+            shortcut_evidence_sha256=(sha256(encoded(record['shortcut_evidence'])).hexdigest()
+                                     if smooth_suffix else None),
+            smoothing=(dict(input_suffix_sha256=sha256(encoded(record['source_suffix_guide'])).hexdigest(),
+                output_suffix_sha256=sha256(encoded(record['smoothed_suffix_guide'])).hexdigest(),
+                carried_floor_proof_sha256=transit_prefix.previous.proof_sha256,
+                maximum_direct_distance=40., maximum_queries=2000,
+                bsp_native_checked_by_smoother=False, full_rebuild_required=True)
+                if smooth_suffix else None)))
         guide = replace(guide, provenance_sha256=sha256(provenance).hexdigest())
         guide.validate()
         record.update(guide=guide.record(), provenance=json.loads(provenance),
@@ -231,7 +278,10 @@ def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, re
                 save()
             guide, record['repair_evidence'] = repair_walks(chain, guide, planner,
                 check_context=check, progress=progress)
-            guide = compact_source_guide(guide)
+            if guide.operations[:len(retained_ops)] != retained_ops:
+                raise ValueError('Repair changed the reproduced source prefix')
+            guide = join_source_suffix(retained_ops,
+                replace(guide, operations=guide.operations[len(retained_ops):]))
             record['guide'] = guide.record()
         if proposal_only:
             record.update(status='proposed', stage='finished')
@@ -273,15 +323,20 @@ if __name__ == '__main__':
                         help='Also propose leaving the selected start face through an exact shared edge')
     parser.add_argument('--center-rounds', type=int, default=0,
                         help='Bounded retries excluding only independently demonstrated blocked fixed centers')
+    parser.add_argument('--smooth-suffix', action='store_true',
+                        help='Try checked direct walking shortcuts from the carried source prefix before full rebuild')
+    parser.add_argument('--departure-rounds', type=int, default=0,
+                        help='Retry graph departures after full checks from the carried source floor')
     parser.add_argument('--resume-source-from', type=Path,
-                        help='Rebuild a pinned checked prefix, then replace its failed suffix with a source-graph proposal')
+                        help='Rebuild a pinned source prefix, then propose a new source or mesh suffix')
     parser.add_argument('--prior-sha256')
     parser.add_argument('--wall-budget', type=float, default=240.)
     parser.add_argument('--cpu-budget', type=float, default=60.)
     args = parser.parse_args()
-    if ((args.start_via_edges or args.center_rounds) and args.proposal_model != 'source'
-            or not 0 <= args.center_rounds <= 16):
-        parser.error('Start-edge attachments and 0–16 center retries apply only to source-graph proposals')
+    if ((args.start_via_edges or args.center_rounds or args.smooth_suffix or args.departure_rounds)
+            and args.proposal_model != 'source' or not 0 <= args.center_rounds <= 16
+            or not 0 <= args.departure_rounds <= 32 or args.departure_rounds and args.center_rounds):
+        parser.error('Use one bounded source-graph filter; source modifiers do not apply to mesh proposals')
     if (args.output.exists() or args.output.is_symlink()
             or args.output.with_suffix('.json.tmp').exists()
             or args.output.with_suffix('.plan.json').exists()
@@ -290,7 +345,6 @@ if __name__ == '__main__':
         parser.error('Use a new private nav-candidates output and bounded CPU/wall budgets')
     if args.resume_source_from is not None or args.prior_sha256 is not None:
         if (args.resume_source_from is None or args.prior_sha256 is None
-                or args.proposal_model != 'source'
                 or args.resume_source_from.parent.resolve() != (STORE/'nav-candidates').resolve()
                 or args.resume_source_from.resolve() == args.output.resolve()):
             parser.error('Source resumption needs a separate pinned private diagnostic')
@@ -302,4 +356,5 @@ if __name__ == '__main__':
     run(args.output, destination=args.destination, wall_budget=args.wall_budget,
         cpu_budget=args.cpu_budget, proposal_only=args.proposal_only, repair=args.repair_walks,
         proposal_model=args.proposal_model, prior_path=args.resume_source_from, prior_pin=args.prior_sha256,
-        start_via_edges=args.start_via_edges, center_rounds=args.center_rounds)
+        start_via_edges=args.start_via_edges, center_rounds=args.center_rounds,
+        smooth_suffix=args.smooth_suffix, departure_rounds=args.departure_rounds)
