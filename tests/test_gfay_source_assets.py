@@ -156,7 +156,7 @@ def test_gfay_guide_and_corridor_loaders_refuse_missing_or_tampered_files(tmp_pa
 
     guide = SourceItineraryGuide(
         'gfaydark', WLD_PIN, STATIC_PIN, spec.provenance_sha256,
-        1.2, 6., spec.goal, (SourceWalkHint((2642.0693, -1627.6870), spec.goal),),
+        1.2, 6., spec.goal, (SourceWalkHint((48., 1848.), spec.goal),),
     )
     bad_record = dict(
         format='eql-copied-source-guide-v1',
@@ -172,4 +172,7 @@ def test_gfay_guide_and_corridor_loaders_refuse_missing_or_tampered_files(tmp_pa
         load_source_guide(tmp_path, 'gfay-orc-camps')
 
     with pytest.raises((OSError, ValueError)):
+        load_source_crossing_spec('gfay-crushbone-crossing', root=tmp_path)
+    (tmp_path / 'gfay-crushbone-crossing-carbon-corridor-v1.json').write_text('{}')
+    with pytest.raises(ValueError, match='hash mismatch'):
         load_source_crossing_spec('gfay-crushbone-crossing', root=tmp_path)

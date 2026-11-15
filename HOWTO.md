@@ -1,13 +1,12 @@
 # EverQuest Legends automation — current owner guide
 
-> **Development branch note (`carbon/continue`, source `0.42.90`):** Development
-> source `0.42.90` adds staged `-carbon-` Butcherblock Goblin-to-GFay pre-line
-> and zone-crossing destinations (`butcher-gfay-preline-stop` and
-> `butcher-gfay-crossing`) plus `OwnerSourceCrossingRuntime` in `OwnerJourneyEngine`,
-> keeping `F8` (Mode 2 Assist / rotation-only), `F7` (toggle), `F9` (instant stop),
-> `F10` (heal), and `F11` (stationary camp / cancel travel) unchanged. Installed
-> Alienware helper remains **0.39.41 / runtime 0.42.87** below until explicitly
-> promoted.
+> **Development branch (`carbon/continue`, source `0.42.92`):** Copied GFay
+> Orc Camps and Crushbone crossing guides are staged, alongside the Butcherblock
+> to GFay crossing. GFay next-camp lookup now uses its own pinned annotations.
+> Crossings stop after fresh destination confirmation; automatic cross-zone
+> camp continuation is unfinished. The installed Alienware helper remains
+> **0.39.41 / runtime 0.42.87** below. New destination controls are being prepared
+> in a local preview; nothing has been installed or started on Alienware.
 
 **This guide describes owner 0.39.41 / runtime 0.42.87.**
 Installation status is recorded in STATUS.md. After installation, the receipt

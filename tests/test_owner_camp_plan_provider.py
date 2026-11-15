@@ -69,19 +69,39 @@ def test_butcher_level_increase_cannot_select_a_crushbone_route(tmp_path,monkeyp
     assert provider.choose_next_destination(tmp_path,'newbie-hills-stop',1) is None
 
 
-def test_butcher_default_continuation_root_uses_its_own_copied_maps(monkeypatch):
+def test_gfay_camp_uses_its_own_pinned_annotations_without_inventing_a_cross_zone_route(tmp_path,monkeypatch):
+    from eql_automation import gfay_assets
+    data=(b'P -48, -1849, 0, 0, 0, 0, 2, L04-07_Orc_Camps\n'
+          b'P 52, -2597, 0, 0, 0, 0, 2, L04-10_GO_TO_CRUSHBONE\n')
+    (tmp_path/'gfaydark_3.txt').write_bytes(data)
+    monkeypatch.setitem(gfay_assets.DATA_PINS,'gfaydark_3.txt',sha256(data).hexdigest())
+    # The guide can camp here, but neither the transit label nor another zone's
+    # camps supply a same-zone replacement when the Orc Camps hint expires.
+    for level in (1,4,7,8,10,13,20,50):
+        assert provider.choose_next_destination(tmp_path,'gfay-orc-camps',level) is None
+    assert provider.choose_next_destination(tmp_path,'gfay-orc-camps-stop',8) is None
+    (tmp_path/'gfaydark_3.txt').write_text('changed')
+    with pytest.raises(ValueError,match='hash mismatch'):
+        provider.choose_next_destination(tmp_path,'gfay-orc-camps',8)
+
+
+@pytest.mark.parametrize('destination_id,level,data_name',(
+    ('newbie-hills',5,'butcher-camps-20261114'),
+    ('gfay-orc-camps',8,'gfay-camps-carbon-20261115'),
+))
+def test_default_continuation_root_uses_its_own_copied_maps(monkeypatch,destination_id,level,data_name):
     from pathlib import Path
     from eql_automation.camp_session import CampLevelAdvance
-    advance=CampLevelAdvance(4,5,10,3)
-    pending=SimpleNamespace(journey=SimpleNamespace(continue_camps=True,destination_id='newbie-hills'),
+    advance=CampLevelAdvance(level-1,level,10,3)
+    pending=SimpleNamespace(journey=SimpleNamespace(continue_camps=True,destination_id=destination_id),
         level_advance=advance,generation=3,
-        camp=SimpleNamespace(last_level_advance=advance,level_source='client_log',level=5))
-    engine=SimpleNamespace(_camp_position_current=lambda p:None,settings=SimpleNamespace(level=5),
+        camp=SimpleNamespace(last_level_advance=advance,level_source='client_log',level=level))
+    engine=SimpleNamespace(_camp_position_current=lambda p:None,settings=SimpleNamespace(level=level),
                            trace=lambda *a,**k:None)
     seen=[]
     monkeypatch.setattr(provider,'choose_next_destination',lambda root,*a:seen.append(root))
     assert provider.owner_camp_probe_plan(engine,pending) is None
-    assert seen==[Path.home()/'.local/share/eql-automation/owner-route-data/butcher-camps-20261114']
+    assert seen==[Path.home()/'.local/share/eql-automation/owner-route-data'/data_name]
 
 
 def install_historical_basis(h):

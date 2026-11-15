@@ -36,6 +36,8 @@ def choose_next_destination(root,current_id,level):
     pins=DATA_PINS
     if current.zone=='butcher':
         from .butcher_assets import DATA_PINS as pins
+    elif current.zone=='gfaydark':
+        from .gfay_assets import DATA_PINS as pins
     annotations=read_camp_annotations(checked_bytes(Path(root)/map_name,pins[map_name]))
     def annotation(spec):
         rows=[a for a in annotations if (-a.map_xyz[0],-a.map_xyz[1])==spec.goal]

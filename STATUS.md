@@ -1,5 +1,27 @@
 # STATUS
 
+Updated 2026-11-15 14:21 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
+
+- **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,
+  XP, XP/hour, deaths and camp remain unknown. No accepted hands-off 1–50 run.
+- Development source **0.42.92** builds on the staged GFay assets in `475ddb2`.
+  **VERIFIED:** GFay next-camp selection now reads its own pinned annotations;
+  previously it raised `KeyError('gfaydark_3.txt')`. Six focused tests pass,
+  including map tampering and corrected guide/corridor hash-rejection tests.
+- The larger copied-geometry/crossing verification is in progress. A local
+  preview exposing the new destinations and final-crossing cancellation review
+  are also in progress. Crossings currently stop after observed destination
+  arrival; automatic cross-zone camp continuation is still missing.
+- Installed Alienware owner **0.39.41 / source 0.42.87** is unchanged. No game
+  input, character/prefix/config changes, remote installation or push. Paused
+  `codex-everquest-legends` and idle Flash remain untouched.
+- **Next:** finish crossing regression checks and local preview, then connect
+  destination navigation from fresh destination measurements without reusing
+  source-zone floor or motion state. Full leveling, loot/vendors and recovery
+  remain incomplete or unverified.
+
+## Prior status
+
 Updated 2026-11-15 10:24 UTC by `gemini-everquest-legends-carbon` on `carbon/continue`.
 
 - **Working; goal not met. G0 passed, including the owner-visible stop. Never

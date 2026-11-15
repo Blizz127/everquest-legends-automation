@@ -1,5 +1,30 @@
 # FINDINGS
 
+## 2026-11-15 14:21 UTC — Astra takeover and GFay continuation lookup fix (0.42.92)
+
+VERIFIED clean `carbon/continue` at `475ddb2` after reading the Astra handoff,
+FINDINGS, STATUS, HOWTO and AGENTS. This work is confined to the Carbon worktree.
+The paused Codex tree/session and idle Flash session were not accessed or resumed.
+A takeover/progress note was queued through the coordinator's native notification
+API; acknowledgement is not yet observed. The CLI `say` route rejected the Codex
+agent identity, so it was not used to claim delivery.
+
+VERIFIED the original `choose_next_destination` raises
+`KeyError('gfaydark_3.txt')` on the staged GFay Orc Camps annotation. It now
+selects GFay's pinned map data, retaining same-zone selection and the normal
+no-supported-next-camp result. Five focused selection tests pass. The GFay
+hash-rejection test previously failed while constructing an overlong synthetic
+operation, before reaching its loader; a valid short operation now exercises
+actual hash rejection. Guide and corridor missing/tampered tests pass (six
+focused checks total). No geometry or movement limit was relaxed.
+
+OBSERVED the latest staged crossing code still stops after two fresh destination
+locations; it does not automatically continue GFay to Crushbone or select later
+cross-zone camps. The installed owner helper remains 0.39.41 / source 0.42.87.
+No game input, character progress, protected prefix/config modification or
+remote installation occurred. Actual metrics and full 1–50 acceptance remain
+unknown. The larger source/crossing verification is still running.
+
 ## 2026-11-15 10:24 UTC — Staged Butcherblock-to-GFay crossing assets and OwnerSourceCrossingRuntime integration (0.42.90, carbon/continue)
 
 VERIFIED on branch `carbon/continue` (`gemini-everquest-legends-carbon`, source
