@@ -1,18 +1,44 @@
 # EverQuest Legends automation — current owner guide
 
-> **Development branch (`carbon/continue`, source `0.42.93`):** New destination
-> floor/probe and itinerary-budget components are tested offline and are not
-> connected to owner controls. The existing local preview **0.39.42 / source
-> 0.42.92** adds the destinations below. It has not been installed on Alienware.
-> The installed helper remains **0.39.41 / runtime 0.42.87**, described afterward.
-> Full 1–50 automation and automatic cross-zone camp continuation remain unfinished.
+> **Development branch (`carbon/continue`, source `0.42.94`):** An optional
+> owner-command adapter now connects multiple crossings through fresh destination
+> measurements. It is an offline development API; no packaged GUI starts it yet.
+> The existing local preview **0.39.42 / source 0.42.92** remains separate and has
+> not been installed on Alienware. The last recorded installed helper remains
+> **0.39.41 / runtime 0.42.87**, described afterward. Full 1–50 automation remains
+> unfinished.
 
-The new destination adapter collects fresh planning, floor-capture and height
-pairs before seven movement probes, then prepares a new route start. It requires
-an explicit supervision declaration and retains the trip's original deadline,
-input limits and hazard history. No new hotkey or automatic continuation is
-enabled by these development components; the crossing choices below still stop
-at their destination. A controller connecting the two crossings is the next step.
+An explicitly configured engine can accept this development command:
+
+```python
+engine.post('zone_itinerary', {
+    'itinerary_id': selected_itinerary_id,
+    'open_flat_clear': True,
+    'owner_supervised_continuation': True,
+})
+```
+
+This requires a `zone_itinerary_provider` passed to `make_owner_journey_engine()`.
+The provider must return an exact `ZoneItineraryPlan` with pinned adjacent legs,
+independent movement hypotheses, lazy destination assets and finite trip limits.
+There is no default provider or saved-trip resume. A command without that engine
+configuration does not start an itinerary. These declarations are requirements
+of the supervised development test, not evidence that an actual spawn is safe.
+
+The adapter creates one trip budget before the initial measurement. It charges
+those seven probes, walking, section measurements, crossings and destination
+probes against the same original deadline and input limits. Each destination
+uses fresh planning, floor-capture and height pairs, seven new motion probes and
+a newly fitted onward route. The physical input observer and hazard history stay
+continuous; source-zone floor and steering state are discarded. The final
+crossing stops without starting a camp. The copied-file itinerary currently
+verified for adjacency is Butcherblock → Greater Faydark → Clan Crushbone;
+actual server arrivals and any transition-region egress remain unverified.
+
+F8 requests assist after navigation has released its keys and lease. F9 or F11
+stops an active itinerary; changing modes never starts a second trip job. The
+adapter emits itinerary start/completion messages and trace records. Existing
+single-crossing GUI choices below retain their current stop behavior.
 
 Local preview 0.39.42 keeps F8 assist, F7 toggle, F9 stop, F10 heal and F11
 camp/cancel. It adds these explicit choices in **Travel and camp test**:

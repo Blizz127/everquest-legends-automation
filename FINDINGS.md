@@ -1,5 +1,96 @@
 # FINDINGS
 
+## 2026-11-15 15:18 UTC — one owner itinerary across fresh destination scopes (0.42.94)
+
+VERIFIED the final local suite passes **390 tests** in 574.46 seconds, with zero
+failures, errors or skips. Two owner pipe tests were deliberately selected in a
+separate target-host run; both pass in 29.44 seconds. The local source/test
+manifest stayed unchanged and matches source commit `e790abb`. Private evidence
+under `~/.local/share/eql-automation/releases/`:
+
+- `eql-0.42.94-astra-itinerary-final-a.json`, SHA
+  `0cd5f74f927fb76dd229ccd425e370215838db640454348cbe8064c36d7cc03d`.
+  JUnit SHA `7af124969b3a4507cecf904c3816e190b64fe23bb607174f73f635a0cdfc2dcf`;
+  source-manifest SHA
+  `f9b86c64b2b46bf50f8d6f4e0683dd1104ecbfd9fe212a58d1b4a6e962dc6c06`.
+- `eql-0.42.94-astra-owner-alienware-final-b.json`, SHA
+  `184ee3a0df4e2c699ed46fd494f094e784b891499074d4616eafa95b01f1b364`.
+  JUnit SHA `977efcd8efc749bba10bae05d1f4c61cb593480ad05fb050e087c2e166c1bf33`.
+  All runtime and selected-test hashes match `e790abb`; the unrelated publication
+  regression was corrected after this archive and is covered by the local run.
+
+VERIFIED two complete synthetic itineraries use actual production crossing,
+arrival, destination bootstrap, source execution and budget classes. One also
+uses an actual `SectionContinuation` and its extra seven-probe cycle. Both reach
+synthetic zone 58 after two observed loading/entry sequences, charge every pulse
+to the same root and close the continuously retained physical observer once.
+Only low-level senders and game feedback are synthetic; this is not real-client
+crossing acceptance. Five additional cases interrupt the completed first crossing
+with F8, F9, lease revocation, root cancellation or a queued attack.
+
+VERIFIED the retained owner engine can start one explicit job, reserve its seven
+original measurement pulses against the root, adopt source execution, complete
+its first actual crossing runtime, transfer the exact reader/lease/observer to
+`ZoneItineraryRuntime`, and then release before assist. The two final tests ran
+with anonymous pipes, synthetic game directories and lambda window gates on
+Alienware. The test harness used a new `/tmp` directory, low process priority and
+resource limits; no game/helper/device was launched. Devbox attempts safely
+rejected stale source observations near the existing 0.5-second limit. The same
+runtime passes on the target host; real display and game timing are not thereby
+verified. No timing limit was widened.
+
+VERIFIED destination transfer retains the exact completed arrival pair, lease,
+strict log cursor and hazard latch under a one-use token. The old crossing is
+retired without closing transferred resources. Final callbacks cannot extend its
+original deadline or silently drop focus. Parent construction failure cleans the
+already transferred token. Destination and source candidates are checked after
+construction and before publication; reentrant stop/hazard tests prove that a
+cancelled candidate is retired while the parent retains observer cleanup.
+
+VERIFIED an initial measurement account charges all seven original probes before
+DOWN. Existing section budgets remain separate children of the persistent root;
+retiring a healthy child does not cancel that root. Every later destination uses
+fresh planning/capture/height pairs, seven measured probes and a fresh route fit.
+Location and movement release deadlines remain capped by the original root and
+any shorter child scope. No source-zone floor or steering object is reused.
+
+OBSERVED the optional factory hook is `zone_itinerary_provider` on
+`make_owner_journey_engine()`. It enables `engine.post('zone_itinerary', declaration)`
+with explicit initial-ground and continuation declarations and an exact
+`ZoneItineraryPlan`. It does not post a second travel job, renew the generation,
+or start a camp at completion. Default factories and current packaged GUI choices
+retain their single-crossing behavior. No default provider, GUI selector or
+saved-trip resume is supplied by this release. HOWTO documents the development
+API separately from installed controls.
+
+OBSERVED repeated window identity reads add real Xlib and `/proc` operations to
+nested owner validation. The retained gate enumerates windows twice per ordinary
+identity read; source-derived counts suggest at least 60 additional X replies
+and 12 process-stat reads per initial source observer check after the root layer.
+These counts are not measured complete-pipeline timings.
+
+VERIFIED a separate isolated Alienware Xvfb probe timed 25 identity calls against
+one synthetic EQ-class window and the test process PID. Nonfocused median/p95/max
+were **0.122830 / 0.160374 / 0.163951 ms**. Focused calls with synthetic readiness
+were **0.245601 / 0.270079 / 0.515968 ms**. Only its newly created Xvfb was stopped
+and reaped; no existing display was accessed. Receipt
+`eql-0.42.94-astra-xvfb-gate-timing-parsed.json` SHA
+`c9a47004c9730f736ac30e0a5fbe539fc54a16b4db4005337590f6f78b584201`;
+probe script SHA `f2580bc543a3c7ce094c588f3c211627174e101af76ddab96b61c54f7fac618f`.
+This small baseline does not measure the full callback cascade, actual XWayland
+compositor latency or real-client input. A complete isolated-gate owner check is
+still needed before drawing a performance conclusion.
+
+Next: a pinned lazy plan provider and separate local-preview itinerary selector,
+using the already checked copied catalog and guides, plus the complete gate
+check. Keep independent motion bounds explicitly identified as hypotheses.
+Actual arrival coordinates and egress from nonzero transition regions remain
+unverified. Existing preview 0.39.42/source0.42.92 and last recorded installed
+0.39.41/source0.42.87 helper remain unchanged. No character, prefix/install,
+Lutris, credentials, existing server, agent configuration or remote push changes.
+The real 1–50 goal remains incomplete; the official-service rule conflict and
+lack of a permitted acceptance path remain as previously reported.
+
 ## 2026-11-15 14:46 UTC — fresh destination bootstrap and fixed itinerary scope (0.42.93)
 
 VERIFIED the final consolidated suite passes **286 tests** in 145.16 seconds,

@@ -1,5 +1,48 @@
 # STATUS
 
+Updated 2026-11-15 15:18 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
+
+- **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,
+  XP, XP/hour, deaths and camp remain unknown. No accepted hands-off 1–50 run.
+- Development source **0.42.94**, source commit `e790abb`, connects an optional
+  `zone_itinerary` owner command to multiple actual crossing runtimes. One root
+  budget starts before the initial seven measurements and persists through
+  walking, section measurements, crossings, loading and fresh destination probes.
+- The controller retains the physical input observer, exclusive reader and strict
+  hazard history. Destination floor, height, heading and speed are measured anew.
+  Final arrival stops without camping. F8 waits for navigation release before
+  assist; F9/F11 stop. Stop callbacks cannot publish a newly constructed child.
+- **VERIFIED:** final local suite **390 passed**, zero failures/errors/skips,
+  in 574.46 seconds; source/test hashes remained unchanged and match `e790abb`.
+  Both actual-contract two-crossing simulations pass, including two walking
+  sections and their fresh probe cycle. Low-level itinerary receipts and game
+  feedback are synthetic. Private receipt SHA
+  `0cd5f74f927fb76dd229ccd425e370215838db640454348cbe8064c36d7cc03d`.
+- **VERIFIED:** the two separately selected owner pipe checks pass on Alienware
+  in an isolated `/tmp` directory (**2 passed**, 29.44 seconds). They cover initial
+  probes/source adoption and the actual first crossing into the continuation,
+  followed by F8 cleanup. Runtime and selected-test hashes match current source.
+  Receipt SHA `184ee3a0df4e2c699ed46fd494f094e784b891499074d4616eafa95b01f1b364`.
+  No helper, game or real input device was started.
+- **VERIFIED:** a separate synthetic Xvfb window gives identity-call medians
+  of 0.123 ms without focus and 0.246 ms with synthetic readiness. The new Xvfb
+  was reaped. Complete owner-chain and actual compositor timing remain unmeasured;
+  existing observation/input deadlines have not been widened.
+- **No deployment or game input.** Existing local preview remains
+  **0.39.42 / source 0.42.92**; last recorded installed helper remains
+  **0.39.41 / source 0.42.87**. No character, prefix/install, Lutris, credentials,
+  existing server/display or agent-config changes; no push. Other sessions untouched.
+- **Next:** provide a pinned Butcherblock → Greater Faydark → Clan Crushbone plan
+  and a separate selector in a new local preview. Check the complete owner input
+  path with an isolated real window gate. Current packaged controls still stop
+  after each crossing; the new API requires an explicit plan provider. Actual
+  server arrivals/spawns and transition-region egress remain unverified. Leveling,
+  loot/vendors and recovery remain incomplete. The previously reported official
+  service rule conflict still prevents a permitted live 1–50 acceptance path;
+  independent offline work continues.
+
+## Prior status
+
 Updated 2026-11-15 14:48 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
 
 - **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,
