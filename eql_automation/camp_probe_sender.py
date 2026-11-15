@@ -103,7 +103,12 @@ def send_camp_probe(sender,transaction,start,*,policy,requested_seconds,
             raise ValueError('Camp probe needs exact bounded current input admission')
         # Avoid recursive asdict of the ticket's complete floor/reader ancestry.
         authorization_state=authorization_values(authorization)
-        check();sender.held.add(key)
+        # The watchdog always calls stop() under this same lock after selection
+        # and before GO. That pass validates the exact authorization and every
+        # sender/owner callback. Match the source sender: do not repeat the full
+        # ancestry scan here inside the unchanged 50ms DOWN permit.
+        if sender.held:raise ValueError('Camp probe sender acquired a key during authorization')
+        sender.held.add(key)
         return PulseSelection(key,requested_seconds,authorization.expires_at)
 
     def authorization_values(value):

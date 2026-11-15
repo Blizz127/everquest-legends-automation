@@ -75,17 +75,26 @@ def f(tmp_path,monkeypatch,legacy,request):
             from eql_automation.source_contact_hint import SourceContactHint
             guide=replace(guide,goal=(4.,3.8),operations=(SourceWalkHint((4.,2.),(4.,2.4)),
                 SourceContactHint(((4.,2.4),(4.,3.8)),((20,0),(20,1)),.2)))
-    if getattr(request,'param',None)=='compact_long':
+    if getattr(request,'param',None) in ('compact_long','section_continuation','section_reserve_block'):
         from eql_automation.source_guide_compaction import compact_source_guide
-        vertices=((0.,0.,.2),(10.,0.,.2),(10.,15.,.2),(0.,15.,.2))
+        vertices=(((0.,0.,.2),(10.,0.,.2),(10.,15.,.2),(0.,15.,.2))
+            if request.param=='compact_long' else ((-50.,-50.,.2),(50.,-50.,.2),(50.,50.,.2),(-50.,50.,.2)))
         p.source.sources=tuple(SourceFace(tuple((y,x,z) for x,y,z in points),0,'Diffuse',10,index)
             for index,points in enumerate(((vertices[0],vertices[1],vertices[2]),
                                            (vertices[0],vertices[2],vertices[3]))))
         coords=np.asarray([s.vertices_wld for s in p.source.sources])[:,:,[1,0,2]]
         p.source.source_minimum=coords.min(axis=1);p.source.source_maximum=coords.max(axis=1)
-        guide=compact_source_guide(replace(guide,goal=(4.,10.),operations=tuple(
-            SourceWalkHint((4.,float(y)),(4.,float(y+1))) for y in range(2,10))))
-        assert guide.operations==(SourceWalkHint((4.,2.),(4.,10.)),)
+        if request.param=='compact_long':
+            guide=compact_source_guide(replace(guide,goal=(4.,10.),operations=tuple(
+                SourceWalkHint((4.,float(y)),(4.,float(y+1))) for y in range(2,10))))
+            assert guide.operations==(SourceWalkHint((4.,2.),(4.,10.)),)
+        else:
+            f.options['bounds']=replace(f.options['bounds'],maximum_actual_hold=.18,
+                maximum_requested_hold=.1,forward_speed_upper_bound=12.,pivot_displacement_upper_bound=.02,
+                post_release_drift=.01,heading_error_degrees=2.)
+            if request.param=='section_reserve_block':
+                p.static.sources=(SourceFace(((10.,-10.,0.),(10.,10.,0.),(10.,0.,20.)),0,'Diffuse',20,0),)
+                p.static.faces_for_footprint=lambda _:p.static.sources
     if getattr(request,'param',None) in ('step','down'):
         before_z,after_z=((.5125,.2) if request.param=='down' else (.2,.5125))
         def face(points,index):

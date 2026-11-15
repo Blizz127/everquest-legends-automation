@@ -31,6 +31,13 @@ def inside(point,polygon, *, strict=False):
 
 def positive_overlap(first,second):
     """Exact convex positive-area overlap, without constructing intersections."""
+    # Clipping through an existing vertex can emit it twice. A zero-length
+    # edge has no separating axis; remove only exact adjacent repetitions,
+    # including the closing vertex. No rounding or geometric expansion.
+    first=tuple(p for i,p in enumerate(first) if p!=first[i-1])
+    second=tuple(p for i,p in enumerate(second) if p!=second[i-1])
+    if len(first)<3 or len(second)<3 or area(first)==0 or area(second)==0:
+        return False
     for polygon,other in ((first,second),(second,first)):
         center=tuple(sum(p[k] for p in polygon)/len(polygon) for k in range(2))
         if inside(center,other,strict=True):return True

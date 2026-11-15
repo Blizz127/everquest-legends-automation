@@ -60,6 +60,13 @@ def retained_probe_bounds(p):
     if (monitor is not p.journey.camp_motion or monitor.floor is not floor
             or floor is not p.journey.arrival_floor or floor._reader is not p.reader):
         raise ValueError('Arrival basis lost its retained floor or reader')
+    return arrival_probe_bounds(monitor,floor,p.result.sha256)
+
+
+def arrival_probe_bounds(monitor,floor,height_sha256):
+    """Shared camp/waypoint hypotheses; this does not reuse old steering."""
+    monitor.check_binding(monitor.binding);floor.check()
+    if monitor.floor is not floor:raise ValueError('Arrival monitor lost its reached floor')
     raw=monitor.basis;basis=json.loads(raw)
     if (encoded(basis)!=raw or sha256(raw).hexdigest()!=monitor.basis_sha256
             or basis.get('format')!='eql-camp-arrival-motion-v1'
@@ -75,7 +82,7 @@ def retained_probe_bounds(p):
     if (old.maximum_requested_hold>.1 or old.maximum_actual_hold<.15
             or old.body_height!=floor._chain.body_height):
         raise ValueError('Arrival hypotheses do not support standard probe holds')
-    bounds=replace(old,record_id='camp-probes-'+p.result.sha256,maximum_requested_hold=.15)
+    bounds=replace(old,record_id='camp-probes-'+height_sha256,maximum_requested_hold=.15)
     provenance=encoded(dict(kind='retained_arrival_planning_hypotheses',
         arrival_basis_sha256=monitor.basis_sha256,arrival_floor_sha256=floor.sha256,
         original_bounds=asdict(old),probe_bounds=asdict(bounds),

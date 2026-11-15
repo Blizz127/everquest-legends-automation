@@ -1,5 +1,52 @@
 # FINDINGS
 
+## 2026-11-15 01:31 UTC — direct walking-section continuation and exact seam fix
+
+Source 0.42.82 implements one typed healthy-arrival handoff without creating a
+camp. It captures the reached floor before releasing the original reader lease,
+consumes that arrival once, reuses sender/input observer/hazard veto and the fixed
+parent budget, checks a complete measurement reserve around the actual stopped
+position on a discarded floor fork, then confirms a fresh unchanged position.
+The standard seven probes feed the retained motion fitter; only their sealed
+result and a newly collected route-start pair can construct the onward walker.
+F9 cancellation invalidates the budget and unpublished arrival. Section proposals
+must preserve every ordinary guide operation, exact source/body pins and the
+original destination; serialized proposals do not restore runtime authority.
+Owner controls are not connected to this adapter yet.
+
+VERIFIED a runtime failure after all seven probes at synthetic `(4.21,4.21,0.2)`:
+`no_shared_source_floor_with_previous_cell`. Captured previous cap, full footprint
+and both exact source faces reproduce it without runtime timing. `clip()` emits
+repeated boundary vertices; the overlap predicate treated a zero-length edge as
+a separating axis. The predicate now removes only exact adjacent duplicates and
+rejects degenerate polygons before its exact separating-axis check. No geometric
+expansion, tolerance or floor reseeding is introduced. This also fixes the same
+predicate in the changed-layer overlap check, not only shared-floor admission.
+
+All seven new geometry cases failed on the old predicate. **55 focused local
+geometry/partition/stair tests pass** with the fix. Replaying the precise failed
+runtime footprint now retains both `(10,0)` and `(10,1)` faces. Evidence lives in
+`~/.local/share/eql-automation/releases/eql-0.42.82-floor-runtime-replay.json`;
+diagnostic SHA `11f26d28c2ed4bd0e15dc4a36c25286b4b0f1f3cdb72f07c88f07a540e82b85d`.
+VERIFIED all 17 corrected Alienware pipe-only runtime cases pass in 228.63 seconds.
+Together with 61 local cases, **78 unique focused checks pass**. Final runtime
+verification pins all 595 tested Python files; the additional 0.39.37 builder
+successfully built the retained helper and passed GUI/startup smoke. All eight
+destinations and stop-only controls remain present, without creating an engine
+or saving settings. Validation SHA
+`a6ec90546cf07d930fc9a22178ec463a19ebe3076f99df1f5d53adf07d070ac6`.
+Earlier prototype success and subsequent failures remain separate evidence. The unchanged 50ms DOWN
+limit remains enforced; the duplicate post-selection sender check was removed
+only because the watchdog performs the mandatory final check under the same
+GO lock. Local cancellation-before-GO checks passed previously.
+
+G0 is VERIFIED passed, including the owner visible-stop confirmation. No new
+G0 or lead-operated game test is needed. Owner 0.39.36 remains unchanged; this
+is not real-client 1–20/1–50 acceptance. Level/XP/hour/deaths/current camp remain
+unknown. Owner 0.39.37 carries the exact seam fix but does not connect automatic
+sections yet; its additive private publication is in progress. No game input,
+account login, client-prefix write or session restart.
+
 ## 2026-11-15 01:11 UTC — shared whole-trip input accounting
 
 VERIFIED source 0.42.81 adds `JourneyInputBudget` and optional bindings in the

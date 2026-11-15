@@ -111,6 +111,37 @@ def test_exact_overlap_distinguishes_crossings_from_edge_or_point_contact():
     assert positive_overlap(horizontal,vertical)
 
 
+def test_exact_clipped_vertices_do_not_create_a_false_separating_axis():
+    from fractions import Fraction as Q
+    from eql_automation.ground_sweep import clip,area
+    square=rational(((0,0),(2,0),(2,2),(0,2)))
+    triangle=rational(((0,0),(2,0),(0,2)))
+    patch=clip(square,triangle)
+    assert len(set(patch))<len(patch)  # Exact boundary crossings duplicate vertices.
+    previous=((Q(9,5),Q(-1,2)),(Q(11,5),Q(-1,2)),
+              (Q(11,5),Q(3,2)),(Q(9,5),Q(3,2)))
+    assert area(clip(patch,previous))==Q(1,50)
+    assert positive_overlap(patch,previous)
+    assert positive_overlap(previous,patch)
+    assert not positive_overlap(rational(((2,0),(2,0),(2,2))),square)
+    assert not positive_overlap((),square)
+
+
+@pytest.mark.parametrize('heading',(0.,45.,90.,180.,225.,270.))
+def test_movement_centered_on_shared_edge_retains_exact_floor_lineage(heading):
+    from eql_automation.ground_sweep import motion_footprint
+    a,b,c,d=((-50.,-50.,.2),(50.,-50.,.2),(50.,50.,.2),(-50.,50.,.2))
+    sources=(face((a,b,c),1),face((a,c,d),2))
+    floor=chain(body_height=6.)
+    initial=floor.advance(cell(4.,4.,.1),sources)
+    assert initial.candidate and initial.selected_ids==((1,1),(1,2))
+    footprint=motion_footprint((4.,4.),heading,2.16,position_error=.01,
+        heading_error_degrees=2.,post_release_drift=.01,extra_radius=.1)
+    result=floor.advance(footprint,sources)
+    assert result.candidate,result.reason
+    assert result.carried_ids==initial.selected_ids and result.previous_sha256==initial.proof_sha256
+
+
 @pytest.mark.parametrize('options',({'seed_evidence_sha256':''},{'body_height':0.},{'seed_ids':((1,1),(1,1))}))
 def test_invalid_seed_context_refuses_before_tracking(options):
     with pytest.raises(ValueError):chain(**options)

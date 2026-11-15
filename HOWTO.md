@@ -1,17 +1,19 @@
 # EverQuest Legends automation — current owner guide
 
-Owner test **0.39.36** · runtime **0.42.79** · offline tools **0.42.81** · retained assist **0.39.13**.
+Owner test **0.39.37** · runtime/tools **0.42.82** · retained assist **0.39.13**.
 Publication status and evidence are recorded in STATUS.md.
 
-0.39.36 adds **Goblin Camp** and **Goblin Camp · movement test** in Butcherblock.
+0.39.37 fixes a false floor rejection when walking across an exact triangle seam.
+It retains 0.39.36's **Goblin Camp** and **Goblin Camp · movement test** in Butcherblock.
 The approach starts near Newbie Hills and passes copied terrain, static-object,
 region and synthetic current-start checks. It has not been traversed in the
 real client. The complete 1–20 route remains unfinished.
 
-Offline tools retain the nine checked Goblin sections. Source 0.42.81 adds shared
-trip accounting for walking and fresh movement measurements. Automatic section
-handoff is still in development; the installed owner helper retains its current
-trip limits and restart behavior. This source update requires no helper restart.
+Offline tools retain the nine checked Goblin sections. Source 0.42.82 adds a
+tested section-handoff adapter using fresh measurements and shared trip accounting.
+It is not connected to the travel button yet; the owner helper retains its current
+trip limits and restart behavior. Close the old helper yourself before starting
+0.39.37. Publishing the build does not restart your running helper.
 
 **G0 passed, including the visible stop. Do not repeat it.** The complete 1–20
 or 1–50 autopilot is not ready. This build extends the existing rotation bot;
@@ -44,7 +46,7 @@ selection before the contact corridor. It starts near North Wall, disables
 camp continuation and starts no combat. Assist leaves movement and target
 selection to Blizz; F8 selects assist and F9 stops helper input.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.36 offers supervised travel and camp tests in Butcherblock and Crushbone. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.37 offers supervised travel and camp tests in Butcherblock and Crushbone. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -63,9 +65,9 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 
 Run only one helper at a time. G0 is complete. Travel/camp and assist switch in
 the same process without a restart or re-login. The older separate diagnostic
-builds described later in this file are not additional buttons in 0.39.36.
+builds described later in this file are not additional buttons in 0.39.37.
 
-## Optional next-camp continuation — 0.39.36
+## Optional next-camp continuation — 0.39.37
 
 This release keeps the existing rotation and adds an unchecked
 **After level-ups, travel to the next supported camp** option beside the travel
@@ -87,12 +89,12 @@ to 120 seconds. A fresh stopped arrival now starts a new camp session, prepares
 learned spells again and requires new target checks before combat. F8/F9 can
 cancel the handoff. This is supervised testing, not the full 1–20 path.
 
-## Choose a travel/camp destination — preview 0.39.36
+## Choose a travel/camp destination — preview 0.39.37
 
 Close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.36/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.37/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.

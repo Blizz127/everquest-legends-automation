@@ -192,6 +192,26 @@ def test_expired_start_after_watchdog_ready_is_not_renewed(runtime_fixture,monke
     assert r.phase=='stopped' and not r.results
 
 
+@pytest.mark.parametrize('fault',('unfinished','policy_refused','owner_input'))
+def test_watchdog_rechecks_admission_after_selection_before_go(runtime_fixture,monkeypatch,fault):
+    import eql_automation.camp_probe_sender as sender_module
+    h=runtime_fixture;r=h.create();actual=sender_module.selected_key_pulse_receipt
+    selected=[]
+    def changed(fd,select,**options):
+        def after_selection():
+            result=select();selected.append(result)
+            if fault=='unfinished':h.sender.unfinished=True
+            elif fault=='policy_refused':h.refuse_policy=True
+            else:h.active=True
+            return result
+        return actual(fd,after_selection,**options)
+    monkeypatch.setattr(sender_module,'selected_key_pulse_receipt',changed)
+    with pytest.raises((RuntimeError,ValueError)):run(h)
+    h.real_pump()
+    assert len(selected)==1 and not [(k,v) for kind,k,v in h.stream if kind==1 and v==1 and k in (103,105,106)]
+    assert not h.sender.held and not r.results
+
+
 def test_device_replacement_after_down_releases_only_original_descriptor(runtime_fixture):
     h=runtime_fixture;r=h.create();original=h.sender.ui
     other_rd,other_wr=os.pipe()

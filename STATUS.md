@@ -1,5 +1,43 @@
 # STATUS
 
+Updated 2026-11-15 01:31 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met.** The owner confirmed the visible stop: **G0 passed**;
+  do not repeat it. Current level, XP, XP/hour, deaths and camp remain **unknown**.
+  No real-client 1–20 acceptance, automated level gain or hands-off 1–50 run.
+- Owner **0.39.36 / runtime 0.42.79** remains installed and unchanged. It extends
+  the existing rotation bot, with strict assist and supervised Butcherblock /
+  Crushbone destination tests. Automatic route sections are not owner-wired.
+- **Source 0.42.82 verified; private publication in progress:** healthy ordinary arrival can capture its
+  actual floor, retain the same sender, observer and fixed whole-trip budget,
+  check the entire seven-probe reserve at the actual stopped position, collect
+  fresh measurements, fit motion and walk one onward section without a camp.
+  It rejects stale/consumed arrivals and replacement input/owner bindings.
+- **VERIFIED geometry defect and fix:** the runtime reached synthetic position
+  `(4.21,4.21)` then falsely rejected a shared triangle boundary. Exact clipping
+  emitted duplicate vertices; zero-length edges fooled the overlap predicate.
+  Removing exact adjacent duplicates preserves the polygon and fixes the failure.
+  No tolerance, body size, clearance, floor or timing bound was enlarged.
+  All seven new reproductions failed before the fix; **55 focused local geometry,
+  manifest and stair checks pass** afterward. The exact runtime footprint also
+  replays successfully, retaining both original source faces.
+- **VERIFIED 78 unique focused checks pass:** 61 local geometry/partition/stair/
+  admission cases and all 17 corrected Alienware runtime cases in 228.63 seconds.
+  These use isolated pipes and synthetic logs only. Earlier failures are retained
+  separately, including seven failed pre-fix regressions and the exact failed
+  runtime footprint. Validation SHA
+  `a6ec90546cf07d930fc9a22178ec463a19ebe3076f99df1f5d53adf07d070ac6`.
+- **Owner 0.39.37 built; publication in progress.** Includes the boundary fix and
+  existing eight destinations/assist controls. All GUI controls, dialogs and
+  manifest verification pass without starting an engine or saving settings.
+  No game input, helper restart, login, character or prefix change occurred.
+- **Next:** publish 0.39.37, then connect ordered sections to owner travel. Preserve the same parent budget
+  and observer across healthy arrivals; final destination alone may stop/camp.
+  Real travel, camp suitability and leveling remain owner-test gates; cross-zone
+  travel, later camps, looting/vendors and recovery remain unfinished.
+
+## Prior status
+
 Updated 2026-11-15 01:11 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
