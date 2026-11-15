@@ -10,6 +10,7 @@ from .ground_binding import finite
 from .motion_calibration import PROBES,Probe
 from .route_geometry import RouteMotionBounds
 from .source_itinerary import SourceItineraryGuide,_guide_snapshot
+from .source_section_manifest import WalkingSections
 
 
 @dataclass(frozen=True)
@@ -23,8 +24,15 @@ class CampProbePlan:
     route_plan_factory: object=None
     destination_id: str | None=None
     destination_evidence: bytes | None=None
+    route_sections: WalkingSections | None=None
 
     def state(self):
+        if self.route_sections is not None:
+            if (type(self.route_sections) is not WalkingSections
+                    or self.route_sections.original is not self.route_guide
+                    or self.route_plan_factory is None or self.destination_id is None):
+                raise ValueError('Camp partition requires its exact full destination guide')
+            self.route_sections.check()
         if (type(self.bounds) is not RouteMotionBounds or type(self.bounds_basis) is not bytes
                 or not callable(self.policy_factory) or type(self.probes) is not tuple
                 or not 1<=len(self.probes)<=7 or any(type(p) is not Probe for p in self.probes)
@@ -37,7 +45,18 @@ class CampProbePlan:
                     or not self.destination_id or type(self.destination_evidence) is not bytes
                     or not 0<len(self.destination_evidence)<=16384 or self.route_plan_factory is None)):
             raise ValueError('Explicit camp probe bounds, policy and finite plan required')
+        return self.owner_state(),(None if self.route_guide is None else _guide_snapshot(self.route_guide))
+
+    def owner_state(self):
+        """Field/identity pin; callers must separately check guide contents.
+
+        A section child uses BoundWalkingSection for its active operations and
+        validates the full partition at handoffs. This avoids rebuilding the
+        complete destination snapshot inside every parent-budget callback.
+        """
         return (id(self),id(self.bounds),flat_record_state(self.bounds),self.bounds_basis,
                 id(self.policy_factory),tuple(flat_record_state(p) for p in self.probes),self.maximum_seconds,
-                None if self.route_guide is None else (id(self.route_guide),_guide_snapshot(self.route_guide)),
-                id(self.route_plan_factory),self.destination_id,self.destination_evidence)
+                id(self.route_guide),
+                id(self.route_plan_factory),self.destination_id,self.destination_evidence,
+                None if self.route_sections is None else
+                    (id(self.route_sections),self.route_sections.record_sha256))

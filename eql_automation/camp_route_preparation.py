@@ -20,6 +20,7 @@ from .owner_zone_tracker import ZoneReaderLease
 from .route_floor_commit import _chain_snapshot
 from .route_geometry import RouteMotionBounds
 from .source_itinerary import SourceItineraryGuide, _guide_snapshot, plan_source_itinerary
+from .source_section_manifest import WalkingSections
 
 
 @dataclass(frozen=True)
@@ -35,13 +36,17 @@ class CampRouteStart:
 
 class CampRoutePreparation:
     def __init__(self, checkpoint, height, lease, *, guide, bounds, owner_binding,
-                 binding_reader, local_wall_clock, clock=time.monotonic):
+                 binding_reader, local_wall_clock, clock=time.monotonic, sections=None):
         if (type(checkpoint) not in CAMP_FLOOR_TYPES or type(height) is not CampStoppedHeight
                 or type(lease) is not ZoneReaderLease or type(guide) is not SourceItineraryGuide
                 or type(bounds) is not RouteMotionBounds or not immutable_binding(owner_binding)
                 or not all(callable(f) for f in (binding_reader, local_wall_clock, clock))):
             raise ValueError('Retained camp floor, fresh height, guide and exact reader scope required')
         guide.validate()
+        if sections is not None:
+            if type(sections) is not WalkingSections or sections.original is not guide:
+                raise ValueError('Camp sections must retain the exact full guide')
+            sections.check()
         bounds.validate_values(calibration_record_id=bounds.calibration_record_id, maximum_step_seconds=.2)
         if (guide.radius != bounds.body_radius or guide.body_height != bounds.body_height
                 or guide.wld_sha256 != checkpoint._terrain.wld_sha256
@@ -49,6 +54,9 @@ class CampRoutePreparation:
             raise ValueError('Onward guide differs from retained source or body dimensions')
         self.checkpoint, self.height, self.lease, self.reader = checkpoint, height, lease, lease.reader
         self.guide, self.bounds = guide, bounds
+        self.sections=self._sections=sections
+        self.section_index=self.full_itinerary=None
+        self._selection_state=None
         self.owner_binding, self.binding_reader = owner_binding, binding_reader
         self.clock, self.wall = clock, local_wall_clock
         self._objects = (checkpoint, height, lease, lease.reader, guide, bounds, owner_binding,
@@ -77,6 +85,9 @@ class CampRoutePreparation:
             self.lease.check(); self.checkpoint.check()
             now = self.clock()
             self.checkpoint._assert_intact()
+            if self.sections is not self._sections:
+                raise ValueError('Camp walking partition changed')
+            if self.sections is not None:self.sections.check()
             if (self.phase == 'stopped' or binding != self.owner_binding
                     or any(a is not b for a, b in zip(self._objects,
                         (self.checkpoint, self.height, self.lease, self.reader, self.guide, self.bounds,
@@ -99,6 +110,11 @@ class CampRoutePreparation:
                 # Exact immutable payload identity and digest are pinned above.
             if self._record_state is not None and (self.payload, self.sha256) != self._record_state:
                 raise ValueError('Camp route evidence changed')
+            if self._selection_state is not None:
+                index,full,payload,digest=self._selection_state
+                if (self.section_index!=index or self.full_itinerary is not full
+                        or full.payload is not payload or full.sha256!=digest):
+                    raise ValueError('Camp section selection changed')
             if fresh is not None:
                 _check_height_record(fresh, self.checkpoint, self.owner_binding)
                 if (self.reader.latest is not fresh.second or self.reader.log_line_seq != fresh.second.log_line_seq
@@ -116,6 +132,7 @@ class CampRoutePreparation:
         try:
             self.check(fresh=self.height)
             self.phase = 'planning'
+            began=self.clock()
             self._prefix = self.checkpoint.fork()
             self._prefix_state = _chain_snapshot(self._prefix)
             c = self.checkpoint
@@ -123,6 +140,19 @@ class CampRoutePreparation:
                 c._terrain, c._static, c._bsp, c._policy,
                 check_context=self.check, max_seconds=maximum_seconds, clock=self.clock)
             self.check()
+            if self.sections is not None:
+                full=plan;entry=full.record()['guide_entry']
+                index=self.sections.section_for_entry(entry)
+                remaining=began+maximum_seconds-self.clock()
+                if remaining<=0:raise ValueError('Camp section planning deadline expired')
+                plan=plan_source_itinerary(self._prefix,self.height.package_xyz[:2],
+                    self.sections.guides[index],c._terrain,c._static,c._bsp,c._policy,
+                    check_context=self.check,max_seconds=remaining,clock=self.clock)
+                self.check()
+                if plan.record()['guide_entry']+self.sections.ranges[index][0]!=entry:
+                    raise ValueError('Camp section rejoin differs from the verified full-guide entry')
+                self.section_index,self.full_itinerary=index,full
+                self._selection_state=(index,full,full.payload,full.sha256)
             self.itinerary = plan
             self._itinerary_state = (plan, plan.payload, plan.sha256)
             self.payload = encoded(dict(format='eql-camp-route-preparation-v1',
@@ -131,6 +161,9 @@ class CampRoutePreparation:
                 planning_observed_at=self.height.observed_at, planning_expires_at=self.height.expires_at,
                 guide_sha256=sha256(encoded(self.guide.record())).hexdigest(),
                 itinerary=plan.record(), itinerary_sha256=plan.sha256,
+                section_index=self.section_index,
+                full_itinerary_sha256=None if self.full_itinerary is None else self.full_itinerary.sha256,
+                section_manifest_sha256=None if self.sections is None else self.sections.record_sha256,
                 requires_new_matching_pair=True, old_calibration_renewed=False,
                 source_execution_wired=False, input_authorized=False, real_client_accepted=False))
             self.sha256 = sha256(self.payload).hexdigest()
@@ -201,6 +234,9 @@ class CampRoutePreparation:
         result = dict(phase=self.phase, reason=self.reason, sha256=self.sha256,
             itinerary_sha256=None if self.itinerary is None else self.itinerary.sha256,
             goal=self.guide.goal,
+            section_index=self.section_index,
+            section_goal=None if self.sections is None or self.section_index is None
+                         else self.sections.guides[self.section_index].goal,
             start=None if self.start is None else dict(height_sha256=self.start.height.sha256,
                 observed_at=self.start.observed_at, expires_at=self.start.expires_at),
             input_authorized=False, real_client_accepted=False, source_execution_wired=False)

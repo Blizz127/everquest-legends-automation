@@ -16,7 +16,17 @@ def load_owner_walking_sections(engine,destination):
         raise ValueError('Actual source destination required for walking sections')
     if destination.destination_id not in ('goblin-camp','goblin-camp-stop'):return None
     destination.check()
-    path=Path.home()/'.local/share/eql-automation/owner-route-data/butcher-camps-20261114'/SECTION_FILE
+    result=load_guide_walking_sections(destination.destination_id,destination.guide)
+    destination.check()
+    return result
+
+
+def load_guide_walking_sections(destination_id,guide,*,root=None):
+    """Load the same pinned partition for an actual selected camp guide."""
+    if destination_id not in ('goblin-camp','goblin-camp-stop'):return None
+    directory=(Path.home()/'.local/share/eql-automation/owner-route-data/butcher-camps-20261114'
+               if root is None else Path(root))
+    path=directory/SECTION_FILE
     if path.is_symlink() or not path.is_file() or path.stat().st_size>2_000_000:
         raise ValueError('Pinned Goblin walking-section file unavailable')
     raw=path.read_bytes()
@@ -26,6 +36,4 @@ def load_owner_walking_sections(engine,destination):
             or record['current_character_observation'] or record['input_authorized']
             or record['real_client_accepted'] or record['runtime_continuation_enabled']):
         raise ValueError('Copied section proposals cannot claim live input authority')
-    result=parse_walking_sections(destination.guide,record['result'])
-    destination.check()
-    return result
+    return parse_walking_sections(guide,record['result'])

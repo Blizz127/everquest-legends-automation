@@ -31,6 +31,8 @@ def h(tmp_path, retained, monkeypatch, request):
         return make_owner_journey_engine(base, client=client, **options,
             section_provider=((lambda engine,destination:engine._test_walking_partition(destination))
                 if getattr(request,'param',None)=='walking_sections' else None),
+            camp_section_provider=((lambda destination,guide,**kw:h.engine._test_camp_sections(destination,guide))
+                if getattr(request,'param',None)=='camp_sections' else None),
             camp_probe_plan_provider=((lambda engine,p:engine._test_camp_probe_provider(p))
                 if getattr(request,'param',None)=='level_provider' else None),
             camp_options=dict(
@@ -39,7 +41,7 @@ def h(tmp_path, retained, monkeypatch, request):
     monkeypatch.setattr(route_fixture,'make_owner_route_trial_engine',combined)
     generator=route_fixture.h.__wrapped__(tmp_path,retained,monkeypatch)
     h=next(generator);e=h.engine
-    h.camp_continuation_enabled=getattr(request,'param',None)=='level_provider'
+    h.camp_continuation_enabled=getattr(request,'param',None) in ('level_provider','camp_sections')
     e.measurement_only=False;e.settings.level=7
     del e.send;del e.read_log
     e.tail=e.make_tail();e.tail.poll();e.zone='crushbone'

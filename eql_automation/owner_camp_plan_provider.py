@@ -166,6 +166,8 @@ def owner_camp_probe_plan(engine,p,*,root=None):
         return None
     spec,evidence=selected
     guide=load_source_guide(root,spec.identifier)
+    sections=(e._load_camp_sections(spec.identifier,guide,root=root)
+              if hasattr(e,'_load_camp_sections') else None)
     bounds,basis=retained_probe_bounds(p)
     if (guide.radius!=bounds.body_radius or guide.body_height!=bounds.body_height
             or guide.wld_sha256!=p.floor._terrain.wld_sha256
@@ -182,7 +184,8 @@ def owner_camp_probe_plan(engine,p,*,root=None):
             scope=SupervisedCampProbeScope(p.runtime,declaration=declaration,monitor=p.monitor,
                 gate=p.gate,expected_window=GameWindowIdentity(*p.window),log_veto=p.probe_log_veto,
                 check_current=lambda:e._camp_position_current(p),started_at=p.probe_started,
-                expires_at=p.probe_started+maximum_seconds)
+                expires_at=p.probe_started+maximum_seconds,
+                journey_budget=None if sections is None else e._camp_sections_budget(p))
         return scope.policy(tx)
     def execution(runtime,calibration):
         from eqnav import steer
@@ -204,14 +207,15 @@ def owner_camp_probe_plan(engine,p,*,root=None):
             return SupervisedSourcePolicy(ledger,declaration=declaration,gate=p.gate,
                 owner_input=p.monitor.observer,log_veto=p.probe_log_veto,
                 expected_window=GameWindowIdentity(*p.window),topology_generation=p.monitor.topology,
-                check_current=current)
+                check_current=current,
+                journey_budget=None if sections is None else e._camp_sections_budget(p))
         result=CampSourcePlan(onward,steer,steer.Motion(run_speed=estimate['run_speed'],
             turn_rate=estimate['turn_rate'],right_sign=estimate['right_sign'],
             turn_latency=estimate['turn_latency'],back_speed=0.),estimate['final_heading'],.25,source_policy)
         e._camp_position_current(p);scope._check()
         return result
     result=CampProbePlan(bounds,basis,policy,PROBES,maximum_seconds,guide,execution,
-        spec.identifier,evidence)
+        spec.identifier,evidence,sections)
     result.state();e._camp_position_current(p)
     e.trace('camp_continuation_selected',**json.loads(evidence),motion_bounds_verified=False)
     e._camp_position_current(p)

@@ -66,6 +66,7 @@ class CampProbeRuntime:
         self.reference=None;self.results=[];self.transactions=[];self.collections=[];self.events=[]
         self.input_kind=self.input_request=None
         self.route_guide=self._route_guide_state=self.route_preparation=self.route_start=None
+        self.route_sections=self._route_sections=None
         self._route_preparation=None
         self._check();preparation.check(fresh=preparation.height)
 
@@ -95,12 +96,15 @@ class CampProbeRuntime:
                 or self.route_guide is not None and (type(self.route_guide) is not SourceItineraryGuide
                     or (id(self.route_guide),_guide_snapshot(self.route_guide))!=self._route_guide_state)
                 or self.route_preparation is not self._route_preparation
+                or self.route_sections is not self._route_sections
                 or not finite(now) or not self.started<=self.last_at<=now<=self.started+self.maximum_seconds
                 # A long destination trip never extends the measurement window.
                 or self.index<len(self.probes) and now>self.started+min(120.,self.maximum_seconds)):
             raise ValueError('Camp probe runtime context changed or budget expired')
         route=self._route_preparation
+        if self.route_sections is not None:self.route_sections.check()
         if route is not None and (route.checkpoint is not self.reference or route.guide is not self.route_guide
+                or route.sections is not self.route_sections
                 or route.bounds is not self.root.bounds or route.lease is not self.lease
                 or route.reader is not self.lease.reader or route.owner_binding is not self.root.owner_binding
                 or route.binding_reader is not self.root.binding_reader
@@ -130,7 +134,7 @@ class CampProbeRuntime:
                 raise ValueError('Camp probe runtime still owns pending input or work')
             self.lease.release();self.closed=True
 
-    def prepare_route(self,guide):
+    def prepare_route(self,guide,*,sections=None):
         """Retain the same scope for onward planning; never extend its deadline."""
         with self.lock:
             self._check()
@@ -139,6 +143,12 @@ class CampProbeRuntime:
                     or self.sender.held or getattr(self.sender,'_eql_route_operation',None) is not None):
                 raise ValueError('Completed idle probes and one explicit onward guide required')
             guide.validate();self.reference.check()
+            if sections is not None:
+                from .source_section_manifest import WalkingSections
+                if type(sections) is not WalkingSections or sections.original is not guide:
+                    raise ValueError('Camp sections must retain the exact full guide')
+                sections.check()
+            self.route_sections=self._route_sections=sections
             self.route_guide=guide;self._route_guide_state=(id(guide),_guide_snapshot(guide))
             self._begin_pair('route_planning',released_at=self._check())
 
@@ -246,7 +256,8 @@ class CampProbeRuntime:
                         clock=self.clock,local_wall_clock=self.wall)
                     self.route_preparation=CampRoutePreparation(self.reference,height,self.lease,
                         guide=self.route_guide,bounds=root.bounds,owner_binding=root.owner_binding,
-                        binding_reader=root.binding_reader,clock=self.clock,local_wall_clock=self.wall)
+                        binding_reader=root.binding_reader,clock=self.clock,local_wall_clock=self.wall,
+                        sections=self.route_sections)
                     self._route_preparation=self.route_preparation
                     self._check();self.phase='prepare_route'
                 elif kind=='route_start':

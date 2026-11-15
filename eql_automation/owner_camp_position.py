@@ -124,6 +124,13 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
         def _camp_probe_plan(self,p):
             return None if probe_plan_provider is None else probe_plan_provider(self,p)
 
+        def _camp_probe_started(self,p):
+            if p.probe_plan.route_sections is not None:
+                raise ValueError('Camp walking-section owner is not installed')
+
+        def _camp_source_prepared(self,p):
+            pass
+
         def _camp_recovery_complete(self,camp,now):
             j=self.journey
             if j is None or j.phase!='camp' or camp.kills==0:
@@ -272,6 +279,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
             p.position_record=record;p.probe_plan=plan;p.probe_plan_state=state
             p.probe_started=clock();p.camp.phase='probe_measurement'
             p.collector=None
+            self._camp_probe_started(p)
             preparation=CampProbePreparation(p.floor,p.result,p.lease,probe_kind=plan.probes[0].key,
                 bounds=plan.bounds,bounds_basis=plan.bounds_basis,owner_binding=p.owner_binding,
                 binding_reader=lambda:self._camp_position_current(p),clock=clock,local_wall_clock=self.camp_wall)
@@ -317,7 +325,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                     p.calibration_seal=(calibration,encoded(calibration),p.runtime.reference,
                         tuple(p.runtime.transactions),tuple(p.runtime.results))
                     if p.probe_plan.route_guide is not None:
-                        p.runtime.prepare_route(p.probe_plan.route_guide)
+                        p.runtime.prepare_route(p.probe_plan.route_guide,sections=p.probe_plan.route_sections)
                         self._camp_position_current(p)
                         self.emit('Planning next camp route · F8 assist · F9 stops')
                         return
@@ -336,6 +344,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                         self._camp_position_current(p)
                         if type(plan) is not CampSourcePlan:
                             raise ValueError('Explicit camp route execution plan required')
+                        self._camp_source_prepared(p)
                         p.route_runtime=p._route_runtime=CampSourceRuntime(p.runtime,plan,
                             check_current=lambda:self._camp_position_current(p),
                             mode_reader=lambda:'camp_route' if not p.cancelled else 'off',
@@ -360,19 +369,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 if p.route_runtime.phase=='stopped':self._stop_camp_position(p,p.route_runtime.reason)
                 elif p.route_runtime.phase=='complete':
                     self._camp_position_current(p)
-                    # Capture the actual newly observed floor before stop closes
-                    # the ancestor scope. Do not resume the camp we just left.
-                    if type(p.route_runtime.completed_arrival) is SourceContactArrival:
-                        validate_contact_completion(p.route_runtime)
-                        reached=CampContactCheckpoint(p.route_runtime.transfer,p.route_runtime.completed_arrival)
-                    else:reached=CampFloorCheckpoint(p.route_runtime.ledger)
-                    p.route_record=p.route_runtime.snapshot()
-                    p.route_record['arrival']=reached.snapshot()
-                    self._camp_position_current(p);p.route_complete=True
-                    if p.probe_plan.destination_id is not None:
-                        token=capture_camp_arrival(self,p,reached)
-                    else:
-                        self.stop_action('Next camp route reached · stopped before camp selection')
+                    reached,token=self._capture_finished_camp_source(p)
             except Exception as error:self._stop_camp_position(p,error)
             finally:
                 p.busy=False
@@ -383,7 +380,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 # No key or route operation remains. Return the reader before
                 # the existing camp startup drains logs and prepares spells.
                 self._release_camp_position(p)
-                result=continue_camp_arrival(self,token,clock)
+                result=self._continue_finished_camp_source(p,token)
                 self.camp_position_last_result=dict(outcome='route_complete',route=p.route_record,
                     probe=p.probe_record,initial_position=p.position_record,continuation=result,
                     movement_sent=any(e['kind']=='source_pulse' for e in p.route_runtime.events),
@@ -394,6 +391,27 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 # second stop generation and erase that owner's assist request.
                 if self.journey is p.journey:self._stop_camp_position(p,error)
                 token.checkpoint.invalidate(str(error))
+
+        def _capture_finished_camp_source(self,p):
+            # Capture before scope release; subclasses must use actual receipts.
+            if type(p.route_runtime.completed_arrival) is SourceContactArrival:
+                validate_contact_completion(p.route_runtime)
+                reached=CampContactCheckpoint(p.route_runtime.transfer,p.route_runtime.completed_arrival)
+            else:reached=CampFloorCheckpoint(p.route_runtime.ledger)
+            try:
+                p.route_record=p.route_runtime.snapshot()
+                p.route_record['arrival']=reached.snapshot()
+                self._camp_position_current(p);p.route_complete=True
+                token=None
+                if p.probe_plan.destination_id is not None:
+                    token=capture_camp_arrival(self,p,reached)
+                else:self.stop_action('Next camp route reached · stopped before camp selection')
+                return reached,token
+            except BaseException as error:
+                reached.invalidate(error);raise
+
+        def _continue_finished_camp_source(self,p,token):
+            return continue_camp_arrival(self,token,clock)
 
         def _camp_position_tick(self,p):
             if p.route_runtime is not None:return self._camp_source_tick(p)
