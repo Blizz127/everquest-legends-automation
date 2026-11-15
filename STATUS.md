@@ -1,5 +1,28 @@
 # STATUS
 
+Updated 2026-11-15 03:10 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met. G0 passed**, including the owner's visible stop;
+  never repeat it. Current level, XP, XP/hour, deaths and camp remain unknown.
+  No accepted real-client 1–20 route or fresh hands-off 1–50 run.
+- **Privately installed on Alienware: 0.39.39 / source 0.42.85.** It extends
+  the existing rotation bot with eight real-log Butcherblock search names,
+  used only after both qualified history sources are empty. Existing fresh
+  target checks, F8 strict assist, F9 stop and Goblin sections are preserved.
+- **VERIFIED:** 54 focused checks and 19 synthetic subtests pass. Installed
+  startup returns zero; 607 source files, 910 package files, 255 owner files,
+  eight candidates / 16 ordered selection/kill pairs, eight destinations and
+  nine section guides verify. Previous 0.39.38 and qualified history are unchanged.
+  Receipt SHA `bfcfb844bb1cadb1eb141d2567565d4e8f7605e030ff26f207c812e3fc319b20`.
+- **Next real-client check:** owner-started Goblin movement test from near
+  Newbie Hills inside Butcherblock. HOWTO contains the new launch command.
+  No helper restart or game input was sent by the lead. Independent current
+  target identity, real travel/camp suitability and automated level gains remain
+  unverified. Cross-zone travel, later camps, loot/vendors and recovery remain
+  unfinished. Continue camp metrics and route continuity without repeating G0.
+
+## Prior status
+
 Updated 2026-11-15 03:09 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed**, including the owner's visible stop;

@@ -1,5 +1,35 @@
 # FINDINGS
 
+## 2026-11-15 03:10 UTC — owner 0.39.39 installed; current-target limits retained
+
+VERIFIED additive publication of owner 0.39.39 / source 0.42.85 on Alienware.
+Source revision `7e3f21e18594c0ebcead64fe008bfc6b9397efa9`.
+Archive SHA `21116d87734a15d79e5995588f62c7952dfb4e652e510dc0ec8bad28609613ec`;
+package-manifest SHA `b9e47492f74b646ab709ab41d533f269eead98ef5cf0e9855794fb7096fc14e6`.
+All 607 Python source files, 910 package files and 255 owner files verify.
+The installed loader supplies eight Butcherblock search names with 16 ordered
+selection/kill pairs, while qualified Butcherblock history correctly stays empty.
+All eight destinations and nine Goblin section guides load. The client executable
+pin matches. Installed `launch.sh --help` returns zero. Old 0.39.38 and the
+qualified history are unchanged. No running helper was restarted.
+Installation receipt `releases/eql-owner-journey-0.39.39-installed.json`, SHA
+`bfcfb844bb1cadb1eb141d2567565d4e8f7605e030ff26f207c812e3fc319b20`.
+
+OBSERVED bounded copied-client analysis does not establish an NPC-only /target
+name filter, a reliable NPC/PC distinction from /consider faction wording, or
+an explicit target-kind field in copied TargetWindow XML. A TARGETNPC action
+exists, but its complete predicate and physical binding were not established;
+invoking it would not prove a fresh matching selection. Report
+`release-drafts/0.42.85-target-kind/probe.json`, SHA
+`93b4474252783c6791e9d362772afe009ca053962adde48caae0c964f782d7d7`, pins
+22 retained evidence artifacts. No new acceptance claim, input, or requirement
+was derived from those findings.
+
+G0 remains passed. Real Goblin travel/camp operation and automated leveling
+remain unaccepted; the full 1–20 and 1–50 objectives are not complete. Current
+level, XP/hour, deaths and camp remain unknown. Next engineering work is camp
+progress telemetry and later-camp/cross-zone continuity. Owner HOWTO is current.
+
 ## 2026-11-15 03:09 UTC — Butcherblock search fallback verified; owner 0.39.39 prepared
 
 VERIFIED 54 focused cases and 19 synthetic subtests pass. The copied owner's
