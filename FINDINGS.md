@@ -33,8 +33,15 @@ ran at nice 19 with one BLAS thread and isolated pipes/synthetic observations;
 it sent no game input. Both original failure and platform check are retained.
 Validation SHA `5b5403e4afdc7d738ed7a4926ab0e1ff54035ec7510fb24c205d4ed11df097ee`.
 
-Private source publication is in progress. Owner 0.39.36/runtime0.42.79 remains
-unchanged; automatic section handoff is not enabled. G0 passed, including the
+VERIFIED private source publication at `~/.local/share/eql-automation/owner-tools/0.42.81`.
+All 591 Python pins and packaged file hashes match. Installed CLI, both zone
+guides, nine section guides and parent-budget startup pass. Source revision
+`f792b94db8243428ee1e505df364396caaf978a9`; archive SHA
+`6db854ac4b58d7ba3e84449fd52bd9e2f46fcafcc81b7185d4859d92de06e9bb`;
+installed receipt SHA
+`4776eaf9fab225662835122628a67c430f1d3a6ab966c20b9af4f078fba1b24c`.
+Owner 0.39.36/runtime0.42.79 remains unchanged; automatic section handoff is not
+enabled. G0 passed, including the
 visible stop. Real-client 1–20/1–50 acceptance and current level/XP/hour/death/camp
 metrics remain unavailable. No character, helper session or client prefix changed.
 
