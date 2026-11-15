@@ -8,6 +8,7 @@ from hashlib import sha256
 import json
 
 from .camp_floor_checkpoint import CampFloorCheckpoint
+from .destination_floor_bootstrap import DestinationFloorCheckpoint
 from .native_region_policy import encoded
 from .route_floor_commit import _chain_snapshot
 
@@ -77,7 +78,7 @@ class CampProbeFloorReference:
                 while type(node) is CampProbeFloorReference:
                     if id(node) in seen:raise ValueError('Cyclic camp floor ancestry')
                     seen.add(id(node));node._assert_intact();nodes.append(node);node=node._parent
-                if type(node) is not CampFloorCheckpoint:
+                if type(node) not in (CampFloorCheckpoint, DestinationFloorCheckpoint):
                     raise ValueError('Missing original camp floor ancestor')
                 p=self._transaction.preparation
                 scope=(p.binding_reader,p.owner_binding,p.lease,p.reader,p.clock,p.wall,self._transaction.lock)
@@ -122,10 +123,13 @@ def camp_floor_anchor(checkpoint):
     if type(checkpoint) is CampProbeFloorReference:
         anchor=checkpoint._result
         return anchor,anchor.second,anchor.package_xyz
+    if type(checkpoint) is DestinationFloorCheckpoint:
+        anchor=checkpoint._anchor
+        return anchor,anchor.second,anchor.package_xyz
     raise ValueError('Exact camp arrival or retained probe floor required')
 
 
-CAMP_FLOOR_TYPES=(CampFloorCheckpoint,CampProbeFloorReference)
+CAMP_FLOOR_TYPES=(CampFloorCheckpoint,CampProbeFloorReference,DestinationFloorCheckpoint)
 
 
 def assert_camp_ancestry(checkpoint):
@@ -138,6 +142,6 @@ def assert_camp_ancestry(checkpoint):
         if tx.preparation.phase!='consumed' or tx.preparation._start is not tx.ticket.start:
             raise ValueError('Retained camp ancestor preparation ended')
         node=node._parent
-    if type(node) is not CampFloorCheckpoint:
+    if type(node) not in (CampFloorCheckpoint, DestinationFloorCheckpoint):
         raise ValueError('Missing original camp floor ancestor')
     node._assert_intact()
