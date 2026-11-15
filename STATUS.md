@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-15 02:21 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 02:43 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed**, including the owner's visible stop;
   never repeat it. Current level, XP, XP/hour, deaths and camp remain unknown.
@@ -21,7 +21,16 @@ Updated 2026-11-15 02:21 UTC for coordinator task `829a00229b29`.
   owner terminal cases still expired. Further measured work separates current
   section checks from future proposals and context checks from physical scene
   observations. Full-scene checks remain in movement and child location senders.
-  **45 local integrity/planning checks pass; final integration is in progress.**
+  A three-section automatic trip now passes in the isolated pipe harness. The
+  dense case (120 operations per section) still expired: the latest completed
+  snapshot passed 14 cases and failed that case by 0.354ms. Its failure is retained.
+  Immutable precompiled operation comparisons reduce repeated Python work;
+  **57 unique local integrity/planning checks pass** across the recorded
+  snapshots, including two new replacement-dictionary regressions that failed
+  before their fix. The compiled snapshot still expired by 0.010ms. One further
+  redundant binding read is removed while initial and final post-callback reads
+  remain. Final dense-route, cancellation and handoff checks are running.
+  The 50ms DOWN deadline remains unchanged.
 - **Trainer approach:** all 22 eligible fire triangles lie inside an existing
   terrain face; they do not bridge the component gap. The nearest retained
   candidate step rises 2.09375 units. The planner's two-unit bound is an explicitly

@@ -2,13 +2,14 @@
 from dataclasses import dataclass
 from hashlib import sha256
 import math
+from types import MappingProxyType
 
 from .ground_binding import finite
 from .native_region_policy import encoded
 from .source_itinerary import SourceItineraryGuide, SourceWalkHint, _guide_snapshot
 
 
-def _same_walking_guide(guide,state):
+def _same_walking_guide(guide,state,*,operations_signature=None):
     """Compare the retained values without rebuilding thousands of nested tuples.
 
     This runs at every parent-budget boundary, including before DOWN. Preserve
@@ -19,7 +20,26 @@ def _same_walking_guide(guide,state):
             guide.provenance_sha256,guide.radius,guide.body_height,guide.goal)!=state[:7]
             or len(guide.operations)!=len(state[7])):
         return False
-    return _same_operations(guide.operations,state[7])
+    return (_same_operations(guide.operations,state[7]) if operations_signature is None else
+            _same_compiled_operations(guide.operations,operations_signature))
+
+
+def _compile_operations(state):
+    # Mapping proxies retain immutable expected values, while tuple/dict
+    # comparisons do the repeated work in C. Key order remains a separate
+    # checked value; vars() is read afresh, including a replaced __dict__.
+    return (tuple(kind for kind,fields in state),
+        tuple(MappingProxyType(dict(fields)) for kind,fields in state),
+        tuple(tuple(name for name,value in fields) for kind,fields in state),
+        (dict,)*len(state))
+
+
+def _same_compiled_operations(operations,signature):
+    if tuple(map(type,operations))!=signature[0]:return False
+    fields=tuple(map(vars,operations))
+    # A replacement dict subclass can override equality and hide mutations.
+    if tuple(map(type,fields))!=signature[3]:return False
+    return fields==signature[1] and tuple(map(tuple,fields))==signature[2]
 
 
 def _same_operations(operations,state):
@@ -55,8 +75,11 @@ class BoundWalkingSection:
         self.operation_tuples=tuple(g.operations for g in self.guides)
         self.guide=self.guides[index];self.active_operations=self.guide.operations
         self.first,self.last=self.ranges[index]
+        self.original_span=self.operations[self.first:self.last+1]
+        self.original_signature=_compile_operations(self.state[0][7][self.first:self.last+1])
+        self.active_signature=_compile_operations(self.state[1][index][7])
 
-    def check(self,index):
+    def check_structure(self,index):
         s=self.sections
         if (index!=self.index or s.original is not self.original
                 or self.original.operations is not self.operations or s.guides is not self.guides
@@ -69,10 +92,13 @@ class BoundWalkingSection:
                 or self.guide.operations is not self.active_operations
                 or (self.original.zone,self.original.wld_sha256,self.original.static_inventory_sha256,
                     self.original.provenance_sha256,self.original.radius,self.original.body_height,
-                    self.original.goal)!=self.state[0][:7]
-                or not _same_walking_guide(self.guide,self.state[1][index])
-                or not _same_operations(self.operations[self.first:self.last+1],
-                    self.state[0][7][self.first:self.last+1])):
+                    self.original.goal)!=self.state[0][:7]):
+            raise ValueError('Walking partition structure changed')
+
+    def check(self,index):
+        self.check_structure(index)
+        if (not _same_walking_guide(self.guide,self.state[1][index],operations_signature=self.active_signature)
+                or not _same_compiled_operations(self.original_span,self.original_signature)):
             raise ValueError('Active walking section or partition structure changed')
 
 

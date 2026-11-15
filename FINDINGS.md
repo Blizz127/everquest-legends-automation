@@ -1,5 +1,48 @@
 # FINDINGS
 
+## 2026-11-15 02:43 UTC — comparison regression fixed; final integration running
+
+VERIFIED the compiled-comparison snapshot still stopped the dense route on the
+unchanged permit deadline (final slack -0.010ms). It is retained as a failed
+runtime check, not acceptance. Review then found that a replacement dictionary
+subclass could override equality and hide modified operation coordinates. Both
+new regression cases fail before the fix. Exact built-in dictionary types are
+now required; 25 focused active/future-section cases pass after the fix. Together
+with the unchanged planning checks, 57 unique local cases have passed across
+the recorded snapshots. These counts exclude the deliberate pre-fix failures.
+
+The middle active-section binding read was also redundant with the initial read
+and the final full read after all budget/provider callbacks. Removing only that
+middle read preserves both enclosing checks, including the final-budget mutation
+regression. Final snapshot SHA
+`38c24f89fccebc54642b721196b48c3a1d0b99ae05c47990d8f7d6893af021f4`
+is running the dense route plus focused stop, assist, final-camp and child-location
+checks on isolated pipes. Owner 0.39.37 remains installed; 0.39.38 is not published.
+
+## 2026-11-15 02:38 UTC — dense section timing and retained mutation checks
+
+VERIFIED the observation snapshot passed 13 cases, including automatic travel
+through three sections, then failed the dense 120-operation section case on an
+expired DOWN permit. The following budget snapshot passed 14 cases, including a
+new mutation in the final budget callback, and failed the dense case with final
+slack -0.354ms. Both failures are retained; neither counts as route acceptance.
+The budget receipt SHA is
+`86747a37f5ac9d734374ab60e4387b29258842c7797b859f879870de7f8c8a51`.
+
+The current candidate compiles immutable expected operation fields once, then
+compares fresh current dictionaries, exact operation types and field order.
+It still detects extra/missing fields and replaced dictionaries, and checks the
+active original span after the final budget callback. VERIFIED all 55 focused
+local planning/integrity cases pass; XML SHA
+`196afdad79af769e141835f3b29e6d3f4b0f1950b07244a6cd95b346f60061fa`.
+The copied runtime snapshot SHA is
+`f7d98e9baee2ee80ac36cadb1e6b3deb698b3f91cfd32420a7682e70f9c5d256`.
+Its dense runtime case is running with isolated pipes and synthetic state only.
+The first launch wrapper stopped on an incorrect output-path existence check
+before pytest started; it made no input. The corrected wrapper uses the same
+verified snapshot. No timeout was enlarged. Installed owner 0.39.37 remains
+unchanged; candidate 0.39.38 is unpublished. G0 remains passed.
+
 ## 2026-11-15 02:21 UTC — full-route cost and bounded Trainer analysis
 
 VERIFIED the first 0.42.84 narrow sender change passed ten source/watchdog/transfer

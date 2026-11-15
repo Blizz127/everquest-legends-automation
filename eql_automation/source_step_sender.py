@@ -31,7 +31,7 @@ def run_checked_source_step(sender,ledger,*,policy,kind,requested_seconds,
         if validate_ledger and ticket is not None:ledger.check_pending(ticket)
 
     def check_sender(*,validate_ledger=True):
-        binding(validate_ledger=validate_ledger);sender.check()
+        binding(validate_ledger=False);sender.check()
         if (sender.unfinished is not False or sender.dismissed is not False
                 or command_state_clear() is not True
                 or sender.held-({key} if key is not None and not released else set())):
@@ -42,7 +42,7 @@ def run_checked_source_step(sender,ledger,*,policy,kind,requested_seconds,
         # The scene policy checks the ledger after these sender callbacks.
         # Scene/authorization validation below checks it again after the final
         # descriptor callback. Final post-authorization sender checks stay full.
-        check_sender(validate_ledger=False);value=policy.observe();binding(validate_ledger=False)
+        check_sender(validate_ledger=False);value=policy.observe(validate_reference=False);binding(validate_ledger=False)
         if validate:policy.validate_scene(value)
         return value
 

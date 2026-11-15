@@ -203,9 +203,12 @@ class SupervisedSourcePolicy:
         return SupervisedSourceIdleObservation(self.declaration,began,finished,
             self.window,before,after,log)
 
-    def observe(self):
+    def observe(self,*,validate_reference=True):
         began=self._check();reference=self.ledger.reference
-        self.ledger.validate_reference()
+        # The source sender validates the reference in validate_scene after
+        # the observation and descriptor callbacks, before any authorization.
+        # Other callers retain the original eager validation by default.
+        if validate_reference:self.ledger.validate_reference()
         before,log,after,finished=self._physical_observation(began)
         if reference is not self.ledger.reference:
             raise RouteHalt('Source supervised reference changed')

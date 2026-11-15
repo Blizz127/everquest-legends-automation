@@ -55,11 +55,21 @@ def test_fast_integrity_comparison_rejects_each_nested_guide_mutation(fault,orig
 
 
 @pytest.mark.parametrize('original',(False,True))
-def test_active_section_rechecks_current_operations_in_both_copies(original):
+@pytest.mark.parametrize('fault',('start','end','extra','missing','field_order','dict_replace','dict_subclass'))
+def test_active_section_rechecks_current_operations_in_both_copies(original,fault):
     prefix,guide,planner,bounds=context();sections=parse_walking_sections(guide,plan(prefix,guide,planner,bounds))
     guard=BoundWalkingSection(sections,1);guard.check(1)
     op=guide.operations[10] if original else sections.guides[1].operations[0]
-    object.__setattr__(op,'end',(99.,99.))
+    if fault in ('start','end'):object.__setattr__(op,fault,(99.,99.))
+    elif fault=='extra':object.__setattr__(op,'unexpected',True)
+    elif fault=='missing':object.__delattr__(op,'end')
+    elif fault=='field_order':
+        start=op.start;object.__delattr__(op,'start');object.__setattr__(op,'start',start)
+    elif fault=='dict_subclass':
+        class EqualDict(dict):
+            def __eq__(self,other):return True
+        object.__setattr__(op,'__dict__',EqualDict(start=op.start,end=(99.,99.)))
+    else:object.__setattr__(op,'__dict__',dict(start=op.start,end=(99.,99.)))
     with pytest.raises(ValueError):guard.check(1)
 
 

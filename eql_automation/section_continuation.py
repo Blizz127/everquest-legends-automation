@@ -33,7 +33,7 @@ from .source_probe_geometry import check_source_footprint
 from .source_walk_sections import measurement_reserve
 from .source_arrival import assert_retained_arrival
 from .source_itinerary import SourceItineraryGuide, SourceWalkHint, _guide_snapshot
-from .source_section_manifest import _same_walking_guide
+from .source_section_manifest import _compile_operations, _same_walking_guide
 from .source_walk_driver import SourceWalkFinished
 from .stopped_location_pair import StoppedLocationPair
 from .supervised_camp_probe import SupervisedCampProbeDeclaration, SupervisedCampProbeScope
@@ -132,6 +132,7 @@ class SectionContinuation:
             self.generation_reader, self.pump, self.command_clear = generation_reader, pump, command_state_clear
             self.fit_library, self.steering_library = fit_library, steering_library
             self._guide_state = _guide_snapshot(guide)
+            self._guide_operations_signature=_compile_operations(self._guide_state[7])
             self.started = self.last_at = self.clock()
             self.expires_at = min(b.expires_at, self.started+scope_limits('destination_travel')[0])
             self._times = self.started, self.expires_at
@@ -209,9 +210,10 @@ class SectionContinuation:
                 or flat_record_state(self.window) != self._window_state or self.generation != self._generation
                 or self.runtime is not self._runtime or self.route_runtime is not self._route_runtime
                 or self.scope is not self._scope
-                or not _same_walking_guide(self.guide,self._guide_state)
+                or not _same_walking_guide(self.guide,self._guide_state,
+                    operations_signature=self._guide_operations_signature)
                 or (self.started, self.expires_at) != self._times
-                or binding != self.owner_binding or self.binding_reader() != self.owner_binding
+                or binding != self.owner_binding
                 or self.generation_reader() != self.generation
                 or self.veto.cancel_generation != self.generation
                 or self.veto.tail.path != self.reader.tail.path or self.veto.clock is not self.clock
@@ -224,7 +226,12 @@ class SectionContinuation:
                 or not self.command_clear() or not finite(now)
                 or not self.started <= self.last_at <= now <= self.expires_at):
             raise ValueError('Section owner, stopped floor, input or fixed child deadline changed')
-        self.budget.check(); self.last_at = now
+        self.budget.check()
+        # A budget's clock/provider may run after the earlier content checks.
+        # Recheck the complete active section last, including its original span.
+        if self.binding_reader()!=self.owner_binding:
+            raise ValueError('Section owner changed after the final budget check')
+        self.last_at = now
         return self.owner_binding
 
     def cancel(self, reason):

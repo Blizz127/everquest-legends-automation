@@ -245,3 +245,43 @@ def test_child_location_key_refreshes_full_scene_after_outer_tick(h,monkeypatch,
     h.drain();assert all(not (kind==1 and value==1) for kind,_,value in h.events[seen[0]:])
     assert e.journey is None and e.section_run is None and not h.sender.held
     assert h.observer_closed and e.live_zone_tracker.lease is None
+
+
+@pytest.mark.parametrize('h',['walking_sections'],indirect=True)
+def test_final_budget_callback_cannot_change_active_original_span(h,monkeypatch):
+    import sys
+    from eql_automation.section_continuation import SectionContinuation
+    sections=configure_sections(h,monkeypatch);e=h.engine
+    state=dict(armed=False,reads=0,changed=False,rejected=False)
+    context=SectionContinuation._check_context;idle=e._route_idle
+    def command_clear():
+        result=idle();c=e.section_run
+        # Inject at the tail budget boundary, after the context's earlier
+        # content checks, rather than at a preceding sender admission check.
+        if (c is not None and not state['changed']
+                and sys._getframe(2).f_code is context.__code__):state['armed']=True
+        return result
+    monkeypatch.setattr(e,'_route_idle',command_clear)
+    binding=e._section_budget_binding
+    def budget_binding(w):
+        value=binding(w)
+        if state['armed'] and not state['changed']:
+            state['reads']+=1
+            if state['reads']==2:
+                first=w.sections.ranges[w.index][0]
+                object.__setattr__(sections.original.operations[first],'end',(999.,999.))
+                state['changed']=True
+        return value
+    monkeypatch.setattr(e,'_section_budget_binding',budget_binding)
+    def checked(c):
+        try:result=context(c)
+        except ValueError:
+            if state['changed']:state['rejected']=True
+            raise
+        if state['changed']:raise AssertionError('Context returned after its active original span changed')
+        return result
+    monkeypatch.setattr(SectionContinuation,'_check_context',checked)
+    start(h,'goblin-camp-stop');h.due_trial();finish_sections(h)
+    assert state['changed'] and state['rejected'],'\n'.join(map(str,h.notices))
+    assert e.section_run is None and not h.sender.held and h.observer_closed
+    assert e.live_zone_tracker.lease is None and not h.commands

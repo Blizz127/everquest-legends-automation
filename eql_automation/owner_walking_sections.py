@@ -49,10 +49,11 @@ class WalkingJourney:
             id(self.tracker),id(self.reader),id(self.destination),self.window,self.zone,
             self.generation,self.settings,self.epochs)
 
-    def check(self):
+    def check(self,*,current_content=True):
         if self.section_guard is not self._section_guard:
             raise ValueError('Active section guard changed')
-        self.section_guard.check(self.index)
+        if current_content:self.section_guard.check(self.index)
+        else:self.section_guard.check_structure(self.index)
         p=self.pending
         if (self._context()!=self._state or self.index!=self._index
                 or not self.initial_index<=self.index<len(self.sections.guides)
@@ -99,8 +100,8 @@ def make_walking_sections_engine(base,*,section_provider,clock):
             self._section_binding(j.walking)
             return result
 
-        def _section_binding(self,w):
-            w.check();j=w.journey
+        def _section_binding(self,w,*,current_content=True):
+            w.check(current_content=current_content);j=w.journey
             if (self.journey is not j or j.walking is not w
                     or j.generation!=w.generation or self.cancel_generation!=w.generation
                     or j.settings!=w.settings or settings_identity(self.settings)!=w.settings
@@ -117,6 +118,16 @@ def make_walking_sections_engine(base,*,section_provider,clock):
             return (id(j),w.generation,w.settings,id(w.destination),id(w.sender),id(w.ui),
                     id(self.gate),id(w.tracker),id(w.reader),id(w.observer),id(w.veto),w.zone,w.window)
 
+        def _section_budget_binding(self,w):
+            c=self.section_run
+            # The active child checks the complete current guide after its
+            # final budget callback. Budget accounting only needs the pinned
+            # owner/partition structure inside that child; all other phases
+            # retain full current-section validation.
+            active=(type(c) is SectionContinuation and c is w.runtime
+                and not c.closed and c.phase not in ('complete','stopped'))
+            return self._section_binding(w,current_content=not active)
+
         def _source_journey_budget(self,p):
             j=self.journey;w=None if j is None else j.walking
             if w is None:return super()._source_journey_budget(p)
@@ -131,7 +142,7 @@ def make_walking_sections_engine(base,*,section_provider,clock):
                 spec.identifier,spec.arrival_mode,n,n*seconds,n*pulses,n*hold,n*distance)
             binding=self._section_binding(w)
             budget=JourneyInputBudget(limits,clock=clock,stop_lock=self.g0_stop_lock,
-                owner_binding=binding,binding_reader=lambda:self._section_binding(w))
+                owner_binding=binding,binding_reader=lambda:self._section_budget_binding(w))
             w.budget=w._budget=budget
             budget.check()
             self.trace('journey_sections_started',destination_id=j.destination_id,
