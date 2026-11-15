@@ -1,5 +1,57 @@
 # FINDINGS
 
+## 2026-11-15 14:31 UTC — final crossing verification and local preview (0.42.92 / 0.39.42)
+
+VERIFIED the final isolated Alienware `/tmp` batch passes all three route cases
+in 110.76 seconds: Butcherblock-to-GFay with one/two walking sections and
+GFay-to-Crushbone. The GFay case observes catalog destination 58, two fresh
+stopped destination replies, source-floor discard and complete release; it
+starts no camp. Receipt `releases/eql-0.42.92-astra-crossing-alienware-c.json`
+SHA `96b8beab94780c6c301fae147e35d38b0ab99d4344eba9063dab88ad9336e298`; JUnit SHA
+`d32e7f6481a6f29ecb2872fe915ad029b50d7f3f9e3322dbf609c35cb1740acf`.
+Receipt source and test hashes match the final local files. These are synthetic
+state/geometry and pipe-input checks, not real-client traversal or level gains.
+
+The prior GFay-only run reached completed crossing but failed a test assertion
+that read the intentionally discarded checkpoint policy. The test now captures
+source identity before invalidation. Failed receipt b is retained, SHA
+`3be9a09ea99367082955223128a8a46cc24cc8728248282fcc990e9771f1abfa`;
+no production check was weakened to fix it. Together with batch a, the final
+checks cover both zone identities, section handoffs, active-pulse cancellation,
+completion ownership and fresh physical-state checks.
+
+VERIFIED final local preview
+`owner-build-drafts/0.39.42-astra-final-20261115` contains 264 manifest files
+and all 236 current runtime modules. All hashes match; pinned entry `--help`
+returns zero without constructing an engine. Manifest SHA
+`66fddbb51e89e7da76968a48838ff095046fd915557887e46cc09385bca47825`;
+entry SHA `dc7b3c1713c5c5849422825f43fdd47e5605f4f27ef1593e43ee67f6d8d11cb7`.
+Receipt `releases/eql-owner-0.39.42-astra-local-preview.json` SHA
+`be8817e8e94082b3fa1cb711ae606aa9e0e806d2c0d1137858f58bb5fb6aabd4`.
+HOWTO matches the packaged guide. The preview is local only; existing helpers,
+characters, install/prefix and configs were not modified. No remote push.
+
+OBSERVED retained GFay audits, with hashes reverified this session: the
+Butcher-entrance→Orc guide has 1,095 operations / seven sections (audit
+`a184b01cda3d43b4b9f987255bf407cf145f90e6baad50603883654eafdaaa98`),
+Orc→Crushbone approach has 174 operations / two sections (audit
+`9b5ae572a596371838f3c745a283fcbff48a0fffc025ba9f1b9eea9115a7f53e`),
+and their joined route has 1,269 operations / eight sections (audit
+`0ca8004cbcd09420a9f18b105ac39e7ea9791554d3ce8c113dddcbd9bb27f42e`).
+Both staged GFay crossing corridors contain 13 cells. The actual copied source
+views, guide/section pins and crossing cells passed this session's local tests;
+the complete prior audit searches were not rerun. Map starting coordinates are
+synthetic route hypotheses, not verified server spawn coordinates.
+
+INFERRED next implementation seam from source inspection: a claim-once actual
+arrival handoff, continuous observer/lease ownership, fresh destination probe
+envelopes and seven new measurements, under one itinerary deadline. The
+existing `plan_probe_envelope()` is currently geometry-only. Ordinary GFay
+bootstrap must refuse if the actual spawn is inside a nonzero transition region;
+a destination egress path would need separate checked support. Source heading,
+height model and floor ancestry must not be reused. Cross-zone camp selection
+and fresh hands-off 1–50 remain unfinished; actual metrics remain unknown.
+
 ## 2026-11-15 14:28 UTC — crossing completion ownership and fresh scene checks (0.42.92)
 
 VERIFIED the completion race reproduced before its fix: F8 during result

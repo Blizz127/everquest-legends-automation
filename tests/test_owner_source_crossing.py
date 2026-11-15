@@ -317,11 +317,13 @@ def test_owner_sectioned_travel_crosses_zone_and_discards_source_floor(
                                         destination_id=destination_id)
     e = h.engine
     captured_runs = []
+    captured_source_zones = []
     orig_start = e._start_source_crossing_from_arrival
 
     def capture_start(p, token):
         res = orig_start(p, token)
         captured_runs.append(e.source_crossing_run)
+        captured_source_zones.append(e.source_crossing_run.checkpoint._policy.zone)
         return res
 
     monkeypatch.setattr(e, '_start_source_crossing_from_arrival', capture_start)
@@ -344,7 +346,7 @@ def test_owner_sectioned_travel_crosses_zone_and_discards_source_floor(
     assert len(captured_runs) == 1
     cr = captured_runs[0]
     assert cr.closed and cr.monitor.closed and not cr.checkpoint.valid
-    assert cr.checkpoint._policy.zone == destination_spec(destination_id).zone
+    assert captured_source_zones == [destination_spec(destination_id).zone]
     assert e.zone == spec.destination_zone
     assert e.journey is None and e.source_crossing_run is None and e.section_run is None
     assert e.live_zone_tracker.lease is None

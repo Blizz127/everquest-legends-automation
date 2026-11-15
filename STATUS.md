@@ -1,24 +1,33 @@
 # STATUS
 
-Updated 2026-11-15 14:21 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
+Updated 2026-11-15 14:31 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
 
 - **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,
   XP, XP/hour, deaths and camp remain unknown. No accepted hands-off 1–50 run.
-- Development source **0.42.92** builds on the staged GFay assets in `475ddb2`.
-  **VERIFIED:** GFay next-camp selection now reads its own pinned annotations;
-  previously it raised `KeyError('gfaydark_3.txt')`. Six focused tests pass,
-  including map tampering and corrected guide/corridor hash-rejection tests.
-- The larger copied-geometry/crossing verification is in progress. Local preview **0.39.42** exposes the eight new destinations;
-  its offscreen Qt controls and pinned startup checks pass. Final crossing
-  cancellation and isolated pipe verification are in progress. Crossings currently stop after observed destination
-  arrival; automatic cross-zone camp continuation is still missing.
-- Installed Alienware owner **0.39.41 / source 0.42.87** is unchanged. No game
-  input, character/prefix/config changes, remote installation or push. Paused
-  `codex-everquest-legends` and idle Flash remain untouched.
-- **Next:** finish crossing regression checks and local preview, then connect
-  destination navigation from fresh destination measurements without reusing
-  source-zone floor or motion state. Full leveling, loot/vendors and recovery
-  remain incomplete or unverified.
+- Development source **0.42.92** fixes GFay's pinned camp-annotation lookup and
+  preserves F8 assist / F9 stop through crossing completion. Nested crossing
+  checks avoid repeated physical sampling while full checks bracket each tick
+  and remain at input boundaries. Timing/geometry limits are unchanged.
+- **VERIFIED:** 100 local tests pass. An isolated Alienware pipe batch passes
+  15 crossing regressions; a final three-case batch passes single/sectioned
+  Butcher-to-GFay and GFay-to-Crushbone travel with two fresh destination fixes,
+  discarded source floors, released input and no camp startup. These are
+  synthetic logs/geometry and anonymous pipes, not real-client acceptance.
+- Local preview **0.39.42** exposes all 16 destinations (eight new choices).
+  Offscreen Qt controls, pinned startup and all 264 package / 236 runtime source
+  hashes pass. Final draft: `~/.local/share/eql-automation/owner-build-drafts/0.39.42-astra-final-20261115`.
+  Manifest SHA `66fddbb51e89e7da76968a48838ff095046fd915557887e46cc09385bca47825`.
+- **No deployment or game input.** Last recorded installed Alienware owner
+  **0.39.41 / source 0.42.87** was not changed. No character, Lutris/prefix,
+  credentials/access, server or agent-config changes; no push. Paused Codex and
+  idle Flash remain untouched. HOWTO documents current and local-preview controls.
+- **Next:** destination bootstrap for an explicitly selected bounded
+  Butcher→GFay→Crushbone itinerary, using fresh destination floor/motion evidence
+  and one fixed itinerary budget. Existing crossings still stop at arrival.
+  `CurrentStartPlanner.plan_probe_envelope()` has no runtime consumer; calling a
+  new `SOURCE_JOB` would reuse the old open-ground declaration. Actual spawn and
+  any required transition-region egress remain unverified. Automatic cross-zone
+  camps, full leveling, loot/vendors and recovery remain incomplete.
 
 ## Prior status
 
