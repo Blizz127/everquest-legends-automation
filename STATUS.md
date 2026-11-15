@@ -1,5 +1,63 @@
 # STATUS
 
+Updated 2026-11-15 16:49 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
+
+- **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,
+  XP, XP/hour, deaths and camp remain unknown. No accepted hands-off 1–50 run.
+- Development source **0.42.97**, runtime commit `01f84a6`, connects an explicit
+  Newbie Hills → Goblin Camp → Greater Faydark → Crushbone → Slave Mines
+  progression. Configured integer levels 1–4 admit the initial request; fresh
+  logged levels and completed preparation/recovery govern departures. Goblin
+  needs an actual level 9/10 event. One root starts before its probes and covers
+  the onward navigation, with a **6 hour 15 minute maximum**, excluding earlier
+  trips and all camping. Terminal consumption prevents further relocation;
+  stationary camping still stops at observed 20. Both original continuation
+  flags and the original Journey survive the transitions.
+- **VERIFIED component checks:** 225 controller/terminal-adapter cases pass,
+  including 27 reproduced guard/reentry regressions. All 31 wrapper cases pass
+  again after those fixes, with unchanged source hashes. The earlier 135 copied
+  provider cases pass; these component results are not a completed progression.
+- **VERIFIED local candidate:** preview **0.39.45**, controls commit `50646e7`,
+  passes 58 offscreen GUI scenarios on its retained build. The current entry
+  verifies all **277 pins / 249 runtime files**. Candidate:
+  `owner-build-drafts/0.39.45-astra-candidate-S82bqxQp/preview`; receipt SHA
+  `8c3ae2455a908b7b6e52f84a3c15fa31f0dcc57c1b5f59bb7d421686ecd0e10c`.
+  HOWTO documents the new action, level gates, finite limits and F8/F9/F11
+  controls. No engine or settings writes occurred in GUI validation.
+- **Partial target-host evidence, not a pass:** one isolated anonymous-pipe
+  run on Alienware reached actual synthetic Newbie and Goblin camp adoption,
+  accepted the fresh synthetic level-9 event, and passed the root-before-probe
+  assertions. It continued toward the first crossing, then **SIGXCPU (-24)**
+  stopped pytest at its 120-second CPU limit after 256.52 seconds wall time.
+  No crossing or terminal completion is proved. Source and retained helper
+  hashes stayed unchanged. This used synthetic logs/geometry and no display,
+  game, account or input device. The signal prevented normal pytest finalizers;
+  two bounded SSH cleanup inspections timed out without output, so final
+  watchdog cleanup and private core-file presence remain unverified. Further
+  remote actions stopped. No unchanged rerun is planned.
+- **Timing limitations retained:** the first local progression attempt stopped
+  before Goblin on an expired 50 ms DOWN permit. Existing default regressions
+  then finished **7 passed / 5 failed**: all six level-recheck cases passed;
+  four camp-section cases expired DOWN permits and one rejected a stale/foreign
+  scene. All 519 source/test files stayed unchanged. These are unresolved
+  execution limits, not a green integration suite. Deadlines were not widened.
+  Evidence is preserved under `releases/eql-0.42.97-astra-verification/`.
+- **Next:** finish a separately labelled full progression contract simulation
+  using synthetic low-level receipts, without inventing arrivals or skipping
+  generation, root or camp handoffs. Inspect the actual pre-input callback cost;
+  a pure microbenchmark shows full-guide copying cannot by itself explain the
+  small synthetic route's timing failure. Full real-input/compositor tolerance
+  and the complete progression remain unverified.
+- **No deployment or game input.** Last recorded installed helper remains
+  **0.39.41 / source 0.42.87**. No character, prefix/install, Lutris, credentials,
+  existing display/server or agent-config changes; no push. Other sessions remain
+  untouched. The previously reported official-service rule conflict still
+  prevents a permitted live acceptance path. Trainer, later routes, suitable
+  higher-level targets, buy/scribe, loot/vendors, death/relogin execution and
+  fresh 1–50 acceptance remain incomplete; independent offline work continues.
+
+## Prior status
+
 Updated 2026-11-15 16:36 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
 
 - **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,

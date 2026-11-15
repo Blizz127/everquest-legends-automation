@@ -1,5 +1,109 @@
 # FINDINGS
 
+## 2026-11-15 16:50 UTC — finite early-camp progression; partial pipe execution
+
+OBSERVED local commits `c0597aa`, `49fa1a7`, `01f84a6` and `50646e7` introduce
+source **0.42.97** and preview **0.39.45**. The explicit request is
+`camp_progression` with profile `butcher-newbie-goblin-slave-mines` and the two
+clear-ground/supervision declarations. Its initial configured level must be an
+integer 1–4. The same original Journey starts Newbie Hills and records only
+actual completed camp handoffs. A fresh logged level 5–8 can select Goblin;
+departure from Goblin requires its exact newly observed level-9/10 event,
+completed preparation/recovery and fresh stopped-height correspondence.
+Configured level alone supplies no departure authority.
+
+The Goblin-origin itinerary uses a distinct declaration and the existing
+copied guides/crossings. Its root exists before the seven departure probes;
+the first camp-section child charges those probes and both Butcherblock
+sections to that root. Both crossings and new-zone measurements retain it.
+Caps are 22,500 seconds, 39,014 pulses, 7,802.8 held-input seconds and 130,051.8
+displacement reserve. They cover Goblin-onward navigation only, excluding
+earlier travel and all camping. The historical camp settings are promoted
+exactly once at the first crossing handoff. Original continuation flags remain
+True; typed terminal consumption permanently spends relocation intent before
+the final existing camp starter advances the generation once. The same physical
+observer and hazard history are retained. The original `.96` itineraries keep
+their prior request shapes, limits and continuation choices.
+
+VERIFIED 225 controller/terminal-adapter cases pass, including 27 reproduced
+guard/reentry regressions. Final clock callbacks cannot duplicate adoption,
+origin capture or terminal consumption. Terminal recording validates the
+successor monitor after the existing adapter's last callback. The 31 wrapper
+cases pass again on the final controller bytes, with a JUnit and unchanged
+before/after hashes. The earlier copied-provider batch passes 135 cases.
+The 225-case receipt explicitly identifies its tool-observed result and the
+absence of a retained raw log/JUnit; it does not reconstruct one.
+
+VERIFIED the first local complete-pipe attempt stopped safely after 36.67
+seconds, during Newbie-to-Goblin calibration. Initial Newbie adoption passed;
+two subsequent forward displacements were logged. The unchanged 50 ms DOWN
+permit expired: selection slack 23.507 ms, final-check slack -12.070 ms and
+GO slack -12.086 ms. No Goblin-origin root was reached in that attempt. A
+separate existing-default batch finished **7 passed / 5 failed in 158.97s**:
+all six level-recheck cases and initial-stop passed; four camp-section cases
+expired DOWN permits and one rejected a stale/foreign source scene. All 519
+source/test files stayed unchanged. These failures remain part of the evidence.
+
+VERIFIED one bounded target-host attempt used only a new private `/tmp`
+directory, synthetic logs/geometry, pinned retained Python helper files and
+anonymous input pipes. It started no display, client or input device. Initial
+Newbie adoption, actual synthetic Goblin adoption and their generation/floor
+assertions passed. The raw log reaches the synthetic level-9 message, then
+movement toward the first crossing, establishing that the new root-before-probe
+assertions passed. It does **not** prove a zone crossing or final camp.
+Pytest exited with **SIGXCPU (-24)** at its 120-second CPU limit after 256.52
+seconds wall time; this was neither an input-permit failure nor the 600-second
+wall timeout. All packaged source and retained helper hashes remained unchanged.
+The signal prevented normal pytest finalizers, JUnit and final state diagnostics.
+Two subsequent bounded SSH cleanup inspections timed out without output.
+Final watchdog teardown and any private core-file presence remain unverified;
+further remote actions stopped. No unchanged rerun is planned.
+
+Evidence is preserved under
+`~/.local/share/eql-automation/releases/eql-0.42.97-astra-verification/`, including
+the original local failure, default regression batch, final wrapper JUnit,
+225-case receipt and target-host archive/receipt/logs/cleanup record. Target
+receipt SHA `626f097665121c5eaca8b480e22a1a3b5457853b98026de00fab340bf156f65c`.
+A separately labelled full lifecycle simulation with synthetic low-level
+receipts is the next check; it must retain actual arrival, generation, root
+and camp-handoff contracts rather than manufacture their success.
+
+VERIFIED the persistent local candidate at
+`owner-build-drafts/0.39.45-astra-candidate-S82bqxQp/preview` passes 58 GUI
+scenarios directly, with no engine construction, settings save or game input.
+Its current entry verifies 277 pins covering 249 runtime files. All 462 recorded
+build inputs stayed unchanged. The same tested artifact was moved to its stable
+path and reverified. Receipt SHA
+`8c3ae2455a908b7b6e52f84a3c15fa31f0dcc57c1b5f59bb7d421686ecd0e10c`;
+source manifest SHA
+`3287968d637d505beb792b62034b84112849ffee0d88cae596d14a05da8dc08b`.
+The runtime and HOWTO bytes now match the local committed increment. All real
+acceptance flags and `movement_ready` remain false. Nothing was deployed.
+
+OBSERVED performance review finds repeated checks before input: a static
+successful calibration path contains at least ten owner-current checks and
+fourteen trip-budget bindings, with at least sixty floor-integrity checks.
+These are lower bounds, not measured attribution. A bounded pure-function
+microbenchmark measures a two-operation plan-state check at about 53 microseconds
+and a 1,057-operation check at 2.590 milliseconds. Full-guide work is a real
+large-route cost, but cannot alone explain the small fixture's 35.577 ms
+selection-to-final-check delay. No safety checks or deadlines were removed.
+
+OBSERVED a possible later finite profile could follow existing Mines→North Wall
+and North Wall→Throne proposals, then stop at observed 22. This is separate from
+the current terminal intent and would need selection before level-20 cleanup.
+The copied guides under `owner-route-data/crushbone-camps-20261114/` are:
+`crushbone-north-wall-source-guide-v1.json`, SHA
+`62f8f50797414ace566d7ec967a5ed61153b15ccdb11efeb4f2ea35f38f67d97`, and
+`crushbone-throne-contact-source-guide-v1.json`, SHA
+`ef46e373d2458e891a627c51bd63e426dd66313bf1057b20f7eb674e44eba5c0`.
+Throne requires stair/contact handling beyond the rooted ordinary-floor terminal
+contract. Trainer's level-11/12 route gap remains unresolved; the closed `.84`
+negative search was not repeated. Copied level hints are not verified camp
+suitability, and retained Crushbone NPC observations establish no level-17–22
+targets. Later-zone routes and buy/scribe execution also remain missing.
+No real level gains, complete progression or hands-off 1–50 run is claimed.
+
 ## 2026-11-15 16:36 UTC — terminal matrix finished; progression integration next
 
 VERIFIED the terminal route checks finished with **18 passes across four runs**,
