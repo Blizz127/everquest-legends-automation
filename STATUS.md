@@ -1,5 +1,38 @@
 # STATUS
 
+Updated 2026-11-15 03:00 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met. G0 passed**, including the owner's visible stop;
+  never repeat it. Current level, XP, XP/hour, deaths and camp remain unknown.
+  No accepted real-client 1–20 route or fresh hands-off 1–50 run.
+- **Validated candidate:** owner **0.39.38 / source 0.42.84**, private publication
+  in progress. Owner **0.39.37 / source 0.42.82** remains the installed version
+  until the new installation receipt is verified. No running helper is restarted.
+- **VERIFIED 82 unique focused checks pass:** 57 local planning/guide integrity,
+  five local delegated-owner callback checks, and all 20 final Alienware runtime
+  checks in 869.98 seconds. The latter use isolated pipes and synthetic state.
+  They cover dense 120-operation sections, F8/F9 cancellation, final-release
+  handoffs, final-only camp startup and late input/focus/attack-log changes.
+  The final SSH session dropped, but its completed success receipt was recovered;
+  no test was rerun. Earlier failures remain recorded separately.
+- **VERIFIED build smoke:** both Goblin choices load nine sections. Eight GUI
+  choices and six prior GUI checks are retained with identical GUI code. Final
+  configured startup passes; the final publish snapshot changes only HOWTO.
+  Its manifest SHA is `6e5ecb00867983412420d7dac2674733df858ae580ec39d6542b3afe3da59480`.
+  Validation SHA: `183b0c6b22471414d0e5eff938db83c223922fa603ec68b4da779dd468a92ce1`.
+- **Behavior:** explicit Goblin travel now continues through finite ordered
+  sections, using actual stopped arrivals, fresh movement measurements and one
+  fixed whole-trip budget. Intermediate sections start no camp. F8 returns to
+  strict assist; F9 stops. Input deadlines, body bounds and clearances are unchanged.
+- **Next:** verify additive private installation, then owner-supervised Goblin
+  movement testing from near Newbie Hills in Butcherblock. No zone crossing is
+  included. Continue camp search evidence/current-target integration and passive
+  progress reporting; their draft artifacts are not part of this release.
+  Trainer, cross-zone travel, later camps, loot/vendors and recovery remain unfinished.
+  No game input, login, character or prefix change occurred.
+
+## Prior status
+
 Updated 2026-11-15 02:47 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed**, including the owner's visible stop;

@@ -1,5 +1,27 @@
 # FINDINGS
 
+## 2026-11-15 03:00 UTC — final section runtime validation passed
+
+VERIFIED all 20 final Alienware runtime checks passed in 869.98 seconds. The
+original SSH session timed out near the last test; the completed zero-exit
+receipt was recovered without restarting the job. Dense 120-operation sections,
+F8/F9 control, the final post-budget mutation, both final-release faults,
+final-only camp startup and late child-location/input vetoes all reached their
+intended cases and passed. The 50ms DOWN and 100ms scene limits are unchanged.
+
+The validation record combines 62 unique focused local cases and these 20
+runtime cases, with prior failed snapshots retained separately. SHA
+`183b0c6b22471414d0e5eff938db83c223922fa603ec68b4da779dd468a92ce1`.
+All 602 current Python file pins match the final remote snapshot. Configured
+startup and asset/entry checks pass; six prior GUI checks apply to unchanged
+GUI code. The final owner snapshot differs from the last startup snapshot only
+in HOWTO, with all runtime hashes identical. Manifest SHA
+`6e5ecb00867983412420d7dac2674733df858ae580ec39d6542b3afe3da59480`.
+
+Private owner 0.39.38 / source 0.42.84 publication is in progress. Tests use
+isolated pipes and synthetic state; they establish no real movement, camp
+suitability, automated level gain or 1–20/1–50 acceptance. G0 remains passed.
+
 ## 2026-11-15 — next-increment drafts prepared during runtime checks
 
 VERIFIED a separate offline search-name extractor passes 15 focused synthetic
