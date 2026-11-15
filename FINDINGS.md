@@ -1,5 +1,32 @@
 # FINDINGS
 
+## 2026-11-15 00:53 UTC — owner 0.39.36 privately installed on Alienware
+
+VERIFIED additive private publication of owner 0.39.36 / runtime 0.42.79, source
+revision `4312aea56ea3d0dde69ab352072c21f59b5467e6`. Ten unique focused tests pass;
+GUI smoke checks all eight selections, five destination dialogs and cleared,
+disabled continuation for movement-only choices. Both new Goblin runtime
+handoff/stop cases pass using synthetic geometry/logs and actual isolated OS
+pipes; no game interface is used. All 584 source Python pins and 248 owner
+snapshot files verify; all eight destination guides load. Installed client
+executable/catalog/Butcher archive pins match through read-only checks. Installed
+launch `--help` returns 0. Previous owner 0.39.35 manifest remains
+`5768c5e5ac5416e6bac3a7660183362c46a5c2dfb3bb811e33e5037b03dc8ee8`.
+
+Archive SHA `2869ee8f560efaf0d95811123189e7d2ff5aaf9e1ad029c88d49cfa0b3f499f3`;
+package manifest SHA `6c679d785238743697c39b411beffe5be72a7c5ac06b8d699791b11d2434c31d`;
+validation SHA `a8431f1bf037875437988257b1506711e34f3f8b7abd95ae88b437f64bb6dc66`;
+installed receipt SHA `d40832f18ce4a2ba697e5a740319fa55e3797d4981c41771c8afe645516acd05`.
+Receipt: `~/.local/share/eql-automation/releases/eql-owner-journey-0.39.36-installed.json`.
+Owner launch: `EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.36/launch.sh`.
+The owner closes the old helper and starts the new one himself. Select Goblin
+Camp movement test near Newbie Hills inside Butcherblock for travel without
+combat. Existing time/input limits may stop the long route before arrival;
+a fresh-position restart can rejoin. The full 1–20 and hands-off 1–50 goals remain
+unmet. No game input, helper restart, login, character mutation or prefix/install
+write occurred. Current level, XP/hour, deaths and camp remain unknown. G0
+already passed, including visible stop; do not repeat it.
+
 ## 2026-11-15 00:51 UTC — complete copied Goblin route and owner preview 0.39.36
 
 VERIFIED the source 0.42.78 private installation: source revision

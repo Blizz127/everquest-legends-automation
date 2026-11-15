@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-15 00:51 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 00:53 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP, XP/hour,
@@ -18,7 +18,7 @@ Updated 2026-11-15 00:51 UTC for coordinator task `829a00229b29`.
   Newbie Hills, with unchanged two-unit source/detail correspondence. SHA
   `ee1108f95527b83613f6781ee04a22abcad6669cac6e9d1d0f7d585cbd4ee49c`.
   This is copied geometry and simulated observations, not live acceptance.
-- **Owner 0.39.36 / source 0.42.79 staged; publication pending.** Adds Goblin
+- **Owner 0.39.36 / source 0.42.79 privately installed on Alienware.** Adds Goblin
   Camp and movement-only choices to the existing rotation helper. Eight focused
   core checks and eight-choice GUI/startup smoke pass. Both Goblin camp handoff
   and stop-only OS-pipe fixtures pass on Alienware in 83.03 seconds: **10 unique
@@ -31,8 +31,17 @@ Updated 2026-11-15 00:51 UTC for coordinator task `829a00229b29`.
   and 630 packaged files verify; CLI and synthetic zone-guide startup pass.
   Receipt SHA `d5816f1b117c04e6cec2fc72ac9cf313b7329b760662442b253da66faec65d3a`.
   The subsequent /home→/var/home alias bug in the offline pin builder is fixed
-  locally with a passing regression; installed immutable files were preserved.
-- **Next:** publish the additive owner preview and report its exact launch command. Real travel, camp suitability,
+  in 0.42.79 with a passing regression; earlier immutable files were preserved.
+- **VERIFIED installation/startup:** 584 source Python hashes, 248 owner
+  snapshot files, eight guide identities and installed client pins match.
+  Installed launch `--help` returns 0. Old owner 0.39.35 manifest is unchanged.
+  Source revision `4312aea56ea3d0dde69ab352072c21f59b5467e6`;
+  archive SHA `2869ee8f560efaf0d95811123189e7d2ff5aaf9e1ad029c88d49cfa0b3f499f3`;
+  receipt SHA `d40832f18ce4a2ba697e5a740319fa55e3797d4981c41771c8afe645516acd05`.
+- **Next:** owner can select Goblin Camp movement test near Newbie Hills in
+  Butcherblock using the 0.39.36 command in HOWTO. Continue offline later-camp
+  work and route-length improvements while awaiting real travel evidence.
+  Real travel, camp suitability,
   effective trip length and leveling remain owner-test gates. Cross-zone travel,
   missing later camps and full-auto recovery remain unfinished. No helper restart,
   login, character mutation or game-install/prefix modification occurred.
