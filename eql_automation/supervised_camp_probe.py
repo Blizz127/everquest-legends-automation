@@ -64,6 +64,7 @@ class SupervisedCampProbeScope:
         self.root,self.lease,self.reader=r.root,r.lease,r.lease.reader
         self.owner_input,self.topology=monitor.observer,monitor.topology
         self.journey_budget=journey_budget
+        self._journey_stage=journey_budget.stage if type(journey_budget) is ZoneItineraryBudget else None
         self.generation=log_veto.cancel_generation
         self._context=(r,d,monitor,gate,expected_window,log_veto,check_current,
             self.clock,self.lock,self.root,self.lease,self.reader,self.owner_input,journey_budget)
@@ -84,10 +85,19 @@ class SupervisedCampProbeScope:
         if self.valid:self.reason=str(reason)
         self.valid=False
 
+    def _check_journey(self):
+        if self.journey_budget is not None:self.journey_budget.check()
+        if type(self.journey_budget) is ZoneItineraryBudget:
+            root=self.journey_budget
+            if (root.stage is not self._journey_stage or root.stage.phase not in ('walking','bootstrap')
+                    or self.reader.zone_id!=root.leg.source_zone_id):
+                root.cancel('Camp probe differs from the current itinerary stage or zone')
+                raise ValueError(root.reason)
+
     def _check(self):
         try:
             if not self.valid:raise ValueError(self.reason)
-            if self.journey_budget is not None:self.journey_budget.check()
+            self._check_journey()
             self.current();r=self.runtime;began=r._check_scope()
             window=focused_game_identity(self.gate)
             self.current();finished=r._check_scope()
@@ -113,7 +123,7 @@ class SupervisedCampProbeScope:
                 raise ValueError('Camp supervision owner, deadline or observation binding changed')
             m.check_binding(self._monitor_binding)
             self.last_at=finished
-            if self.journey_budget is not None:self.journey_budget.check()
+            self._check_journey()
             return finished
         except Exception as error:
             self.cancel(error);raise ValueError(self.reason) from error
@@ -210,6 +220,8 @@ class SupervisedCampProbePolicy(CampProbeInputPolicy):
                         or s._reserved+ticket.maximum_actual_hold>s.declaration.maximum_total_hold):
                     raise ValueError('Camp probe duplicate authorization or hold budget exhausted')
                 expires=min(ticket.start.expires_at,ticket.proposed_at+.05,s.expires_at)
+                if type(s.journey_budget) is ZoneItineraryBudget:
+                    expires=min(expires,s.journey_budget.expires_at-ticket.maximum_actual_hold)
                 if not ticket.proposed_at<=now<=expires:raise ValueError('Camp probe DOWN deadline expired')
                 if s.journey_budget is not None:
                     self._journey_reservation=s.journey_budget.reserve(ticket,bounds=s.root.bounds)

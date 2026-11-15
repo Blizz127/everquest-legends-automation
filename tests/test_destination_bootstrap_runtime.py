@@ -72,7 +72,7 @@ def runtime(destination, tmp_path, monkeypatch, fitter, request):
     f.x, f.y, f.heading = 4., 3., 0.
     f.focus, f.active, f.closed_observer = True, False, False
     f.sample_hook = f.current_hook = f.send_hook = f.movement_hook = None
-    f.sent, f.movements = [], []
+    f.sent, f.movements, f.release_deadlines = [], [], []
     f.rd, f.wr = os.pipe()
     f.sender = PipeSender(f.wr)
     def sample():
@@ -111,6 +111,7 @@ def runtime(destination, tmp_path, monkeypatch, fitter, request):
     f.runtime = module.DestinationBootstrapRuntime(f.bootstrap, **f.options)
 
     def location(sender, **options):
+        assert options['release_deadline'] == f.runtime.expires_at
         options['ensure_current']()
         assert f.runtime.current_input_key() == 59
         start = f.now
@@ -121,6 +122,7 @@ def runtime(destination, tmp_path, monkeypatch, fitter, request):
         f.now += .01
         pulse = PulseReceipt(59, .005, start, start+.001, start+.006, f.now, 'elapsed')
         f.sent.append(pulse)
+        f.release_deadlines.append(options['release_deadline'])
         f.append(f'Your Location is {f.y:.2f}, {f.x:.2f}, 2.70')
         return HotkeyReceipt(pulse, f.now)
 
@@ -178,6 +180,7 @@ def test_three_new_pairs_precede_any_movement_and_probe_start_is_separate(runtim
     assert r.height.first.log_line_seq > r.floor._anchor.second.log_line_seq
     assert r.runtime.root.checkpoint is r.floor and r.runtime.probes == PROBES
     assert r.runtime.started+r.runtime.maximum_seconds == pytest.approx(expiry)
+    assert r.runtime.input_release_deadline == expiry
     assert r.monitor.floor is None and r.runtime.log_veto is f.veto
     advance(f, lambda:r.runtime.phase == 'pulse')
     assert len(f.sent) == 8 and f.movements == []
@@ -208,6 +211,8 @@ def test_seven_synthetic_receipts_fit_new_destination_and_prepare_fresh_onward_s
     assert r.runtime.route_start.height.second is f.reader.latest
     assert r.runtime.started+r.runtime.maximum_seconds == pytest.approx(expiry)
     assert f.lease.active and not r.runtime.closed
+    assert len(f.sent) == len(f.release_deadlines) == 64
+    assert set(f.release_deadlines) == {expiry}
     # A caller replacing both public fields cannot publish new steering while
     # retaining the genuine transaction ancestry and canonical evidence bytes.
     counterfeit = deepcopy(r.calibration)
@@ -263,6 +268,17 @@ def test_scope_expiry_after_floor_capture_does_not_restart_with_probe_child(runt
     f.now = r.expires_at+.01
     with pytest.raises(ValueError): r.tick()
     assert r.phase == r.runtime.phase == 'stopped' and not f.movements
+
+
+def test_child_location_release_deadline_cannot_be_extended(runtime):
+    f = runtime; r = f.runtime
+    advance(f, lambda:r.phase == 'probes')
+    assert r.runtime.input_release_deadline == r.expires_at
+    sent = len(f.sent)
+    r.runtime.input_release_deadline += 1.
+    with pytest.raises(ValueError): r.tick()
+    assert r.phase == r.runtime.phase == 'stopped'
+    assert len(f.sent) == sent and not f.movements
 
 
 def test_callback_cancel_during_probe_admission_prevents_result(runtime):
@@ -346,6 +362,7 @@ def test_root_itinerary_clamps_lifetime_and_counts_actual_probe_tickets(runtime)
     assert state['reserved_maximum_hold'] == pytest.approx(7*f.bounds.maximum_actual_hold)
     assert budget.stage.phase == 'bootstrap'
     assert r.runtime.started+r.runtime.maximum_seconds == pytest.approx(budget.expires_at)
+    assert r.runtime.input_release_deadline == budget.expires_at
     assert r.runtime.maximum_seconds < 90.
     assert r.scope.journey_budget is budget
     assert all(p._journey_reservation.ticket is t.ticket for p, t in zip(r.scope._policies, r.runtime.transactions))

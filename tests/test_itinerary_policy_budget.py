@@ -1,8 +1,11 @@
 """Root itinerary accounting through real sender pipes and synthetic game state."""
 from dataclasses import replace
 import threading
+import time
 
 import pytest
+import eql_automation.camp_probe_sender as probe_sender
+import eql_automation.source_step_sender as source_sender
 
 from eql_automation.source_destinations import destination_spec
 from eql_automation.supervised_camp_probe import SupervisedCampProbeScope
@@ -19,8 +22,10 @@ from test_route_step_sender import after_down
 from test_source_motion import f
 from test_supervised_camp_probe import ready, no_movement
 
+pytestmark = pytest.mark.parametrize('f', ['butcher'], indirect=True)
 
-def root_budget(*, clock, lock, binding=lambda:(1,), **limits):
+
+def root_budget(*, clock, lock, binding=lambda:(1,), first_line_sha256='b'*64, **limits):
     # Catalog/hash fixtures establish accounting stages only; no live arrival
     # or crossing geometry is claimed by these policy integration tests.
     legs = []
@@ -30,7 +35,7 @@ def root_budget(*, clock, lock, binding=lambda:(1,), **limits):
         spec = destination_spec(identifier)
         legs.append(ZoneItineraryLeg(identifier, spec.zone, spec.zone_id, source_name,
             destination_zone, destination_id, destination_name, spec.file_sha256,
-            'a'*64, 'b'*64, 'c'*64))
+            'a'*64, first_line_sha256 if not legs else 'b'*64, 'c'*64))
     declaration = ZoneItineraryDeclaration('synthetic-policy-itinerary', tuple(legs),
                                           120., 8, 1.6, 100.)
     return ZoneItineraryBudget(replace(declaration, **limits), clock=clock,
@@ -109,16 +114,14 @@ def test_source_root_invalidated_after_down_releases_without_floor_commit(f, mon
 def test_source_cannot_move_during_destination_bootstrap_stage(f):
     budget = root_budget(clock=f.clock, lock=f.ledger.lock)
     bootstrap_stage(budget)
-    source_policy(f, budget)
     with pytest.raises((ValueError, RuntimeError), match='stage'):
-        f.run()
+        source_policy(f, budget)
     assert not f.drain_events() and budget.snapshot()['reserved_pulses'] == 0
 
 
-def test_probe_policy_charges_destination_bootstrap_stage(ready):
+def test_probe_policy_charges_current_walking_stage(ready):
     h, p, runtime, policy = ready
     budget = root_budget(clock=runtime.clock, lock=runtime.lock)
-    bootstrap_stage(budget)
     stage = budget.stage
     scope = probe_policy(ready, budget)
     finish(h)
@@ -134,7 +137,6 @@ def test_probe_policy_charges_destination_bootstrap_stage(ready):
 def test_probe_root_limit_refuses_before_down(ready):
     h, p, runtime, policy = ready
     budget = root_budget(clock=runtime.clock, lock=runtime.lock, maximum_total_hold=.17)
-    bootstrap_stage(budget)
     scope = probe_policy(ready, budget)
     finish(h)
     assert not budget.valid and budget.snapshot()['reserved_pulses'] == 0
@@ -145,7 +147,6 @@ def test_probe_root_limit_refuses_before_down(ready):
 def test_probe_root_cancel_after_down_releases_without_floor_commit(ready, monkeypatch):
     h, p, runtime, policy = ready
     budget = root_budget(clock=runtime.clock, lock=runtime.lock)
-    bootstrap_stage(budget)
     scope = probe_policy(ready, budget)
     after_down(monkeypatch, lambda:budget.cancel('whole itinerary F9'))
     finish(h)
@@ -177,3 +178,64 @@ def test_root_cannot_replace_source_child_hold_limit(f):
     source_policy(f, budget, declaration=replace(f.policy.declaration, maximum_total_hold=.025))
     with pytest.raises((ValueError, RuntimeError), match='hold budget'):f.run()
     assert not f.drain_events() and budget.snapshot()['reserved_pulses'] == 0
+
+
+def test_source_child_must_match_current_root_zone_even_in_walking_phase(f):
+    budget = root_budget(clock=f.clock, lock=f.ledger.lock)
+    bootstrap_stage(budget)
+    budget.advance(budget.stage, 'walking', zone_id=54)
+    with pytest.raises((ValueError, RuntimeError), match='zone'):
+        source_policy(f, budget)
+    assert not f.drain_events() and not budget.valid
+
+
+def test_probe_child_cannot_claim_another_zones_bootstrap_stage(ready):
+    h, p, runtime, policy = ready
+    budget = root_budget(clock=runtime.clock, lock=runtime.lock)
+    bootstrap_stage(budget)
+    with pytest.raises(ValueError, match='zone'):
+        probe_policy(ready, budget)
+    no_movement(h)
+    assert not budget.valid
+
+
+def delay_down_beyond_root_hold_window(monkeypatch, sender_module, budget, maximum_hold):
+    original = sender_module.selected_key_pulse_receipt
+    selected = []
+    def delayed(fd, select, **options):
+        def select_later():
+            latest_down = budget.expires_at - maximum_hold
+            time.sleep(max(0., latest_down - .04 - budget.clock()))
+            value = select()
+            selected.append(value)
+            assert value.expires_at == latest_down
+            time.sleep(max(0., latest_down + .003 - budget.clock()))
+            return value
+        return original(fd, select_later, **options)
+    monkeypatch.setattr(sender_module, 'selected_key_pulse_receipt', delayed)
+    return selected
+
+
+def test_source_down_cannot_shift_reserved_hold_past_root_expiry(f, monkeypatch):
+    budget = root_budget(clock=f.clock, lock=f.ledger.lock,
+                         maximum_seconds=.3, maximum_total_hold=.05)
+    source_policy(f, budget)
+    selected = delay_down_beyond_root_hold_window(monkeypatch, source_sender, budget,
+                                                f.ledger.bounds.maximum_actual_hold)
+    with pytest.raises(RuntimeError):
+        f.run()
+    assert len(selected) == 1 and (1, 103, 1) not in f.drain_events()
+    assert budget.snapshot()['reserved_pulses'] == 1 and not f.sender.held
+
+
+def test_probe_down_cannot_shift_reserved_hold_past_root_expiry(ready, monkeypatch):
+    h, p, runtime, policy = ready
+    budget = root_budget(clock=runtime.clock, lock=runtime.lock,
+                         maximum_seconds=.4, maximum_total_hold=.18)
+    probe_policy(ready, budget)
+    selected = delay_down_beyond_root_hold_window(monkeypatch, probe_sender, budget,
+                                                runtime.root.bounds.maximum_actual_hold)
+    finish(h)
+    assert len(selected) == 1, '\n'.join(h.notices)
+    no_movement(h)
+    assert budget.snapshot()['reserved_pulses'] == 1 and not h.engine.sender.held

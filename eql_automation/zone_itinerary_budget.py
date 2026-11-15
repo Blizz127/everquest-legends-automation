@@ -201,7 +201,7 @@ class ZoneItineraryBudget:
         self._context = (declaration, clock, stop_lock, owner_binding, binding_reader)
         self._binding = _value(owner_binding)
         self._declaration = _declaration_state(declaration)
-        self.started = self.last_at = clock()
+        self.started = self.last_at = self._last_at = clock()
         self.expires_at = self.started + declaration.maximum_seconds
         if not finite(self.started) or not finite(self.expires_at):
             raise ValueError('Finite absolute itinerary start and deadline required')
@@ -233,6 +233,7 @@ class ZoneItineraryBudget:
                 or _declaration_state(self.declaration) != self._declaration
                 or _value(self.owner_binding) != self._binding
                 or (self.started, self.expires_at) != self._times
+                or self.last_at != self._last_at
                 or flat_record_state(self.stage) != self._stage_state
                 or self._reservations is not self._reservation_store
                 or (self._pulses, self._hold, self._distance) != self._balance
@@ -248,12 +249,13 @@ class ZoneItineraryBudget:
                 self._assert_intact()
                 stage = self.stage
                 before = self.binding_reader()
-                now = self.clock()
+                began = self.clock()
                 after = self.binding_reader()
+                now = self.clock()
                 self._assert_intact()
                 if (stage is not self.stage or _value(before) != self._binding
-                        or _value(after) != self._binding or not finite(now)
-                        or not self.started <= self.last_at <= now <= self.expires_at):
+                        or _value(after) != self._binding or not finite(began) or not finite(now)
+                        or not self.started <= self.last_at <= began <= now <= self.expires_at):
                     raise ValueError('Root itinerary owner or fixed deadline changed')
                 if reservation is not None:
                     if type(reservation) is not ZoneItineraryReservation:
@@ -267,7 +269,7 @@ class ZoneItineraryBudget:
                             or _ticket_state(reservation.ticket) != row[2]
                             or flat_record_state(row[3]) != row[4]):
                         raise ValueError('Root reservation is changed, copied or belongs to a retired stage')
-                self.last_at = now
+                self.last_at = self._last_at = now
                 return now
             except Exception as error:
                 self.cancel(error)

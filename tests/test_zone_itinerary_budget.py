@@ -298,3 +298,34 @@ def test_competing_threads_cannot_both_take_the_last_root_reservation():
         assert not thread.is_alive()
     assert sum(result is not None for result in results) == 1
     assert root.snapshot()['reserved_pulses'] == 1 and not root.valid
+
+
+def test_last_clock_history_cannot_be_reset_to_hide_a_rollback():
+    root, state = budget()
+    state.now = 20.
+    root.check()
+    root.last_at = 10.
+    state.now = 15.
+    with pytest.raises(ValueError):
+        root.check()
+    assert not root.valid
+
+
+@pytest.mark.parametrize('operation', ('check', 'reserve', 'advance'))
+def test_second_owner_callback_cannot_spend_time_after_the_last_clock_sample(operation):
+    root, state = budget()
+    calls = []
+    def callback():
+        calls.append(True)
+        if len(calls) == 2:
+            state.now = root.expires_at + .01
+    state.callback = callback
+    with pytest.raises(ValueError, match='deadline'):
+        if operation == 'check':
+            root.check()
+        elif operation == 'reserve':
+            root.reserve(ordinary_ticket(), bounds=bounds())
+        else:
+            root.advance(root.stage, 'crossing', zone_id=68)
+    assert not root.valid and root.snapshot()['reserved_pulses'] == 0
+    assert root.stage.phase == 'walking'

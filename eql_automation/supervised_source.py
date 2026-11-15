@@ -89,6 +89,7 @@ class SupervisedSourcePolicy:
         self.owner_input,self.log_veto=owner_input,log_veto
         self.window,self.topology,self.check_current=expected_window,topology_generation,check_current
         self.journey_budget=journey_budget
+        self._journey_stage=journey_budget.stage if type(journey_budget) is ZoneItineraryBudget else None
         self._journey_reservation=None
         self._context=(ledger,d,gate,owner_input,log_veto,check_current,journey_budget)
         self.started=self.last_at=ledger.clock()
@@ -143,8 +144,17 @@ class SupervisedSourcePolicy:
         if not delegated:self.check_current()
         return self.ledger._check()
 
-    def _check(self,*,completed_contact=False):
+    def _check_journey(self):
         if self.journey_budget is not None:self.journey_budget.check()
+        if type(self.journey_budget) is ZoneItineraryBudget:
+            root=self.journey_budget
+            if (root.stage is not self._journey_stage or root.stage.phase!='walking'
+                    or self.ledger.observer.reader.zone_id!=root.leg.source_zone_id):
+                root.cancel('Source walk differs from the current itinerary stage or zone')
+                raise RouteHalt(root.reason)
+
+    def _check(self,*,completed_contact=False):
+        self._check_journey()
         began=self._check_current_ledger()
         window=focused_game_identity(self.gate)
         finished=self._check_current_ledger();d=self.declaration
@@ -163,7 +173,7 @@ class SupervisedSourcePolicy:
                 or self.log_veto.cancel_generation!=self.ledger.observer.generation):
             raise RouteHalt('Source scope, focus, log or movement budget changed')
         self.last_at=finished
-        if self.journey_budget is not None:self.journey_budget.check()
+        self._check_journey()
         return began
 
     def _physical_observation(self,began,*,completed_contact=False):
@@ -268,9 +278,12 @@ class SupervisedSourcePolicy:
             raise RouteHalt('Source DOWN authorization expired')
         if self.journey_budget is not None:
             self._journey_reservation=self.journey_budget.reserve(ticket,bounds=self.ledger.bounds)
+        expires=ticket.proposed_at+.05
+        if type(self.journey_budget) is ZoneItineraryBudget:
+            expires=min(expires,self.journey_budget.expires_at-ticket.maximum_actual_hold)
         self.reserved_hold+=ticket.maximum_actual_hold
         self._authorization=SupervisedSourceAuthorization(ticket,scene.reference,self.declaration,
-            issued,ticket.proposed_at+.05)
+            issued,expires)
         return self._authorization
 
     def still_authorized(self,authorization,scene):

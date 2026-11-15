@@ -2,11 +2,13 @@
 from dataclasses import replace
 import os
 import threading
+import time
 
 import pytest
 
 from eql_automation.supervised_source_crossing import SupervisedSourceCrossingPolicy
 from eql_automation.source_crossing_sender import run_checked_source_crossing_step
+import eql_automation.source_crossing_sender as crossing_sender
 from eql_automation.uinput_watchdog import _EVENT
 from test_itinerary_policy_budget import root_budget
 from test_route_floor_commit import legacy
@@ -16,7 +18,8 @@ from test_source_crossing_corridor import h, collect_source_pair
 
 def attach(h, *, declaration=None, budget=None, **limits):
     if budget is None:
-        budget = root_budget(clock=h.clock, lock=h.corridor.lock, **limits)
+        budget = root_budget(clock=h.clock, lock=h.corridor.lock,
+            first_line_sha256=h.corridor.line.sha256, **limits)
         budget.advance(budget.stage, 'crossing', zone_id=68)
     old = h.policy
     h.policy = SupervisedSourceCrossingPolicy(h.corridor,
@@ -79,7 +82,10 @@ def test_root_and_child_limits_both_refuse_before_down(h, fault):
         root = attach(h, declaration=replace(h.policy.declaration, maximum_total_hold=.05))
     else:
         root = root_budget(clock=h.clock, lock=h.corridor.lock)
-        attach(h, budget=root)
+        with pytest.raises((RuntimeError, ValueError), match='stage'):
+            attach(h, budget=root)
+        assert not events(h) and root.snapshot()['reserved_pulses'] == 0
+        return
     with pytest.raises((RuntimeError, ValueError)):
         h.step()
     assert not events(h) and not h.sender.held
@@ -89,7 +95,8 @@ def test_root_and_child_limits_both_refuse_before_down(h, fault):
 @pytest.mark.parametrize('fault', ('cancel', 'stage', 'generation'))
 def test_root_invalidated_after_down_releases_without_floor_commit(h, monkeypatch, fault):
     binding = [1]
-    root = root_budget(clock=h.clock, lock=h.corridor.lock, binding=lambda:(binding[0],))
+    root = root_budget(clock=h.clock, lock=h.corridor.lock, binding=lambda:(binding[0],),
+        first_line_sha256=h.corridor.line.sha256)
     root.advance(root.stage, 'crossing', zone_id=68)
     attach(h, budget=root)
     old_floor = h.corridor.chain
@@ -124,3 +131,38 @@ def test_crossing_policy_root_identity_cannot_be_replaced(h):
     with pytest.raises((RuntimeError, ValueError), match='scope'):
         h.step()
     assert not events(h) and root.snapshot()['reserved_pulses'] == 0
+
+
+@pytest.mark.parametrize('fault', ('wrong_leg', 'wrong_line'))
+def test_crossing_root_must_match_the_active_leg_and_line(h, fault):
+    root = root_budget(clock=h.clock, lock=h.corridor.lock)
+    root.advance(root.stage, 'crossing', zone_id=68)
+    if fault == 'wrong_leg':
+        for phase, zone in (('loading', None), ('arrival', 54), ('bootstrap', 54),
+                            ('walking', 54), ('crossing', 54)):
+            root.advance(root.stage, phase, zone_id=zone)
+    with pytest.raises((RuntimeError, ValueError), match='leg'):
+        attach(h, budget=root)
+    assert not events(h) and root.snapshot()['reserved_pulses'] == 0 and not root.valid
+
+
+def test_delayed_crossing_down_cannot_move_its_reserved_hold_past_root_deadline(h, monkeypatch):
+    root = attach(h, maximum_seconds=.3, maximum_total_hold=.06)
+    original = crossing_sender.selected_key_pulse_receipt
+    selected = []
+    def delayed(fd, select, **options):
+        def select_later():
+            latest_down = root.expires_at - h.corridor.bounds.maximum_actual_hold
+            time.sleep(max(0., latest_down - .02 - h.clock()))
+            value = select()
+            selected.append(value)
+            assert value.expires_at == latest_down
+            time.sleep(max(0., latest_down + .003 - h.clock()))
+            return value
+        return original(fd, select_later, **options)
+    monkeypatch.setattr(crossing_sender, 'selected_key_pulse_receipt', delayed)
+    with pytest.raises(RuntimeError):
+        h.step()
+    assert len(selected) == 1
+    assert (1, 103, 1) not in events(h) and not h.sender.held
+    assert root.snapshot()['reserved_pulses'] == 1

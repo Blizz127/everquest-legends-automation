@@ -186,6 +186,7 @@ class DestinationBootstrapRuntime:
             try:
                 receipt = send_location_hotkey(self.sender, binding=self.hotkey, owner_input=self.owner_input,
                     lock=self.lock, clock=self.clock, expires_at=min(request.expires_at, self.expires_at),
+                    release_deadline=self.expires_at,
                     ensure_current=current, cancel=self.cancel, pump=self.pump, record_event=self.events.append)
             finally:
                 self.input_request = None
@@ -251,7 +252,8 @@ class DestinationBootstrapRuntime:
                         movement_policy_factory=self._policy, check_current=self._check_context,
                         command_state_clear=self.command_clear, pump=self.pump, probes=PROBES,
                         maximum_seconds=min(1500., self.expires_at-self.clock()),
-                        log_veto=self.log_veto, check_scene=self._check_scene)
+                        log_veto=self.log_veto, check_scene=self._check_scene,
+                        input_release_deadline=self.expires_at)
                     self.phase = 'probes'
                 else:
                     raise ValueError('Unknown destination collection phase')

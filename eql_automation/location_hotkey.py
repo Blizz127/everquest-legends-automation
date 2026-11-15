@@ -11,8 +11,9 @@ from hashlib import sha256
 import os
 from pathlib import Path
 
+from .ground_binding import finite
 from .owner_input_observer import OwnerInputObservation
-from .uinput_watchdog import _EVENT, PulseSelection, selected_key_pulse_receipt
+from .uinput_watchdog import _EVENT, _MAX_PULSE, PulseReceipt, PulseSelection, selected_key_pulse_receipt
 
 
 class HotkeyStopped(RuntimeError):
@@ -28,6 +29,10 @@ def _fd_identity(fd):
 # modifiers and those helper controls cannot be used by this acquisition path.
 HOTKEY_CODES = {**{f'F{i}': 58+i for i in range(1, 6)},
                 **{f'F{i}': 170+i for i in range(13, 25)}}
+
+# Match the watchdog receipt validator's existing acceptance envelope. This is
+# an admission/receipt bound, not a guarantee about operating-system scheduling.
+MAXIMUM_ACCEPTED_HOTKEY_HOLD = _MAX_PULSE + .05
 
 
 def _source_hashes(paths):
@@ -77,14 +82,17 @@ class HotkeyReceipt:
 
 
 def send_location_hotkey(sender, *, binding, owner_input, lock, clock, expires_at,
-                         ensure_current, cancel, pump, record_event):
+                         ensure_current, cancel, pump, record_event, release_deadline=None):
     """Send one configured key, sharing the same transaction in setup and routes.
 
     The caller owns the current owner request and supplies its cancellation and
     session checks. This function owns descriptor/key cleanup. It never creates
     a device, reads a location log or clears the caller's cancellation state.
+    An optional release deadline reserves the watchdog's full accepted hold
+    envelope before DOWN and rejects a late UP receipt without skipping cleanup.
     """
     if (not isinstance(binding, OwnerLocationHotkey)
+            or release_deadline is not None and not finite(release_deadline)
             or not all(callable(value) for value in
                        (clock, ensure_current, cancel, pump, record_event))):
         raise ValueError('Owner setup binding and current request callbacks required')
@@ -96,7 +104,12 @@ def send_location_hotkey(sender, *, binding, owner_input, lock, clock, expires_a
 
     def state_check():
         ensure_current()
-        if (clock() > expires_at or sender.ui is not original_ui
+        now = clock()
+        if (release_deadline is not None and
+                (now > release_deadline or not selected and
+                 now > release_deadline - MAXIMUM_ACCEPTED_HOTKEY_HOLD)):
+            raise HotkeyStopped('Hotbutton release deadline has insufficient hold margin')
+        if (now > expires_at or sender.ui is not original_ui
                 or original_ui.fileno() != original_fd or _fd_identity(original_fd) != device_identity
                 or getattr(sender, '_eql_route_operation', None) is not marker):
             raise HotkeyStopped('Hotbutton owner request or sender changed')
@@ -132,9 +145,14 @@ def send_location_hotkey(sender, *, binding, owner_input, lock, clock, expires_a
     def select():
         nonlocal selected
         check()
+        permit_expires = min(expires_at, clock()+.1)
+        if release_deadline is not None:
+            permit_expires = min(permit_expires, release_deadline - MAXIMUM_ACCEPTED_HOTKEY_HOLD)
+            if clock() > permit_expires:
+                raise HotkeyStopped('Hotbutton release deadline has insufficient hold margin')
         selected = True
         sender.held.add(code)
-        return PulseSelection(code, .020, min(expires_at, clock()+.1))
+        return PulseSelection(code, .020, permit_expires)
 
     try:
         with lock:
@@ -149,6 +167,11 @@ def send_location_hotkey(sender, *, binding, owner_input, lock, clock, expires_a
             fd = os.dup(original_fd)
         receipt = selected_key_pulse_receipt(fd, select, pump=pump, should_stop=stop, go_lock=lock)
         with lock:
+            if release_deadline is not None and (type(receipt) is not PulseReceipt
+                    or not finite(receipt.up_completed_at)
+                    or not 0 < receipt.maximum_held_seconds <= MAXIMUM_ACCEPTED_HOTKEY_HOLD
+                    or receipt.up_completed_at > release_deadline):
+                raise HotkeyStopped('Hotbutton release receipt exceeded its deadline or hold bound')
             check()
     except BaseException as error:
         error_text = type(error).__name__+': '+str(error)
@@ -176,7 +199,9 @@ def send_location_hotkey(sender, *, binding, owner_input, lock, clock, expires_a
                     configuration_sha256=binding.configuration_sha256,
                     receipt=None if receipt is None else asdict(receipt), released_at=released_at,
                     error=error_text, cleanup_error=None if cleanup_error is None else str(cleanup_error),
-                    client_effect_verified=False, chat_keys_sent=False))
+                    client_effect_verified=False, chat_keys_sent=False,
+                    **({} if release_deadline is None else dict(release_deadline=release_deadline,
+                        maximum_accepted_hold=MAXIMUM_ACCEPTED_HOTKEY_HOLD))))
         finally:
             if fd is not None:
                 os.close(fd)

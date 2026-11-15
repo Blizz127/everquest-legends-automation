@@ -162,10 +162,12 @@ class CampSourceRuntime(SourceExecutionLoop):
                 raise ValueError('Camp route location request changed')
         self.input_kind, self.input_request = 'location', request
         try:
+            deadline = ({} if self.probe.input_release_deadline is None else
+                        dict(release_deadline=self.probe.input_release_deadline))
             receipt = send_location_hotkey(self.sender, binding=self.hotkey, owner_input=self.owner_input,
                 lock=self.lock, clock=self.clock,
                 expires_at=min(request.expires_at, seal.expires_at) if seal else request.expires_at,
-                ensure_current=current, cancel=self.cancel, pump=self.probe.pump, record_event=self.events.append)
+                ensure_current=current, cancel=self.cancel, pump=self.probe.pump, record_event=self.events.append, **deadline)
             return CommandReceipt(receipt.pulse.down_started_at, receipt.released_at)
         finally:self.input_kind = self.input_request = None
 

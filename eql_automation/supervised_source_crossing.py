@@ -95,6 +95,7 @@ class SupervisedSourceCrossingPolicy:
         self.topology = topology_generation
         self.check_current = check_current
         self.journey_budget = journey_budget
+        self._journey_stage = None if journey_budget is None else journey_budget.stage
         self._journey_reservation = None
         self._context = (corridor, a, d, gate, owner_input, veto, check_current, journey_budget)
         self.started = self.last_at = corridor.clock()
@@ -113,11 +114,23 @@ class SupervisedSourceCrossingPolicy:
             self._scene = self._authorization = None
             self.corridor.cancel(reason)
 
+    def _check_journey(self):
+        if self.journey_budget is not None:
+            self.journey_budget.check()
+            root = self.journey_budget
+            if (root.stage is not self._journey_stage or root.stage.phase != 'crossing'
+                    or root.leg.source_zone != self.corridor.line.zone
+                    or (root.leg.source_zone_id, root.leg.source_name) != self.arrival.source
+                    or (root.leg.destination_zone_id, root.leg.destination_name)
+                        != (self.arrival.destination_id, self.arrival.destination)
+                    or root.leg.expected_zone_line_sha256 != self.corridor.line.sha256):
+                root.cancel('Source crossing differs from the current itinerary stage or leg')
+                raise RouteHalt(root.reason)
+
     def _check(self):
         if self._cancelled is not None:
             raise RouteHalt('Source crossing policy cancelled: ' + self._cancelled)
-        if self.journey_budget is not None:
-            self.journey_budget.check()
+        self._check_journey()
         a = self.arrival
         if a.loading is not None or a.phase != 'await_loading':
             raise RouteHalt('Source crossing movement ends on loading or arrival cancellation')
@@ -143,8 +156,7 @@ class SupervisedSourceCrossingPolicy:
                 or self.log_veto.cancel_generation != self.corridor.generation):
             raise RouteHalt('Source crossing scope, focus, log or aggregate budget changed')
         self.last_at = finished
-        if self.journey_budget is not None:
-            self.journey_budget.check()
+        self._check_journey()
         return began
 
     def _physical_observation(self, began):
@@ -216,11 +228,14 @@ class SupervisedSourceCrossingPolicy:
                     raise RouteHalt('Source crossing DOWN authorization expired')
                 if self.journey_budget is not None:
                     self._journey_reservation = self.journey_budget.reserve(ticket, bounds=self.corridor.bounds)
+                expires = ticket.proposed_at + .05
+                if self.journey_budget is not None:
+                    expires = min(expires, self.journey_budget.expires_at - ticket.maximum_actual_hold)
                 self._tickets.append(ticket)
                 self.reserved_hold += ticket.maximum_actual_hold
                 self._authorization = SupervisedSourceCrossingAuthorization(
                     ticket, scene.reference, self.declaration,
-                    issued, ticket.proposed_at + .05,
+                    issued, expires,
                 )
                 return self._authorization
             except BaseException as error:

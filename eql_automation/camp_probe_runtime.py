@@ -26,7 +26,8 @@ from .scene_log_veto import SceneLogVeto
 class CampProbeRuntime:
     def __init__(self,preparation,*,sender,hotkey,owner_input,stop_lock,
                  movement_policy_factory,check_current,command_state_clear,pump,
-                 probes=PROBES,maximum_seconds=120.,log_veto=None,check_scene=None):
+                 probes=PROBES,maximum_seconds=120.,log_veto=None,check_scene=None,
+                 input_release_deadline=None):
         if (type(preparation) is not CampProbePreparation or preparation.phase!='new'
                 or type(hotkey) is not OwnerLocationHotkey
                 or not isinstance(stop_lock,type(threading.RLock()))
@@ -35,6 +36,7 @@ class CampProbeRuntime:
                 or type(probes) is not tuple or not 1<=len(probes)<=7
                 or log_veto is not None and type(log_veto) is not SceneLogVeto
                 or check_scene is not None and not callable(check_scene)
+                or input_release_deadline is not None and not finite(input_release_deadline)
                 or not finite(maximum_seconds) or not 0<maximum_seconds<=1500):
             raise ValueError('Fresh preparation, explicit policy and finite retained runtime required')
         b=preparation.bounds
@@ -50,6 +52,7 @@ class CampProbeRuntime:
         self.command_clear=command_state_clear;self.pump=pump
         self.probes=probes;self._probes_bytes=tuple(flat_record_state(p) for p in probes)
         self.maximum_seconds=maximum_seconds
+        self.input_release_deadline=input_release_deadline
         self.clock=preparation.clock;self.wall=preparation.wall;self.lease=preparation.lease
         self.log_veto=log_veto
         if log_veto is not None and (log_veto.clock is not self.clock
@@ -58,9 +61,12 @@ class CampProbeRuntime:
         self._log_veto_state=(None if log_veto is None else
             (log_veto.tail,log_veto.tail.path,log_veto.clock,log_veto.cancel_generation))
         self._context=(preparation,sender,hotkey,owner_input,stop_lock,movement_policy_factory,
-            check_current,command_state_clear,pump,probes,self.clock,self.wall,self.lease,maximum_seconds,log_veto,check_scene)
+            check_current,command_state_clear,pump,probes,self.clock,self.wall,self.lease,maximum_seconds,log_veto,check_scene,
+            input_release_deadline)
         self.phase='prepare';self.reason='';self.busy=False;self.closed=False
         self.started=self.last_at=self.clock()
+        if input_release_deadline is not None and not self.started<input_release_deadline<=self.started+maximum_seconds:
+            raise ValueError('Input release deadline must retain the original finite probe scope')
         self.collector=None;self.collection_kind=None;self.baseline=None;self.released_at=None
         self.index=0;self.transaction=None;self.start=None;self.policy=None;self.sent=None
         self.reference=None;self.results=[];self.transactions=[];self.collections=[];self.events=[]
@@ -85,7 +91,7 @@ class CampProbeRuntime:
         now=self.clock()
         actual=(self.root,self.sender,self.hotkey,self.owner_input,self.lock,self.policy_factory,
             self.current,self.command_clear,self.pump,self.probes,self.clock,self.wall,self.lease,self.maximum_seconds,
-            self.log_veto,self.scene_current)
+            self.log_veto,self.scene_current,self.input_release_deadline)
         if (self.phase=='stopped' or self.closed
                 or any(a is not b for a,b in zip(self._context,actual))
                 or tuple(flat_record_state(p) for p in self.probes)!=self._probes_bytes
@@ -169,9 +175,10 @@ class CampProbeRuntime:
                 raise ValueError('Camp probe position request changed')
         self.input_kind='location';self.input_request=request
         try:
+            deadline={} if self.input_release_deadline is None else dict(release_deadline=self.input_release_deadline)
             receipt=send_location_hotkey(self.sender,binding=self.hotkey,owner_input=self.owner_input,
                 lock=self.lock,clock=self.clock,expires_at=request.expires_at,ensure_current=current,
-                cancel=self.cancel,pump=self.pump,record_event=self.events.append)
+                cancel=self.cancel,pump=self.pump,record_event=self.events.append,**deadline)
         finally:self.input_kind=self.input_request=None
         collector.command_sent(request,CommandReceipt(receipt.pulse.down_started_at,receipt.released_at))
 
