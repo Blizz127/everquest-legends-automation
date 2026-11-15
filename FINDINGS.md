@@ -1,5 +1,34 @@
 # FINDINGS
 
+## 2026-11-15 — next-increment drafts prepared during runtime checks
+
+VERIFIED a separate offline search-name extractor passes 15 focused synthetic
+cases and reproduces eight Butcherblock names / 16 ordered NPC-selection and
+owner-kill pairs from the pinned owner log. It drops partial records, invalid
+chronology, zone/log boundaries, stale pairs and replaced/non-NPC selections.
+Historical levels and consideration pairs remain empty. The qualified history
+file is unchanged. Draft validation manifest:
+`release-drafts/0.42.85-search/VALIDATION.json`, SHA
+`36447940b3094417e7db9bda25efe4f1fab1849191d133be25c872ab4a44d354`.
+The draft is not installed or connected to combat.
+
+VERIFIED bounded copied-client inspection found resource 6780,
+`Targeted (%1): %2`, and resource 6768, `NPC`. The message routine
+0x1402ae470–0x1402aec1a requires both a global flag and the incoming R8b flag;
+one retained caller explicitly supplies zero. The complete /target handler
+0x1402511a0–0x1402516e6 has no direct call to that message routine. This neither
+proves /target is silent nor establishes a reliable classified receipt or stable
+current-target identity. Report `release-drafts/0.42.85-target-message/probe.json`,
+SHA `c20a788187717a901e3c4b23aef694b99f6dcc7ea1f3eb97234fcaa2ebc5c4f5`.
+No new runtime rule or owner-action requirement was installed from this finding.
+
+A separate read-only trace-summary draft distinguishes configured and
+helper-reported levels, terminal records and current unknowns. On the retained
+owner trace it correctly reports the Nov14 engine exit and no camp session.
+Artifact `release-drafts/0.42.85-trace/retained-trace-summary.json`, SHA
+`d60593d44620ef8479a1cd976f7ecd697921f7948050c95ed1ab1fac544dcf6d`.
+These drafts do not change owner 0.39.37 or provide actual leveling acceptance.
+
 ## 2026-11-15 02:47 UTC — delegated owner checks and historical search proposal
 
 VERIFIED the final pre-delegation snapshot failed its dense route by 0.220ms;

@@ -1,10 +1,11 @@
 # EverQuest Legends automation — current owner guide
 
 **This guide describes owner 0.39.38 / runtime 0.42.84.**
-Verified installation status and evidence are recorded in STATUS.md. Before
-installing this build, owner 0.39.37 / runtime 0.42.82 remains the prior version.
+Project status is recorded in STATUS.md. On Alienware, this build's installation
+receipt is `~/.local/share/eql-automation/owner-build-drafts/eql-owner-journey-0.39.38-installed.json`.
+Owner 0.39.37 / runtime 0.42.82 remains available at its prior versioned path.
 
-Once STATUS.md records this build's installation, close the old helper yourself
+Once this version is installed, close the old helper yourself
 and run only one helper on Alienware:
 
 ```bash
@@ -109,7 +110,7 @@ cancel the handoff. This is supervised testing, not the full 1–20 path.
 
 ## Choose a travel/camp destination — preview 0.39.38
 
-After STATUS.md confirms candidate 0.39.38 is installed, close your old helper yourself; run only one. On Alienware:
+After installing 0.39.38, close your old helper yourself; run only one. On Alienware:
 
 ```bash
 EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.38/launch.sh
