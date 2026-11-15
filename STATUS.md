@@ -38,13 +38,17 @@ Updated 2026-11-15 01:03 UTC for coordinator task `829a00229b29`.
   Source revision `4312aea56ea3d0dde69ab352072c21f59b5467e6`;
   archive SHA `2869ee8f560efaf0d95811123189e7d2ff5aaf9e1ad029c88d49cfa0b3f499f3`;
   receipt SHA `d40832f18ce4a2ba697e5a740319fa55e3797d4981c41771c8afe645516acd05`.
-- **Source 0.42.80 built; private publication pending.** VERIFIED 31 focused
+- **Source tools 0.42.80 privately installed on Alienware.** VERIFIED 31 focused
   geometry checks. Full Goblin source replay finds nine sections with checked
   intermediate measurement reserves under an explicit unverified speed-upper
   hypothesis of 60. No body, source-face, patch or child-scope limit is enlarged.
   Artifact SHA `65c97d4cd1a4cefd0213877a602cc1276cd3e64d36a156b2a424859bd651d04c`.
   These are nominal waypoint hints, not live arrival or calibration evidence.
   The owner runtime still does not continue automatically between sections.
+  All 587 Python pins, 637 packaged files and nine section guides verify;
+  installed CLI and both zone-guide startup checks pass. Owner 0.39.36 remains
+  unchanged. Receipt SHA
+  `85aa438207930d144a7b7eac7a820c9d1e7c774616699445bf4efa835f740ffc`.
 - **Next:** connect finite journey ownership to healthy stopped section receipts,
   fresh position pairs and the existing source-checked measurement/probe runtime.
   Preserve one sender, observer and parent budget; never renew a timed-out child.

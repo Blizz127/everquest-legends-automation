@@ -59,7 +59,15 @@ Owner 0.39.36/runtime0.42.79 remains installed, with its existing trip limits.
 A read-only owner trace check found unchanged 17,821 bytes, mtime
 2026-11-14T19:31:12.111509+00:00 and terminal engine_exit. No new live acceptance
 or current level/XP/hour/death/camp metrics are available. G0 remains passed.
-Source tools 0.42.80 are locally built; additive private publication follows.
+VERIFIED source tools 0.42.80 privately installed at
+`~/.local/share/eql-automation/owner-tools/0.42.80`. All 587 Python source pins,
+637 packaged files and nine section guides verify; installed CLI and synthetic
+Butcher/Crushbone guide startup pass. Source revision
+`3b45befb7c1d2a26c7376211510e8e39020be40e`; archive SHA
+`9997029f24e8da37f544aa23a0d1fe385500b87501b32503bfa67c7c5e799db7`;
+installed receipt SHA
+`85aa438207930d144a7b7eac7a820c9d1e7c774616699445bf4efa835f740ffc`.
+Owner 0.39.36 manifest is unchanged. No helper restart or game input.
 
 ## 2026-11-15 00:53 UTC — owner 0.39.36 privately installed on Alienware
 
