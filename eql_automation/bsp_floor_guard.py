@@ -171,6 +171,13 @@ def check_source_body_bsp(step, footprint, terrain_sources, bsp_view, *, clip_br
             source = inventory[key]
             vertices = tuple((y,x,z) for x,y,z in source.vertices_wld)
             patch = clip(exact_boundary, hull(tuple(p[:2] for p in rational(vertices))))
+            # Closed clipping can repeat a corner that lies exactly on a
+            # source edge. Canonicalize the convex patch without changing
+            # its exact area or dropping the closed edge/point boundary.
+            canonical = hull(patch)
+            if area(canonical) != area(patch):
+                return result(False, 'selected_floor_patch_not_convex', pieces)
+            patch = canonical
             if area(patch) <= 0:
                 # SourceFloorChain selected only positive-area patches. A
                 # changed/degenerate one cannot silently lose its boundary.

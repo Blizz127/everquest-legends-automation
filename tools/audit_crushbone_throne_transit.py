@@ -27,15 +27,13 @@ from eql_automation.crushbone_assets import DATA_NAME, DATA_PINS, load_crushbone
 from eql_automation.native_region_policy import encoded
 from eql_automation.owner_route_assets import checked_bytes
 from eql_automation.source_detour import swept_square
-from eql_automation.source_floor_chain import SourceFloorChain, inside, rational
-from eql_automation.ground_sweep import hull
+from eql_automation.source_floor_chain import SourceFloorChain
 from eql_automation.source_guide_compaction import compact_source_guide
 from eql_automation.source_itinerary import (
     SourceItineraryGuide, SourceWalkHint, plan_source_itinerary,
 )
 from eql_automation.source_step_links import discover_step_links
 from eql_automation.source_transit_graph import SourceTransitGraph
-from eql_automation.static_floor_guard import check_source_static_floor
 
 START = (-95., -78.)
 GOAL = (106., 154.)
@@ -43,93 +41,10 @@ DESTINATIONS = {'throne': GOAL, 'trainer': (119., -212.)}
 
 
 def filter_centers(graph, prefix, planner, *, rounds, check, progress, goal=None):
-    """Prune fixed graph waypoints, never whole components or goal layers.
-
-    Each face center is a mandatory point in this proposal graph. Its own
-    source-face seed is an OFFLINE hypothesis used only to reject that point.
-    Passing caps do not replace the caller's floor or accept any route edge.
-    Query/budget/ambiguity failures abort rather than becoming exclusions.
-    """
-    goal = GOAL if goal is None else goal
-    excluded = set()
-    cache = {}
-    attempts = []
-    rejected_reasons = {'selected_floor_uncovered_ground_area',
-                        'other_source_surface_intersects_body_band'}
-    for attempt in range(rounds+1):
-        check()
-        proposal = graph.propose(prefix, START, goal, excluded=excluded, max_seconds=10.)
-        if proposal is None:
-            progress(attempts, cache, len(excluded))
-            raise ValueError('No proposal after bounded fixed-center exclusions; physical disconnection not proven')
-        faces = tuple(dict.fromkeys(face for edge in proposal.edges
-            for face in (edge.origin, edge.destination) if face in graph.centers))
-        rejected = []
-        for face in faces:
-            check()
-            if face not in cache:
-                point = graph.centers[face][:2]
-                evidence = dict(kind='offline_proposal_center_hypothesis',
-                    source_wld_sha256=planner.source.wld_sha256,
-                    face=face, point=point, radius=1.2, body_height=6.,
-                    current_character_observation=False, input_authorized=False)
-                cap = swept_square(point, point, 1.2)
-                sources = planner.source.source_faces_for_footprint(cap)
-                probe = SourceFloorChain(inventory_sha256=planner.source.wld_sha256,
-                    seed_evidence_sha256=sha256(encoded(evidence)).hexdigest(),
-                    seed_ids=(face,), body_height=6.)
-                floor = probe.advance(cap, sources)
-                placed = (check_source_static_floor(floor, cap, sources, planner.static)
-                          if floor.candidate else None)
-                accepted = floor.candidate and placed.candidate
-                reason = placed.reason if placed is not None else floor.reason
-                # A one-face synthetic seed can miss joins retained by an
-                # arriving prefix. Require a deficit in ALL eligible local
-                # support from the graph component before excluding coverage.
-                support = [(s.fragment, s.face) for s in sources
-                    if graph.components.components.get((s.fragment, s.face))
-                       == graph.components.components[face]]
-                expanded = hull((x+dx, y+dy) for x, y in cap
-                    for dx in (-.002, .002) for dy in (-.002, .002))
-                witness = next((point for point in expanded if not any(
-                    inside(rational((point,))[0], rational(graph.components.faces[k][0]))
-                    for k in support)), None)
-                blocker = (next((hit for hit in floor.occupancy.faces
-                    if hit.classification == 'intersects_or_touches_body_band'
-                    and hit.minimum_above_floor is not None and hit.minimum_above_floor > .11), None)
-                    if floor.occupancy is not None else None)
-                definite = (reason == 'selected_floor_uncovered_ground_area' and witness is not None
-                    or reason == 'other_source_surface_intersects_body_band' and blocker is not None
-                    or floor.candidate and placed is not None
-                    and placed.reason == 'other_source_surface_intersects_body_band')
-                cache[face] = dict(seed=evidence, cap=cap, accepted_cap=accepted, reason=reason,
-                    excluded_center=definite, uncovered_corner=witness,
-                    positive_height_body_blocker=None if blocker is None else asdict(blocker),
-                    support_overapproximation_ids=support,
-                    classification=('cap_passed' if accepted else 'geometric_refusal' if definite
-                                    else 'independent_seed_inconclusive'),
-                    terrain=asdict(floor), static=None if placed is None else asdict(placed),
-                    route_accepted=False, physical_disconnection_proven=False)
-                if not accepted and reason not in rejected_reasons:
-                    progress(attempts, cache, len(excluded))
-                    raise ValueError('Center query cannot justify pruning '+str(face)+': '+reason)
-            if cache[face]['excluded_center']:
-                rejected.append(face)
-        attempts.append(dict(round=attempt, proposal=asdict(proposal), rejected_faces=rejected))
-        if not rejected:
-            progress(attempts, cache, len(excluded))
-            return proposal
-        # Every incoming/outgoing graph edge explicitly visits this center.
-        # The start/goal attachment edges also visit it; other faces in the
-        # same component and other goal layers remain available.
-        bad = set(rejected)
-        for face in bad:
-            excluded.add(('start', face)); excluded.add(('goal', face))
-        for edges in graph.adjacent.values():
-            excluded.update(edge.identity for edge in edges
-                            if edge.origin in bad or edge.destination in bad)
-        progress(attempts, cache, len(excluded))
-    raise ValueError('Fixed-center proposal retry budget exhausted')
+    """Retain this recipe's original start/default goal and body hypotheses."""
+    from tools.source_transit_centers import filter_transit_centers
+    return filter_transit_centers(graph, prefix, START, GOAL if goal is None else goal,
+        planner, rounds=rounds, check=check, progress=progress)
 
 
 def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, walk_range=None,
@@ -144,6 +59,7 @@ def run(output, *, wall_budget, cpu_budget, prior_path=None, prior_pin=None, wal
                       Path(__file__).with_name('audit_crushbone_camp_transit.py').resolve(),
                       Path(__file__).with_name('source_walk_shortcuts.py').resolve(),
                       Path(__file__).with_name('source_covered_floors.py').resolve(),
+                      Path(__file__).with_name('source_transit_centers.py').resolve(),
                       *sorted((PROJECT/'eql_automation').glob('*.py')))}
     record = dict(format='eql-offline-'+destination+'-transit-v1',
         origin='north-wall', destination=destination, start=START, goal=goal_xy,

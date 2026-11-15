@@ -30,7 +30,6 @@ from eql_automation.source_detour import swept_square
 from eql_automation.source_floor_chain import SourceFloorChain
 from eql_automation.source_guide_compaction import compact_source_guide
 from eql_automation.source_itinerary import SourceItineraryGuide, SourceWalkHint, plan_source_itinerary
-from eql_automation.source_probe_geometry import check_source_footprint
 from eql_automation.source_transit_graph import SourceTransitGraph
 
 START = (-650., 2700.)
@@ -50,17 +49,20 @@ def write_checkpoint(output, record):
 
 
 def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, repair=False,
-        proposal_model='source', prior_path=None, prior_pin=None):
+        proposal_model='source', prior_path=None, prior_pin=None, start_via_edges=False,
+        center_rounds=0):
     began, cpu_began = time.monotonic(), time.process_time()
     goal = DESTINATIONS[destination]
     pins = {str(p.relative_to(PROJECT)): sha256(p.read_bytes()).hexdigest()
             for p in (Path(__file__).resolve(), Path(__file__).with_name('source_walk_repairs.py'),
+                      Path(__file__).with_name('source_transit_centers.py'),
+                      Path(__file__).with_name('source_walk_prefix.py'),
                       *sorted((PROJECT/'eql_automation').glob('*.py')))}
     record = dict(format='eql-offline-butcher-camp-transit-v1',
         origin='newbie-hills', destination=destination, start=START, goal=goal,
         status='running', stage='loading', completed=False, source_candidate=False,
         ordinary_walking_only=True, proposal_only=proposal_only, repair_walks=repair,
-        proposal_model=proposal_model,
+        proposal_model=proposal_model, start_via_edges=start_via_edges, center_rounds=center_rounds,
         synthetic_start=True, current_character_observation=False,
         historical_prefix_replayed=False, label_z_used_for_floor_selection=False,
         input_authorized=False, game_input_sent=False, real_client_accepted=False,
@@ -129,34 +131,23 @@ def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, re
             if (prior['format'] != record['format'] or prior['data_sha256'] != DATA_PINS
                     or prior['seed_sha256'] != seed_pin or prior['seed'] != json.loads(encoded(seed))
                     or prior['destination'] != destination or prior['completed'] is not True
-                    or prior['source_candidate'] is not False or prior['game_input_sent'] is not False
-                    or any(r['adopted'] for r in evidence.get('repairs', []))):
-                raise ValueError('Prior record does not bind an unrepaired synthetic prefix of this destination')
+                    or prior['source_candidate'] is not False or prior['game_input_sent'] is not False):
+                raise ValueError('Prior record does not bind a synthetic prefix of this destination')
             original = SourceItineraryGuide.from_record(prior['guide'])
             completed = evidence.get('completed_operations')
-            if (type(completed) is not int or not 0 < completed < len(original.operations)
-                    or original.zone != 'butcher' or original.goal != goal
+            if (original.zone != 'butcher' or original.goal != goal
                     or original.wld_sha256 != planner.source.wld_sha256
                     or original.static_inventory_sha256 != planner.static.inventory_sha256
                     or original.radius != 1.2 or original.body_height != 6.
-                    or original.operations[0].start != START
-                    or len(evidence.get('checked_cells', [])) != completed):
+                    or original.operations[0].start != START):
                 raise ValueError('Prior checked walking prefix is incomplete or mismatched')
-            retained_ops = original.operations[:completed]
-            for index, op in enumerate(retained_ops):
-                check()
-                checked = check_source_footprint(transit_prefix, swept_square(op.start, op.end, 1.2),
-                    terrain=planner.source, static=planner.static, bsp=planner.bsp,
-                    region_policy=planner.region_policy)
-                if checked.terrain.proof_sha256 != evidence['checked_cells'][index]['proof_sha256']:
-                    raise ValueError('Rebuilt prefix differs from its recorded floor proof')
-                transit_prefix = checked.branch
-            transit_start = retained_ops[-1].end
-            if (transit_prefix.previous.proof_sha256 != evidence['reached_proof_sha256']
-                    or list(transit_start) != evidence['next_position']):
-                raise ValueError('Rebuilt prefix differs from its recorded stopping point')
+            from source_walk_prefix import replay_walk_prefix
+            transit_prefix, transit_start, retained_ops = replay_walk_prefix(
+                chain, original, evidence, planner, check_context=check)
             record['prefix_from'] = dict(path=str(prior_path), sha256=prior_pin,
-                rechecked_operations=completed, reached_proof_sha256=transit_prefix.previous.proof_sha256,
+                rechecked_operations=len(retained_ops), original_operations_completed=completed,
+                adopted_detours=sum(bool(r['adopted']) for r in evidence.get('repairs', [])),
+                reached_proof_sha256=transit_prefix.previous.proof_sha256,
                 end=transit_start, new_source_seed=False, current_character_observation=False)
         if proposal_model == 'mesh':
             from eqnav import mesh as mesh_module
@@ -197,7 +188,23 @@ def run(output, *, destination, wall_budget, cpu_budget, proposal_only=False, re
                 directed_edges=sum(len(v) for v in graph.adjacent.values()), step_links=0)
             record['goal_components'] = asdict(graph.components.goal(transit_prefix, goal))
             stage('proposing')
-            transit = graph.propose(transit_prefix, transit_start, goal, max_seconds=30.)
+            if center_rounds:
+                from source_transit_centers import filter_transit_centers
+                def center_progress(attempts, cache, excluded):
+                    record['center_filter'] = dict(rounds=center_rounds, attempts=attempts,
+                        caps=list(cache.values()), excluded_directed_edges=excluded,
+                        current_floor_unchanged=True, whole_components_excluded=False,
+                        current_character_observation=False, input_authorized=False)
+                    save()
+                    print(json.dumps(dict(stage='filtering_centers', attempts=len(attempts),
+                        checked_centers=len(cache), excluded_centers=sum(r['excluded_center'] for r in cache.values()),
+                        excluded_edges=excluded)), flush=True)
+                transit = filter_transit_centers(graph, transit_prefix, transit_start, goal, planner,
+                    rounds=center_rounds, check=check, progress=center_progress,
+                    start_via_edges=start_via_edges)
+            else:
+                transit = graph.propose(transit_prefix, transit_start, goal, max_seconds=30.,
+                                        start_via_edges=start_via_edges)
             if transit is None:
                 raise ValueError('No proposal under the current exact-edge ordinary-walking model; physical disconnection not proven')
             record['proposal'] = asdict(transit)
@@ -262,12 +269,19 @@ if __name__ == '__main__':
                         help='XY proposal source; both still need complete source/static/region checking')
     parser.add_argument('--repair-walks', action='store_true',
                         help='Check every walk and attempt bounded local repairs at terrain/static refusals')
+    parser.add_argument('--start-via-edges', action='store_true',
+                        help='Also propose leaving the selected start face through an exact shared edge')
+    parser.add_argument('--center-rounds', type=int, default=0,
+                        help='Bounded retries excluding only independently demonstrated blocked fixed centers')
     parser.add_argument('--resume-source-from', type=Path,
                         help='Rebuild a pinned checked prefix, then replace its failed suffix with a source-graph proposal')
     parser.add_argument('--prior-sha256')
     parser.add_argument('--wall-budget', type=float, default=240.)
     parser.add_argument('--cpu-budget', type=float, default=60.)
     args = parser.parse_args()
+    if ((args.start_via_edges or args.center_rounds) and args.proposal_model != 'source'
+            or not 0 <= args.center_rounds <= 16):
+        parser.error('Start-edge attachments and 0–16 center retries apply only to source-graph proposals')
     if (args.output.exists() or args.output.is_symlink()
             or args.output.with_suffix('.json.tmp').exists()
             or args.output.with_suffix('.plan.json').exists()
@@ -287,4 +301,5 @@ if __name__ == '__main__':
     signal.setitimer(signal.ITIMER_REAL, args.wall_budget)
     run(args.output, destination=args.destination, wall_budget=args.wall_budget,
         cpu_budget=args.cpu_budget, proposal_only=args.proposal_only, repair=args.repair_walks,
-        proposal_model=args.proposal_model, prior_path=args.resume_source_from, prior_pin=args.prior_sha256)
+        proposal_model=args.proposal_model, prior_path=args.resume_source_from, prior_pin=args.prior_sha256,
+        start_via_edges=args.start_via_edges, center_rounds=args.center_rounds)

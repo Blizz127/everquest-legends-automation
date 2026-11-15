@@ -125,8 +125,10 @@ class SourceTransitGraph:
         _,_,height=self.planes[face]
         return (*point,height(point))
 
-    def propose(self,prefix,start,goal,*,excluded=(),max_expansions=32768,max_seconds=30.,clock=time.monotonic):
+    def propose(self,prefix,start,goal,*,excluded=(),start_via_edges=False,
+                max_expansions=32768,max_seconds=30.,clock=time.monotonic):
         if (type(max_expansions) is not int or not 1<=max_expansions<=65536
+                or type(start_via_edges) is not bool
                 or not finite(max_seconds) or not 0<max_seconds<=120
                 or not all(type(p) is tuple and len(p)==2 and all(finite(v) for v in p) for p in (start,goal))):
             raise ValueError('Finite bounded source transit search required')
@@ -156,6 +158,14 @@ class SourceTransitGraph:
             expanded+=1
             if node==root:
                 edges=tuple(TransitEdge(('start',face),root,face,(start_xyz,self.centers[face])) for face in starts)
+                if start_via_edges:
+                    # A center is a search hint, not a required physical stop.
+                    # Leave only an actually selected face through its existing
+                    # exact 3D shared edge. Never shorten an explicit step.
+                    edges+=tuple(TransitEdge(('start-via-edge',edge.identity),root,edge.destination,
+                        (start_xyz,*edge.points[1:]))
+                        for face in starts for edge in self.adjacent.get(face,())
+                        if edge.step is None and edge.identity not in excluded)
             else:
                 edges=self.adjacent.get(node,())
                 if node in goals:

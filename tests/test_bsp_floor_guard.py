@@ -114,3 +114,27 @@ def test_source_body_follows_a_sloped_patch_with_exact_floor_contact():
     # An actually unknown halfspace touching the floor is still visited.
     touching=view(((0.,-.5,1.,0.,0,2,0),leaf(1)))
     assert check_source_body_bsp(step,footprint,(source,),touching).reason=='missing_bsp_child'
+
+
+def test_clipped_duplicate_corners_keep_exact_volume_and_boundary_contacts():
+    from eql_automation.bsp_floor_guard import check_source_body_bsp
+    from eql_automation.ground_sweep import area,clip,hull
+    from eql_automation.source_floor_chain import rational
+    from test_source_step import face
+    a,b,c,d=(-10.,-10.,0.),(10.,-10.,0.),(10.,10.,0.),(-10.,10.,0.)
+    sources=(face((a,b,c),0),face((a,c,d),1))
+    footprint=((-1.,-1.),(1.,-1.),(1.,1.),(-1.,1.))
+    prefix=SourceFloorChain(inventory_sha256='a'*64,seed_evidence_sha256='b'*64,
+        seed_ids=((1,0),),body_height=6.)
+    step=prefix.advance(footprint,sources);assert step.candidate
+    boundary=rational(hull((x+dx,y+dy) for x,y in footprint
+        for dx in (-.002,.002) for dy in (-.002,.002)))
+    patch=clip(boundary,rational(tuple(p[:2] for p in (a,b,c))))
+    assert len(patch)>len(hull(patch)) and area(patch)==area(hull(patch))
+    result=check_source_body_bsp(step,footprint,sources,view((leaf(1),)),clip_branches=True)
+    assert result.candidate and {p['vertex_count'] for p in result.pieces}=={6}
+    assert result.geometry_sha256==step.geometry_sha256 and not result.input_authorized
+    # The labelled halfspace touches only the closed outside boundary.
+    tree=view(((1.,0.,0.,-(1.+.002),0,2,3),leaf(1),leaf(2)),{0:{'water'}})
+    refused=check_source_body_bsp(step,footprint,sources,tree,clip_branches=True)
+    assert not refused.candidate and refused.reason=='labelled_bsp_volume'

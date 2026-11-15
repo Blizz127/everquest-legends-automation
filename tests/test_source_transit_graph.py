@@ -55,28 +55,77 @@ def test_generated_step_and_reverse_routes_keep_explicit_landings_and_full_check
     assert [row['transfer']['evidence']['direction'] for row in plan['cells'] if row['kind']=='step']==['down']
 
 
-def test_coincident_projected_edges_do_not_connect_different_height_layers():
+@pytest.mark.parametrize('start_via_edges', (False, True))
+def test_coincident_projected_edges_do_not_connect_different_height_layers(start_via_edges):
     chain,start,goal,terrain,_=setup()
     sources=tuple(replace(f,vertices_wld=tuple((x,y,z+10) for x,y,z in f.vertices_wld))
                   if f.face in (2,3) else f for f in terrain.source_faces_for_footprint(()))
     graph=SourceTransitGraph(sources,inventory_sha256='a'*64)
     before=_chain_snapshot(chain)
-    assert graph.propose(chain,start,goal) is None
+    assert graph.propose(chain,start,goal,start_via_edges=start_via_edges) is None
     assert _chain_snapshot(chain)==before
 
 
-def test_graph_proposal_does_not_bypass_a_static_wall_or_make_it_walkable():
+@pytest.mark.parametrize('start_via_edges', (False, True))
+def test_graph_proposal_does_not_bypass_a_static_wall_or_make_it_walkable(start_via_edges):
     chain,_,terrain,static,bsp,policy=checked_fixture()
     sources=rectangle(-5.,5.,0.,0);terrain.source_faces_for_footprint=lambda _:sources
     chain=SourceFloorChain(inventory_sha256='a'*64,seed_evidence_sha256='b'*64,seed_ids=((1,1),),body_height=6.)
     start=(-2.,0.);goal=(2.,0.)
     assert chain.advance(swept_square(start,start,.5),sources).candidate
     static.faces_for_footprint=lambda _:(face(((0.,-20.,-1.),(0.,20.,-1.),(0.,0.,20.)),0,7),)
-    proposal=SourceTransitGraph(sources,inventory_sha256='a'*64,radius=.5).propose(chain,start,goal)
+    proposal=SourceTransitGraph(sources,inventory_sha256='a'*64,radius=.5).propose(
+        chain,start,goal,start_via_edges=start_via_edges)
     assert proposal is not None
     guide=proposal.guide(static_inventory_sha256='d'*64,radius=.5,body_height=6.)
     with pytest.raises(ValueError,match='static|connector'):
         plan_source_itinerary(chain,start,guide,terrain,static,bsp,policy,check_context=lambda:None)
+
+
+def test_start_can_leave_current_face_without_visiting_its_blocked_center():
+    _,_,terrain,static,bsp,policy=checked_fixture()
+    sources=rectangle(0.,20.,0.,0);terrain.source_faces_for_footprint=lambda _:sources
+    start=(8.,0.);goal=(17.,0.)
+    chain=SourceFloorChain(inventory_sha256='a'*64,seed_evidence_sha256='b'*64,
+        seed_ids=((1,1),),body_height=6.)
+    assert chain.advance(swept_square(start,start,.25),sources).candidate
+    assert chain.previous.selected_ids==((1,1),)
+    before=_chain_snapshot(chain)
+    static.faces_for_footprint=lambda _:(face(((20/3,0.,0.),(20/3,4.,0.),(20/3,2.,12.)),0,7),)
+    graph=SourceTransitGraph(sources,inventory_sha256='a'*64,radius=.25)
+    ordinary=graph.propose(chain,start,goal)
+    assert ordinary==graph.propose(chain,start,goal,start_via_edges=False)
+    assert ordinary.edges[0].identity==('start',(1,1))
+    def rebuild(proposal):
+        guide=proposal.guide(static_inventory_sha256='d'*64,radius=.25,body_height=6.)
+        return plan_source_itinerary(chain,start,guide,terrain,static,bsp,policy,
+            check_context=lambda:None,max_connect_distance=0.,max_connect_attempts=1).record()
+    with pytest.raises(ValueError,match='static|connector'):rebuild(ordinary)
+    alternate=graph.propose(chain,start,goal,start_via_edges=True)
+    attachment=alternate.edges[0]
+    shared=graph.adjacent[(1,1)][0]
+    assert attachment.identity==('start-via-edge',shared.identity)
+    assert attachment.origin==('start',) and attachment.destination==(1,0)
+    assert attachment.points==((*start,0.),*shared.points[1:])
+    plan=rebuild(alternate)
+    assert plan['goal']==list(goal) and plan['goal_floor_height']==0
+    assert all(row['native']['possible_flags']==[0] for row in plan['cells'])
+    assert not plan['input_authorized'] and not plan['real_client_accepted']
+    assert _chain_snapshot(chain)==before
+    # An excluded crossing cannot be reintroduced through the new root edge.
+    assert graph.propose(chain,start,goal,start_via_edges=True,
+        excluded=(shared.identity,)) is None
+    centroid=graph.propose(chain,start,goal,start_via_edges=True,
+        excluded=(attachment.identity,))
+    assert centroid.edges[0].identity==ordinary.edges[0].identity
+
+
+@pytest.mark.parametrize('invalid', (None, 1, 'yes'))
+def test_start_edge_option_requires_an_explicit_boolean(invalid):
+    chain,start,goal,terrain,_=setup()
+    graph=SourceTransitGraph(terrain.source_faces_for_footprint(()),inventory_sha256='a'*64)
+    with pytest.raises(ValueError,match='bounded'):
+        graph.propose(chain,start,goal,start_via_edges=invalid)
 
 
 def test_excluded_directed_crossing_changes_proposal_without_claiming_disconnection():
