@@ -117,15 +117,14 @@ class SourceItineraryObserver:
                 observation.input_authorized,observation.real_client_accepted)
 
     def check(self):
-        self.binding_reader()
         # Initial semantics were verified once; immutable evidence and the
         # exact object/value snapshot are sufficient for repeated pulse checks.
         if self._initial_snapshot()!=self._initial_state:
             raise ValueError('Source observation initial plan changed')
         self.policy.check_classifier()
         now = self.clock()
-        # The clock/provider callbacks can deliver an owner stop. Read scope
-        # after the final clock call, before publishing any accepted state.
+        # Snapshot/classifier reads send no input. Read the complete owner
+        # scope after their clock callbacks, before publishing accepted state.
         actual = self.binding_reader()
         mode, generation = self.mode_reader(), self.generation_reader()
         c = self.calibration
