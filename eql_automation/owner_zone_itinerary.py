@@ -122,6 +122,7 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
         def __init__(self, *args, **kwargs):
             self.zone_itinerary_owner = None
             self.zone_itinerary_run = None
+            self._zone_itinerary_stopping = None
             super().__init__(*args, **kwargs)
 
         def _supervised_job_names(self):
@@ -395,6 +396,8 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
                     run.release()
                 if self.zone_itinerary_run is run:
                     self.zone_itinerary_run = None
+            if self._zone_itinerary_stopping is not None and not self._navigation_busy():
+                self._zone_itinerary_stopping = None
 
         def stop_action(self, reason, *, keep_autopilot=False):
             owner = self.zone_itinerary_owner
@@ -402,6 +405,13 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
                 owner.closed = True
                 if owner.root is not None:
                     owner.root.cancel(reason)
+                    root = owner.root
+                    # Display-only metadata survives owner revocation until
+                    # initial or destination navigation has released input.
+                    self._zone_itinerary_stopping = dict(
+                        record_id=root.declaration.record_id,
+                        leg=root.stage.leg_index+1, legs=len(root.declaration.legs),
+                        stage='stopping', real_client_accepted=False)
             run = self.zone_itinerary_run
             if run is not None:
                 run.cancel(reason)
@@ -445,13 +455,17 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
         def autopilot_payload(self):
             data = super().autopilot_payload()
             owner = self.zone_itinerary_owner
-            if owner is not None:
+            if owner is not None and owner.root is not None:
                 root = owner.root
                 data['zone_itinerary'] = dict(record_id=owner.plan.declaration.record_id,
                     leg=root.stage.leg_index+1, legs=len(root.declaration.legs), stage=root.stage.phase,
                     budget=root.snapshot(), real_client_accepted=False)
-            if self.zone_itinerary_run is not None:
-                data.update(state='running', phase='Zone itinerary · '+self.zone_itinerary_run.phase)
+            if self._zone_itinerary_stopping is not None and self._navigation_busy():
+                data.update(zone_itinerary=dict(self._zone_itinerary_stopping),
+                    journey_phase='zone_itinerary', state='stopping', phase='Releasing itinerary input')
+            elif self.zone_itinerary_run is not None:
+                data.update(journey_phase='zone_itinerary', state='running',
+                            phase='Zone itinerary · '+self.zone_itinerary_run.phase)
             return data
 
         def autopilot_tick(self, now):

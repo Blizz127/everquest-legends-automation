@@ -362,17 +362,44 @@ def test_completion_cannot_overwrite_late_assist_or_stop(owner, action, boundary
         if action == 'f8': assert e._journey_assist is not None
 
 
-def test_busy_cancel_retains_navigation_until_release_so_assist_waits(owner):
+@pytest.mark.parametrize('action', ('f8', 'f9'))
+def test_busy_cancel_retains_navigation_until_release_so_assist_waits(owner, action):
     s = owner; e = s.engine
     start(s)
     run = Completed(); run.phase = 'probes'; run.busy = True
     e.zone_itinerary_run = run
-    e.handle_job('arm', e.cancel_generation)
+    if action == 'f8': e.handle_job('arm', e.cancel_generation)
+    else: e.stop_action('F9 while itinerary child is busy')
     assert e.zone_itinerary_owner is None and e.zone_itinerary_run is run
-    assert e._navigation_busy() and e._journey_assist is not None
+    assert e._navigation_busy()
+    assert (e._journey_assist is not None) == (action == 'f8')
+    payload = e.autopilot_payload()
+    assert payload['state'] == 'stopping' and payload['journey_phase'] == 'zone_itinerary'
+    assert payload['zone_itinerary']['leg'] == 1 and payload['zone_itinerary']['legs'] == 2
+    assert payload['zone_itinerary']['stage'] == 'stopping'
     run.busy = False
     e._cleanup_zone_itinerary()
-    assert run.closed and e.zone_itinerary_run is None and e._journey_assist is not None
+    assert run.closed and e.zone_itinerary_run is None
+    assert (e._journey_assist is not None) == (action == 'f8')
+    assert e._zone_itinerary_stopping is None and 'zone_itinerary' not in e.autopilot_payload()
+
+
+def test_initial_navigation_stop_stays_visible_until_its_input_is_released(owner, monkeypatch):
+    s = owner; e = s.engine
+    start(s)
+    stop = Base.stop_action
+    def retain_busy_measurement(engine, *args, **kwargs):
+        pending = engine.supervised_motion
+        stop(engine, *args, **kwargs)
+        engine.supervised_motion = pending
+    monkeypatch.setattr(Base, 'stop_action', retain_busy_measurement)
+    e.stop_action('Initial measurement input is still releasing')
+    assert e.zone_itinerary_owner is None and e.zone_itinerary_run is None
+    assert e.autopilot_payload()['state'] == 'stopping'
+    assert e.autopilot_payload()['zone_itinerary']['stage'] == 'stopping'
+    e.supervised_motion = None
+    e._cleanup_zone_itinerary()
+    assert e._zone_itinerary_stopping is None and 'zone_itinerary' not in e.autopilot_payload()
 
 
 @pytest.fixture
