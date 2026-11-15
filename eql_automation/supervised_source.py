@@ -13,7 +13,7 @@ from .source_motion import SourceReceiptLedger
 from .source_transfer import SourceTransferController
 from .supervised_route import SupervisedRouteDeclaration, scope_limits
 from .journey_input_budget import JourneyInputBudget, itinerary_root
-from .zone_itinerary_budget import ZoneItineraryBudget
+from .zone_itinerary_budget import ZoneItineraryBudget, ZoneItineraryTerminalCamp
 
 
 @dataclass(frozen=True)
@@ -95,6 +95,7 @@ class SupervisedSourcePolicy:
         root=itinerary_root(journey_budget)
         self._journey_stage=None if root is None else root.stage
         self._journey_reservation=None
+        self._budgeted_transfer_context=None
         self._context=(ledger,d,gate,owner_input,log_veto,check_current,journey_budget)
         self.started=self.last_at=ledger.clock()
         if release_deadline is not None and not self.started<release_deadline<=self.started+d.maximum_seconds:
@@ -110,11 +111,13 @@ class SupervisedSourcePolicy:
         if type(controller) not in (SourceTransferController,SourceStairController,SourceContactController):
             raise ValueError('Exact source transfer controller required')
         with controller.lock:
-            if self.journey_budget is not None:
-                raise RouteHalt('Section journey budgets currently support ordinary walking only')
             self._check();controller._check()
             if self.ledger is not self._ordinary_ledger or controller.ordinary is not self.ledger:
                 raise RouteHalt('Source policy already leased or transfer belongs to another job')
+            if self.journey_budget is not None:
+                if self._budgeted_transfer_context is not None:
+                    raise RouteHalt('A budgeted source transfer is already bound')
+                self._budgeted_transfer_context=self._terminal_transfer_context(controller)
             self.ledger=controller
             self._context=(controller,*self._context[1:])
             self._scene=self._authorization=None
@@ -122,14 +125,45 @@ class SupervisedSourcePolicy:
 
     def finish_transfer(self,controller):
         with controller.lock:
+            if self.journey_budget is not None:
+                self._check_journey()
             if (self.ledger is not controller or controller.ordinary is not self._ordinary_ledger
                     or controller.phase not in ('approach','landed')
                     or self._ordinary_ledger.phase!='ready' or self._ordinary_ledger._busy is not None):
                 raise RouteHalt('Source transfer has no published observed cap')
             self.ledger=self._ordinary_ledger
+            self._budgeted_transfer_context=None
             self._context=(self.ledger,*self._context[1:])
             self._scene=self._authorization=None
             self._check()
+
+    def _terminal_transfer_context(self,controller):
+        """Admit conditional steps only in the exact terminal camp's child.
+
+        Transfer tickets use the existing walking geometry and accounting.
+        Stairs, contacts, standalone section budgets and crossing walks retain
+        their existing rejection; this grants no new geometry or input proof.
+        """
+        budget=self.journey_budget
+        root=itinerary_root(budget)
+        ordinary=self._ordinary_ledger
+        if (type(controller) is not SourceTransferController
+                or type(budget) is not JourneyInputBudget or type(root) is not ZoneItineraryBudget
+                or type(root.leg) is not ZoneItineraryTerminalCamp
+                or root.leg is not root.declaration.terminal_camp
+                or root.stage is not self._journey_stage or root.stage is not budget.parent_stage
+                or root.stage.kind!='terminal_camp' or root.stage.phase!='walking'
+                or root.stage.destination_id!=root.leg.destination_id
+                or budget.declaration.arrival_mode!='camp'
+                or budget.declaration.destination_id!=root.leg.destination_id
+                or self.declaration.scope!='camp_continuation'
+                or controller.ordinary is not ordinary or controller.observer is not ordinary.observer
+                or controller.lock is not ordinary.lock or budget.lock is not ordinary.lock
+                or controller.clock is not ordinary.clock or budget.clock is not ordinary.clock
+                or ordinary.observer.reader.zone_id!=root.leg.source_zone_id
+                or ordinary.observer.policy.zone!=root.leg.source_zone):
+            raise RouteHalt('Budgeted steps require the current terminal camp walking scope')
+        return (controller,ordinary,budget,root,root.stage)
 
     def _check_current_ledger(self):
         """The standard camp observer already checks the same owner callback.
@@ -158,6 +192,13 @@ class SupervisedSourcePolicy:
                     or self.ledger.observer.reader.zone_id!=root.leg.source_zone_id):
                 root.cancel('Source walk differs from the current itinerary stage or zone')
                 raise RouteHalt(root.reason)
+        if self._budgeted_transfer_context is not None:
+            context=self._terminal_transfer_context(self.ledger)
+            if (type(self._budgeted_transfer_context) is not tuple or len(self._budgeted_transfer_context)!=5
+                    or any(a is not b for a,b in zip(self._budgeted_transfer_context,context))):
+                raise RouteHalt('Terminal camp transfer or its original budget changed')
+        elif self.journey_budget is not None and self.ledger is not self._ordinary_ledger:
+            raise RouteHalt('Budgeted source transfer has no retained terminal scope')
 
     def _check(self,*,completed_contact=False):
         self._check_journey()
