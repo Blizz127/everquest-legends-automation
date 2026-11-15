@@ -1,23 +1,19 @@
 # EverQuest Legends automation — current owner guide
 
-**Installed on Alienware: owner 0.39.37 / runtime 0.42.82.**
-Candidate **0.39.38 / runtime 0.42.84** below is not installed: final runtime
-checks are in progress after correcting repeated movement validation.
-Publication status and evidence are recorded in STATUS.md.
+**This guide describes owner 0.39.38 / runtime 0.42.84.**
+Verified installation status and evidence are recorded in STATUS.md. Before
+installing this build, owner 0.39.37 / runtime 0.42.82 remains the prior version.
 
-To launch the currently installed helper on Alienware, close the old helper yourself
-and run only one:
+Once STATUS.md records this build's installation, close the old helper yourself
+and run only one helper on Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.37/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.38/launch.sh
 ```
 
-That installed version retains F8 assist, F9 stop and the eight destination
-choices. It does **not** automatically continue between route sections; its
-25-minute/input limits can stop a long Goblin trip. G0 passed; do not repeat it.
-
-The following **candidate guide** describes 0.39.38 after verified installation.
-Do not use its launch command until STATUS.md records that installation.
+This build retains F8 assist, F9 stop and the eight destination choices. The prior
+0.39.37 remains available at its own versioned path; it does not automatically
+continue between route sections. G0 passed; do not repeat it.
 
 0.39.38 connects automatic route sections to the **Goblin Camp** travel choices
 in Butcherblock. Travel starts near Newbie Hills or rejoins near the checked

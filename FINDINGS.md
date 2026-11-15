@@ -1,6 +1,44 @@
 # FINDINGS
 
-## 2026-11-15 02:43 UTC — comparison regression fixed; final integration running
+## 2026-11-15 02:47 UTC — delegated owner checks and historical search proposal
+
+VERIFIED the final pre-delegation snapshot failed its dense route by 0.220ms;
+the nine later selected owner cases were not run. Receipt SHA
+`9fcf5627494c34139d956f89354f93df7db83123f6f62d29b58721dd07d10dd6`.
+An instrumented final source guard cost 70.33ms wall / 67.13ms CPU and made
+26 camp-runtime owner callbacks, 72 section-context checks and 520 parent
+binding checks. Profiling changes timing; it is cost evidence, not acceptance.
+
+The standard CampSourceObserver already invokes the same owner callback inside
+each ledger check. The current candidate avoids duplicate explicit callbacks
+only for the exact ordinary ledger/observer with unchanged bound implementations
+and matching callback identity. Eligibility is rechecked after focus sampling.
+Other observers and replaced methods retain the explicit callback. VERIFIED
+five focused local tests reject lease loss, changed scope and replaced observer
+or ledger methods, including a replacement after focus sampling. Ten remote
+source cancellation/expiry checks pass; the dense route and owner handoffs are
+still running. Snapshot SHA
+`44f591a51f408c24caef1bc2fa26dd6ce0839272811c360e0e5718f4aaa0de32`.
+
+VERIFIED a fresh read-only copy of the owner's selected log has SHA
+`bd09c3cd11bee073e1550e4f8516644754f4e30630e7115cbdb767212753963c`.
+Its last client stamp is Nov14 13:31:26, with a Greater Faydark entry at 13:22:28
+(client timezone unverified). No Nov14 level gains, parsed XP awards or deaths
+were found. Historical level 7, 174 awards and six deaths do not establish
+current character metrics. The helper trace remains terminal at Nov14 19:31 UTC.
+
+The existing qualified Butcherblock candidate count remains zero. A separate
+offline proposal retains eight names with ordered matching NPC-selection and
+owner-kill evidence, excluding protected/avoided names. It claims no historical
+consideration, live target, camp suitability or input authority. Private file
+`nav-candidates/butcher-search-names-0.42.85-proposal.json`, SHA
+`b6ebb65ac7f57eb4da3d8f4500043a23f033b1c46da4a63335fe364ddb5cfb1c`.
+This is not wired or installed. Before use, the runtime needs a fresh matching
+NPC receipt as well as its existing live consideration checks; currently a
+matching NPC receipt is optional, while explicit non-NPC receipts stop the camp.
+No character or client input occurred. G0 remains passed; 0.39.37 stays installed.
+
+## 2026-11-15 02:42 UTC — comparison regression fixed; final integration running
 
 VERIFIED the compiled-comparison snapshot still stopped the dense route on the
 unchanged permit deadline (final slack -0.010ms). It is retained as a failed

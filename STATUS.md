@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-15 02:43 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 02:47 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed**, including the owner's visible stop;
   never repeat it. Current level, XP, XP/hour, deaths and camp remain unknown.
@@ -29,8 +29,13 @@ Updated 2026-11-15 02:43 UTC for coordinator task `829a00229b29`.
   snapshots, including two new replacement-dictionary regressions that failed
   before their fix. The compiled snapshot still expired by 0.010ms. One further
   redundant binding read is removed while initial and final post-callback reads
-  remain. Final dense-route, cancellation and handoff checks are running.
-  The 50ms DOWN deadline remains unchanged.
+  remain. That snapshot also expired (-0.220ms); remaining handoff cases were
+  not run. A profile identifies 26 repeated owner callbacks in one final source
+  check. The standard camp observer now supplies its already-required owner
+  callback directly; other observers/replaced methods retain explicit checks.
+  Five new local focus/callback-replacement cases pass, and all ten current
+  remote source cancellation/expiry cases pass. Dense-route and handoff checks
+  continue. The 50ms DOWN deadline remains unchanged.
 - **Trainer approach:** all 22 eligible fire triangles lie inside an existing
   terrain face; they do not bridge the component gap. The nearest retained
   candidate step rises 2.09375 units. The planner's two-unit bound is an explicitly
@@ -40,6 +45,9 @@ Updated 2026-11-15 02:43 UTC for coordinator task `829a00229b29`.
   seam within two units. No bound has been widened; no Trainer route is accepted.
 - **Next:** resolve and verify the runtime handoff failures, rebuild the owner
   snapshot with current HOWTO, then publish a small additive private build.
+  A separate private proposal preserves eight Butcherblock NPC search names
+  from ordered owner-log NPC-selection/kill pairs. It is not wired or installed;
+  fresh matching NPC classification and consideration remain required next work.
   Trainer, cross-zone travel, later camps, loot/vendors and recovery remain unfinished.
   No game input, session restart, login, character or prefix change occurred.
 

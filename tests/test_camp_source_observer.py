@@ -63,6 +63,36 @@ def test_new_observer_uses_fresh_height_and_starts_existing_source_driver(adopte
     assert h.drain_events()==()
 
 
+@pytest.mark.parametrize('fault',('lease','scope','observer_shadow','ledger_shadow','late_observer_shadow'))
+def test_delegated_policy_rejects_owner_changes_and_shadowed_checks(adopted,legacy,monkeypatch,fault):
+    from eql_automation.scene_log_veto import SceneLogVeto
+    import eql_automation.supervised_source as module
+    h=adopted;o=h.camp_observer;l=start_ledger(h,legacy);old=h.policy
+    veto=SceneLogVeto(h.reader.tail.path,expected_character='Probe',expected_server='private',
+        cancel_generation=1,clock=h.clock)
+    policy=module.SupervisedSourcePolicy(l,declaration=replace(old.declaration,
+        route_sha256=o.itinerary.sha256,motion_record_id=l.bounds.calibration_record_id,
+        planning_bounds_record_id=l.bounds.record_id),gate=h.gate,
+        owner_input=old.owner_input,log_veto=veto,expected_window=old.window,
+        topology_generation=old.topology,check_current=o.scope_check)
+    if fault in ('observer_shadow','ledger_shadow'):
+        monkeypatch.setattr(o if fault=='observer_shadow' else l,
+            'check' if fault=='observer_shadow' else '_check',lambda:h.clock())
+        h.lease.release()
+    else:
+        focus=module.focused_game_identity
+        def change(gate):
+            result=focus(gate)
+            if fault=='scope':o.scope_check=lambda:None
+            else:
+                if fault=='late_observer_shadow':monkeypatch.setattr(o,'check',lambda:h.clock())
+                h.lease.release()
+            return result
+        monkeypatch.setattr(module,'focused_game_identity',change)
+    with pytest.raises((ValueError,RouteHalt)):policy._check()
+    assert h.drain_events()==() and not h.sender.held
+
+
 def test_source_motion_acknowledges_new_camp_observer_and_recaptures_arrival(adopted,legacy):
     h=adopted;o=h.camp_observer;l=start_ledger(h,legacy)
     geometry=l.prepare('forward');ticket=l.stage(geometry,requested_seconds=.02)

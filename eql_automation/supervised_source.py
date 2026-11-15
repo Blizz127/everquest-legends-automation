@@ -1,7 +1,9 @@
 """Owner-supervised source walking using real focus/input/log observations."""
 from dataclasses import asdict, dataclass, field
 import math
+from types import MethodType
 
+from .camp_source_observer import CampSourceObserver
 from .fixed_route_follower import RouteHalt
 from .ground_binding import finite
 from .g2_safety_provider import GameWindowIdentity, focused_game_identity
@@ -121,11 +123,30 @@ class SupervisedSourcePolicy:
             self._scene=self._authorization=None
             self._check()
 
+    def _check_current_ledger(self):
+        """The standard camp observer already checks the same owner callback.
+
+        Keep explicit checks for other observers, replaced methods or different
+        callbacks. Re-evaluate delegation for every call, including after focus.
+        """
+        ledger=self.ledger;observer=ledger.observer
+        current=self.check_current;scope=getattr(observer,'scope_check',None)
+        same=(current is scope or type(current) is MethodType and type(scope) is MethodType
+              and current.__self__ is scope.__self__ and current.__func__ is scope.__func__)
+        check=ledger._check;observe=observer.check
+        delegated=(type(ledger) is SourceReceiptLedger and type(observer) is CampSourceObserver
+            and same and type(check) is MethodType and check.__self__ is ledger
+            and check.__func__ is SourceReceiptLedger._check
+            and type(observe) is MethodType and observe.__self__ is observer
+            and observe.__func__ is CampSourceObserver.check)
+        if not delegated:self.check_current()
+        return self.ledger._check()
+
     def _check(self,*,completed_contact=False):
         if self.journey_budget is not None:self.journey_budget.check()
-        self.check_current();began=self.ledger._check()
+        began=self._check_current_ledger()
         window=focused_game_identity(self.gate)
-        self.check_current();finished=self.ledger._check();d=self.declaration
+        finished=self._check_current_ledger();d=self.declaration
         self.ledger.model.check_policy(self.ledger.observer.policy)
         terminal=False
         if completed_contact:
