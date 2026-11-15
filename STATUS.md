@@ -1,5 +1,28 @@
 # STATUS
 
+Updated 2026-11-15 03:51 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met. G0 passed; never repeat it.** Actual level, XP,
+  XP/hour, deaths and camp remain unknown. No accepted real-client 1–20/1–50 run.
+- **Privately installed: owner 0.39.41 / source 0.42.87.** It connects optional
+  observed-level camp relocation to the Goblin walking sections, with one original
+  budget from the departure probes through final arrival, fresh measurements at
+  each section, retirement of the old camp, and final-only fresh camp startup.
+  The existing rotation engine/core, GUI and launch script are unchanged.
+- **VERIFIED:** 103 focused checks pass; installed startup returns zero. All 619
+  source / 931 package / 259 owner files, eight destinations and nine section
+  guides verify. Receipt SHA
+  `fe3eec36d1160ec748672bb2e67e0f5dc3cbeb25e648986cb245cf3ecfa8a599`.
+  Previous 0.39.40 is preserved; no helper restart, game input, login, character
+  change or protected-prefix modification occurred.
+- **Next:** owner-started Goblin movement/camp acceptance remains unverified;
+  continue native-region crossing support toward GFay/Crushbone. The copied
+  Butcher maps have no post-level-8 camp hint, and existing crossing code does
+  not support its native region policy yet. Full 1–20/1–50 progression, later
+  camp suitability, loot/vendors and recovery remain incomplete or unverified.
+
+## Prior status
+
 Updated 2026-11-15 03:49 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed; never repeat it.** Actual level, XP,

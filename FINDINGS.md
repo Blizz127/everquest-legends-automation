@@ -1,5 +1,28 @@
 # FINDINGS
 
+## 2026-11-15 03:51 UTC — owner 0.39.41 privately installed
+
+VERIFIED additive Alienware installation, source revision
+`295f9d2ec3903643e75cb94a31730b4c19b1f824`, owner 0.39.41 / source 0.42.87.
+Archive SHA `0c06bbf522ff4472edb70cd65e83c4cfb473ce330527437950fb92edf3aeae4e`,
+package manifest SHA `8a2b9b064bb43b20bc54b973b0e93603753b9682950c3c4fdfc7a96bea086c98`.
+All 619 Python source / 931 package / 259 owner files verify. The installed
+startup returns zero; all eight destinations, nine section guides, eight search
+names / 16 historical ordered pairs and the installed client executable pin
+verify. Previous 0.39.40 manifest remains
+`d6e8d3df57a1d70014155ce8925157402081fd56420b76a0fe7d3c0aa862a07b`.
+Receipt `releases/eql-owner-journey-0.39.41-installed.json` SHA
+`fe3eec36d1160ec748672bb2e67e0f5dc3cbeb25e648986cb245cf3ecfa8a599`.
+
+Launch on Alienware:
+`EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.41/launch.sh`.
+Owner closes any older helper first; F8 remains strict assist and F9 stop.
+No running helper was restarted, no game input was sent, and no character or
+protected install was changed. All 103 checks use offline geometry/synthetic
+observations or isolated pipes; actual Goblin movement/camp suitability and
+full 1–20/1–50 leveling are not accepted. G0 remains passed and must not repeat.
+
+
 ## 2026-11-15 03:49 UTC — camp-origin section continuation ready
 
 VERIFIED candidate owner 0.39.41 / source 0.42.87: 103 focused checks pass,
