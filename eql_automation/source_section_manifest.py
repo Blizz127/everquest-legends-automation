@@ -8,6 +8,29 @@ from .native_region_policy import encoded
 from .source_itinerary import SourceItineraryGuide, SourceWalkHint, _guide_snapshot
 
 
+def _same_walking_guide(guide,state):
+    """Compare the retained values without rebuilding thousands of nested tuples.
+
+    This runs at every parent-budget boundary, including before DOWN. Preserve
+    the original snapshot's field order and extra-field detection. Unusual
+    records use the original comparison instead of a weaker fast path.
+    """
+    if ((guide.zone,guide.wld_sha256,guide.static_inventory_sha256,
+            guide.provenance_sha256,guide.radius,guide.body_height,guide.goal)!=state[:7]
+            or len(guide.operations)!=len(state[7])):
+        return False
+    for op,(kind,fields) in zip(guide.operations,state[7]):
+        if type(op) is not kind:return False
+        if (kind is not SourceWalkHint or len(fields)!=2
+                or fields[0][0]!='start' or fields[1][0]!='end'):
+            return _guide_snapshot(guide)==state
+        values=vars(op)
+        if (len(values)!=2 or next(iter(values))!='start'
+                or values.get('start')!=fields[0][1] or values.get('end')!=fields[1][1]):
+            return False
+    return True
+
+
 @dataclass(frozen=True)
 class WalkingSections:
     original: SourceItineraryGuide
@@ -17,8 +40,10 @@ class WalkingSections:
     _state: tuple
 
     def check(self):
-        if (_guide_snapshot(self.original),tuple(_guide_snapshot(g) for g in self.guides),self.ranges,
-                self.record_sha256) != self._state:
+        if (not _same_walking_guide(self.original,self._state[0])
+                or len(self.guides)!=len(self._state[1])
+                or not all(_same_walking_guide(g,s) for g,s in zip(self.guides,self._state[1]))
+                or (self.ranges,self.record_sha256)!=self._state[2:]):
             raise ValueError('Pinned walking-section partition changed')
 
     def section_for_entry(self, operation):

@@ -1,5 +1,43 @@
 # STATUS
 
+Updated 2026-11-15 02:02 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met. G0 passed**, including the owner's visible stop;
+  do not repeat it. Current level, XP, XP/hour, deaths and camp remain unknown.
+  No accepted real-client 1–20 route or fresh hands-off 1–50 run.
+- Owner **0.39.37 / source 0.42.82 remains the installed build**. Candidate
+  **0.39.38 / source 0.42.83** connects ordered Goblin sections to explicit
+  travel in the existing rotation helper. It preserves one trip budget and
+  sender/observer, remeasures after healthy stops and camps only at the final
+  destination. Assist continues to leave movement and targets to the owner.
+- **VERIFIED initial checks:** nine current-start/rejoin checks passed locally. An initial
+  two-section integration snapshot passes on Alienware in 115.55 seconds using
+  isolated pipes and synthetic observations. Seven final integration cases
+  (three-section travel, F8/F9 interruptions, release-gap cleanup and final camp)
+  were attempted; the current result and remaining gate are recorded below.
+- **VERIFIED:** the candidate builds; all eight selections and six GUI checks
+  pass without starting an engine or saving settings. Actual copied section
+  data loads for both Goblin destinations (nine sections each), and the entry
+  passes the provider into the existing engine. Local configured-Python startup
+  passes; local system Python lacks numpy. Installed Alienware startup remains
+  to verify for this candidate. No client or character input occurred.
+- **VERIFIED additional work:** 32 final local planning/integrity cases pass.
+  The real copied route rebuilds 1,060 full cells and 122 initial-section cells
+  from one synthetic start floor. An earlier remote attempt passed four engine
+  cases, then correctly stopped on its unchanged DOWN deadline before the
+  late-F8 injection. Reduced repeated manifest allocation; three final cases
+  are running locally.
+- **Publication gate:** Alienware SSH disconnected; one reconnect also timed
+  out on port 22. The final remote job outcome is unknown; do not restart it
+  until its receipt/process state can be inspected. No 0.39.38 install occurred.
+- **Next:** finish local checks, recover the remote receipt when reachable and
+  publish the candidate privately. The next level 1–20 route gap is
+  Trainer Hill: its exact copied map marker is known, but no source-checked
+  approach exists. Cross-zone travel, later camps, loot/vendors and recovery
+  remain unfinished; actual movement/camp suitability await the owner's test.
+
+## Prior status
+
 Updated 2026-11-15 01:36 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** The owner confirmed the visible stop: **G0 passed**;

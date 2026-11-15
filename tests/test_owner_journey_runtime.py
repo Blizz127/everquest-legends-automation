@@ -29,6 +29,8 @@ def h(tmp_path, retained, monkeypatch, request):
     monkeypatch.setattr(camp_runtime,'observed_candidates',lambda *args,**kwargs:(candidate,))
     def combined(base, **options):
         return make_owner_journey_engine(base, client=client, **options,
+            section_provider=((lambda engine,destination:engine._test_walking_partition(destination))
+                if getattr(request,'param',None)=='walking_sections' else None),
             camp_probe_plan_provider=((lambda engine,p:engine._test_camp_probe_provider(p))
                 if getattr(request,'param',None)=='level_provider' else None),
             camp_options=dict(

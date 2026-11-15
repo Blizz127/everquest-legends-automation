@@ -17,7 +17,8 @@ from .source_execution_loop import SourceExecutionLoop
 
 
 class OwnerSourceRuntime(SourceExecutionLoop):
-    def __init__(self, engine, pending, driver, *, clock, local_wall_clock,startup_released_at):
+    def __init__(self, engine, pending, driver, *, clock, local_wall_clock,startup_released_at,
+                 journey_budget=None):
         if type(driver) is not SourceWalkDriver or driver.ledger.phase != 'ready':
             raise ValueError('Freshly started source driver required')
         self.engine, self.pending, self.driver = engine, pending, driver
@@ -49,7 +50,8 @@ class OwnerSourceRuntime(SourceExecutionLoop):
         self.policy = SupervisedSourcePolicy(self.ledger, declaration=declaration,
             gate=engine.gate, owner_input=self.owner_input, log_veto=self.veto,
             expected_window=GameWindowIdentity(*pending['window']),
-            topology_generation=pending['topology'], check_current=self.check_current)
+            topology_generation=pending['topology'], check_current=self.check_current,
+            journey_budget=journey_budget)
 
     def _zone(self):
         r = self.reader

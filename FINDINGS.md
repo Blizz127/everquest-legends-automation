@@ -1,5 +1,75 @@
 # FINDINGS
 
+## 2026-11-15 02:02 UTC — owner section integration candidate and current gate
+
+Source 0.42.83 / owner candidate 0.39.38 connects the retained ordinary walking
+section adapter to explicit Goblin Camp travel in the existing rotation engine.
+The current-start producer checks the full destination first, selects the section
+containing its actual rejoin, and checks that section from the exact same reached
+floor. It never uses a section waypoint as a replacement observed position.
+One finite parent budget covers the remaining sections. Each healthy arrival
+releases the old reader lease, consumes its in-memory receipt once, checks a new
+measurement reserve and obtains seven fresh probes before the next section.
+Only final arrival may enter the existing camp handoff. F8/F9 retain ownership
+of cancellation through held input and the interval after section release.
+The pinned nine-section proposal is an additive private-data dependency; no
+client data is committed. Initial owner travel uses these sections; the separate
+level-up camp relocation path still has its original single-trip limit.
+
+VERIFIED 32 final local planning/integrity checks pass, including nested route
+point changes, missing/extra fields, field-order changes, body changes and
+truncated operation lists. An earlier exact integration snapshot passed the
+three-section journey plus three held-input stop/assist cases on Alienware. The
+next late-F8 case stopped before its injected test point because the unchanged
+50ms permit expired (final slack -3.882ms). UP/stop was preserved; this is not a
+successful late-F8 result. The final three cases are still pending. A subsequent
+optimization compares retained walking-guide fields without rebuilding all
+nested tuples; every checked field and the original fallback remain. No DOWN,
+freshness, geometric or child-budget limit was widened. Prior failed receipts
+are retained, rather than counted as passes.
+
+VERIFIED copied-data current-start replay checks 1,060 full-route cells then
+122 first-section cells from the same synthetic observed floor. Artifact
+`~/.local/share/eql-automation/nav-candidates/eql-0.42.83-goblin-section-start.json`,
+SHA `e32668a7d8889f0a40afad2c84a5e7a742aec0868f07721f079bec1246bae136`.
+This run precedes the equivalent integrity-comparison optimization. Final
+candidate loader/entry smoke loads all nine sections for both Goblin choices;
+six GUI checks retain eight destinations without an engine/settings write.
+Final owner manifest SHA
+`44dbd8a35fe24ada6ce62d9eea57bdccd7d3043679e848710c796c9822d045d8`.
+
+**Current gate:** Alienware SSH stopped responding during final verification;
+a single reconnect also timed out on port 22. That remote test's outcome is
+unknown and it was not restarted. The same three focused cases are running
+locally. Candidate 0.39.38 is not installed; owner 0.39.37 remains the last
+verified installation. No game input, session restart, login or character/prefix
+change. G0 remains passed, including the owner's visible stop; never repeat it.
+Current level, XP, XP/hour, deaths and camp are unknown. No accepted 1–20 or 1–50 run.
+
+### Next route gap: Trainer Hill retained support inventory
+
+VERIFIED the copied label is `L10-13_Trainer_Hill`, map `(-119,212,80)`, package
+XY `(119,-212)`. Its label height does not select support. The retained
+terrain-only underlay search has 1,792 links but no route and starts at North
+Wall, not Slave Mines. No Trainer guide exists. The seven-component closure
+record explicitly leaves static supports and physical disconnection unproven.
+
+A new bounded all-height static inventory examines the complete XY bounds of
+those seven terrain components plus an explicit eight-unit discovery margin.
+It retains placement/model/material/transform provenance for all 477 matching
+faces from the full 9,576-face, 178-placement inventory. Exactly 22 unique faces
+pass the existing diffuse/slope filter, all belonging to `CAZFIRE_ACTORDEF`,
+placement 14. The other observed models are bones and trees. This does not
+prove a supporting footprint, bridge, route or physical disconnection; complete
+body/BSP/region validation has not been run for these candidates.
+Artifact `nav-candidates/crushbone-trainer-static-neighbours-0.42.83.json`,
+SHA `3af0712372de33dbd1111a46becf64045413317863050b3e1b39e95d8cc21643`;
+recipe is retained under `releases/eql-0.42.83-trainer-static-inventory.py`.
+The next useful work is to inspect the actual fire/terrain contacts and alternative
+approaches, then replay the genuine offline Mines endpoint before claiming a
+Mines-to-Trainer route. Repeating the same graph or widening step bounds does
+not supply that missing evidence.
+
 ## 2026-11-15 01:31 UTC — direct walking-section continuation and exact seam fix
 
 Source 0.42.82 implements one typed healthy-arrival handoff without creating a

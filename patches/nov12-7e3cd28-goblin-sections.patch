@@ -1,0 +1,20 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -829,7 +829,7 @@
+                     ending = "It stops without combat." if movement_only else "It starts stationary camp after arrival, using observed NPC history and fresh target checks."
+                     self.travel_help.setText("Start near the Newbie Hills marker in Butcherblock. This is a short local approach, not travel from another zone. " + ending + " The map suggests levels 1–4; real travel and camp suitability remain unverified. F8 assist; F9/F11 stop.")
+                     if self.source_destination.currentData().startswith("goblin-camp"):
+-                        self.travel_help.setText("Start near Newbie Hills in Butcherblock, or resume near the checked route toward Goblin Camp. " + ending + " The map suggests levels 5–8. This long route may stop at the 25-minute or input limit; restart travel from a fresh position check. Live travel and camp suitability remain unverified. F8 assist; F9/F11 stop.")
++                        self.travel_help.setText("Start near Newbie Hills in Butcherblock, or resume near the checked route toward Goblin Camp. " + ending + " The map suggests levels 5–8. This route automatically continues checked sections, with fresh movement measurements at each stop. Each section has a 25-minute limit; the whole trip has a fixed limit of at most 3 hours 45 minutes. A failed check stops the trip. Live travel and camp suitability remain unverified. F8 assist; F9/F11 stop.")
+ 
+         def configure_supervised_source(self):
+             from eql_automation.source_destinations import destination_spec
+@@ -877,7 +877,7 @@
+                 ending = ("It stops at the Goblin Camp marker without combat." if movement_only else
+                           "After a fresh stopped arrival it starts stationary camping. Observed Butcherblock NPC history and fresh target checks are required; no history means no travel.")
+                 text.setText("Start near Newbie Hills inside Butcherblock Mountains, or resume near this route. The map suggests Goblin Camp for levels 5–8. "
+-                             + ending + " This long route may stop at the unchanged 25-minute or input limit before arrival; you can restart travel for a fresh position check. "
++                             + ending + " This route automatically continues up to nine checked sections. At each intermediate stop it checks your actual position and makes seven fresh calibration presses before continuing; it starts no combat between sections. Each section has a 25-minute limit and the trip retains one fixed limit of at most 3 hours 45 minutes. Any failed check stops travel; cancellation never restarts it. "
+                              "No zone crossing or onward camp is included. Live travel and camp suitability remain unverified.\n\n"
+                              "First test your /location hotbutton with the map visible. Then close map/chat, clear your target and turn melee off. "
+                              "Start on clear, flat, open ground. Seven short calibration presses follow the four-second focus countdown. "

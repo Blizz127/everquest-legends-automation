@@ -35,3 +35,20 @@ def test_parsed_guide_and_range_replacement_are_refused():
     prefix,guide,planner,bounds=context();result=parse_walking_sections(guide,plan(prefix,guide,planner,bounds))
     object.__setattr__(result,'ranges',((0,19),(20,39)))
     with pytest.raises(ValueError):result.check()
+
+
+@pytest.mark.parametrize('fault',('start','end','extra','missing','field_order','body','operation_count'))
+@pytest.mark.parametrize('original',(False,True))
+def test_fast_integrity_comparison_rejects_each_nested_guide_mutation(fault,original):
+    prefix,guide,planner,bounds=context();result=parse_walking_sections(guide,plan(prefix,guide,planner,bounds))
+    selected=result.original if original else result.guides[-1]
+    op=selected.operations[-1]
+    if fault=='start':object.__setattr__(op,'start',(0.,0.))
+    elif fault=='end':object.__setattr__(op,'end',(0.,0.))
+    elif fault=='extra':object.__setattr__(op,'unvalidated',True)
+    elif fault=='missing':object.__delattr__(op,'end')
+    elif fault=='field_order':
+        start=op.start;object.__delattr__(op,'start');object.__setattr__(op,'start',start)
+    elif fault=='body':object.__setattr__(selected,'body_height',2.)
+    else:object.__setattr__(selected,'operations',selected.operations[:-1])
+    with pytest.raises(ValueError):result.check()

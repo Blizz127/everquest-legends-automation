@@ -16,6 +16,9 @@ from .source_itinerary import SourceItineraryGuide, SourceItineraryPlan, plan_so
 class CurrentSourceItinerary:
     initial: CurrentStartPlan
     itinerary: SourceItineraryPlan
+    sections: object = None
+    section_index: int | None = None
+    full_itinerary: SourceItineraryPlan | None = None
     requires_fresh_start_pair: bool = field(default=True, init=False)
     source_execution_wired: bool = field(default=False, init=False)
     input_authorized: bool = field(default=False, init=False)
@@ -24,7 +27,12 @@ class CurrentSourceItinerary:
 
 def plan_current_source_itinerary(planner, reader, first, second, *, guide,
                                   maximum_seconds=240., clock=time.monotonic,
-                                  **start_options):
+                                  sections=None, **start_options):
+    from .source_section_manifest import WalkingSections
+    if sections is not None:
+        if type(sections) is not WalkingSections or sections.original is not guide:
+            raise ValueError('Sections must retain this exact original guide')
+        sections.check()
     if (type(planner) is not CurrentStartPlanner or planner.region_policy is None
             or planner.zone != planner.region_policy.zone
             or planner.zone_id != planner.region_policy.zone_id
@@ -44,6 +52,7 @@ def plan_current_source_itinerary(planner, reader, first, second, *, guide,
     def check():
         nonlocal last
         actual = binding()
+        if sections is not None:sections.check()
         planner._check_views()
         now = clock()
         if (actual != owner or not finite(began) or not finite(now)
@@ -70,4 +79,14 @@ def plan_current_source_itinerary(planner, reader, first, second, *, guide,
         planner.source, planner.static, planner.bsp, policy, check_context=check,
         max_seconds=max(.001, began+maximum_seconds-last), clock=clock)
     check()
+    if sections is not None:
+        entry=plan.record()['guide_entry']
+        index=sections.section_for_entry(entry)
+        section=plan_source_itinerary(initial.floor_chain,start,sections.guides[index],
+            planner.source,planner.static,planner.bsp,policy,check_context=check,
+            max_seconds=max(.001,began+maximum_seconds-last),clock=clock)
+        check()
+        if section.record()['guide_entry']+sections.ranges[index][0]!=entry:
+            raise ValueError('Section rejoin differs from the verified full-guide entry')
+        return CurrentSourceItinerary(initial,section,sections,index,plan)
     return CurrentSourceItinerary(initial, plan)

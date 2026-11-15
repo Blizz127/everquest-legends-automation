@@ -360,11 +360,8 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                         allow_overhead_boundary=planner.region_policy is not None)
                     destination=p['continuation']['destination']
                     if type(destination) is SourceDestinationAssets:
-                        from .current_source_itinerary import plan_current_source_itinerary
                         destination.check()
-                        p['plan']=plan_current_source_itinerary(planner,p['lease'].reader,
-                            collector.first,collector.second,guide=destination.guide,
-                            maximum_seconds=min(240.,p['expires']-clock()),**options)
+                        p['plan']=self._plan_source_start(p,planner,collector,destination,options)
                     elif destination is None:
                         p['plan']=planner.plan(p['lease'].reader,collector.first,collector.second,length=2.,**options)
                     else:
@@ -384,6 +381,15 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                 else:
                     self._attach_crossing_runtime(p,collector)
             finally:p['busy']=False
+
+        def _plan_source_start(self,p,planner,collector,destination,options):
+            from .current_source_itinerary import plan_current_source_itinerary
+            return plan_current_source_itinerary(planner,p['lease'].reader,
+                collector.first,collector.second,guide=destination.guide,
+                maximum_seconds=min(240.,p['expires']-clock()),**options)
+
+        def _source_journey_budget(self,p):
+            return None
 
         def _prepare_source_runtime(self,p,pair):
             from eqnav import steer
@@ -428,9 +434,14 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             self._trial_current(p)
             ledger=p['source_prepared']
             ledger.start(*p['source_observations'],released_at=pair.released_at)
+            budget=self._source_journey_budget(p)
             p['expires']=clock()+scope_limits(p['continuation']['scope'])[0]
+            if budget is not None:
+                budget.check()
+                p['expires']=min(p['expires'],budget.expires_at)
             runtime=OwnerSourceRuntime(self,p,SourceWalkDriver(ledger),
-                clock=clock,local_wall_clock=local_wall_clock,startup_released_at=pair.released_at)
+                clock=clock,local_wall_clock=local_wall_clock,startup_released_at=pair.released_at,
+                journey_budget=budget)
             p.update(stage='source_route',source_runtime=runtime,collector=None)
             self._trial_current(p)
             self.emit(p['continuation']['label']+' active · movement only · F9/F11 stop.')
