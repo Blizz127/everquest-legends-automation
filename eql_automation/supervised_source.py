@@ -13,6 +13,7 @@ from .source_motion import SourceReceiptLedger
 from .source_transfer import SourceTransferController
 from .supervised_route import SupervisedRouteDeclaration, scope_limits
 from .journey_input_budget import JourneyInputBudget
+from .zone_itinerary_budget import ZoneItineraryBudget
 
 
 @dataclass(frozen=True)
@@ -62,7 +63,7 @@ class SupervisedSourcePolicy:
                 or type(expected_window) is not GameWindowIdentity
                 or type(log_veto) is not SceneLogVeto
                 or type(topology_generation) is not int or topology_generation<0
-                or journey_budget is not None and (type(journey_budget) is not JourneyInputBudget
+                or journey_budget is not None and (type(journey_budget) not in (JourneyInputBudget,ZoneItineraryBudget)
                     or journey_budget.lock is not ledger.lock or journey_budget.clock is not ledger.clock)
                 or not callable(check_current) or not callable(getattr(owner_input,'sample',None))):
             raise ValueError('Explicit source measurement scope and observation providers required')

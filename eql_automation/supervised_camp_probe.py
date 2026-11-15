@@ -17,6 +17,7 @@ from .ground_binding import finite
 from .owner_input_observer import OwnerInputObservation
 from .scene_log_veto import SceneLogVeto
 from .journey_input_budget import JourneyInputBudget
+from .zone_itinerary_budget import ZoneItineraryBudget
 
 
 @dataclass(frozen=True)
@@ -36,7 +37,7 @@ class SupervisedCampProbeScope:
                 or type(monitor) is not CampInputContinuity
                 or type(expected_window) is not GameWindowIdentity
                 or type(log_veto) is not SceneLogVeto or not callable(check_current)
-                or journey_budget is not None and (type(journey_budget) is not JourneyInputBudget
+                or journey_budget is not None and (type(journey_budget) not in (JourneyInputBudget,ZoneItineraryBudget)
                     or journey_budget.lock is not runtime.lock or journey_budget.clock is not runtime.clock)
                 or not all(finite(v) for v in (started_at,expires_at))):
             raise ValueError('Exact retained camp scope and explicit supervision required')

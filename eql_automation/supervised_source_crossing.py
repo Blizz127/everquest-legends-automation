@@ -17,6 +17,7 @@ from .source_crossing_corridor import SourceCrossingCorridor, SourceCrossingTick
 from .supervised_corridor import SupervisedCorridorDeclaration
 from .supervised_route import scope_limits
 from .zone_arrival import ZoneArrivalHandoff
+from .zone_itinerary_budget import ZoneItineraryBudget
 
 
 @dataclass(frozen=True)
@@ -46,7 +47,7 @@ class SupervisedSourceCrossingAuthorization:
 
 class SupervisedSourceCrossingPolicy:
     def __init__(self, corridor, *, declaration, gate, owner_input,
-                 expected_window, topology_generation, check_current):
+                 expected_window, topology_generation, check_current, journey_budget=None):
         if (type(corridor) is not SourceCrossingCorridor
                 or type(corridor.arrival) is not ZoneArrivalHandoff
                 or type(declaration) is not SupervisedCorridorDeclaration
@@ -54,6 +55,8 @@ class SupervisedSourceCrossingPolicy:
                 or type(expected_window) is not GameWindowIdentity
                 or type(topology_generation) is not int or topology_generation < 0
                 or not callable(check_current)
+                or journey_budget is not None and (type(journey_budget) is not ZoneItineraryBudget
+                    or journey_budget.lock is not corridor.lock or journey_budget.clock is not corridor.clock)
                 or not callable(getattr(owner_input, 'sample', None))):
             raise ValueError('Explicit source crossing corridor, declaration and observation providers required')
         seconds, steps, distance, hold = scope_limits('zone_crossing_corridor')
@@ -91,7 +94,9 @@ class SupervisedSourceCrossingPolicy:
         self.window = expected_window
         self.topology = topology_generation
         self.check_current = check_current
-        self._context = (corridor, a, d, gate, owner_input, veto, check_current)
+        self.journey_budget = journey_budget
+        self._journey_reservation = None
+        self._context = (corridor, a, d, gate, owner_input, veto, check_current, journey_budget)
         self.started = self.last_at = corridor.clock()
         self.origin = None
         self.reserved_hold = 0.
@@ -111,6 +116,8 @@ class SupervisedSourceCrossingPolicy:
     def _check(self):
         if self._cancelled is not None:
             raise RouteHalt('Source crossing policy cancelled: ' + self._cancelled)
+        if self.journey_budget is not None:
+            self.journey_budget.check()
         a = self.arrival
         if a.loading is not None or a.phase != 'await_loading':
             raise RouteHalt('Source crossing movement ends on loading or arrival cancellation')
@@ -126,7 +133,7 @@ class SupervisedSourceCrossingPolicy:
                 or any(x is not y for x, y in zip(
                     self._context,
                     (self.corridor, self.arrival, d, self.gate,
-                     self.owner_input, self.log_veto, self.check_current)))
+                     self.owner_input, self.log_veto, self.check_current, self.journey_budget)))
                 or a.loading is not None or a.phase != 'await_loading'
                 or window != self.window
                 or not self.last_at <= began <= finished <= self.started + d.maximum_seconds
@@ -136,6 +143,8 @@ class SupervisedSourceCrossingPolicy:
                 or self.log_veto.cancel_generation != self.corridor.generation):
             raise RouteHalt('Source crossing scope, focus, log or aggregate budget changed')
         self.last_at = finished
+        if self.journey_budget is not None:
+            self.journey_budget.check()
         return began
 
     def _physical_observation(self, began):
@@ -205,6 +214,8 @@ class SupervisedSourceCrossingPolicy:
                 issued = self.corridor.clock()
                 if not ticket.proposed_at <= issued <= ticket.proposed_at + .05:
                     raise RouteHalt('Source crossing DOWN authorization expired')
+                if self.journey_budget is not None:
+                    self._journey_reservation = self.journey_budget.reserve(ticket, bounds=self.corridor.bounds)
                 self._tickets.append(ticket)
                 self.reserved_hold += ticket.maximum_actual_hold
                 self._authorization = SupervisedSourceCrossingAuthorization(
@@ -228,6 +239,11 @@ class SupervisedSourceCrossingPolicy:
                 or authorization.declaration is not self.declaration
                 or authorization.scene_reference is not scene.reference):
             raise RouteHalt('Source crossing authorization changed')
+        if self.journey_budget is not None:
+            if (self._journey_reservation is None
+                    or self._journey_reservation.ticket is not authorization.ticket):
+                raise RouteHalt('Missing whole-itinerary crossing reservation')
+            self.journey_budget.check(self._journey_reservation)
         return True
 
     def snapshot(self):
@@ -236,6 +252,7 @@ class SupervisedSourceCrossingPolicy:
             declaration=asdict(self.declaration),
             reserved_movements=len(self._tickets),
             reserved_maximum_hold=self.reserved_hold,
+            journey_budget=None if self.journey_budget is None else self.journey_budget.snapshot(),
             expected_zone_line=self.corridor.line.record(),
             destination=self.declaration.destination,
             installed_region_model=self.corridor.model.record(),
