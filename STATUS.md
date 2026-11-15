@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-15 00:53 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 01:03 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP, XP/hour,
@@ -38,9 +38,18 @@ Updated 2026-11-15 00:53 UTC for coordinator task `829a00229b29`.
   Source revision `4312aea56ea3d0dde69ab352072c21f59b5467e6`;
   archive SHA `2869ee8f560efaf0d95811123189e7d2ff5aaf9e1ad029c88d49cfa0b3f499f3`;
   receipt SHA `d40832f18ce4a2ba697e5a740319fa55e3797d4981c41771c8afe645516acd05`.
-- **Next:** owner can select Goblin Camp movement test near Newbie Hills in
-  Butcherblock using the 0.39.36 command in HOWTO. Continue offline later-camp
-  work and route-length improvements while awaiting real travel evidence.
+- **Source 0.42.80 built; private publication pending.** VERIFIED 31 focused
+  geometry checks. Full Goblin source replay finds nine sections with checked
+  intermediate measurement reserves under an explicit unverified speed-upper
+  hypothesis of 60. No body, source-face, patch or child-scope limit is enlarged.
+  Artifact SHA `65c97d4cd1a4cefd0213877a602cc1276cd3e64d36a156b2a424859bd651d04c`.
+  These are nominal waypoint hints, not live arrival or calibration evidence.
+  The owner runtime still does not continue automatically between sections.
+- **Next:** connect finite journey ownership to healthy stopped section receipts,
+  fresh position pairs and the existing source-checked measurement/probe runtime.
+  Preserve one sender, observer and parent budget; never renew a timed-out child.
+  Owner can test the existing 0.39.36 movement-only route. A read-only trace check
+  found no new session: mtime remains 2026-11-14 19:31:12 UTC, final engine_exit.
   Real travel, camp suitability,
   effective trip length and leveling remain owner-test gates. Cross-zone travel,
   missing later camps and full-auto recovery remain unfinished. No helper restart,

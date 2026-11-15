@@ -1,5 +1,66 @@
 # FINDINGS
 
+## 2026-11-15 01:03 UTC — checked Goblin sections for a finite automatic journey
+
+VERIFIED copied-data route replay found **nine** sections under 1,000 units,
+with source/static/BSP/native-checked measurement reserve areas at intermediate
+waypoints. Final artifact `butcher-goblin-sections-0.42.80-speed60-final.json`, SHA
+`65c97d4cd1a4cefd0213877a602cc1276cd3e64d36a156b2a424859bd651d04c`, completed
+in 16.28 seconds on Alienware using one low-priority single-thread offline job.
+No game interface, account, client prefix or input device was opened by the job.
+
+The explicit unverified speed-upper hypothesis is 60 units/second, with the
+existing 0.2-second actual-hold bound, radius 1.2 and height 6. The measurement
+reserve sums four forward maximum displacements, three pivot bounds and seven
+post-release drifts, enclosing every heading. Each successful reserve is a
+detached fork: only the original route cells advance its carried floor. Every
+original walking operation is preserved exactly in the ordered section partition.
+The reserve is centered at the nominal waypoint; the runtime's 0.25-unit arrival
+offset is **not** claimed covered. Actual arrival and each probe still need fresh
+geometry/position checks; saved reports cannot restore authority.
+
+Earlier diagnostic evidence is retained:
+
+- The prototype at speed-upper 30 found eight sections, 93 candidate queries and
+  73 clear reserves in 12.78 seconds; SHA
+  `7baca5e33691a8d7ffdbab7f257ecbd0ea725480779e7f7d0f0cbd674c7eeb77`.
+- The first speed-60 run stopped at a local 32-patch limit, SHA
+  `44812b43a00c7d1833f595b722f57c614a11f61b93c463b56800dfe73a94ed7b`.
+  This is an unresolved reserve query, not collision/disconnection evidence.
+- A reserve-only retry distinguished that local failure but exposed the combined
+  128-face occupancy limit as a generic invalid-body error, SHA
+  `708cf059ccc385c1519867094cb993208f5da5e360b91dd6528a261bf9786fb7`.
+  The checker now reports `complete_source_budget_exceeded` separately. The limit
+  stays 128; malformed body/selection declarations still refuse independently.
+
+Only those two exact resource refusals on detached reserve forks may be left
+unresolved while scanning another waypoint. They never supply obstacle evidence,
+accepted waypoints or geometry permission. Ordinary route failures and all other
+query, identity, region, context and global-budget failures still abort. The
+carried route snapshot is checked even after an unresolved query.
+
+VERIFIED **31 focused tests pass**, including exact path partition, blocked
+reserve selection, whole-probe displacement envelope, sticky section/query caps,
+unchanged route proof hashes after unresolved queries, mutation refusal, and the
+128-face boundary. The first two test failures were tuple/list expectation errors;
+no geometry limits were changed to fix them. CLI startup passes.
+
+Automatic runtime section continuation is **not enabled**. Next implementation:
+a finite journey parent binds the selected guide/destination, ordered sections,
+one fixed deadline and aggregate input reservations. A healthy completed child
+may transfer its actual stopped floor checkpoint once, then collect fresh
+positions and run the existing seven source-checked probes before a new child.
+No fake camp/level-up event, expired-scope renewal or saved-file restart. The
+engine seams are `_capture_trial_continuation`, `_continue_source_journey`,
+`_finish_trial_input_observer` and the travel-phase lifecycle. F8/F9/F11, manual
+input, focus, zone and attack vetoes must invalidate the whole journey.
+
+Owner 0.39.36/runtime0.42.79 remains installed, with its existing trip limits.
+A read-only owner trace check found unchanged 17,821 bytes, mtime
+2026-11-14T19:31:12.111509+00:00 and terminal engine_exit. No new live acceptance
+or current level/XP/hour/death/camp metrics are available. G0 remains passed.
+Source tools 0.42.80 are locally built; additive private publication follows.
+
 ## 2026-11-15 00:53 UTC — owner 0.39.36 privately installed on Alienware
 
 VERIFIED additive private publication of owner 0.39.36 / runtime 0.42.79, source

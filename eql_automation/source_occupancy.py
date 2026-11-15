@@ -92,7 +92,7 @@ def check_selected_floor_clearance(footprint,sources,*,selected_ids,selection_ev
         return SourceOccupancy(ok,reason,selected_ids,selection_evidence_sha256,tuple(faces),body_height)
     if (not isinstance(footprint,tuple) or not 3<=len(footprint)<=64
             or any(not isinstance(p,tuple) or len(p)!=2 or not all(finite(n) for n in p) for p in footprint)
-            or not isinstance(sources,tuple) or not 1<=len(sources)<=128
+            or not isinstance(sources,tuple) or not 1<=len(sources)
             or not isinstance(selected_ids,tuple) or not 1<=len(selected_ids)<=32
             or any(not isinstance(k,tuple) or len(k)!=2 or any(type(n) is not int or n<0 for n in k) for k in selected_ids)
             or len(set(selected_ids))!=len(selected_ids)
@@ -100,6 +100,8 @@ def check_selected_floor_clearance(footprint,sources,*,selected_ids,selection_ev
             or not all(finite(n) and n>0 for n in (body_height,below_clearance,numeric_margin))
             or body_height>100 or below_clearance>10 or not .001<=numeric_margin<=.1):
         return result(False,'invalid_floor_selection_or_body_hypothesis')
+    if len(sources)>128:
+        return result(False,'complete_source_budget_exceeded')
     boundary=hull(footprint)
     if len(boundary)!=len(footprint) or area(boundary)<=1e-7:
         return result(False,'footprint_not_convex')

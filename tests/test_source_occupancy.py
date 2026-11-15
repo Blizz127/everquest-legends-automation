@@ -48,6 +48,14 @@ def test_clearance_values_are_explicit_hypotheses():
     assert not check(horizontal(-.12),below_clearance=.2).candidate
 
 
+def test_complete_face_limit_stays_128_and_is_distinct_from_invalid_body():
+    overhead=tuple(horizontal(70.,index=i) for i in range(3,130))
+    assert check(*overhead[:126]).candidate  # Two floor faces plus 126 overhead.
+    result=check(*overhead)
+    assert not result.candidate and result.reason=='complete_source_budget_exceeded'
+    assert check(*overhead,body_height=-1.).reason=='invalid_floor_selection_or_body_hypothesis'
+
+
 def test_vertical_zero_xy_area_wall_is_not_discarded():
     wall=face(((0.,-2.,-1.),(0.,2.,-1.),(0.,0.,10.)),3)
     result=check(wall)

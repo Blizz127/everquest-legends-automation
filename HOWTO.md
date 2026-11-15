@@ -1,12 +1,16 @@
 # EverQuest Legends automation — current owner guide
 
-Owner test **0.39.36** · runtime/offline tools **0.42.79** · retained assist **0.39.13**.
+Owner test **0.39.36** · runtime **0.42.79** · offline tools **0.42.80** · retained assist **0.39.13**.
 Publication status and evidence are recorded in STATUS.md.
 
 0.39.36 adds **Goblin Camp** and **Goblin Camp · movement test** in Butcherblock.
 The approach starts near Newbie Hills and passes copied terrain, static-object,
 region and synthetic current-start checks. It has not been traversed in the
 real client. The complete 1–20 route remains unfinished.
+
+Offline tools 0.42.80 look for stopping points with space to measure movement
+between bounded route sections. Automatic section handoff is still in development;
+the installed owner helper retains its current trip limits and restart behavior.
 
 **G0 passed, including the visible stop. Do not repeat it.** The complete 1–20
 or 1–50 autopilot is not ready. This build extends the existing rotation bot;
