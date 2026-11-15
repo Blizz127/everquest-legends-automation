@@ -1,5 +1,57 @@
 # FINDINGS
 
+## 2026-11-15 — native Butcherblock-to-GFay source crossing candidate
+
+VERIFIED development source 0.42.88 adds `NativeCrossingRegionPolicy`, separate
+from ordinary zero-region travel/calibration. It permits only the exact copied
+DR label's effective native records, full flags `0x80000000`, class 0, and the
+matching BSP regions with sole `zoneline` labels. Terrain and static collision
+checks remain unchanged; original BSP refusals are preserved beside the scoped
+result. Source/storage/query/classifier identities and the departure floor are
+checked through final publication. No existing runtime accepts this new policy.
+
+The retained Butcher descriptor verifies area 2, polygons
+`375,376,377,389,390,391,392`, native regions `3077,3083`, and exact label
+`DRNTP00255000001_ZONE`. Destination catalog ID 54 is The Greater Faydark;
+the manifest's destination is a map-derived hint, not server verification.
+
+`tools/inspect_butcher_crossing.py --stop-at-transition` checked the retained
+pre-line proposal `(-3084.646484375,-1328.2936706542969)` through six short
+forward cells and a final cap at `(-3093.57493953125,-1322.3650056635743)`.
+All eight cells pass complete copied terrain/static checks and the scoped
+region checks. The last sweep and cap classify wholly as the expected native
+transition. Body radius 1.2 / height 6 remain hypotheses. Runtime movement,
+server destination/spawn and loading/arrival are unverified. The original
+region-center target `(-3096.55109125,-1320.388784)` hits another source surface;
+the finite candidate stops earlier rather than exempting that surface.
+
+The production point-seed proposer still refuses the pre-line point because
+Boundary face `(1641,27)` is 90.0625 units below the unique Diffuse floor at 0.
+The offline experiment records that refusal, nominates the single Diffuse layer
+as an explicit synthetic hypothesis, and keeps **all** Boundary faces in the
+unchanged full footprint collision query. This does not broaden runtime floor
+selection or supply a current character floor. An actual approach must retain
+its reached source ancestry and obtain appropriate fresh movement evidence.
+
+Evidence in the private store:
+
+- `nav-candidates/butcher-gfay-source-crossing-0.42.88-final.json`, SHA
+  `c3cedc9fc378bdf6e785b0b5a45e9adb52a443256a5b20e2b1ad3b42b7177d0b`.
+- `releases/eql-0.42.88-native-crossing-final.xml`: **106 passed**, SHA
+  `afff609e23fb0f6f239fa97e90a0a087e3a1c7b682db6fe73b59a8c0757b7f90`.
+- Earlier a/b preserve the point-proposal refusal. Candidate c preserves the
+  region-center terrain refusal after eight clear cells, SHA
+  `c9cd3addea57cc3c312cdd3b46258fd0d7dc87f8f887ef549d96947496a60dca`.
+
+The historical retained suffix is
+`nav-candidates/butcher-kaladim-to-gfay-complex-bsp-wldframe-pinned-0.41.40.json`,
+SHA `ef3239d708dfb1aad6035610e562c7c685e0bdc64da1da6671552a5453189259`.
+Its nearest old vertex is 934.145 units from Goblin Camp; it provides no Goblin
+connector. Full source approach, runtime crossing and subsequent fresh GFay
+navigation remain required. No removed working copy was accessed. Installed
+owner 0.39.41 is unchanged; no game input or character mutation occurred.
+
+
 ## 2026-11-15 03:51 UTC — owner 0.39.41 privately installed
 
 VERIFIED additive Alienware installation, source revision

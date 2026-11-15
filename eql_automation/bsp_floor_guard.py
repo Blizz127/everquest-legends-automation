@@ -127,7 +127,8 @@ class SourceBodyBspCheck:
     real_client_accepted: bool = False
 
 
-def check_source_body_bsp(step, footprint, terrain_sources, bsp_view, *, clip_branches=False):
+def check_source_body_bsp(step, footprint, terrain_sources, bsp_view, *, clip_branches=False,
+                          expected_zone_line=None):
     """Classify occupied space above a complete, collision-checked source floor.
 
     The original occupancy check retains below-floor and numeric margins.
@@ -190,9 +191,11 @@ def check_source_body_bsp(step, footprint, terrain_sources, bsp_view, *, clip_br
                 # The floor plane is in helper XY; swap its coefficients and
                 # polygon into raw WLD together, retaining exact arithmetic.
                 traversal = check_bsp_wedge(bsp_view,tuple((y,x) for x,y in patch),
-                    (dy,dx,offset),(dy,dx,offset+Fraction(body)+Fraction(.01)))
+                    (dy,dx,offset),(dy,dx,offset+Fraction(body)+Fraction(.01)),
+                    expected_zone_line=expected_zone_line)
             else:
-                traversal = bsp_view.check_convex_volume(body_vertices)
+                traversal = bsp_view.check_convex_volume(body_vertices,
+                    expected_zone_line=expected_zone_line)
             digest = sha256(json.dumps([[str(n) for n in p] for p in body_vertices],
                 separators=(',', ':')).encode()).hexdigest()
             pieces.append(dict(selected_id=key, volume_sha256=digest,

@@ -76,7 +76,8 @@ def _clip(faces, plane, sign):
 
 
 def check_bsp_wedge(view, xy_wld, lower_plane, upper_plane, *,
-                    max_visits=4096, max_depth=256, max_vertices=256):
+                    max_visits=4096, max_depth=256, max_vertices=256,
+                    expected_zone_line=None):
     """Classify z between two affine planes over a convex raw-WLD polygon.
 
     Planes are (dx,dy,offset), with z=dx*x+dy*y+offset. They must leave
@@ -91,6 +92,11 @@ def check_bsp_wedge(view, xy_wld, lower_plane, upper_plane, *,
             or type(max_depth) is not int or not 1<=max_depth<=256
             or type(max_vertices) is not int or not 4<=max_vertices<=1024):
         raise ValueError('Invalid clipped BSP wedge request')
+    if expected_zone_line is not None:
+        from .zone_line import ExpectedZoneLine
+        if type(expected_zone_line) is not ExpectedZoneLine:
+            raise ValueError('Exact expected zone line required')
+        expected_zone_line.check_bsp(view)
     xy = tuple(tuple(rational_number(v) for v in p) for p in xy_wld)
     boundary = hull(xy)
     if len(boundary)!=len(xy) or area(boundary)<=0:
@@ -131,7 +137,9 @@ def check_bsp_wedge(view, xy_wld, lower_plane, upper_plane, *,
             region-=1; regions.add(region)
             if view.labels[region]:
                 labelled.append((region,view.labels[region]))
-                return result(False,'labelled_bsp_volume',number,vertices)
+                if (expected_zone_line is None
+                        or not expected_zone_line.allows_region(region,view.labels[region])):
+                    return result(False,'labelled_bsp_volume',number,vertices)
             continue
         plane = (nx,ny,nz,split)
         values = tuple(_distance(plane,p) for p in vertices)
@@ -143,4 +151,5 @@ def check_bsp_wedge(view, xy_wld, lower_plane, upper_plane, *,
         else:
             stack.append((right,seen,_clip(faces,plane,-1)))
             stack.append((left,seen,_clip(faces,plane,1)))
-    return result(True,'copied_clipped_bsp_wedge_candidate_only')
+    return result(True,'conditional_expected_zone_line_wedge' if labelled
+                  else 'copied_clipped_bsp_wedge_candidate_only')

@@ -1,5 +1,27 @@
 # STATUS
 
+Updated 2026-11-15 04:03 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met. G0 passed, including the owner-visible stop. Never
+  repeat G0.** Actual level, XP, XP/hour, deaths and camp remain unknown.
+- Installed owner build remains **0.39.41 / source 0.42.87**, using the existing
+  rotation. Development source **0.42.88** adds a separate offline native
+  crossing policy and pinned Butcherblock-to-GFay descriptor. Ordinary travel
+  and probes still require their existing zero-region policy.
+- **VERIFIED:** 106 focused checks pass. Eight copied-source cells, including
+  an endpoint cap wholly in the expected transition label, pass terrain,
+  static-object, BSP and native checks. Audit SHA
+  `c3cedc9fc378bdf6e785b0b5a45e9adb52a443256a5b20e2b1ad3b42b7177d0b`.
+  These are offline hypotheses, not real-client crossing acceptance.
+- **Next:** check the Goblin-to-exit approach and implement the genuine crossing
+  loading/arrival handoff. The native region center itself intersects terrain;
+  the candidate stops earlier inside the clear transition. Owner-started Goblin
+  movement/camp acceptance and complete 1–20/1–50 progression remain unverified.
+  Read-only Alienware check: no camp-progress file; journey trace still ends
+  2026-11-14 19:31:12 UTC. No helper restart, input, login or character change.
+
+## Prior status
+
 Updated 2026-11-15 03:51 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed; never repeat it.** Actual level, XP,

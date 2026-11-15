@@ -64,7 +64,7 @@ and 600-second held-input limits. One fixed whole-trip budget covers the remaini
 sections: at most nine sections and 3 hours 45 minutes from initial route start.
 Handoffs cannot renew that deadline. Actual progress can stop sooner on failed
 position, geometry, motion, focus, input or hazard checks. A stopped or cancelled
-trip never restarts itself. Close the old helper yourself before starting 0.39.40;
+trip never restarts itself. Close the old helper yourself before starting 0.39.41;
 publishing does not restart your running helper.
 
 **G0 passed, including the visible stop. Do not repeat it.** The complete 1–20
