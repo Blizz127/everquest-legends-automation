@@ -1,40 +1,41 @@
 # STATUS
 
-Updated 2026-11-15 02:02 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 02:03 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed**, including the owner's visible stop;
   do not repeat it. Current level, XP, XP/hour, deaths and camp remain unknown.
   No accepted real-client 1–20 route or fresh hands-off 1–50 run.
-- Owner **0.39.37 / source 0.42.82 remains the installed build**. Candidate
-  **0.39.38 / source 0.42.83** connects ordered Goblin sections to explicit
-  travel in the existing rotation helper. It preserves one trip budget and
-  sender/observer, remeasures after healthy stops and camps only at the final
-  destination. Assist continues to leave movement and targets to the owner.
-- **VERIFIED initial checks:** nine current-start/rejoin checks passed locally. An initial
-  two-section integration snapshot passes on Alienware in 115.55 seconds using
-  isolated pipes and synthetic observations. Seven final integration cases
-  (three-section travel, F8/F9 interruptions, release-gap cleanup and final camp)
-  were attempted; the current result and remaining gate are recorded below.
-- **VERIFIED:** the candidate builds; all eight selections and six GUI checks
-  pass without starting an engine or saving settings. Actual copied section
-  data loads for both Goblin destinations (nine sections each), and the entry
-  passes the provider into the existing engine. Local configured-Python startup
-  passes; local system Python lacks numpy. Installed Alienware startup remains
-  to verify for this candidate. No client or character input occurred.
-- **VERIFIED additional work:** 32 final local planning/integrity cases pass.
-  The real copied route rebuilds 1,060 full cells and 122 initial-section cells
-  from one synthetic start floor. An earlier remote attempt passed four engine
-  cases, then correctly stopped on its unchanged DOWN deadline before the
-  late-F8 injection. Reduced repeated manifest allocation; three final cases
-  are running locally.
-- **Publication gate:** Alienware SSH disconnected; one reconnect also timed
-  out on port 22. The final remote job outcome is unknown; do not restart it
-  until its receipt/process state can be inspected. No 0.39.38 install occurred.
-- **Next:** finish local checks, recover the remote receipt when reachable and
-  publish the candidate privately. The next level 1–20 route gap is
-  Trainer Hill: its exact copied map marker is known, but no source-checked
-  approach exists. Cross-zone travel, later camps, loot/vendors and recovery
-  remain unfinished; actual movement/camp suitability await the owner's test.
+- **Installed:** owner **0.39.37 / source 0.42.82** remains the last verified
+  Alienware build. **Candidate 0.39.38 / source 0.42.83 is not published.** It
+  connects automatic ordered Goblin sections to explicit travel in the existing
+  rotation helper. Assist keeps movement and targets manual. Source commit
+  `167e258` preserves the candidate; HOWTO distinguishes available and pending builds.
+- **VERIFIED 32 final local checks pass** for current-start planning and guide
+  integrity. The earlier owner integration passed three-section travel and three
+  held-input stop/assist cases. Its late-F8 case stopped on the existing DOWN
+  deadline before the injection; it is not counted as a successful late-F8 test.
+- **VERIFIED copied-data replay:** all 1,060 full-route cells and 122 first-section
+  cells use the same synthetic observed starting floor. Both candidate Goblin
+  choices load nine sections. Six GUI checks retain all eight destination choices;
+  no engine or settings write. Configured local Python startup passes; local
+  system Python lacks numpy. No real-client acceptance is claimed.
+- **Exact verification/publication gates:** Alienware SSH disconnected; one
+  reconnect timed out on port 22. The final remote test outcome is unknown;
+  inspect its existing receipt/process state before considering another run.
+  All three local fallback runtime cases stopped during initial calibration,
+  before their intended handoff tests, on watchdog arm/hold timing. Observed
+  devbox load average was **206.06 / 188.99 / 166.46**. No limit was widened.
+  These three cases remain unverified. Their JUnit/trace failures are retained.
+- **Unblocked progress:** inventoried placed surfaces around seven retained
+  Trainer terrain components: 477 static faces, 22 eligible diffuse/slope faces,
+  all 22 from one CAZFIRE placement. This establishes no usable support/route.
+  Artifact SHA `3af0712372de33dbd1111a46becf64045413317863050b3e1b39e95d8cc21643`.
+- **Next:** recover the final remote receipt once Alienware is reachable and
+  finish the three final-release/camp cases on a responsive machine. Refresh the
+  owner snapshot with current HOWTO before publishing. Then continue the missing
+  Trainer approach from the actual offline Mines endpoint; cross-zone travel,
+  later camps, loot/vendors and recovery remain unfinished. No game input,
+  session restart, login, character change or prefix modification occurred.
 
 ## Prior status
 

@@ -22,7 +22,7 @@ truncated operation lists. An earlier exact integration snapshot passed the
 three-section journey plus three held-input stop/assist cases on Alienware. The
 next late-F8 case stopped before its injected test point because the unchanged
 50ms permit expired (final slack -3.882ms). UP/stop was preserved; this is not a
-successful late-F8 result. The final three cases are still pending. A subsequent
+successful late-F8 result. The final three cases remain unverified; see the current gate below. A subsequent
 optimization compares retained walking-guide fields without rebuilding all
 nested tuples; every checked field and the original fallback remain. No DOWN,
 freshness, geometric or child-budget limit was widened. Prior failed receipts
@@ -40,8 +40,13 @@ Final owner manifest SHA
 
 **Current gate:** Alienware SSH stopped responding during final verification;
 a single reconnect also timed out on port 22. That remote test's outcome is
-unknown and it was not restarted. The same three focused cases are running
-locally. Candidate 0.39.38 is not installed; owner 0.39.37 remains the last
+unknown and it was not restarted. All three local fallback cases stopped during
+initial calibration (watchdog did not arm / pulse timing overrun), before their
+intended handoff points. JUnit `releases/eql-0.42.83-owner-local-final.xml` retains
+the failures. At 02:01 UTC, devbox load averages were 206.06 / 188.99 / 166.46.
+This is a timing/resource limitation, not evidence those handoffs passed; no
+watchdog or freshness limit was changed. Candidate 0.39.38 is not installed;
+owner 0.39.37 remains the last
 verified installation. No game input, session restart, login or character/prefix
 change. G0 remains passed, including the owner's visible stop; never repeat it.
 Current level, XP, XP/hour, deaths and camp are unknown. No accepted 1–20 or 1–50 run.

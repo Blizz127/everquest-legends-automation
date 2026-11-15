@@ -1,7 +1,23 @@
 # EverQuest Legends automation — current owner guide
 
-Owner test **0.39.38** · runtime/tools **0.42.83** · retained assist **0.39.13**.
+**Installed on Alienware: owner 0.39.37 / runtime 0.42.82.**
+Candidate **0.39.38 / runtime 0.42.83** below is not installed: final runtime
+checks are incomplete and the Alienware SSH connection is unavailable.
 Publication status and evidence are recorded in STATUS.md.
+
+To launch the currently installed helper on Alienware, close the old helper yourself
+and run only one:
+
+```bash
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.37/launch.sh
+```
+
+That installed version retains F8 assist, F9 stop and the eight destination
+choices. It does **not** automatically continue between route sections; its
+25-minute/input limits can stop a long Goblin trip. G0 passed; do not repeat it.
+
+The following **candidate guide** describes 0.39.38 after verified installation.
+Do not use its launch command until STATUS.md records that installation.
 
 0.39.38 connects automatic route sections to the **Goblin Camp** travel choices
 in Butcherblock. Travel starts near Newbie Hills or rejoins near the checked
@@ -97,7 +113,7 @@ cancel the handoff. This is supervised testing, not the full 1–20 path.
 
 ## Choose a travel/camp destination — preview 0.39.38
 
-Close your old helper yourself; run only one. On Alienware:
+After STATUS.md confirms candidate 0.39.38 is installed, close your old helper yourself; run only one. On Alienware:
 
 ```bash
 EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.38/launch.sh
