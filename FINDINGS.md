@@ -1,5 +1,25 @@
 # FINDINGS
 
+## 2026-11-15 14:24 UTC — local GFay destination preview (owner 0.39.42)
+
+VERIFIED the new builder/entry/GUI patch exposes all 16 registered destinations,
+including eight new Butcherblock/GFay choices. Offscreen Qt exercised all eight
+new selections, accepted and cancelled dialogs, stale/disabled continuation
+checkboxes and crossing travel indicators. The test prohibits engine creation
+and settings writes and uses an empty synthetic client catalog. The original
+rotation engine, rotation core and launch script match retained owner 0.39.41.
+No client input, remote installation or helper start occurred.
+
+Private draft `owner-build-drafts/0.39.42-astra-gui-b` passes its pinned entry's
+`--help`. Manifest SHA
+`a70873cd02db29c9b41d481696db608558c5289717cb0d4ca9b4d760c2785b51`;
+GUI SHA `dbd070b6f7401a6075a3362597bd4aa210603c6bfae6c15eba250090d37fe213`.
+Sibling `0.39.42-astra-gui-b-checks/gui.checks.json` SHA
+`f5ebb4ad99b9bd3a879e3457a7832fd39bed875beb67ca3a0fcc8b3cded5d81b`;
+`gui.png` SHA `fdab7c5bd0ec50c3bb6561e77798e84c57152edfe385e37237dc509515c102f9`.
+The screenshot was inspected. This is an intermediate immutable draft; final
+runtime/docs changes require a new draft. Installed 0.39.41 remains untouched.
+
 ## 2026-11-15 14:21 UTC — Astra takeover and GFay continuation lookup fix (0.42.92)
 
 VERIFIED clean `carbon/continue` at `475ddb2` after reading the Astra handoff,

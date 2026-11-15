@@ -1,12 +1,39 @@
 # EverQuest Legends automation — current owner guide
 
-> **Development branch (`carbon/continue`, source `0.42.92`):** Copied GFay
-> Orc Camps and Crushbone crossing guides are staged, alongside the Butcherblock
-> to GFay crossing. GFay next-camp lookup now uses its own pinned annotations.
-> Crossings stop after fresh destination confirmation; automatic cross-zone
-> camp continuation is unfinished. The installed Alienware helper remains
-> **0.39.41 / runtime 0.42.87** below. New destination controls are being prepared
-> in a local preview; nothing has been installed or started on Alienware.
+> **Development branch (`carbon/continue`, source `0.42.92`):** Local preview
+> **0.39.42** adds the destinations below. It has not been installed on Alienware.
+> The installed helper remains **0.39.41 / runtime 0.42.87**, described afterward.
+> Full 1–50 automation and automatic cross-zone camp continuation remain unfinished.
+
+Local preview 0.39.42 keeps F8 assist, F7 toggle, F9 stop, F10 heal and F11
+camp/cancel. It adds these explicit choices in **Travel and camp test**:
+
+| Start | Destination choices | Result |
+| --- | --- | --- |
+| Near Goblin Camp in Butcherblock | Greater Faydark approach or cross into Greater Faydark | Stop before the line, or cross and stop after two fresh destination location replies. |
+| Inside GFay near the Butcherblock entrance | Orc Camps or Orc Camps movement test | Fresh stopped arrival, then camp or stop. The copied map suggests levels 4–7. |
+| Near Orc Camps in GFay | Crushbone approach or cross into Crushbone | Stop before the line, or cross and stop after two fresh destination location replies. |
+| Inside GFay near the Butcherblock entrance | Crushbone approach or cross into Crushbone | Follow the longer GFay route, then stop before the line or after confirmed crossing. |
+
+Movement and crossing choices disable next-camp continuation. A crossing starts
+no camp and does not continue into another zone. Travel rechecks the current
+position and measures movement for each section; a failed or cancelled trip
+stops. Orc Camps requires observed GFay NPC history and fresh target checks.
+The next-camp lookup uses GFay's own pinned annotations and currently finds no
+supported onward camp. Actual routes, server destinations/spawns and camp
+suitability remain unverified.
+
+For a **local build only**, from this checkout (use a new output directory):
+
+```bash
+python3 tools/build_nov12_preview_03942.py \
+  --source "$HOME/.local/share/eql-automation/owner-assist/0.39.13" \
+  --output "$HOME/.local/share/eql-automation/owner-build-drafts/0.39.42-local"
+```
+
+This creates a separate pinned preview from the retained helper; it does not
+install it on Alienware or start an engine. The existing installed launch command
+and controls remain below.
 
 **This guide describes owner 0.39.41 / runtime 0.42.87.**
 Installation status is recorded in STATUS.md. After installation, the receipt

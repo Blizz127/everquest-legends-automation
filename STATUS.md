@@ -8,9 +8,9 @@ Updated 2026-11-15 14:21 UTC by `codex-everquest-legends-astra` on `carbon/conti
   **VERIFIED:** GFay next-camp selection now reads its own pinned annotations;
   previously it raised `KeyError('gfaydark_3.txt')`. Six focused tests pass,
   including map tampering and corrected guide/corridor hash-rejection tests.
-- The larger copied-geometry/crossing verification is in progress. A local
-  preview exposing the new destinations and final-crossing cancellation review
-  are also in progress. Crossings currently stop after observed destination
+- The larger copied-geometry/crossing verification is in progress. Local preview **0.39.42** exposes the eight new destinations;
+  its offscreen Qt controls and pinned startup checks pass. Final crossing
+  cancellation and isolated pipe verification are in progress. Crossings currently stop after observed destination
   arrival; automatic cross-zone camp continuation is still missing.
 - Installed Alienware owner **0.39.41 / source 0.42.87** is unchanged. No game
   input, character/prefix/config changes, remote installation or push. Paused

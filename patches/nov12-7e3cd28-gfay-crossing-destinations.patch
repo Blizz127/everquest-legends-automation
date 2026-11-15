@@ -1,0 +1,112 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -26,6 +26,40 @@
+         if reason == "no_window":
+             return "HP · game window not found"
+     return f"{name} · no calibrated reading"
++
++
++def gfay_destination_help(identifier):
++    """Describe the packaged route's actual start and terminal behavior."""
++    from eql_automation.source_destinations import destination_spec
++    if identifier in ("butcher-gfay-preline-stop", "butcher-gfay-crossing"):
++        start = "Start near Goblin Camp inside Butcherblock Mountains, or resume near this route. "
++        destination = "The Greater Faydark"
++    elif identifier in ("gfay-orc-camps", "gfay-orc-camps-stop"):
++        start = "Start inside Greater Faydark near the Butcherblock entrance, or resume near this route to Orc Camps. "
++        destination = None
++    elif identifier in ("gfay-crushbone-preline-stop", "gfay-crushbone-crossing"):
++        start = "Start near Orc Camps inside Greater Faydark, or resume near this route. "
++        destination = "Clan Crushbone"
++    elif identifier in ("gfay-butcher-crushbone-preline-stop", "gfay-butcher-crushbone-crossing"):
++        start = "Start inside Greater Faydark near the Butcherblock entrance, or resume near this route toward Crushbone. "
++        destination = "Clan Crushbone"
++    else:
++        return None
++    mode = destination_spec(identifier).arrival_mode
++    if mode == "zone_crossing":
++        ending = ("Crosses into " + destination + ", then stops after two fresh location replies in the destination zone. "
++                  "It starts no camp and does not continue to another zone. ")
++    elif mode == "camp":
++        ending = ("Starts stationary camping only after a fresh stopped arrival at Orc Camps. "
++                  "Observed Greater Faydark NPC history and fresh target checks are required; no history means no camp travel. "
++                  "The copied map suggests levels 4–7. There is no supported onward camp from Orc Camps yet. ")
++    elif destination is None:
++        ending = "Stops at Orc Camps without combat. The copied map suggests levels 4–7. "
++    else:
++        ending = "Stops at the approach before the zone line, without crossing or combat. "
++    return (start + ending + "The route continues checked sections with fresh movement measurements at each stop. "
++            "A failed check stops travel; cancellation never restarts it. "
++            "Actual movement, server destination and camp suitability remain unverified. Stay present. F8 assist; F9/F11 stop.")
+ 
+ 
+ def main():
+@@ -458,6 +492,14 @@
+             self.source_destination.addItem("Newbie Hills · movement test", "newbie-hills-stop")
+             self.source_destination.addItem("Goblin Camp · Butcherblock · map hint 5–8", "goblin-camp")
+             self.source_destination.addItem("Goblin Camp · movement test", "goblin-camp-stop")
++            self.source_destination.addItem("Greater Faydark approach · from Goblin Camp · movement test", "butcher-gfay-preline-stop")
++            self.source_destination.addItem("Cross into Greater Faydark · from Goblin Camp · then stop", "butcher-gfay-crossing")
++            self.source_destination.addItem("Orc Camps · Greater Faydark · map hint 4–7", "gfay-orc-camps")
++            self.source_destination.addItem("Orc Camps · Greater Faydark · movement test", "gfay-orc-camps-stop")
++            self.source_destination.addItem("Crushbone approach · from Orc Camps · movement test", "gfay-crushbone-preline-stop")
++            self.source_destination.addItem("Cross into Crushbone · from Orc Camps · then stop", "gfay-crushbone-crossing")
++            self.source_destination.addItem("Crushbone approach · from GFay Butcher entrance · movement test", "gfay-butcher-crushbone-preline-stop")
++            self.source_destination.addItem("Cross into Crushbone · from GFay Butcher entrance · then stop", "gfay-butcher-crushbone-crossing")
+             column.addWidget(self.source_destination)
+             self.continue_camps = QCheckBox("After level-ups, travel to the next supported camp")
+             self.continue_camps.setObjectName("journeyContinueCampsBox")
+@@ -702,11 +744,14 @@
+             badge = (state, autopilot.get("journey_phase"), autopilot.get("journey_destination_id"))
+             if badge != self.ap_badge:
+                 self.ap_badge = badge
+-                kind = "TRAVEL TEST" if autopilot.get("journey_phase") in {"setup", "travel", "handoff"} else "CAMP TEST"
++                kind = "TRAVEL TEST" if autopilot.get("journey_phase") in {"setup", "travel", "handoff", "source_crossing_handoff", "source_crossing"} else "CAMP TEST"
+                 label = {"running": "RUNNING", "paused": "PAUSED", "halted": "STOPPED"}.get(
+                     state, "IDLE" if measurement_only else "OFF")
+                 destination = autopilot.get("journey_destination_id")
+                 suffix = {"slave-mines": " · Slave Mines", "north-wall": " · North Wall and Castle", "throne-stair-landing": " · Stair landing", "throne-room": " · Throne Room", "newbie-hills": " · Newbie Hills", "newbie-hills-stop": " · Newbie Hills stop", "goblin-camp": " · Goblin Camp", "goblin-camp-stop": " · Goblin Camp stop"}.get(destination, "")
++                if gfay_destination_help(destination) is not None:
++                    from eql_automation.source_destinations import destination_spec
++                    suffix = " · " + destination_spec(destination).label
+                 self.ap_state.setText(f"●  {kind} {label}{suffix}")
+                 self.ap_state.setStyleSheet({"running": "color: #7addac;", "paused": "color: #f5ca72;",
+                                              "halted": "color: #ffb9c2;"}.get(state, "color: #a9b5c5;"))
+@@ -815,7 +860,7 @@
+ 
+         def refresh_destination_mode(self, *_):
+             from eql_automation.source_destinations import destination_spec
+-            movement_only = destination_spec(self.source_destination.currentData()).arrival_mode == "stop"
++            movement_only = destination_spec(self.source_destination.currentData()).arrival_mode != "camp"
+             if movement_only:
+                 self.continue_camps.setChecked(False)
+             self.continue_camps.setEnabled(self.source_destination.isEnabled() and not movement_only)
+@@ -833,11 +878,15 @@
+                     if self.source_destination.currentData().startswith("goblin-camp"):
+                         self.travel_help.setText("Start near Newbie Hills in Butcherblock, or resume near the checked route toward Goblin Camp. " + ending + " The map suggests levels 5–8. This route automatically continues checked sections, with fresh movement measurements at each stop. Each section has a 25-minute limit; the whole trip has a fixed limit of at most 3 hours 45 minutes. A failed check stops the trip. Live travel and camp suitability remain unverified. F8 assist; F9/F11 stop.")
+ 
++                description = gfay_destination_help(self.source_destination.currentData())
++                if description is not None:
++                    self.travel_help.setText(description)
++
+         def configure_supervised_source(self):
+             from eql_automation.source_destinations import destination_spec
+             identifier = self.source_destination.currentData()
+             selected = destination_spec(identifier)
+-            movement_only = selected.arrival_mode == "stop"
++            movement_only = selected.arrival_mode != "camp"
+             continuation = self.continue_camps.isChecked() and not movement_only
+             dialog = QDialog(self)
+             dialog.setWindowTitle("Travel to " + selected.label + (", then stop" if movement_only else ", then camp"))
+@@ -884,6 +933,11 @@
+                              "First test your /location hotbutton with the map visible. Then close map/chat, clear your target and turn melee off. "
+                              "Start on clear, flat, open ground. Seven short calibration presses follow the four-second focus countdown. "
+                              "Stay present. F8 returns to assist; F9/F11 stops. An observed attack or zone change stops travel.")
++            description = gfay_destination_help(identifier)
++            if description is not None:
++                text.setText(description + "\n\nFirst test your /location hotbutton with the map visible. Then close map/chat, clear your target and turn melee off. "
++                             "Start on clear, flat, open ground. Seven short calibration presses follow the four-second focus countdown. "
++                             "Stay present throughout the trip. An observed attack or unexpected zone change stops travel.")
+             if continuation:
+                 text.setText(text.text() + "\n\nAfter a newly observed level-up and spell preparation, the helper may measure again and travel to a supported later camp. This additional trip is limited to 25 minutes. After stopped arrival, the helper prepares learned spells again and checks new targets before combat. Missing routes keep the current camp. Stay present throughout.")
+             text.setWordWrap(True)
