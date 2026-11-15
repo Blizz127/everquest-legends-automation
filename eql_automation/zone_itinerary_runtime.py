@@ -28,7 +28,9 @@ from .source_destinations import destination_spec
 from .source_section_manifest import BoundWalkingSection, WalkingSections
 from .supervised_camp_probe import SupervisedCampProbeDeclaration
 from .supervised_route import scope_limits
-from .zone_itinerary_budget import ZoneItineraryBudget, ZoneItineraryDeclaration, _declaration_state
+from .zone_itinerary_budget import (
+    ZoneItineraryBudget, ZoneItineraryDeclaration, ZoneItineraryTerminalCamp, _declaration_state,
+)
 
 
 @dataclass(frozen=True)
@@ -101,8 +103,14 @@ class ZoneItineraryRuntime:
         self.assets=self.sections=self.crossing_spec=self.child_budget=None
         self._assets=self._sections=self._crossing_spec=self._child_budget=None
         self.section_index=self.section_guard=None
+        self.candidates=self._candidates=None
+        self._candidate_state=None
+        self.terminal_arrival=self._terminal_arrival=None
+        self.terminal_transfer=self._terminal_transfer=None
         self.records=[]
         self._observer_closed=False
+        self._observer_transferred=False
+        self._terminal_transferring=False
         self.owner_binding=(root.owner_binding,id(self),self.generation)
         self._context=(engine,journey,plan,root,check_current,pump,command_state_clear,
             fit_library,steering_library,self.clock,self.wall,self.lock,self.sender,self.ui,
@@ -156,6 +164,10 @@ class ZoneItineraryRuntime:
                 or self.crossing is not self._crossing or self.assets is not self._assets
                 or self.sections is not self._sections or self.crossing_spec is not self._crossing_spec
                 or self.child_budget is not self._child_budget
+                or self.candidates is not self._candidates
+                or self.candidates is not None and tuple(flat_record_state(c) for c in self.candidates)!=self._candidate_state
+                or self.terminal_arrival is not self._terminal_arrival
+                or self.terminal_transfer is not self._terminal_transfer
                 or self.tracker.reader is not self.reader or self.root.stage.leg_index!=self.leg_index
                 or self.journey.destination_id!=self.root.leg.destination_id
                 or self.phase!='claim' and self.journey.destination_assets is not self.assets):
@@ -164,10 +176,11 @@ class ZoneItineraryRuntime:
             'adopting':('walking',),'source':('walking',),'section_handoff':('walking',),
             'sections':('walking',),'crossing_handoff':('crossing',),
             'crossing':('crossing','loading','arrival'),'finishing':('arrival','complete'),
+            'terminal_ready':('walking',),'terminal_finishing':('walking','arrival','complete'),
             'complete':('complete',)}
         if self.root.stage.phase not in stages.get(self.phase,()):
             raise ValueError('Itinerary root stage differs from its actual child phase')
-        if self.phase not in ('finishing','complete'):
+        if self.phase not in ('finishing','terminal_finishing','complete'):
             self.lease.check()
             if self.lease.reader is not self.reader:
                 raise ValueError('Itinerary reader changed')
@@ -224,7 +237,14 @@ class ZoneItineraryRuntime:
             raise ValueError('Destination provider changed the selected itinerary leg')
         assets.check()
         sections=self.plan.sections_provider(assets)
-        crossing=self.plan.crossing_provider(identifier)
+        terminal=type(self.root.leg) is ZoneItineraryTerminalCamp
+        crossing=None if terminal else self.plan.crossing_provider(identifier)
+        candidates=None
+        if terminal:
+            from .camp_session import NpcCandidate
+            candidates=tuple(self.engine._load_camp_candidates(assets.planner.zone))
+            if not candidates or any(type(c) is not NpcCandidate for c in candidates):
+                raise ValueError('Terminal camp requires observed candidate names before destination preparation')
         self._scene()
         # Asset loading does not hold the owner stop lock. Only publish a new
         # child after its construction and callbacks have preserved that owner.
@@ -233,8 +253,13 @@ class ZoneItineraryRuntime:
             if (self.phase!='load_destination' or self.root.leg.destination_id!=identifier
                     or (assets.planner.zone_id,assets.planner.zone_name)!=(self.reader.zone_id,self.reader.zone_display_name)
                     or assets.planner.zone_id!=self.root.leg.source_zone_id
-                    or type(crossing) is not PinnedSourceCrossingSpec or crossing.destination_id!=identifier
-                    or crossing.expected_zone_line.sha256!=self.root.leg.expected_zone_line_sha256
+                    or terminal!=(type(self.root.leg) is ZoneItineraryTerminalCamp)
+                    or terminal and (self.root.stage.kind!='terminal_camp'
+                        or self.root.leg is not self.plan.declaration.terminal_camp
+                        or crossing is not None or destination_spec(identifier).arrival_mode!='camp')
+                    or not terminal and (type(crossing) is not PinnedSourceCrossingSpec
+                        or crossing.destination_id!=identifier
+                        or crossing.expected_zone_line.sha256!=self.root.leg.expected_zone_line_sha256)
                     or sections is not None and (type(sections) is not WalkingSections or sections.original is not assets.guide)
                     or assets.guide.radius!=self.plan.probe_bounds.body_radius
                     or assets.guide.body_height!=self.plan.probe_bounds.body_height):
@@ -260,6 +285,8 @@ class ZoneItineraryRuntime:
                 self.assets=self._assets=assets
                 self.sections=self._sections=sections
                 self.crossing_spec=self._crossing_spec=crossing
+                self.candidates=self._candidates=candidates
+                self._candidate_state=None if candidates is None else tuple(flat_record_state(c) for c in candidates)
                 self.journey.destination_assets=assets
                 self.bootstrap=self._bootstrap=candidate
                 self.phase='bootstrap'
@@ -287,7 +314,8 @@ class ZoneItineraryRuntime:
         count=1 if self.sections is None else len(self.sections.guides)-self.section_index
         seconds,pulses,distance,hold=scope_limits('destination_travel')
         declaration=JourneyBudgetDeclaration(sha256(encoded(self.assets.guide.record())).hexdigest(),
-            self.root.leg.destination_id,'zone_crossing',count,count*seconds,count*pulses,count*hold,count*distance)
+            self.root.leg.destination_id,self.root.leg.arrival_mode,
+            count,count*seconds,count*pulses,count*hold,count*distance)
         self.child_budget=self._child_budget=JourneyInputBudget(declaration,clock=self.clock,stop_lock=self.lock,
             owner_binding=self.owner_binding,binding_reader=self._binding,parent_budget=self.root)
         source_declaration=DestinationSourceDeclaration('itinerary-route-'+str(self.leg_index),True,
@@ -296,7 +324,7 @@ class ZoneItineraryRuntime:
         try:
             candidate=start_destination_source(b,declaration=source_declaration,
                 legacy=self.steering_library,check_current=self._check_context,
-                mode_reader=lambda:'camp_route' if self.phase in ('adopting','source') else 'off',
+                mode_reader=lambda:'camp_route' if self.phase in ('adopting','source','terminal_ready') else 'off',
                 generation_reader=lambda:self.engine.cancel_generation,generation=self.generation,
                 journey_budget=self.child_budget)
             candidate.check_current()
@@ -324,6 +352,16 @@ class ZoneItineraryRuntime:
             assert_retained_arrival(arrival.runtime,arrival.receipt,arrival.checkpoint,self.clock())
             if arrival._claim!=[False] or arrival.budget is not self.child_budget:
                 raise ValueError('Current unclaimed section arrival required')
+            last=self.sections is None or self.section_index==len(self.sections.guides)-1
+            if last and type(self.root.leg) is ZoneItineraryTerminalCamp:
+                if self.terminal_arrival is not None or self.candidates is None:
+                    raise ValueError('Terminal arrival was already published or has no observed camp candidates')
+                # Keep source and child accounting live until the owner captures
+                # the fresh camp handoff. No further movement runs in this phase.
+                self.terminal_arrival=self._terminal_arrival=arrival
+                self.phase='terminal_ready'
+                self._scene()
+                return
             previous=self.section if self.section is not None else self.bootstrap
             self._retire_monitor(previous.monitor)
             if type(previous) is SectionContinuation:previous.release(close_observer=False)
@@ -334,7 +372,6 @@ class ZoneItineraryRuntime:
             self.lease=self._lease=self.tracker.acquire()
             self.phase='section_handoff'
             self._check_context()
-            last=self.sections is None or self.section_index==len(self.sections.guides)-1
             if not last:
                 self.section_index+=1
                 self.section_guard=BoundWalkingSection(self.sections,self.section_index)
@@ -370,7 +407,7 @@ class ZoneItineraryRuntime:
             self._check_context()
             if r.phase!='complete' or r.busy or self.root.stage.phase!='arrival':
                 raise ValueError('Current completed crossing required for itinerary advancement')
-            if self.leg_index+1<len(self.plan.declaration.legs):
+            if self.leg_index+1<self.plan.declaration.target_count:
                 token=r.transfer_destination(check_current=self._check_owner)
                 self.transfer=token
                 token.claim()
@@ -382,6 +419,8 @@ class ZoneItineraryRuntime:
                 self.sections=self._sections=None
                 self.crossing_spec=self._crossing_spec=None
                 self.child_budget=self._child_budget=None
+                self.candidates=self._candidates=None
+                self._candidate_state=None
                 self.section_index=self.section_guard=None
                 self._begin_destination()
                 return
@@ -397,8 +436,64 @@ class ZoneItineraryRuntime:
             self._check_owner()
             self.phase='complete'
 
+    def transfer_terminal_arrival(self, *, candidates):
+        """Retire navigation once while the journey adopts its input observer."""
+        from .owner_itinerary_camp_arrival import capture_itinerary_camp_arrival
+        with self.lock:
+            if self._terminal_transferring:
+                self.cancel('Terminal arrival transfer reentered')
+                raise ValueError('Terminal arrival transfer reentered')
+            self._terminal_transferring=True
+            token=None
+            try:
+                self._scene()
+                if (self.phase!='terminal_ready' or self.busy or self.closed
+                        or candidates is not self.candidates or self.terminal_transfer is not None
+                        or self.sender.held or getattr(self.sender,'_eql_route_operation',None) is not None):
+                    raise ValueError('Idle current terminal arrival required for camp transfer')
+                arrival=self.terminal_arrival
+                token=capture_itinerary_camp_arrival(self.engine,self,arrival,self.clock,candidates=candidates)
+                # Capture publishes the provisional camp monitor with no callback
+                # afterward. Mark cleanup ownership before any further provider can
+                # deliver an owner stop, so only that monitor closes the observer.
+                self._observer_transferred=True
+                self.terminal_transfer=self._terminal_transfer=token
+                self._scene()
+                arrival._claim[0]=True
+                self.phase='terminal_finishing'
+                previous=self.section if self.section is not None else self.bootstrap
+                self._retire_monitor(previous.monitor)
+                previous.release(close_observer=False)
+                self._check_owner()
+                self.child_budget.cancel('Terminal camp reached; navigation child retired')
+                self.root.advance(self.root.stage,'arrival',zone_id=self.root.leg.source_zone_id)
+                self._scene()
+                assert_retained_arrival(arrival.runtime,arrival.receipt,arrival.checkpoint,self.clock())
+                self.root.advance(self.root.stage,'complete',zone_id=self.root.leg.source_zone_id)
+                self._scene()
+                token.check_identity()
+                assert_retained_arrival(arrival.runtime,arrival.receipt,arrival.checkpoint,self.clock())
+                if (self.tracker.lease is not None or self.lease.active
+                        or self.journey.camp_motion is not token.monitor
+                        or self.journey.arrival_floor is not arrival.checkpoint
+                        or self.closed or self.phase!='terminal_finishing'):
+                    raise ValueError('Terminal camp transfer changed while releasing navigation')
+                self.phase='terminal_transferred'
+                self.closed=True
+                return token
+            except BaseException as error:
+                self.cancel(error)
+                if token is not None:
+                    try:
+                        token.monitor.close(str(error))
+                    finally:
+                        token.arrival.checkpoint.invalidate(str(error))
+                raise
+            finally:
+                self._terminal_transferring=False
+
     def tick(self):
-        if self.closed or self.phase in ('complete','stopped'):return
+        if self.closed or self.phase in ('complete','stopped','terminal_ready'):return
         if self.busy:
             try:self._check_context()
             except BaseException as error:self.cancel(error);raise
@@ -434,6 +529,8 @@ class ZoneItineraryRuntime:
             if self.closed or self.phase=='stopped':return
             self.phase,self.reason='stopped',str(reason)
             self.root.cancel(reason)
+            if self.terminal_arrival is not None and not self._observer_transferred:
+                self.terminal_arrival.checkpoint.invalidate(reason)
             for child in (self.crossing,self.section,self.source,self.bootstrap):
                 if child is not None:child.cancel(reason)
             self.lease.active=False
@@ -448,14 +545,15 @@ class ZoneItineraryRuntime:
                 if child is not None:
                     child.release(close_observer=False)
             self.lease.release()
-            if not self._observer_closed:
+            if not self._observer_closed and not self._observer_transferred:
                 self.owner_input.close()
                 self._observer_closed=True
             self.closed=True
 
     def snapshot(self):
         return dict(phase=self.phase,reason=self.reason,closed=self.closed,
-            leg_index=self.leg_index,leg_count=len(self.plan.declaration.legs),
+            leg_index=self.leg_index,leg_count=self.plan.declaration.target_count,
+            target_kind=self.root.stage.kind,terminal_arrival_ready=self.terminal_arrival is not None,
             destination_id=self.root.leg.destination_id,section_index=self.section_index,
             section_count=None if self.sections is None else len(self.sections.guides),
             budget=self.root.snapshot(),completed_crossings=list(self.records),

@@ -122,6 +122,7 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
             self.zone_itinerary_owner = None
             self.zone_itinerary_run = None
             self._zone_itinerary_stopping = None
+            self._terminal_itinerary_finishing = None
             super().__init__(*args, **kwargs)
 
         def _supervised_job_names(self):
@@ -409,7 +410,7 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
                     # initial or destination navigation has released input.
                     self._zone_itinerary_stopping = dict(
                         record_id=root.declaration.record_id,
-                        leg=root.stage.leg_index+1, legs=len(root.declaration.legs),
+                        leg=root.stage.leg_index+1, legs=root.declaration.target_count,
                         stage='stopping', real_client_accepted=False)
             run = self.zone_itinerary_run
             if run is not None:
@@ -451,13 +452,66 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
                 self.emit('Zone itinerary complete · movement stopped.')
                 return result
 
+        def _finish_terminal_itinerary(self, run):
+            from .owner_itinerary_camp_arrival import continue_itinerary_camp_arrival
+            with self.g0_stop_lock:
+                owner=self.zone_itinerary_owner
+                if owner is None or self.zone_itinerary_run is not run:
+                    return None
+                if self._terminal_itinerary_finishing is not None:
+                    return None
+                finishing=object()
+                self._terminal_itinerary_finishing=finishing
+                journey=owner.journey
+                try:
+                    owner.check()
+                    if (run.phase!='terminal_ready' or run.busy or run.closed
+                            or self._terminal_itinerary_finishing is not finishing
+                            or owner.root.declaration.terminal_camp is None
+                            or owner.root.stage.kind!='terminal_camp'
+                            or run.root is not owner.root or run.journey is not journey):
+                        raise ValueError('Current terminal itinerary arrival required')
+                    token=run.transfer_terminal_arrival(candidates=run.candidates)
+                    owner.check()
+                    # Descriptor/queue callbacks in the final owner check may
+                    # change the game process. Take its live identity afterward,
+                    # then compare volatile owner fields before detaching.
+                    queue_empty=self.jobs.empty()
+                    window=window_identity(self.gate,require_focus=True)
+                    owner.root._assert_intact()
+                    if (self.zone_itinerary_owner is not owner or self.zone_itinerary_run is not run
+                            or self._terminal_itinerary_finishing is not finishing or owner.closed
+                            or self.journey is not journey or run.terminal_transfer is not token
+                            or not run.closed or run.phase!='terminal_transferred'
+                            or window!=owner.window or self.gate is not owner.gate
+                            or self.sender is not owner.sender or self.sender.ui is not owner.ui
+                            or self.live_zone_tracker is not owner.tracker or owner.tracker.reader is not owner.reader
+                            or self.cancel_generation!=owner.generation or self.stopping or self.cancelled
+                            or settings_identity(self.settings)!=owner.settings or not queue_empty):
+                        raise ValueError('Terminal itinerary ownership changed during input transfer')
+                    # The provisional camp monitor already owns cleanup. The
+                    # existing camp-start stop may now advance one generation;
+                    # no retired itinerary callback is used after detachment.
+                    self.zone_itinerary_run=None
+                    self.zone_itinerary_owner=None
+                    owner.closed=True
+                    return continue_itinerary_camp_arrival(self,token,clock)
+                except BaseException as error:
+                    if self.journey is journey:
+                        self.stop_action('Terminal camp handoff stopped: '+str(error))
+                    raise
+                finally:
+                    if self._terminal_itinerary_finishing is finishing:
+                        self._terminal_itinerary_finishing=None
+
         def autopilot_payload(self):
             data = super().autopilot_payload()
             owner = self.zone_itinerary_owner
             if owner is not None and owner.root is not None:
                 root = owner.root
                 data['zone_itinerary'] = dict(record_id=owner.plan.declaration.record_id,
-                    leg=root.stage.leg_index+1, legs=len(root.declaration.legs), stage=root.stage.phase,
+                    leg=root.stage.leg_index+1, legs=root.declaration.target_count, stage=root.stage.phase,
+                    target_kind=root.stage.kind,
                     budget=root.snapshot(), real_client_accepted=False)
             if self._zone_itinerary_stopping is not None and self._navigation_busy():
                 data.update(zone_itinerary=dict(self._zone_itinerary_stopping),
@@ -468,6 +522,10 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
             return data
 
         def autopilot_tick(self, now):
+            # No navigation or combat tick may run inside final camp adoption.
+            # Owner stop handlers remain independent and invalidate that handoff.
+            if self._terminal_itinerary_finishing is not None:
+                return None
             self._cleanup_zone_itinerary()
             result = super().autopilot_tick(now)
             owner = self.zone_itinerary_owner
@@ -483,6 +541,8 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
                     run.tick()
                     if run.phase == 'complete':
                         self._finish_zone_itinerary(run)
+                    elif run.phase == 'terminal_ready':
+                        self._finish_terminal_itinerary(run)
                 elif not self._navigation_busy() and not owner.starting:
                     self.stop_action('Itinerary child stopped before its next checked handoff')
             except BaseException as error:
