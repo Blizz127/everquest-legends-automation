@@ -1,6 +1,11 @@
 """Opt-in retained owner path on a new private Xvfb and anonymous input pipe.
 
-Run with EQL_TEST_PRIVATE_XVFB=1. This starts only its own X server, never a
+Run with EQL_TEST_PRIVATE_XVFB=1. The default records outer pulse receipts and
+errors, plus the focus-loss injection. EQL_TEST_XVFB_PROFILE=1 enables detailed
+callback profiling, which adds work inside the existing deadlines. Reports
+identify instrumentation_mode as "unprofiled" or "profiled".
+
+This starts only its own X server, never a
 client/helper application or device. Window/PID/focus/grabs are real Xlib calls;
 terrain, game logs, physical feedback, owner input and gauges remain synthetic.
 The F8 case calls the actual handler, not the X hotkey event dispatcher.
@@ -39,6 +44,8 @@ def private_xvfb(tmp_path, monkeypatch):
     server = connection = gate = None
     windows = []
     report = dict(synthetic=True, real_client_accepted=False, real_input_device=False,
+                  instrumentation_mode=('profiled' if os.environ.get('EQL_TEST_XVFB_PROFILE') == '1'
+                                        else 'unprofiled'),
                   gate_backend='retained WindowGate / private Xvfb',
                   gauges='synthetic', owner_input='synthetic clear samples')
     started = time.monotonic()
@@ -146,7 +153,77 @@ def actual_owner(tmp_path, retained, monkeypatch, private_xvfb):
         generator.close()
 
 
-def _instrument(h, monkeypatch, scene, *, lose_focus):
+def _instrument_unprofiled(h, monkeypatch, scene, *, lose_focus):
+    """Unprofiled control: only outer receipts and the existing focus injection."""
+    import eql_automation.uinput_watchdog as watchdog
+    pulses, active, focused_lost = [], [], []
+    e = h.engine
+
+    def phase():
+        if e.supervised_motion is not None:
+            return 'initial_calibration'
+        if e.source_crossing_run is not None:
+            return 'source_crossing'
+        if e.section_run is not None:
+            return 'walking_section'
+        if e.route_trial is not None:
+            return 'initial_source_route'
+        return 'other'
+
+    if lose_focus:
+        read_status = watchdog._read_status
+        def focus_after_down(*args, **kwargs):
+            value = read_status(*args, **kwargs)
+            # Both motion/source selectors add the selected key to sender.held
+            # before GO; this identifies the same first movement DOWN without
+            # wrapping select_after_ready or should_stop.
+            if (value == 'DOWN' and not focused_lost
+                    and h.sender.held.intersection((103, 105, 106))):
+                scene.lose_focus()
+                focused_lost.append(time.monotonic())
+                if active:
+                    active[-1]['focus_lost_at'] = focused_lost[-1]
+                assert not h.gate.focused() and not h.gate.controls_ready()
+            return value
+        monkeypatch.setattr(watchdog, '_read_status', focus_after_down)
+
+    run = watchdog._run_pulse
+    def outer_pulse(fd, key, seconds, **kwargs):
+        record = dict(phase=phase(), key_code=key, requested_seconds=seconds,
+                      started_at=time.monotonic())
+        pulses.append(record)
+        active.append(record)
+        try:
+            receipt = run(fd, key, seconds, **kwargs)
+            if receipt is not None:
+                record.update(receipt=vars(receipt).copy(), key_code=receipt.key_code,
+                              requested_seconds=receipt.requested_seconds)
+            return receipt
+        except BaseException as error:
+            record['error'] = type(error).__name__+': '+str(error)
+            if hasattr(error, 'timing'):
+                record['permit_timing'] = dict(error.timing)
+            if hasattr(error, 'receipt'):
+                receipt = error.receipt
+                record.update(receipt=vars(receipt).copy(), key_code=receipt.key_code,
+                              requested_seconds=receipt.requested_seconds)
+            elif key is None:
+                held = h.sender.held.intersection((103, 105, 106))
+                if len(held) == 1:
+                    record['key_code'] = next(iter(held))
+            raise
+        finally:
+            record['finished_at'] = time.monotonic()
+            active.pop()
+    monkeypatch.setattr(watchdog, '_run_pulse', outer_pulse)
+    scene.report.update(pulses=pulses, focus_lost_at=focused_lost,
+        instrumentation='unprofiled: outer pulse receipt/error and focus DOWN hook only',
+        source_cancellations=[], source_boundaries=[],
+        source_cancellations_recorded=False, source_boundaries_recorded=False)
+    return pulses, focused_lost
+
+
+def _instrument_profiled(h, monkeypatch, scene, *, lose_focus):
     """Inclusive callback totals and child timestamps, without replacing guards."""
     from eql_automation.owner_zone_itinerary import _ItineraryOwner
     from eql_automation.source_motion import SourceReceiptLedger
@@ -302,6 +379,12 @@ def _instrument(h, monkeypatch, scene, *, lose_focus):
                         inclusive_times_overlap=True, focus_lost_at=focused_lost,
                         source_cancellations=cancellations, source_boundaries=boundaries)
     return pulses, focused_lost
+
+
+def _instrument(h, monkeypatch, scene, *, lose_focus):
+    if os.environ.get('EQL_TEST_XVFB_PROFILE') == '1':
+        return _instrument_profiled(h, monkeypatch, scene, lose_focus=lose_focus)
+    return _instrument_unprofiled(h, monkeypatch, scene, lose_focus=lose_focus)
 
 
 @pytest.mark.parametrize('case', ('focus_loss', 'first_crossing_f8', 'ordinary_source'))
