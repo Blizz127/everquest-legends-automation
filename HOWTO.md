@@ -5,7 +5,10 @@
 > This development build has not been installed on Alienware. The last recorded
 > installed helper remains **0.39.41 / runtime 0.42.87**, described below.
 > Full 1–50 automation remains unfinished; real routes and server arrivals remain
-> unverified. STATUS.md records the current test results and limitations.
+> unverified. With synthetic game feedback, an unprofiled private-display test
+> reaches the first crossing and releases for assist. Profiled runs still hit
+> input deadlines. This preview has no accepted real-client itinerary run.
+> STATUS.md records the test results and next work.
 
 In **Travel and camp test**, select **Butcherblock → Greater Faydark → Clan
 Crushbone…** to open the separate itinerary dialog. It starts near Goblin Camp

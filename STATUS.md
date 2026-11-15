@@ -1,5 +1,64 @@
 # STATUS
 
+Updated 2026-11-15 15:54 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
+
+- **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,
+  XP, XP/hour, deaths and camp remain unknown. No accepted hands-off 1–50 run.
+- Development source **0.42.95**, runtime commit `a7350a0`, adds a pinned lazy
+  Butcherblock → Greater Faydark → Clan Crushbone provider and a separate itinerary control in local preview
+  **0.39.43**. Two crossings and ten walking sections share one root budget.
+  The fixed maximum is 5 hours 28 minutes, not an estimated travel time.
+  Final arrival stops without camping. New geometry and movement measurements
+  remain required after crossing; actual server arrivals are unverified.
+- **VERIFIED:** frozen local suite **422 passed**, zero failures/errors/skips,
+  in 307.39 seconds; all source/test hashes remained unchanged during the run.
+  This includes the unchanged probe deadline test, two synthetic complete
+  crossing itineraries, provider/owner tests and both GUI builds. Two local timing
+  cases were excluded; target-host owner-path coverage is recorded below. Receipt SHA
+  `a6023e7552d35f5134c229cbba2dffd5e9bfc0495ccd072afc13c31fd72be389`.
+- **VERIFIED private-window comparison:** one unprofiled run passes **3 tests**
+  in 38.56 seconds with identical runtime bytes, deadlines and case assertions.
+  The itinerary completes seven calibration, five source and three crossing
+  movements, reaches the first handoff and releases for F8 assist. Ordinary
+  movement and focus-loss cleanup pass; focus-change-to-UP is 1.865 ms. All new
+  Xvfb processes are reaped. Receipt SHA
+  `cb7e56df2b8f31257f7aa75d4255420837a40d5a27feb2c9098cd2b53aa9c410`.
+  Game data/feedback and physical input remain synthetic; this is no live run.
+- **Timing limitation:** profiled run7 remains **2 passed, 1 failed**. Its
+  itinerary final check takes 50.757 ms with 35.009 ms left on the unchanged
+  50 ms permit, so no source DOWN occurs. The harness adds 155,217 timed wrapper
+  calls. The single unprofiled success cannot separate profiling overhead from
+  host variability. Profiled failures remain recorded; real compositor/load
+  tolerance and the complete two-crossing owner trip remain unverified.
+- **VERIFIED local artifact:** final preview 0.39.43 is sealed under
+  `~/.local/share/eql-automation/owner-build-drafts/0.39.43-astra-final-docs-7_85klw4/`.
+  All 273 pins pass the current entry's verifier. Its GUI/runtime bytes exactly
+  match the artifact that passed 35 GUI scenarios; only HOWTO and derived
+  checksums changed. That GUI evidence is retained with provenance. Receipt SHA
+  `43f4f9b116255dc0dc3ea5680f79c54b15df752fb7123ce91caa8247b9927a36`.
+  It explicitly records no accepted real-client itinerary run. Test commit
+  `3dbd0e0` makes the executed lightweight harness reproducible by default;
+  detailed profiling remains optional. Runtime bytes are unchanged.
+- Stop status retains the active leg and “Releasing movement” until navigation
+  is idle. F8 waits for input release before assist; F9/F11 stop the trip. The
+  separate dialog requires both existing supervision declarations and does not
+  inherit the ordinary selector or next-camp checkbox.
+- **No deployment or game input.** Last recorded installed helper remains
+  **0.39.41 / source 0.42.87**. Private tests use synthetic game logs/geometry,
+  anonymous input pipes and new private Xvfb windows. No character, prefix/install,
+  Lutris, credentials, existing display/server or agent-config changes; no push.
+  Other sessions remain untouched.
+- **Next:** add a distinct typed terminal Slave Mines camp after fresh
+  Crushbone preparation, keeping the current trip's stop behavior. Use the
+  lightweight harness for timing; any admission redesign must preserve final
+  live-process checks in section, crossing and destination scopes. The production
+  stationary camp still stops at level 20. Loot/vendor/death/relogin execution,
+  later-zone routes and hands-off 1–50 acceptance remain incomplete. The previously
+  reported official-service rule conflict still prevents a permitted live
+  acceptance path; independent offline work continues.
+
+## Prior status
+
 Updated 2026-11-15 15:18 UTC by `codex-everquest-legends-astra` on `carbon/continue`.
 
 - **Working; goal not met. G0 remains passed; do not repeat it.** Actual level,

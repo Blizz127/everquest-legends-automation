@@ -1,5 +1,192 @@
 # FINDINGS
 
+## 2026-11-15 — pinned itinerary preview and measured input timing (0.42.95)
+
+VERIFIED the final frozen local suite passes **422 tests** in 307.39 seconds,
+zero failures/errors/skips, against `a7350a0`; source and test bytes stayed
+unchanged. It includes the unchanged probe deadline case and two full synthetic
+crossing itineraries. Two timed retained-owner cases were excluded from this
+local batch for separate target-host coverage. Receipt
+`eql-0.42.95-astra-final-a.json` SHA
+`a6023e7552d35f5134c229cbba2dffd5e9bfc0495ccd072afc13c31fd72be389`;
+JUnit SHA `1c2ddd5981208f9dff37ce2810d8e92c3325c8e66dd688e7dabafe5440038ce5`;
+source-manifest SHA
+`4de11053d2797cf2e4bb4e8fa0d476832774f43b1393966b9ba4d4f8db8738b2`.
+
+VERIFIED one controlled **unprofiled** target-host comparison passes **3 tests**
+in 38.56 seconds. All production files match run7; only the private test's
+`_instrument` function changed. Outside-function bytes and AST, fixture state,
+case assertions and deadlines match exactly. It completes seven calibration,
+five source and three crossing movement receipts, adopts the first destination
+handoff, and releases before the actual F8 handler enters assist. Ordinary source
+movement and focus-loss cleanup also pass; focus injection still occurs only
+after the actual DOWN acknowledgment, and X focus change to UP takes 1.865 ms.
+All private Xvfb processes were reaped. This proves that isolated fixture path,
+not a real game crossing or a complete two-crossing owner trip.
+
+The unprofiled comparison removes gate/owner/policy counters and selection/stop
+profiling wrappers. It retains outer receipt/error capture and the exact DOWN
+focus hook. One success cannot attribute all observed variance to the profiler.
+The profiled failures below remain valid evidence. Private artifact prefix
+`eql-0.42.95-astra-owner-xvfb-run8-unprofiled-`:
+
+- Result SHA `cb7e56df2b8f31257f7aa75d4255420837a40d5a27feb2c9098cd2b53aa9c410`.
+- Summary SHA `bc98f3242df5db9510542bcf37b9be3d0d619f4435432d57b83ebdc39a5084d3`.
+- Instrumentation patch SHA
+  `f09c6eab86a2bab9f92e87d2b5d8c419b5295d1cf4b0b8e412ef0d85ac329bf4`.
+- Executed private test SHA
+  `bc0a735a7ca6380c80595507ad503334a3fb65188878f8e641b1cb5e5c3080b0`;
+  original profiled test SHA
+  `d83e02a3015bf276ae581767f87f5e1f86608a962763ae5cb40d350e75d9d334`.
+
+VERIFIED the executed unprofiled body is now the default opt-in fixture in
+commit `3dbd0e0`. `EQL_TEST_PRIVATE_XVFB=1` enables the isolated test;
+`EQL_TEST_XVFB_PROFILE=1` additionally enables the preserved detailed profiler.
+Reports identify their instrumentation mode. Normalized function ASTs match the
+executed private body and the original profiled body respectively; all assertion
+and lifecycle ASTs are unchanged except report metadata. The dispatcher passed
+five flag cases. Verification artifact
+`eql-0.42.95-astra-owner-xvfb-promotion-check.json` SHA
+`c0e2b9aa156b993a75b5b127de7852a27b404973566445f37763f8d6f35f7d9d`.
+New test-file SHA
+`3f2b53a4778e49da3e453f13777a6874fb6a6828194ff74d117ab97462f9b756`.
+This is the sole Python file changed after the frozen 422-case run; that batch
+excluded this separately exercised test. All runtime and selected-test hashes
+still match. No additional remote run followed the successful comparison.
+
+OBSERVED source 0.42.95 adds `load_owner_zone_itinerary` and local preview
+0.39.43. The separate Butcherblock → Greater Faydark → Clan Crushbone action
+requires both supervision declarations, posts one exact itinerary request and
+shows the current leg/stage. Cancellation retains “Releasing movement” until
+navigation releases its input. Final arrival stops without camping. Ordinary
+single-destination controls and assist remain separate. No helper was deployed.
+
+VERIFIED final local artifact:
+`~/.local/share/eql-automation/owner-build-drafts/0.39.43-astra-final-docs-7_85klw4/preview`.
+The actual current entry's verifier accepts all 273 pins (245 runtime files).
+All runtime, provider and patched GUI bytes exactly match the prior artifact;
+only HOWTO differs in the source manifest, and the entry changes only its manifest
+literal. Builder, entry template and GUI test bytes are unchanged. Its receipt
+reuses the exact 35-scenario GUI evidence with this provenance and claims no new
+GUI run. The earlier artifact test passed in 3.22 seconds, with engine
+construction forbidden; main and dialog screenshots are retained and readable.
+The earlier artifact remains under `0.39.43-astra-final-fotrhx1g`, receipt SHA
+`903a8f641a3c7099ccc19fa7a96d3755e8d4d662aeebe53c315ebd0f7eef7f10`.
+
+Final build HEAD is `3dbd0e0`; runtime source is unchanged from `a7350a0`.
+All 245 runtime hashes match both canonical and unprofiled target-host manifests.
+Final receipt SHA
+`43f4f9b116255dc0dc3ea5680f79c54b15df752fb7123ce91caa8247b9927a36`;
+source-manifest SHA
+`a210dbed43e58a8102c4c850c09be8a6ab94df0a80da384f0cb527b48de802c0`;
+entry SHA `9c7267c1307499d294d96de1f25b3cac5bf123a2a6ae3cdf961367e142576cb8`;
+BUILD_INFO SHA `e616ee318dd290e50e39adf047587e5a6d0f361dca6df197052f2ed57fd39137`;
+HOWTO SHA `8c4a496e2dd6a00e2125cc787a7c8a63debd84690d69c83553a3beca6ba4b0e7`.
+The sealed receipt records canonical and unprofiled successes, the profiled
+failure, `movement_ready=false` and `real_itinerary_acceptance=false`.
+
+VERIFIED the provider checks copied catalog, guide, partition and crossing pins
+without constructing native geometry. It lazily loads each destination under the
+same pinned owner, reader and root. The profile contains two Butcherblock and
+eight GFay walking sections. Its original fixed limits are 19,680 seconds,
+36,014 pulses, 7,202.8 seconds of held input and 120,051.8 displacement reserve;
+these are conservative accounting caps, not route duration or movement evidence.
+Motion bounds remain explicitly unmeasured hypotheses. The entry wires this
+provider; other factory callers still opt in explicitly.
+
+VERIFIED the new opt-in `tests/test_owner_itinerary_xvfb.py` exercises the actual
+retained `WindowGate`, Xlib process/window/focus reads and passive grabs using a
+new private Xvfb on Alienware. It drives anonymous input pipes and synthetic
+logs, geometry, gauges and physical-input samples. It never starts the game,
+installed helper or an input device. Each bounded low-priority run records
+source hashes, pulse timing, callback counts and cleanup; timeout cleanup targets
+only each new Xvfb PID plus its original process start tick. All recorded private
+displays were reaped. This is fuller input-path evidence than the previous
+lambda-gate tests, not real-client or actual compositor acceptance.
+
+OBSERVED the full itinerary still fails its first-crossing/F8 assertion because
+of the unchanged 50 ms DOWN permit. Run7 gives **2 passed, 1 failed**: ordinary
+source accepts a 100.551 ms released pulse, and focus-loss cleanup passes; the
+itinerary refuses before its first source DOWN. At selection it has 35.009 ms
+left, but the final check takes 50.757 ms. The current location is still fresh at
+277.625 ms. All cleanup assertions pass. Run5 accepted one itinerary source pulse
+but refused the second. No profiled run proves this itinerary can complete its first
+crossing with the real window gate; the separate unprofiled comparison above does.
+
+VERIFIED repeated read-only validation was reduced while retaining final owner,
+focus, input, log, model, reference and reservation checks. Source binding now
+checks scope after lease callbacks; source-current checking retains the final
+full physical/log check; geometry preparation uses sender/ledger checks before
+the existing READY/select/GO/hold/release scene checks. The observer retains its
+post-clock binding. Policy retains its full owner check after focus. Root
+accounting keeps one owner binding between two clocks, includes its elapsed time
+in the original deadline, and retains the owner's separate final real window
+check. Cancellation/reentry remain sticky. No time limit was widened or ticket
+renewed. Final pre-GO root binding counts fell, but X query latency still varies;
+these reductions alone have not established a passing itinerary path.
+
+Private reports under `~/.local/share/eql-automation/releases/` preserve failures
+as well as improvements:
+
+- `eql-0.42.95-astra-owner-xvfb-run4-result.json`, SHA
+  `b4622633a0870bde1a8a3a86176e931eab0065f22a09c85727b6e69490e633e2`.
+- `eql-0.42.95-astra-owner-xvfb-run5-result.json`, SHA
+  `1d99cce5da73fb46738bec45ebfc36e59d67f118ecbda4bd9436c681a424ad12`.
+- `eql-0.42.95-astra-owner-xvfb-run6-result.json`, SHA
+  `cc3d4ef2103c38044a10614f41afa4cf7c63cc556663b5c0534d6fc0ba164e90`.
+- `eql-0.42.95-astra-owner-xvfb-run7-result.json`, SHA
+  `c9cb8b6f2b7995280d4ebf26c01845948c9e5ce62061973548bda6edce8b703c`.
+  Boundary-table SHA
+  `cdcaa99ef544923a3104f961140b7fe3fa9d9886f4bf44845372ca539941995a`.
+
+OBSERVED one local probe negative test rejected before its deliberate delayed-GO
+hook: root's latest permitted DOWN was already 4.314 ms past at authorization.
+The changed source policy ran zero times in that test body. A clean process
+using the original source-policy and root methods passed with 23.254 ms left;
+the test is sensitive to preparation timing on the devbox. The unchanged
+assertions require a selected root-clipped permit and no DOWN. Both diagnostic
+outcomes are retained; the initial broad batch was 140 passed, one failed, two
+deselected. Diagnostic receipt SHA
+`5a17e758a5a2999aa407b5bf63ccfaef2aba71c7f7bdc22fc3473654236693ea`;
+pinned baseline receipt SHA
+`1b9e99535c84e7f2da614be5def567beba68fdae060e7ba25f5b2bccaf897337`.
+A separate local owner batch was 118 passed and one crossing-permit timing
+failure. Its interrupted repeat is not a test result. Target-host evidence above
+remains the complete real-window check.
+
+OBSERVED the profiling harness made 155,217 timed wrapper calls in run7.
+Four root source observations had identical call counts yet took 16.539, 12.210,
+12.298 and 38.052 ms. This suggests query/scheduling variation; the existing
+record cannot separate Xlib Python CPU from X-server wait time or establish the
+profiler's own overhead. The earlier single-window microbenchmark also has fewer
+X replies per identity read than this EQ-plus-neutral-window fixture. The separate unprofiled comparison above passes; one comparison cannot attribute
+all cost or variance to either production or instrumentation.
+
+INFERRED performance redesign must preserve late live-process checks. Root-only
+accounting cannot simply omit window reads: section continuation bindings and
+first-crossing owner bindings are structural, and destination runtime checks its
+full owner before later root callbacks. Those paths currently rely on the root
+for a later live-process read. Scoped deferral would need a one-use capability at
+the exact root binding callsite; an ambient flag can be borrowed reentrantly and
+would save only about one fifth of the observed identity queries. A broader
+alternative is a non-authorizing immutable movement intent: reserve budgets,
+complete all callback-bearing checks, then consume the intent once in a closed
+finalizer to mint a new 50 ms ticket. This requires coordinated ledger, policy,
+budget and watchdog work. Retimestamping an existing ticket or merely moving the
+last stop check earlier is unsafe. No such redesign is implemented in 0.42.95.
+
+INFERRED next functional extension: a distinct typed terminal Slave Mines camp
+can reuse the existing cross-zone transfer, fresh destination bootstrap and
+source-step controller. It must branch before final observer closure and make
+an explicit one-use camp handoff; ordinary cancellation destroys the completed
+source provenance. The copied Slave Mines guide file is present, SHA
+`88aecac52585363add569d3f66ed9ba19921725e81e3a1626e96c50cfdc847e7`,
+with 1,046 walking operations and seven steps. Its start is not a verified server
+spawn. No terminal camp extension is implemented in this release. The production
+camp still caps at level 20; later routes, spell buying/scribing, loot/vendors,
+death recovery and relogin execution remain incomplete. Actual level/XP/XP-hour,
+deaths and camp are unknown. The real 1–50 goal remains unmet; G0 stays passed.
+
 ## 2026-11-15 15:18 UTC — one owner itinerary across fresh destination scopes (0.42.94)
 
 VERIFIED the final local suite passes **390 tests** in 574.46 seconds, with zero
