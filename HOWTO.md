@@ -1,14 +1,78 @@
 # EverQuest Legends automation — current owner guide
 
-> **Local preview 0.39.44 / source 0.42.96 (`carbon/continue`):** Separate
-> itinerary controls either stop in Clan Crushbone or continue to Slave Mines
-> and start a stationary camp.
+> **Local preview 0.39.45 / source 0.42.97 (`carbon/continue`):** A separate
+> early-camp progression starts near Newbie Hills, moves to Goblin Camp after
+> an observed level-up and recovery, then can cross Greater Faydark and
+> Crushbone to finish at Slave Mines. The two existing itinerary actions remain.
 > This development build has not been installed on Alienware. The last recorded
 > installed helper remains **0.39.41 / runtime 0.42.87**, described below.
 > Full 1–50 automation remains unfinished; real routes, server arrivals and camp
 > suitability remain unverified. This preview has no accepted real-client
-> itinerary or terminal-camp run and has not been deployed.
+> itinerary, terminal-camp or camp-progression run and has not been deployed.
 > STATUS.md records the test results and next work.
+
+In **Travel and camp test**, select **Newbie Hills → Goblin Camp → Greater
+Faydark → Crushbone → Slave Mines…** for the new progression. Start near
+Newbie Hills in Butcherblock with a configured **integer level 1–4**. The
+button and provider enforce that range, and the dialog rechecks it when Start
+is accepted. This action has its own route and continuation choice, independent
+of the ordinary destination selector and next-camp checkbox.
+
+First test the configured `/location` hotbutton. Close the map and chat,
+clear the target, turn native melee off and stand on clear, flat, open ground.
+Check both **The starting area is clear, flat and open.** and **I will supervise
+every camp, departure, crossing and new movement measurement.** Then choose
+**Start supervised camp progression** and focus the game during the four-second
+countdown. Seven short motion probes follow. Cancelling sends no request.
+
+The first trip reaches Newbie Hills and starts a fresh stationary camp.
+A newly observed level in **5–8** supports the move to Goblin Camp after
+recovery. The next departure requires a fresh **level 9 or 10** observed while
+that Goblin camp is active, completed recovery and fresh stopped-position
+checks. Changing the configured level alone never supplies either departure.
+The Goblin departure measures movement again, crosses Greater Faydark and
+Crushbone, then follows the checked approach and conditional steps to Slave
+Mines. New zones require fresh position, floor, height and movement observations.
+Each new camp prepares learned spells and requires observed NPC names and
+fresh target checks.
+
+Only **navigation from Goblin Camp onward** has the **6 hour 15 minute maximum**.
+This is not an ETA or a time limit for the entire progression: it excludes the
+initial Newbie Hills approach, Newbie Hills-to-Goblin travel and all camping
+time. Earlier trips and stationary camps retain their existing limits. At
+Slave Mines, the finite progression intent is consumed; stationary camping
+stops at **observed level 20** or a failed check. There is no later automatic
+relocation. These level gates and copied camp hints do not establish actual
+camp suitability or a verified route through levels 1–20 or 1–50.
+
+Both badges show **PROGRESSION TEST** while this intent is active, with the
+camp or current onward leg and stage. **Stop progression · F11**, **F9**, or
+**Stop autopilot** cancels it. **F8** requests assist after movement and input
+cleanup finish; **Releasing movement** remains visible while cleanup is pending.
+After the terminal camp starts, the usual **CAMP TEST** display returns. Assist
+keeps movement and targeting with the owner. F7 remains the assist toggle,
+F10 remains heal, and F12 remains disabled. No restart or re-login is needed.
+
+An explicitly configured development engine receives:
+
+```python
+engine.post('camp_progression', {
+    'progression_id': 'butcher-newbie-goblin-slave-mines',
+    'open_flat_clear': True,
+    'owner_supervised_continuation': True,
+})
+```
+
+The 0.39.45 entry first constructs the existing journey engine with its
+itinerary provider, then wraps that class with
+`make_camp_progression_engine(..., clock=time.monotonic)`. The finite progression
+is distinct from the original optional next-camp setting. Its navigation budget
+starts before Goblin's departure probes and persists through both crossings.
+The original Journey, physical-input observer and hazard history remain
+continuous. Completion spends the progression intent without changing the
+original continuation choice. Further level-ups cannot start another trip
+from that consumed intent. STATUS.md records the isolated synthetic validation;
+those tests establish no real-client travel or level gains.
 
 In **Travel and camp test**, both itinerary actions start near Goblin Camp in
 Butcherblock. Each opens its own dialog and uses a fixed route. The ordinary
@@ -75,7 +139,7 @@ engine.post('zone_itinerary', {
 ```
 
 Use `itinerary_id='butcher-gfay-crushbone'` with the same two declarations for
-the unchanged stop-only request. The 0.39.44 entry wires the same
+the unchanged stop-only request. The 0.39.45 entry retains the same
 `load_owner_zone_itinerary` provider into
 `make_owner_journey_engine(zone_itinerary_provider=...)`. Other callers must
 supply that optional provider explicitly. It checks the copied catalog, guide,
@@ -95,7 +159,7 @@ the unprofiled private-display checks reached the first crossing and released
 for assist, while a profiled run still hit an input deadline. That evidence
 does not establish actual client travel or the new terminal-camp route.
 
-The ordinary choices introduced in 0.39.42 remain available in 0.39.44 under
+The ordinary choices introduced in 0.39.42 remain available in 0.39.45 under
 **Travel and camp test**:
 
 | Start | Destination choices | Result |
@@ -116,9 +180,9 @@ suitability remain unverified.
 For a **local build only**, from this checkout (use a new output directory):
 
 ```bash
-python3 tools/build_nov12_preview_03944.py \
+python3 tools/build_nov12_preview_03945.py \
   --source "$HOME/.local/share/eql-automation/owner-assist/0.39.13" \
-  --output "$HOME/.local/share/eql-automation/owner-build-drafts/0.39.44-local"
+  --output "$HOME/.local/share/eql-automation/owner-build-drafts/0.39.45-local"
 ```
 
 This creates a separate pinned preview from the retained helper; it does not

@@ -1,0 +1,242 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -103,6 +103,53 @@
+ 
+ def terminal_itinerary_level_allowed(level):
+     return type(level) is int and 1 <= level < 20
++
++
++def owner_camp_progression_help():
++    """Explain the explicit early-camp progression without loading game assets."""
++    from eql_automation.owner_camp_progression_assets import CAMP_ORIGIN_MAXIMUM_SECONDS
++    minutes = int((CAMP_ORIGIN_MAXIMUM_SECONDS + 59) // 60)
++    hours, minutes = divmod(minutes, 60)
++    duration = f"{hours} hours {minutes} minutes" if hours else f"{minutes} minutes"
++    return ("Start near Newbie Hills in Butcherblock with configured level 1–4. Travel to Newbie Hills and camp. "
++            "A newly observed level 5 supports the move to Goblin Camp after recovery. A fresh level 9 or 10 "
++            "observed while camping at Goblin Camp can then start travel through Greater Faydark and Crushbone "
++            "to Slave Mines after recovery. Changing the configured level alone never starts these departures. "
++            "Each arrival prepares learned spells again and uses observed NPC names with fresh target checks. "
++            "New destination measurements and checked steps are required during travel. At Slave Mines, the "
++            "progression ends in stationary camping, which stops at observed level 20; there is no further relocation. "
++            f"Only navigation from Goblin Camp onward is capped at {duration}. This is not an ETA or a limit "
++            "for the whole progression: it excludes the initial Newbie Hills approach, the later travel to Goblin "
++            "Camp and all camping time. "
++            "The ordinary next-camp checkbox does not select or change this progression. "
++            "Real routes, camp suitability and level gains remain unverified; this is not verified 1–50 automation. "
++            "Stay present. F8 switches to assist after movement releases; F9/F11 stops.")
++
++
++def camp_progression_level_allowed(level):
++    return type(level) is int and 1 <= level <= 4
++
++
++def owner_camp_progression_progress(autopilot):
++    progression = autopilot.get("camp_progression")
++    if not isinstance(progression, dict):
++        return None
++    if autopilot.get("state") == "stopping" or progression.get("phase") in {"stopping", "cancelled", "stopped"}:
++        return "Releasing movement"
++    phase = progression.get("phase")
++    if phase in {"consumed", "terminal_camp"}:
++        return None
++    itinerary = owner_itinerary_progress(autopilot)
++    if itinerary is not None:
++        return "Goblin onward · " + itinerary
++    if phase == "newbie_camp" and (autopilot.get("journey_phase") in {"camp_section_handoff", "camp_walking_sections"}
++            or autopilot.get("journey_destination_id") == "goblin-camp"):
++        return "Travel to Goblin Camp"
++    return {"newbie_request": "Travel to Newbie Hills",
++            "newbie_camp": "Newbie Hills camp · observed level 5 departure after recovery",
++            "goblin_camp": "Goblin Camp · observed level 9 or 10 departure after recovery",
++            "origin_claimed": "Measuring departure from Goblin Camp",
++            "navigating": "Travel to Slave Mines"}.get(phase, "Early camp progression")
+ 
+ 
+ def owner_itinerary_progress(autopilot):
+@@ -304,16 +351,20 @@
+             layout.addWidget(subtitle)
+             banner = QFrame()
+             banner.setObjectName("banner")
+-            banner_layout = QHBoxLayout(banner)
++            banner_layout = QVBoxLayout(banner)
++            banner_layout.setSpacing(6)
+             banner_layout.setContentsMargins(16, 14, 16, 14)
+             self.state_badge = QLabel("●  MEASUREMENT ONLY" if measurement_only else "●  ASSIST OFF")
+             self.state_badge.setObjectName("state")
++            self.state_badge.setWordWrap(True)
+             banner_layout.addWidget(self.state_badge)
+-            banner_layout.addStretch()
+-            banner_layout.addWidget(QLabel(
++            self.hotkey_legend = QLabel(
+                 "MEASUREMENT ONLY    F9/F11 STOP    COMBAT + LEVELING DISABLED" if measurement_only else
+                 "F6  PREPARE    F8  ON    F9  OFF    F7  ON/OFF    F10  HEAL    "
+-                "F11  CAMP TEST    F12  DISABLED"))
++                "F11  CAMP TEST    F12  DISABLED")
++            self.hotkey_legend.setObjectName("hotkeyLegend")
++            self.hotkey_legend.setWordWrap(True)
++            banner_layout.addWidget(self.hotkey_legend)
+             layout.addWidget(banner)
+             controls = QGridLayout()
+             self.character = QComboBox()
+@@ -475,6 +526,7 @@
+             column.setContentsMargins(12, 16, 12, 12)
+             self.ap_state = QLabel("●  MEASUREMENT ONLY" if measurement_only else "●  AUTOPILOT OFF")
+             self.ap_state.setObjectName("state")
++            self.ap_state.setWordWrap(True)
+             column.addWidget(self.ap_state)
+             self.ap_default_status = (
+                 "Only the G0 movement-stop check is available: one 0.15-second forward pulse. F9/F11 cancel."
+@@ -562,6 +614,16 @@
+             self.terminal_itinerary_help.setObjectName("terminalItineraryHelp")
+             self.terminal_itinerary_help.setWordWrap(True)
+             column.addWidget(self.terminal_itinerary_help)
++            self.camp_progression_start = QPushButton("Newbie Hills → Goblin Camp → Greater Faydark → Crushbone → Slave Mines…")
++            self.camp_progression_start.setObjectName("campProgressionButton")
++            self.camp_progression_start.setToolTip("Requires configured level 1–4. New observed levels trigger the supported departures; stationary camping ends at observed level 20. F8 assist; F9/F11 stop.")
++            self.camp_progression_start.setEnabled(camp_progression_level_allowed(self.settings.level))
++            self.camp_progression_start.clicked.connect(self.configure_camp_progression)
++            column.addWidget(self.camp_progression_start)
++            self.camp_progression_help = QLabel(owner_camp_progression_help())
++            self.camp_progression_help.setObjectName("campProgressionHelp")
++            self.camp_progression_help.setWordWrap(True)
++            column.addWidget(self.camp_progression_help)
+             column.addWidget(QLabel("Travel destination"))
+             self.source_destination = QComboBox()
+             self.source_destination.setObjectName("journeyDestinationBox")
+@@ -820,8 +882,9 @@
+                 return
+             state = autopilot.get("state", "off")
+             itinerary = owner_itinerary_progress(autopilot)
++            progression = owner_camp_progression_progress(autopilot)
+             if not measurement_only:
+-                busy = (bool(autopilot.get("journey_phase")) or itinerary is not None
++                busy = (bool(autopilot.get("journey_phase")) or itinerary is not None or progression is not None
+                         or state in ("running", "paused", "stopping") or self.last_state.get("active", False)
+                         or self.last_state.get("preparing", False))
+                 self.source_destination.setEnabled(not busy)
+@@ -829,14 +892,16 @@
+                 self.test_location_hotkey.setEnabled(not busy)
+                 self.zone_itinerary_start.setEnabled(not busy)
+                 self.terminal_itinerary_start.setEnabled(not busy and terminal_itinerary_level_allowed(self.settings.level))
+-                self.stationary_camp.setText("Stop travel  ·  F11" if itinerary is not None or autopilot.get("journey_phase") in
++                self.camp_progression_start.setEnabled(not busy and camp_progression_level_allowed(self.settings.level))
++                self.stationary_camp.setText("Stop progression  ·  F11" if progression is not None else
++                    "Stop travel  ·  F11" if itinerary is not None or autopilot.get("journey_phase") in
+                     {"setup", "travel", "handoff", "source_crossing_handoff", "source_crossing", "zone_itinerary"}
+                     else "Repeat stationary camp  ·  F11")
+                 self.refresh_destination_mode()
+-            badge = (state, autopilot.get("journey_phase"), autopilot.get("journey_destination_id"), itinerary)
++            badge = (state, autopilot.get("journey_phase"), autopilot.get("journey_destination_id"), itinerary, progression)
+             if badge != self.ap_badge:
+                 self.ap_badge = badge
+-                kind = ("ITINERARY TEST" if itinerary is not None else
++                kind = ("PROGRESSION TEST" if progression is not None else "ITINERARY TEST" if itinerary is not None else
+                         "TRAVEL TEST" if autopilot.get("journey_phase") in {"setup", "travel", "handoff", "source_crossing_handoff", "source_crossing"} else "CAMP TEST")
+                 label = {"running": "RUNNING", "paused": "PAUSED", "halted": "STOPPED", "stopping": "STOPPING"}.get(
+                     state, "IDLE" if measurement_only else "OFF")
+@@ -845,7 +910,9 @@
+                 if gfay_destination_help(destination) is not None:
+                     from eql_automation.source_destinations import destination_spec
+                     suffix = " · " + destination_spec(destination).label
+-                if itinerary is not None:
++                if progression is not None:
++                    suffix = " · " + progression
++                elif itinerary is not None:
+                     suffix = " · " + itinerary
+                 self.ap_state.setText(f"●  {kind} {label}{suffix}")
+                 self.ap_state.setStyleSheet({"running": "color: #7addac;", "paused": "color: #f5ca72;",
+@@ -855,7 +922,9 @@
+                         widget.setEnabled(state not in ("running", "paused", "stopping"))
+                     self.ap_locked.setVisible(state in ("running", "paused", "stopping"))
+             text = autopilot.get("phase") if state in ("running", "paused", "stopping") else autopilot.get("reason")
+-            if itinerary is not None and state in ("running", "paused", "stopping"):
++            if progression is not None:
++                text = progression + ". F8 switches to assist after movement releases; F9/F11 stops."
++            elif itinerary is not None and state in ("running", "paused", "stopping"):
+                 text = itinerary + ". F8 switches to assist after movement releases; F9/F11 stops."
+             if measurement_only and not text:
+                 # A refused start has no pilot/reason yet. Its engine status
+@@ -869,6 +938,13 @@
+             calibration = autopilot.get("calibration")
+             parts = [f"Zone: {guide.zone_long(zone) if guide and zone else zone or 'unknown'}",
+                      f"Position: {loc[0]:.0f}, {loc[1]:.0f}" if loc else "Position: —"]
++            if progression is not None:
++                ending = "Finish at Slave Mines · stationary camp stops at observed level 20 · no further relocation"
++                details = [progression, ending]
++                if autopilot.get("journey_phase") == "camp":
++                    details.append(autopilot.get("progress_summary") or f"Kills: {autopilot.get('kills', 0)}")
++                self.ap_info.setText("   ·   ".join(parts + details))
++                return
+             if itinerary is not None:
+                 ending = ("Slave Mines · prepare learned spells, then stationary camp · stops at observed level 20"
+                           if owner_terminal_itinerary_selected(autopilot) else "Finish in Clan Crushbone, then stop · no camp")
+@@ -983,6 +1059,43 @@
+                 description = gfay_destination_help(self.source_destination.currentData())
+                 if description is not None:
+                     self.travel_help.setText(description)
++
++        def configure_camp_progression(self):
++            from eql_automation.owner_camp_progression_assets import CAMP_PROGRESSION_ID
++            if (not self.camp_progression_start.isEnabled()
++                    or not camp_progression_level_allowed(self.settings.level)):
++                return
++            dialog = QDialog(self)
++            dialog.setObjectName("campProgressionDialog")
++            dialog.setMinimumWidth(660)
++            dialog.setWindowTitle("Newbie Hills → Goblin Camp → Slave Mines progression")
++            layout = QVBoxLayout(dialog)
++            text = QLabel(owner_camp_progression_help() + "\n\nFirst test your /location hotbutton with the map visible. "
++                          "Then close the map and chat, clear your target and turn melee off. "
++                          "Seven short calibration presses follow the four-second focus countdown.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            ground = QCheckBox("The starting area is clear, flat and open.")
++            ground.setObjectName("campProgressionGroundDeclaration")
++            supervision = QCheckBox("I will supervise every camp, departure, crossing and new movement measurement.")
++            supervision.setObjectName("campProgressionSupervisionDeclaration")
++            layout.addWidget(ground)
++            layout.addWidget(supervision)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Start supervised camp progression")
++            ok.setEnabled(False)
++            def ready():
++                ok.setEnabled(ground.isChecked() and supervision.isChecked())
++            ground.toggled.connect(ready)
++            supervision.toggled.connect(ready)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if (dialog.exec() == QDialog.DialogCode.Accepted and ground.isChecked() and supervision.isChecked()
++                    and self.camp_progression_start.isEnabled() and camp_progression_level_allowed(self.settings.level)):
++                self.post("camp_progression", dict(progression_id=CAMP_PROGRESSION_ID,
++                    open_flat_clear=True, owner_supervised_continuation=True))
+ 
+         def configure_terminal_itinerary(self):
+             from eql_automation.owner_zone_itinerary_assets import OWNER_TERMINAL_ITINERARY_ID
+@@ -1200,9 +1313,11 @@
+             camp_running = (state.get("autopilot") or {}).get("state") == "running"
+             journey_phase = (state.get("autopilot") or {}).get("journey_phase")
+             itinerary = owner_itinerary_progress(state.get("autopilot") or {})
+-            if (active, preparing, camp_running, journey_phase, itinerary) != self.badge:
+-                self.badge = (active, preparing, camp_running, journey_phase, itinerary)
++            progression = owner_camp_progression_progress(state.get("autopilot") or {})
++            if (active, preparing, camp_running, journey_phase, itinerary, progression) != self.badge:
++                self.badge = (active, preparing, camp_running, journey_phase, itinerary, progression)
+                 self.state_badge.setText("●  MEASUREMENT ONLY" if measurement_only else
++                                        "●  PROGRESSION TEST · " + progression if progression is not None else
+                                         "●  ITINERARY TEST · " + itinerary if itinerary is not None else
+                                         "●  TRAVEL TEST" if journey_phase in {"setup", "travel", "handoff", "source_crossing_handoff", "source_crossing"} else
+                                         "●  CAMP TEST" if camp_running else "●  ASSIST ON" if active else "●  PREPARING" if preparing else "●  ASSIST OFF")
+@@ -1336,6 +1451,10 @@
+                     "terminal_itinerary_button_enabled": window.terminal_itinerary_start.isEnabled(),
+                     "terminal_itinerary_button_text": window.terminal_itinerary_start.text(),
+                     "terminal_itinerary_help": window.terminal_itinerary_help.text(),
++                    "camp_progression_button_visible": window.camp_progression_start.isVisible(),
++                    "camp_progression_button_enabled": window.camp_progression_start.isEnabled(),
++                    "camp_progression_button_text": window.camp_progression_start.text(),
++                    "camp_progression_help": window.camp_progression_help.text(),
+                     "journey_destination_ids": [window.source_destination.itemData(i) for i in range(window.source_destination.count())],
+                     "journey_destination_current": window.source_destination.currentData(),
+                     "journey_destination_help": window.travel_help.text(),
