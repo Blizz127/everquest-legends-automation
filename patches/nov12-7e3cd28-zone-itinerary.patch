@@ -1,0 +1,195 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -60,6 +60,37 @@
+     return (start + ending + "The route continues checked sections with fresh movement measurements at each stop. "
+             "A failed check stops travel; cancellation never restarts it. "
+             "Actual movement, server destination and camp suitability remain unverified. Stay present. F8 assist; F9/F11 stop.")
++
++
++def owner_itinerary_help():
++    """Describe the separately selected whole trip without loading game assets."""
++    from eql_automation.owner_zone_itinerary_assets import OWNER_ITINERARY_MAXIMUM_SECONDS
++    minutes = int((OWNER_ITINERARY_MAXIMUM_SECONDS + 59) // 60)
++    hours, minutes = divmod(minutes, 60)
++    duration = f"{hours} hours {minutes} minutes" if hours else f"{minutes} minutes"
++    return ("Start near Goblin Camp in Butcherblock Mountains. Cross into Greater Faydark, "
++            "continue to Clan Crushbone, then stop without combat or a camp. "
++            "The helper checks the reached position and measures movement again in each new zone "
++            "and at intermediate route stops. An unsupported arrival or failed check stops the trip. "
++            f"The whole trip is capped at {duration}, including measurements and crossings. "
++            "This is a maximum limit, not a travel-time estimate. "
++            "Actual routes and server arrivals remain unverified. Stay present throughout. "
++            "F8 switches to assist after movement releases; F9/F11 stops.")
++
++
++def owner_itinerary_progress(autopilot):
++    """Render the current root stage, including the first leg's setup."""
++    trip = autopilot.get("zone_itinerary")
++    if not isinstance(trip, dict):
++        return (("Releasing movement" if autopilot.get("state") == "stopping" else "Finish in Clan Crushbone")
++                if autopilot.get("journey_phase") == "zone_itinerary" else None)
++    leg, legs = trip.get("leg"), trip.get("legs")
++    prefix = f"Leg {leg}/{legs} · " if (type(leg) is int and type(legs) is int and 1 <= leg <= legs <= 8) else ""
++    stage = {"walking": "Travel", "crossing": "Crossing", "loading": "Loading zone",
++             "arrival": "Checking arrival", "bootstrap": "Measuring destination", "stopping": "Releasing movement",
++             "complete": "Complete"}.get(
++        trip.get("stage"), "Travel")
++    return prefix + stage
+ 
+ 
+ def main():
+@@ -430,6 +461,7 @@
+             row = QHBoxLayout()
+             start = QPushButton("Repeat stationary camp  ·  F11")
+             start.setObjectName("stationaryCampButton")
++            self.stationary_camp = start
+             start.setToolTip("Uses NPC names observed in your log, checks each target, casts spells and recovers resources between fights. Stops at observed level 20 or a failed check. Supervise this test.")
+ 
+             start.clicked.connect(lambda: self.post("autopilot_later"))
+@@ -481,6 +513,15 @@
+             self.test_location_hotkey.setObjectName("testLocationHotkeyButton")
+             self.test_location_hotkey.clicked.connect(self.configure_location_hotkey_test)
+             column.addWidget(self.test_location_hotkey)
++            column.addWidget(QLabel("Two-zone crossing itinerary"))
++            self.zone_itinerary_start = QPushButton("Butcherblock → Greater Faydark → Clan Crushbone…")
++            self.zone_itinerary_start.setObjectName("zoneItineraryButton")
++            self.zone_itinerary_start.clicked.connect(self.configure_zone_itinerary)
++            column.addWidget(self.zone_itinerary_start)
++            self.zone_itinerary_help = QLabel(owner_itinerary_help())
++            self.zone_itinerary_help.setObjectName("zoneItineraryHelp")
++            self.zone_itinerary_help.setWordWrap(True)
++            column.addWidget(self.zone_itinerary_help)
+             column.addWidget(QLabel("Travel destination"))
+             self.source_destination = QComboBox()
+             self.source_destination.setObjectName("journeyDestinationBox")
+@@ -738,28 +779,43 @@
+             if not autopilot:
+                 return
+             state = autopilot.get("state", "off")
++            itinerary = owner_itinerary_progress(autopilot)
+             if not measurement_only:
+-                self.source_destination.setEnabled(not bool(autopilot.get("journey_phase")))
++                busy = (bool(autopilot.get("journey_phase")) or itinerary is not None
++                        or state in ("running", "paused", "stopping") or self.last_state.get("active", False)
++                        or self.last_state.get("preparing", False))
++                self.source_destination.setEnabled(not busy)
++                self.supervised_source.setEnabled(not busy)
++                self.test_location_hotkey.setEnabled(not busy)
++                self.zone_itinerary_start.setEnabled(not busy)
++                self.stationary_camp.setText("Stop travel  ·  F11" if itinerary is not None or autopilot.get("journey_phase") in
++                    {"setup", "travel", "handoff", "source_crossing_handoff", "source_crossing", "zone_itinerary"}
++                    else "Repeat stationary camp  ·  F11")
+                 self.refresh_destination_mode()
+-            badge = (state, autopilot.get("journey_phase"), autopilot.get("journey_destination_id"))
++            badge = (state, autopilot.get("journey_phase"), autopilot.get("journey_destination_id"), itinerary)
+             if badge != self.ap_badge:
+                 self.ap_badge = badge
+-                kind = "TRAVEL TEST" if autopilot.get("journey_phase") in {"setup", "travel", "handoff", "source_crossing_handoff", "source_crossing"} else "CAMP TEST"
+-                label = {"running": "RUNNING", "paused": "PAUSED", "halted": "STOPPED"}.get(
++                kind = ("ITINERARY TEST" if itinerary is not None else
++                        "TRAVEL TEST" if autopilot.get("journey_phase") in {"setup", "travel", "handoff", "source_crossing_handoff", "source_crossing"} else "CAMP TEST")
++                label = {"running": "RUNNING", "paused": "PAUSED", "halted": "STOPPED", "stopping": "STOPPING"}.get(
+                     state, "IDLE" if measurement_only else "OFF")
+                 destination = autopilot.get("journey_destination_id")
+                 suffix = {"slave-mines": " · Slave Mines", "north-wall": " · North Wall and Castle", "throne-stair-landing": " · Stair landing", "throne-room": " · Throne Room", "newbie-hills": " · Newbie Hills", "newbie-hills-stop": " · Newbie Hills stop", "goblin-camp": " · Goblin Camp", "goblin-camp-stop": " · Goblin Camp stop"}.get(destination, "")
+                 if gfay_destination_help(destination) is not None:
+                     from eql_automation.source_destinations import destination_spec
+                     suffix = " · " + destination_spec(destination).label
++                if itinerary is not None:
++                    suffix = " · " + itinerary
+                 self.ap_state.setText(f"●  {kind} {label}{suffix}")
+                 self.ap_state.setStyleSheet({"running": "color: #7addac;", "paused": "color: #f5ca72;",
+                                              "halted": "color: #ffb9c2;"}.get(state, "color: #a9b5c5;"))
+                 if not measurement_only:
+                     for widget in self.ap_settings:
+-                        widget.setEnabled(state not in ("running", "paused"))
+-                    self.ap_locked.setVisible(state in ("running", "paused"))
+-            text = autopilot.get("phase") if state in ("running", "paused") else autopilot.get("reason")
++                        widget.setEnabled(state not in ("running", "paused", "stopping"))
++                    self.ap_locked.setVisible(state in ("running", "paused", "stopping"))
++            text = autopilot.get("phase") if state in ("running", "paused", "stopping") else autopilot.get("reason")
++            if itinerary is not None and state in ("running", "paused", "stopping"):
++                text = itinerary + ". F8 switches to assist after movement releases; F9/F11 stops."
+             if measurement_only and not text:
+                 # A refused start has no pilot/reason yet. Its engine status
+                 # must be visible here because the Combat tab is disabled.
+@@ -772,6 +828,9 @@
+             calibration = autopilot.get("calibration")
+             parts = [f"Zone: {guide.zone_long(zone) if guide and zone else zone or 'unknown'}",
+                      f"Position: {loc[0]:.0f}, {loc[1]:.0f}" if loc else "Position: —"]
++            if itinerary is not None:
++                self.ap_info.setText("   ·   ".join(parts + [itinerary, "Finish in Clan Crushbone, then stop · no camp"]))
++                return
+             if not measurement_only:
+                 arrived = autopilot.get("arrival_destination")
+                 parts.extend([f"Camp start: {arrived['name']}" if arrived else
+@@ -881,6 +940,42 @@
+                 description = gfay_destination_help(self.source_destination.currentData())
+                 if description is not None:
+                     self.travel_help.setText(description)
++
++        def configure_zone_itinerary(self):
++            from eql_automation.owner_zone_itinerary_assets import OWNER_ITINERARY_ID
++            if not self.zone_itinerary_start.isEnabled():
++                return
++            dialog = QDialog(self)
++            dialog.setObjectName("zoneItineraryDialog")
++            dialog.setMinimumWidth(640)
++            dialog.setWindowTitle("Butcherblock → Greater Faydark → Clan Crushbone, then stop")
++            layout = QVBoxLayout(dialog)
++            text = QLabel(owner_itinerary_help() + "\n\nFirst test your /location hotbutton with the map visible. "
++                          "Then close the map and chat, clear your target and turn melee off. "
++                          "Seven short calibration presses follow the four-second focus countdown.")
++            text.setWordWrap(True)
++            layout.addWidget(text)
++            ground = QCheckBox("The starting area is clear, flat and open.")
++            ground.setObjectName("itineraryGroundDeclaration")
++            supervision = QCheckBox("I will supervise the whole trip, including new measurements after each crossing.")
++            supervision.setObjectName("itinerarySupervisionDeclaration")
++            layout.addWidget(ground)
++            layout.addWidget(supervision)
++            buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
++            ok = buttons.button(QDialogButtonBox.StandardButton.Ok)
++            ok.setText("Start itinerary, then stop")
++            ok.setEnabled(False)
++            def ready():
++                ok.setEnabled(ground.isChecked() and supervision.isChecked())
++            ground.toggled.connect(ready)
++            supervision.toggled.connect(ready)
++            buttons.accepted.connect(dialog.accept)
++            buttons.rejected.connect(dialog.reject)
++            layout.addWidget(buttons)
++            if (dialog.exec() == QDialog.DialogCode.Accepted and ground.isChecked() and supervision.isChecked()
++                    and self.zone_itinerary_start.isEnabled()):
++                self.post("zone_itinerary", dict(itinerary_id=OWNER_ITINERARY_ID,
++                    open_flat_clear=True, owner_supervised_continuation=True))
+ 
+         def configure_supervised_source(self):
+             from eql_automation.source_destinations import destination_spec
+@@ -1024,10 +1119,12 @@
+             self.chat_recovery.setEnabled(not measurement_only and not active and not preparing)
+             camp_running = (state.get("autopilot") or {}).get("state") == "running"
+             journey_phase = (state.get("autopilot") or {}).get("journey_phase")
+-            if (active, preparing, camp_running, journey_phase) != self.badge:
+-                self.badge = (active, preparing, camp_running, journey_phase)
++            itinerary = owner_itinerary_progress(state.get("autopilot") or {})
++            if (active, preparing, camp_running, journey_phase, itinerary) != self.badge:
++                self.badge = (active, preparing, camp_running, journey_phase, itinerary)
+                 self.state_badge.setText("●  MEASUREMENT ONLY" if measurement_only else
+-                                        "●  TRAVEL TEST" if journey_phase in {"setup", "travel", "handoff"} else
++                                        "●  ITINERARY TEST · " + itinerary if itinerary is not None else
++                                        "●  TRAVEL TEST" if journey_phase in {"setup", "travel", "handoff", "source_crossing_handoff", "source_crossing"} else
+                                         "●  CAMP TEST" if camp_running else "●  ASSIST ON" if active else "●  PREPARING" if preparing else "●  ASSIST OFF")
+                 self.state_badge.setStyleSheet("color: #7addac;" if active else "color: #f5ca72;" if preparing else "color: #a9b5c5;")
+             known = state["known"]
+@@ -1151,6 +1248,10 @@
+                     "journey_hotkey_enabled": window.test_location_hotkey.isEnabled(),
+                     "journey_travel_visible": window.supervised_source.isVisible(),
+                     "journey_travel_enabled": window.supervised_source.isEnabled(),
++                    "itinerary_button_visible": window.zone_itinerary_start.isVisible(),
++                    "itinerary_button_enabled": window.zone_itinerary_start.isEnabled(),
++                    "itinerary_button_text": window.zone_itinerary_start.text(),
++                    "itinerary_help": window.zone_itinerary_help.text(),
+                     "journey_destination_ids": [window.source_destination.itemData(i) for i in range(window.source_destination.count())],
+                     "journey_destination_current": window.source_destination.currentData(),
+                     "journey_destination_help": window.travel_help.text(),
