@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-15 00:10 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 00:26 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -50,11 +50,19 @@ Updated 2026-11-15 00:10 UTC for coordinator task `829a00229b29`.
   revision `00905a9e33716e4251caff559c9c2ad542fef401`; archive SHA
   `c500cbeb7b4921d859097ef1f17d7fe2f8d248456f7b34652304ddc41fe5d62f`;
   install receipt SHA `e7acb4ca6da85a4eefa96c31a307550613ce52fa2b23a0fc2185581b055391f5`.
-- **Next:** make source-graph proposals avoid those exact static collisions,
-  then recheck the whole Goblin route before owner registration. Skeleton camp,
-  Trainer and zone crossings remain gaps. Real level, XP/hour, deaths and camp
-  remain unknown; the owner trace has no update after 2026-11-14 19:31 UTC.
-  G0 passed. No lead game input, login, helper restart or character/prefix change.
+- **Source 0.42.77 built locally; publication in progress.** VERIFIED 108
+  focused checks pass. New start attachments bypass the forced center at 155;
+  three full-geometry local repairs pass, and exact-area BSP canonicalization
+  clears the former 324 refusal. Copied-data checking reaches 452 original
+  operations / 472 cells before another local search expires. No body, region,
+  source-layer or input bound was widened. The new diagnostic reproduces all
+  472 retained floor proofs before proposing onward travel; final result pending.
+- **Next:** finish that continuation check and publish the source increment;
+  enable no owner Goblin route until complete geometry/startup checks pass.
+  Skeleton camp, Trainer and zone crossings remain gaps. Real level, XP/hour,
+  deaths and camp remain unknown; owner trace unchanged after 2026-11-14 19:31 UTC.
+  G0 passed. No lead input, login, restart, character or prefix change.
+
 
 
 ## Historical development entries

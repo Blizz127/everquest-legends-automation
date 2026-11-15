@@ -1,5 +1,54 @@
 # FINDINGS
 
+## 2026-11-15 00:26 UTC — source 0.42.77, repaired Butcher route prefixes
+
+VERIFIED **108 focused checks pass** (102 geometry/transit cases plus six
+repaired-prefix cases). Source commit `20928c3` adds opt-in ordinary shared-edge
+start attachments, bounded fixed-center exclusions, canonical BSP floor patches
+and replay of checked detour cells. Default source-start behavior remains the
+same. Explicit steps, distinct height layers, collision/region checks and body
+bounds are preserved. Fixed-center filtering retains all goal layers and only
+excludes demonstrated fixed-point obstructions; the full path still needs checking.
+
+The opt-in source continuation passes the old forced-centroid collision at 155,
+then hits a placed object at 191. Bounded local repairs at original operations
+191–195, 223–227 and 235–239 all pass terrain/static/BSP/native replay. That run
+reaches 324 before a BSP representation failure. A synthetic regression confirms
+closed polygon clipping can duplicate corners: five listed vertices describe
+exactly the same area as their three-vertex convex hull. Canonicalization now
+requires exact area equality; a labelled region touching only the closed boundary
+still refuses. The next copied-data run passes the old 324 failure and checks
+**452 original operations / 472 cells**, including all three detours. A further
+local detour at 452 expires under its unchanged 20-second search budget; this
+proves neither a blocked corridor nor physical disconnection.
+
+Private evidence in `~/.local/share/eql-automation/nav-candidates/`:
+
+| Record suffix (`butcher-newbie-goblin-transit-20261115-…json`) | SHA-256 | Result |
+| --- | --- | --- |
+| start-edges | `97d13265040040abd36f5f86f2869827c10771f7843ca6a64d65d5b579aec377` | Static collision at 191 |
+| start-edge-repairs | `09594bd88c403308a025f9ed2669c04548422f42e3989160bdd870590d5cfca2` | Three checked detours; BSP representation refusal at 324 |
+| canonical-bsp | `04ace489b5fa5cfa509e346686ea47aac80e74f29117669c1ec35c5bcb613055` | Prior BSP failure passes; local repair budget at 452 |
+
+The retained endpoint is `(-409.7291666666667,368.1145833333333)`; floor proof
+`da54628b30551886c1caa308bc7adf23373a1de8d97b99cb47a7d3739d9eda8f`.
+The ongoing `repaired-prefix` diagnostic has independently reproduced **all 472
+cell proofs**, including zero-length detour caps, before proposing onward travel.
+No new floor seed was introduced there. Its final route result is still pending.
+
+Original failed fixture runs remain in private release evidence: the proposed
+four-face fixture chose the north path first, and its later full rebuild exposed
+the same duplicate-corner issue. Correcting the fixture's obstacle and the BSP
+representation produced the final passing checks. No failed run is labelled passed.
+
+Owner **0.39.35 / runtime 0.42.75** remains unchanged. Source 0.42.77 is built
+locally; installation receipt follows. There is no new enabled Goblin destination,
+accepted real-client route, automated level gain, or complete 1–20/1–50 run.
+Current level, XP/hour, deaths and camp remain unknown. Read-only Alienware
+inspection still finds the last owner trace at 2026-11-14 19:31:12 UTC and the
+unchanged owner manifest. G0 stays passed; no repeat. No lead game input, login,
+helper restart, character mutation or install/prefix modification.
+
 ## 2026-11-15 00:10 UTC — offline source tools 0.42.76 privately installed
 
 VERIFIED additive installation at Alienware
