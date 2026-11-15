@@ -44,16 +44,18 @@ class CampSourcePlan:
 
 class CampSourceRuntime(SourceExecutionLoop):
     def __init__(self, probe, plan, *, check_current, mode_reader,
-                 generation_reader, generation,check_scene=None):
+                 generation_reader, generation,check_scene=None,input_release_deadline=None):
         if (type(probe) is not CampProbeRuntime or probe.phase != 'route_ready' or probe.busy
                 or type(plan) is not CampSourcePlan
                 or check_scene is not None and not callable(check_scene)
+                or input_release_deadline is not None and not finite(input_release_deadline)
                 or not all(callable(f) for f in (check_current, mode_reader, generation_reader))):
             raise ValueError('Prepared idle camp scope and explicit execution plan required')
         self.probe, self.plan = probe, plan
         self.plan_state = plan.state()
         self.current = check_current
         self.scene_current=check_scene
+        self.input_release_deadline=input_release_deadline
         self.mode_reader, self.generation_reader, self.generation = mode_reader, generation_reader, generation
         self.sender, self.lease, self.hotkey = probe.sender, probe.lease, probe.hotkey
         self.owner_input, self.lock = probe.owner_input, probe.lock
@@ -70,17 +72,21 @@ class CampSourceRuntime(SourceExecutionLoop):
         self.events, self.pairs, self.observations = [], [], []
         self.input_kind = self.input_request = None
         self._context = (probe, plan, check_current, mode_reader, generation_reader,
-            self.sender, self.lease, self.hotkey, self.owner_input, self.lock, self.clock, self.wall, self.reader,check_scene)
+            self.sender, self.lease, self.hotkey, self.owner_input, self.lock, self.clock, self.wall, self.reader,check_scene,
+            input_release_deadline)
         try:
             with self.lock:
                 probe._check()
                 self.check_current()
+                if input_release_deadline is not None and not self.clock()<input_release_deadline<=probe.started+probe.maximum_seconds:
+                    raise ValueError('Source release deadline must fit its original probe scope')
                 if self.sender.held or getattr(self.sender, '_eql_route_operation', None) is not None:
                     raise ValueError('Camp route adoption requires released keys and operation')
                 self.observer = self._owned_observer = CampSourceObserver(probe.route_preparation, probe.route_start,
                     scope_check=self.check_current, mode_reader=mode_reader,
                     generation_reader=generation_reader, generation=generation,
-                    expires_at=probe.started+probe.maximum_seconds,
+                    expires_at=min(probe.started+probe.maximum_seconds,
+                        float('inf') if input_release_deadline is None else input_release_deadline),
                     walk_half_width=plan.walk_half_width, stop_lock=self.lock, route_bounds=plan.bounds)
                 floor = probe.reference
                 self.ledger = self._owned_ledger = SourceReceiptLedger(self.observer, terrain=floor._terrain,
@@ -103,7 +109,8 @@ class CampSourceRuntime(SourceExecutionLoop):
         # explicitly checks the active ledger before requesting a reading.
         self.current()
         actual = (self.probe, self.plan, self.current, self.mode_reader, self.generation_reader,
-            self.sender, self.lease, self.hotkey, self.owner_input, self.lock, self.clock, self.wall, self.reader,self.scene_current)
+            self.sender, self.lease, self.hotkey, self.owner_input, self.lock, self.clock, self.wall, self.reader,self.scene_current,
+            self.input_release_deadline)
         if (self.phase == 'stopped' or any(a is not b for a,b in zip(self._context, actual))
                 or self.plan.state() != self.plan_state or self.probe.phase != 'route_ready'
                 or self.probe.busy or self.probe.closed or self.probe.sender is not self.sender
@@ -162,8 +169,8 @@ class CampSourceRuntime(SourceExecutionLoop):
                 raise ValueError('Camp route location request changed')
         self.input_kind, self.input_request = 'location', request
         try:
-            deadline = ({} if self.probe.input_release_deadline is None else
-                        dict(release_deadline=self.probe.input_release_deadline))
+            limits=[v for v in (self.probe.input_release_deadline,self.input_release_deadline) if v is not None]
+            deadline={} if not limits else dict(release_deadline=min(limits))
             receipt = send_location_hotkey(self.sender, binding=self.hotkey, owner_input=self.owner_input,
                 lock=self.lock, clock=self.clock,
                 expires_at=min(request.expires_at, seal.expires_at) if seal else request.expires_at,

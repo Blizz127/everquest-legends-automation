@@ -12,7 +12,7 @@ from .scene_log_veto import SceneLogVeto
 from .source_motion import SourceReceiptLedger
 from .source_transfer import SourceTransferController
 from .supervised_route import SupervisedRouteDeclaration, scope_limits
-from .journey_input_budget import JourneyInputBudget
+from .journey_input_budget import JourneyInputBudget, itinerary_root
 from .zone_itinerary_budget import ZoneItineraryBudget
 
 
@@ -56,7 +56,7 @@ class SupervisedSourceIdleObservation:
 
 class SupervisedSourcePolicy:
     def __init__(self,ledger,*,declaration,gate,owner_input,log_veto,
-                 expected_window,topology_generation,check_current,journey_budget=None):
+                 expected_window,topology_generation,check_current,journey_budget=None,release_deadline=None):
         if (type(ledger) is not SourceReceiptLedger
                 or type(declaration) is not SupervisedRouteDeclaration
                 or declaration.scope not in ('local_trial','destination_travel','camp_continuation')
@@ -89,10 +89,16 @@ class SupervisedSourcePolicy:
         self.owner_input,self.log_veto=owner_input,log_veto
         self.window,self.topology,self.check_current=expected_window,topology_generation,check_current
         self.journey_budget=journey_budget
-        self._journey_stage=journey_budget.stage if type(journey_budget) is ZoneItineraryBudget else None
+        if release_deadline is not None and not finite(release_deadline):
+            raise ValueError('Finite source input release deadline required')
+        self.release_deadline=self._release_deadline=release_deadline
+        root=itinerary_root(journey_budget)
+        self._journey_stage=None if root is None else root.stage
         self._journey_reservation=None
         self._context=(ledger,d,gate,owner_input,log_veto,check_current,journey_budget)
         self.started=self.last_at=ledger.clock()
+        if release_deadline is not None and not self.started<release_deadline<=self.started+d.maximum_seconds:
+            raise ValueError('Source input release deadline exceeds its declared scope')
         self.origin=None;self.reserved_hold=0.
         self._scene=self._authorization=None
         self._check()
@@ -146,8 +152,8 @@ class SupervisedSourcePolicy:
 
     def _check_journey(self):
         if self.journey_budget is not None:self.journey_budget.check()
-        if type(self.journey_budget) is ZoneItineraryBudget:
-            root=self.journey_budget
+        root=itinerary_root(self.journey_budget)
+        if root is not None:
             if (root.stage is not self._journey_stage or root.stage.phase!='walking'
                     or self.ledger.observer.reader.zone_id!=root.leg.source_zone_id):
                 root.cancel('Source walk differs from the current itinerary stage or zone')
@@ -158,6 +164,9 @@ class SupervisedSourcePolicy:
         began=self._check_current_ledger()
         window=focused_game_identity(self.gate)
         finished=self._check_current_ledger();d=self.declaration
+        if (self.release_deadline!=self._release_deadline or self.release_deadline is not None
+                and finished>self.release_deadline):
+            raise RouteHalt('Source input release deadline changed or expired')
         self.ledger.model.check_policy(self.ledger.observer.policy)
         terminal=False
         if completed_contact:
@@ -279,8 +288,13 @@ class SupervisedSourcePolicy:
         if self.journey_budget is not None:
             self._journey_reservation=self.journey_budget.reserve(ticket,bounds=self.ledger.bounds)
         expires=ticket.proposed_at+.05
-        if type(self.journey_budget) is ZoneItineraryBudget:
-            expires=min(expires,self.journey_budget.expires_at-ticket.maximum_actual_hold)
+        root=itinerary_root(self.journey_budget)
+        if root is not None:
+            expires=min(expires,root.expires_at-ticket.maximum_actual_hold,
+                self.journey_budget.expires_at-ticket.maximum_actual_hold)
+        if self.release_deadline is not None:
+            expires=min(expires,self.release_deadline-ticket.maximum_actual_hold)
+        if issued>expires:raise RouteHalt('Source DOWN cannot fit before its release deadline')
         self.reserved_hold+=ticket.maximum_actual_hold
         self._authorization=SupervisedSourceAuthorization(ticket,scene.reference,self.declaration,
             issued,expires)

@@ -16,7 +16,7 @@ from .g2_safety_provider import GameWindowIdentity,focused_game_identity
 from .ground_binding import finite
 from .owner_input_observer import OwnerInputObservation
 from .scene_log_veto import SceneLogVeto
-from .journey_input_budget import JourneyInputBudget
+from .journey_input_budget import JourneyInputBudget, itinerary_root
 from .zone_itinerary_budget import ZoneItineraryBudget
 
 
@@ -64,7 +64,8 @@ class SupervisedCampProbeScope:
         self.root,self.lease,self.reader=r.root,r.lease,r.lease.reader
         self.owner_input,self.topology=monitor.observer,monitor.topology
         self.journey_budget=journey_budget
-        self._journey_stage=journey_budget.stage if type(journey_budget) is ZoneItineraryBudget else None
+        root=itinerary_root(journey_budget)
+        self._journey_stage=None if root is None else root.stage
         self.generation=log_veto.cancel_generation
         self._context=(r,d,monitor,gate,expected_window,log_veto,check_current,
             self.clock,self.lock,self.root,self.lease,self.reader,self.owner_input,journey_budget)
@@ -87,8 +88,8 @@ class SupervisedCampProbeScope:
 
     def _check_journey(self):
         if self.journey_budget is not None:self.journey_budget.check()
-        if type(self.journey_budget) is ZoneItineraryBudget:
-            root=self.journey_budget
+        root=itinerary_root(self.journey_budget)
+        if root is not None:
             if (root.stage is not self._journey_stage or root.stage.phase not in ('walking','bootstrap')
                     or self.reader.zone_id!=root.leg.source_zone_id):
                 root.cancel('Camp probe differs from the current itinerary stage or zone')
@@ -220,8 +221,10 @@ class SupervisedCampProbePolicy(CampProbeInputPolicy):
                         or s._reserved+ticket.maximum_actual_hold>s.declaration.maximum_total_hold):
                     raise ValueError('Camp probe duplicate authorization or hold budget exhausted')
                 expires=min(ticket.start.expires_at,ticket.proposed_at+.05,s.expires_at)
-                if type(s.journey_budget) is ZoneItineraryBudget:
-                    expires=min(expires,s.journey_budget.expires_at-ticket.maximum_actual_hold)
+                root=itinerary_root(s.journey_budget)
+                if root is not None:
+                    expires=min(expires,root.expires_at-ticket.maximum_actual_hold,
+                        s.journey_budget.expires_at-ticket.maximum_actual_hold)
                 if not ticket.proposed_at<=now<=expires:raise ValueError('Camp probe DOWN deadline expired')
                 if s.journey_budget is not None:
                     self._journey_reservation=s.journey_budget.reserve(ticket,bounds=s.root.bounds)

@@ -19,7 +19,7 @@ from .camp_stopped_height import measure_camp_stopped_height
 from .flat_record import flat_record_state
 from .g2_safety_provider import focused_game_identity
 from .ground_binding import finite
-from .journey_input_budget import JourneyInputBudget
+from .journey_input_budget import JourneyInputBudget, itinerary_root
 from .location_hotkey import HOTKEY_CODES, send_location_hotkey
 from .motion_calibration import PROBES
 from .motion_collection import CommandReceipt, LocationRequest, immutable_binding
@@ -135,6 +135,8 @@ class SectionContinuation:
             self._guide_operations_signature=_compile_operations(self._guide_state[7])
             self.started = self.last_at = self.clock()
             self.expires_at = min(b.expires_at, self.started+scope_limits('destination_travel')[0])
+            parent=itinerary_root(b)
+            if parent is not None:self.expires_at=min(self.expires_at,parent.expires_at)
             self._times = self.started, self.expires_at
             self._context = (arrival, b, lease, guide, self.floor, self.clock, self.wall, self.lock,
                 self.sender, self.reader, self.owner_input, self.hotkey, self.gate, self.veto,
@@ -246,7 +248,7 @@ class SectionContinuation:
             if self.runtime is not None:self.runtime.cancel(reason)
             self.lease.active = False
 
-    def release(self):
+    def release(self, *, close_observer=True):
         with self.lock:
             if self.closed:return
             if (self.busy or self.sender.held or getattr(self.sender, '_eql_route_operation', None) is not None
@@ -256,7 +258,9 @@ class SectionContinuation:
             else:self.lease.release()
             self.closed = True
             # A successful caller adopts the new checkpoint and observer first.
-            if self.phase == 'stopped':self.monitor.close(self.reason)
+            if self.phase == 'stopped':
+                if close_observer:self.monitor.close(self.reason)
+                else:self.monitor.invalidate(self.reason)
 
     def _send_location(self, request):
         collector = self.collector
@@ -267,9 +271,10 @@ class SectionContinuation:
                 raise ValueError('Section location request changed')
         self.sending, self.request = True, request
         try:
+            deadline={} if itinerary_root(self.budget) is None else dict(release_deadline=self.expires_at)
             sent = send_location_hotkey(self.sender, binding=self.hotkey, owner_input=self.owner_input,
                 lock=self.lock, clock=self.clock, expires_at=min(request.expires_at,self.expires_at),
-                ensure_current=current, cancel=self.cancel, pump=self.pump, record_event=self.events.append)
+                ensure_current=current, cancel=self.cancel, pump=self.pump, record_event=self.events.append, **deadline)
             return CommandReceipt(sent.pulse.down_started_at, sent.released_at)
         finally:self.sending, self.request = False, None
 
@@ -323,7 +328,8 @@ class SectionContinuation:
         self.runtime = self._runtime = CampProbeRuntime(preparation,sender=self.sender,hotkey=self.hotkey,
             owner_input=self.owner_input,stop_lock=self.lock,movement_policy_factory=self._probe_policy,
             check_current=self._check_context,command_state_clear=self.command_clear,pump=self.pump,
-            maximum_seconds=remaining,log_veto=self.veto,check_scene=self._check)
+            maximum_seconds=remaining,log_veto=self.veto,check_scene=self._check,
+            input_release_deadline=None if itinerary_root(self.budget) is None else self.expires_at)
         self.phase = 'probe'
 
     def _start_route(self):
