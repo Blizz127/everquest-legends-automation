@@ -1,5 +1,32 @@
 # FINDINGS
 
+## 2026-11-15 03:02 UTC — owner 0.39.38 privately installed and verified
+
+VERIFIED additive publication on Alienware completed at 03:01:07 UTC. Owner
+0.39.38 / source 0.42.84 uses source revision
+`2f41df6699a643bde96600ecd3efc07fab2a05ab`. Archive SHA
+`76da5766030bb61c020417bc1350456bf3cc9d59c0a56f8e49e35bbf0a30f823`;
+package-manifest SHA
+`34051ce3ec9db2964db183dd03d5d552169aefce85512e004cd907abe5c7eb46`.
+The initial package recipe refused two evidence files with a shared basename;
+placing copied geometry in its own evidence subdirectory resolved that packaging
+collision before any archive or publication was created. All archive pins were
+then rechecked.
+
+Installed verification covers 602 Python sources, 925 package files, 254 owner
+files, eight destinations and nine Goblin section guides. Client model/region
+and Butcherblock source pins match. Installed `launch.sh --help` returned zero.
+The previous 0.39.37 manifest is unchanged. Installation receipt copied back to
+`releases/eql-owner-journey-0.39.38-installed.json`, SHA
+`3dd859242014960c2a181e304e45eb3d35eb064c41675fe13b698fac686da9d7`.
+
+Owner launch: `~/.local/share/eql-automation/owner-assist/0.39.38/launch.sh`.
+F8 assist and F9 stop remain available; no old helper was restarted. The next
+actual route acceptance is an owner-started Goblin movement test from near
+Newbie Hills inside Butcherblock. No lead game input, login, character change
+or prefix modification occurred. Current level, XP/hour, deaths and camp remain
+unknown. G0 stays passed; neither real 1–20 nor hands-off 1–50 is accepted.
+
 ## 2026-11-15 03:00 UTC — final section runtime validation passed
 
 VERIFIED all 20 final Alienware runtime checks passed in 869.98 seconds. The
