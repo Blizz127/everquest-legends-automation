@@ -66,6 +66,7 @@ class ItineraryCampArrival:
     clock: object
     expires_at: float
     arrival_epoch: int
+    progression_origin: object = None
     _claim: list = field(default_factory=lambda: [False], repr=False, compare=False)
     _state: tuple = field(init=False, repr=False, compare=False)
 
@@ -76,7 +77,7 @@ class ItineraryCampArrival:
         objects = (self.run, self.journey, self.arrival, self.destination,
             self.candidates, self.monitor, self.sender, self.ui, self.gate,
             self.tracker, self.reader, self.hotkey, self.veto, self.lease,
-            self.root, self.terminal, self.clock, self._claim)
+            self.root, self.terminal, self.clock, self._claim, self.progression_origin)
         a = self.arrival
         return (tuple(map(id, objects)), self.generation, self.settings, self.zone,
             flat_record_state(self.window), self.fd, self.fd_identity, self.expires_at, self.arrival_epoch,
@@ -87,11 +88,37 @@ class ItineraryCampArrival:
             self.veto.tail.epoch, id(self.veto.clock), self.veto.cancel_generation,
             id(a.runtime), id(a.receipt), id(a.checkpoint), id(a.budget), id(a._claim),
             _receipt_state(a.receipt), flat_record_state(a.budget.declaration),
-            a.motion_basis, a.guide_sha256)
+            a.motion_basis, a.guide_sha256,
+            None if self.progression_origin is None else self.progression_origin.state())
 
     def check_identity(self):
         if self.state() != self._state:
             raise ValueError('Terminal camp token or completed itinerary provenance changed')
+
+
+def _active_progression(journey, root):
+    """Historical True flags require the exact admitted finite camp origin."""
+    if journey.continue_camps is False and journey._continue_camps is False:
+        if getattr(journey, 'progression', None) is not None:
+            raise ValueError('Typed progression cannot change its original continuation choice')
+        return None
+    from .camp_progression import active_origin_authority
+    return active_origin_authority(journey, root)
+
+
+def _released_progression(token):
+    j = token.journey
+    if token.progression_origin is None:
+        if (j.continue_camps is not False or j._continue_camps is not False
+                or getattr(j, 'progression', None) is not None):
+            raise ValueError('Ordinary terminal trip cannot adopt camp progression authority')
+        return
+    from .camp_progression import CampProgressionOrigin, terminal_authority
+    if type(token.progression_origin) is not CampProgressionOrigin:
+        raise ValueError('Exact retained progression origin required')
+    receipt = terminal_authority(j, token.root, token)
+    if receipt.origin is not token.progression_origin:
+        raise ValueError('Terminal handoff belongs to a different consumed progression')
 
 
 def capture_itinerary_camp_arrival(e, run, arrival, clock, *, candidates):
@@ -115,6 +142,7 @@ def capture_itinerary_camp_arrival(e, run, arrival, clock, *, candidates):
     with run.lock:
         run._scene()
         j = run.journey; a = arrival; r = a.runtime; terminal = run.root.leg
+        progression_origin = _active_progression(j, run.root)
         if (type(terminal) is not ZoneItineraryTerminalCamp
                 or run.root.declaration.terminal_camp is not terminal
                 or run.phase != 'terminal_ready' or run.closed or run.busy
@@ -129,7 +157,6 @@ def capture_itinerary_camp_arrival(e, run, arrival, clock, *, candidates):
                 or r.policy.log_veto is not run.veto
                 or getattr(run, '_camp_arrival_token', None) is not None
                 or j.camp_motion is not None or e.camp_session is not None
-                or j.continue_camps is not False or j._continue_camps is not False
                 or type(run.veto) is not SceneLogVeto):
             raise ValueError('Unclaimed final terminal walking scope required')
         spec = destination_spec(terminal.destination_id)
@@ -157,7 +184,8 @@ def capture_itinerary_camp_arrival(e, run, arrival, clock, *, candidates):
         token = ItineraryCampArrival(run, j, a, destination, candidates, monitor,
             run.sender, run.ui, run.gate, run.tracker, run.reader, run.hotkey,
             run.veto, run.lease, run.root, terminal, run.generation, settings, zone,
-            run.window, run.fd, run.fd_identity, clock, run.expires_at, run.root.stage.epoch)
+            run.window, run.fd, run.fd_identity, clock, run.expires_at, run.root.stage.epoch,
+            progression_origin)
         monitor.check(binding)
         run._scene(); token.check_identity()
         assert_retained_arrival(r, a.receipt, a.checkpoint, clock())
@@ -171,6 +199,8 @@ def capture_itinerary_camp_arrival(e, run, arrival, clock, *, candidates):
         # No callback follows publication. Journey stop now owns physical input
         # cleanup, including failures while the runtime releases its old scope.
         run._camp_arrival_token = token
+        if _active_progression(j, run.root) is not progression_origin:
+            raise ValueError('Finite camp progression origin changed during terminal capture')
         j.camp_motion = monitor
         j.arrival_floor = a.checkpoint
         return token
@@ -188,6 +218,7 @@ def _released_identity(e, t, *, new_camp=None, observations=None):
     if observations is None:
         observations = (t.ui.fileno(), e._navigation_busy(), e.jobs.empty())
     descriptor, navigation_busy, queue_empty = observations
+    _released_progression(t)
     t.root._assert_intact()
     if (e is not r.engine or e.journey is not j
             or e.zone_itinerary_run is not None or e.zone_itinerary_owner is not None
@@ -206,7 +237,6 @@ def _released_identity(e, t, *, new_camp=None, observations=None):
             or e.cancel_generation != j.generation
             or j.generation not in (t.generation, t.generation+1)
             or j.settings != t.settings or settings_identity(e.settings) != t.settings
-            or j.continue_camps is not False or j._continue_camps is not False
             or e.camp_session is not new_camp or e.autopilot is not new_camp
             or new_camp is not None and j.generation != t.generation+1
             or navigation_busy or not queue_empty
