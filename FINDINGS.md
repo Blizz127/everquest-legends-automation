@@ -1,5 +1,55 @@
 # FINDINGS
 
+## 2026-11-15 08:49 UTC — Goblin-to-GFay pre-line approach, carried crossing, and source crossing runtime (0.42.89, carbon/continue)
+
+VERIFIED on branch `carbon/continue` (`gemini-everquest-legends-carbon`, source
+`0.42.89`):
+
+1. `tools/source_transit_connections.py` (`filter_transit_connections`) +
+   `tests/test_source_transit_connections.py` prune obstructed graph connections
+   across search rounds strictly when swept cells have a component-wide floor
+   coverage deficit, a positive-height terrain blocker (`minimum_above_floor > 0.11`),
+   or a static body-band collision on an accepted component floor, then verify
+   the winning proposal end-to-end on `prefix.fork()` through `check_source_footprint`
+   and carried-layer identity checks without mutating the supplied prefix.
+2. `tools/audit_butcher_goblin_preline.py --connection-rounds 8 --plan-sections --check-carried-crossing`
+   checks the complete Goblin Camp `(-2069.0,-298.0)` to retained pre-line
+   `(-3084.646484375,-1328.2936706542969)` approach (`status="checked"`,
+   `source_candidate=true`, `zone_transition_checked=true`, `inputs_rehashed=true`):
+   - Prunes 9 obstructed edges across 4 rounds (`123` edge queries, `3,193` cell
+     queries) and verifies a 314-operation / 317-cell / `1,920.626`-unit ordinary
+     native-zero route (`0` repairs needed) reaching `wld:1644:face:5` at `z=0.0`
+     with final floor proof `08603bef0a7628cd6105d5ab7ee35ea79dcf4dd498827a61e93e42dc53a6cb94`.
+   - Partitions the route into 2 `WalkingSections`: section 0 (`ops 0..161`,
+     `995.192` units, pause at `(-2587.4125,-892.10625)` with native-zero
+     `measurement_reserve` SHA `8104703b00acdac824de09b6ae4e8980292406859b41806fba568d0677641a6c`)
+     and section 1 (`ops 162..313`, `915.893` units to `(-3084.646484375,-1328.2936706542969)`).
+   - Continues the exact reached pre-line floor proof `08603bef0a7628cd6105d5ab7ee35ea79dcf4dd498827a61e93e42dc53a6cb94`
+     directly through `check_source_crossing_cell` (`synthetic_preline_floor_seed=false`)
+     across 8 checked cells to `(-3093.57493953125,-1322.3650056635743)` in native
+     region `3077` (`DRNTP00255000001_ZONE`, `0x80000000`).
+3. `eql_automation/source_crossing_corridor.py`, `eql_automation/supervised_source_crossing.py`,
+   `eql_automation/source_crossing_sender.py`, and `tests/test_source_crossing_corridor.py`
+   implement the dedicated source-native crossing runtime (`SourceCrossingCorridor`,
+   `SupervisedSourceCrossingPolicy`, `run_checked_source_crossing_step`). It leases
+   the underlying `SourceReceiptLedger` so `run_checked_source_step` cannot execute
+   alongside it, checks each maximum-hold pulse under `NativeCrossingRegionPolicy`,
+   never commits source floors on key release, refuses uncorrelated `LOADING` on
+   dry pulses, and delegates transition loading + destination stopped-pair confirmation
+   to `ZoneArrivalHandoff` (54 focused crossing/connection/policy tests pass).
+
+Private `-carbon-` evidence:
+
+- `nav-candidates/butcher-goblin-gfay-preline-carbon-0.42.89-run3.json`, SHA
+  `f4945481f3e26004c2038714be5ce646027bdcbcadfee2be62e4dbcfb00c655e`.
+- `nav-candidates/butcher-goblin-gfay-preline-carbon-0.42.89-run3.plan.json`, SHA
+  `4786b62f28ffe2f997c8e9c0e281f0a7dc1ffd107bfc9f257133504cdc453343`.
+
+All checks are offline geometry, synthetic-log, and OS-pipe watchdog verifications
+(`real_client_accepted=false`, `game_input_sent=false`, no Alienware install or
+helper change).
+
+
 ## 2026-11-15 — Goblin-to-GFay approach remains incomplete
 
 VERIFIED `tools/audit_butcher_goblin_preline.py` loads the pinned Goblin goal

@@ -1,5 +1,33 @@
 # STATUS
 
+Updated 2026-11-15 08:49 UTC by `gemini-everquest-legends-carbon` on `carbon/continue`.
+
+- **Working; goal not met. G0 passed, including the owner-visible stop. Never
+  repeat G0.** Actual level, XP, XP/hour, deaths and camp remain unknown.
+- Development source **0.42.89** (`carbon/continue`) completes both items left
+  open at `0.42.88`: per-edge static/terrain connection filtering for the
+  Goblin-to-GFay pre-line approach (`tools/source_transit_connections.py`) with
+  2-section `WalkingSections` partitioning and carried-floor crossing verification
+  (`synthetic_preline_floor_seed=false`), plus the dedicated source-native
+  crossing runtime (`SourceCrossingCorridor`, `SupervisedSourceCrossingPolicy`,
+  `run_checked_source_crossing_step`). Installed Alienware owner build remains
+  **0.39.41 / source 0.42.87** untouched.
+- **VERIFIED:** 54 focused crossing/policy/connection tests and 103 deterministic
+  offline route/section/crossing checks pass. Offline Goblin-to-GFay pre-line +
+  carried crossing audit `butcher-goblin-gfay-preline-carbon-0.42.89-run3.json`
+  (`f4945481f3e26004c2038714be5ce646027bdcbcadfee2be62e4dbcfb00c655e`) and plan
+  (`4786b62f28ffe2f997c8e9c0e281f0a7dc1ffd107bfc9f257133504cdc453343`) verify
+  314 ordinary walk operations (`1,920.626` units, 2 sections) continuing directly
+  through 8 crossing cells into `DRNTP00255000001_ZONE` (`0x80000000`). Offline
+  and synthetic-log/pipe verification only; `real_client_accepted=false`,
+  `game_input_sent=false`.
+- **Next:** stage `-carbon-` Butcherblock Goblin-to-GFay guides/sections and wire
+  `OwnerSourceCrossingRuntime` into `OwnerJourneyEngine` (`0.42.90`), then add
+  copied GFay source assets, GFay->Orcs / GFay->Crushbone guides, cross-zone
+  level-9+ camp continuation, and productive-camp XP/hour relocation (`0.42.91+`).
+
+## Prior status
+
 Updated 2026-11-15 04:07 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed, including the owner-visible stop. Never
