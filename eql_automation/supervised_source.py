@@ -161,7 +161,10 @@ class SupervisedSourcePolicy:
 
     def _check(self,*,completed_contact=False):
         self._check_journey()
-        began=self._check_current_ledger()
+        # Ledger and focus reads send nothing and do not drain ordinary owner
+        # input or hazard queues. Keep their observation timestamp, then run
+        # the complete owner/input/log check after the last focus callback.
+        began=self.ledger._check()
         window=focused_game_identity(self.gate)
         finished=self._check_current_ledger();d=self.declaration
         if (self.release_deadline!=self._release_deadline or self.release_deadline is not None
