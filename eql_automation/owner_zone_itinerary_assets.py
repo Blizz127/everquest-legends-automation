@@ -320,6 +320,17 @@ def load_owner_zone_itinerary(engine, declaration):
     if encoded(declaration) != request:
         raise ValueError('Itinerary request changed during copied asset loading')
     limits, bounds, basis = (_profile(copied) if selected_id == OWNER_ITINERARY_ID else _terminal_profile(copied))
+    def check_request():
+        if encoded(declaration) != request:
+            raise ValueError('Itinerary request changed before plan publication')
+    return _bind_copied_itinerary_plan(engine, copied, limits, bounds, basis, binding,
+                                      check_request=check_request)
+
+
+def _bind_copied_itinerary_plan(engine, copied, limits, bounds, basis, binding, *, check_request):
+    """Share pinned lazy loaders; each caller retains its own owner admission."""
+    if not callable(check_request):
+        raise ValueError('Original request validation required')
     rows = {row.identifier: row for row in copied.assets}
     if copied.terminal is not None:
         terminal = copied.terminal
@@ -386,7 +397,6 @@ def load_owner_zone_itinerary(engine, declaration):
         lambda assets: load('sections', getattr(assets, 'destination_id', None), assets),
         lambda identifier: load('crossing', identifier))
     binding.check(copied=copied)
-    if encoded(declaration) != request:
-        raise ValueError('Itinerary request changed before plan publication')
+    check_request()
     plan.check()
     return plan

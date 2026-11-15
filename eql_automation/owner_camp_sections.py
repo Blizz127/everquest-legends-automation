@@ -128,6 +128,9 @@ def make_camp_sections_engine(base,*,section_provider,clock):
                     and not c.closed and c.phase not in ('complete','stopped'))
             return self._camp_trip_binding(w,content=not active)
 
+        def _camp_trip_parent_budget(self,p,w):
+            return None
+
         def _camp_probe_started(self,p):
             if p.probe_plan.route_sections is None:return super()._camp_probe_started(p)
             if self.camp_walking is not None:raise ValueError('A camp trip already owns navigation')
@@ -139,7 +142,8 @@ def make_camp_sections_engine(base,*,section_provider,clock):
                 spec.identifier,spec.arrival_mode,n,n*seconds,n*pulses,n*hold,n*distance)
             binding=self._camp_trip_binding(w)
             budget=JourneyInputBudget(declaration,clock=clock,stop_lock=self.g0_stop_lock,
-                owner_binding=binding,binding_reader=lambda:self._camp_trip_budget_binding(w))
+                owner_binding=binding,binding_reader=lambda:self._camp_trip_budget_binding(w),
+                parent_budget=self._camp_trip_parent_budget(p,w))
             w.budget=w._budget=budget;budget.check()
             self.trace('camp_walking_sections_started',destination_id=w.destination_id,
                 section_count=n,budget=budget.snapshot(),initial_section=None,real_client_accepted=False)

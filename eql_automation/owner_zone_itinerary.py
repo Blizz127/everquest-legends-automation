@@ -452,6 +452,12 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
                 self.emit('Zone itinerary complete · movement stopped.')
                 return result
 
+        def _terminal_itinerary_transferred(self,run,token):
+            pass
+
+        def _terminal_itinerary_camp_started(self,run,token,result):
+            pass
+
         def _finish_terminal_itinerary(self, run):
             from .owner_itinerary_camp_arrival import continue_itinerary_camp_arrival
             with self.g0_stop_lock:
@@ -472,6 +478,7 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
                             or run.root is not owner.root or run.journey is not journey):
                         raise ValueError('Current terminal itinerary arrival required')
                     token=run.transfer_terminal_arrival(candidates=run.candidates)
+                    self._terminal_itinerary_transferred(run,token)
                     owner.check()
                     # Descriptor/queue callbacks in the final owner check may
                     # change the game process. Take its live identity afterward,
@@ -495,7 +502,9 @@ def make_zone_itinerary_engine(base, *, itinerary_provider, clock):
                     self.zone_itinerary_run=None
                     self.zone_itinerary_owner=None
                     owner.closed=True
-                    return continue_itinerary_camp_arrival(self,token,clock)
+                    result=continue_itinerary_camp_arrival(self,token,clock)
+                    self._terminal_itinerary_camp_started(run,token,result)
+                    return result
                 except BaseException as error:
                     if self.journey is journey:
                         self.stop_action('Terminal camp handoff stopped: '+str(error))

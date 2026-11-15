@@ -1230,6 +1230,12 @@ def make_source_crossing_engine(base, *, corridor_provider, clock=time.monotonic
             )
             return result
 
+        def _prepare_camp_itinerary_crossing(self,w,arrival,spec):
+            return None
+
+        def _commit_camp_itinerary_crossing(self,token,w,arrival):
+            pass
+
         def _start_source_crossing_from_camp_section(self, w, arrival):
             j = w.journey
             with self.g0_stop_lock:
@@ -1239,6 +1245,7 @@ def make_source_crossing_engine(base, *, corridor_provider, clock=time.monotonic
                     raise ValueError('Ordinary reached camp-section floor and idle crossing slot required')
                 spec = self._source_crossing_spec(w.destination_id)
                 self._check_camp_section_arrival(w, arrival)
+                itinerary_handoff = self._prepare_camp_itinerary_crossing(w, arrival, spec)
                 arrival._claim[0] = True
                 w.budget.cancel('Final crossing section reached; navigation budget retired')
                 w.set_stage('finished')
@@ -1252,6 +1259,7 @@ def make_source_crossing_engine(base, *, corridor_provider, clock=time.monotonic
                 tracker, reader = w.tracker, w.reader
                 window = w.window
                 self.cancelled = False
+                self._commit_camp_itinerary_crossing(itinerary_handoff, w, arrival)
                 lease = tracker.acquire()
                 handoff_args = (j, w.destination_id, sender, ui, tracker, reader, window)
                 self._crossing_handoff_binding = handoff_args
@@ -1292,6 +1300,7 @@ def make_source_crossing_engine(base, *, corridor_provider, clock=time.monotonic
                         clock=clock,
                         local_wall_clock=getattr(self, 'camp_wall', datetime.now),
                         journey_budget=self._source_crossing_budget(j, w.destination_id),
+                        log_veto=w.veto,
                     )
                     prior = w.monitor.last_observed_at
                     if prior is not None and (runtime.monitor.last_observed_at is None

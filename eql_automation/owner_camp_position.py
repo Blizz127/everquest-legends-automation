@@ -124,6 +124,12 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
         def _camp_probe_plan(self,p):
             return None if probe_plan_provider is None else probe_plan_provider(self,p)
 
+        def _camp_continuation_available(self,j):
+            return j.continue_camps is True
+
+        def _camp_probe_input_release_deadline(self,p):
+            return None
+
         def _camp_probe_started(self,p):
             if p.probe_plan.route_sections is not None:
                 raise ValueError('Camp walking-section owner is not installed')
@@ -140,7 +146,7 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 # Ordinary stationary camping still checks once. A configured
                 # continuation provider can reconsider only a new current-log
                 # level increase, after automatic spell preparation finishes.
-                if (probe_plan_provider is None or not j.continue_camps
+                if (probe_plan_provider is None or not self._camp_continuation_available(j)
                         or type(advance) is not CampLevelAdvance
                         or advance is j.last_considered_level_advance
                         or advance.generation!=camp.generation
@@ -288,7 +294,8 @@ def make_camp_position_engine(base_engine,*,clock=time.monotonic,probe_plan_prov
                 owner_input=p.monitor.observer,stop_lock=self.g0_stop_lock,
                 movement_policy_factory=plan.policy_factory,check_current=lambda:self._camp_position_current(p),
                 command_state_clear=lambda:self._camp_command is None and not self.active and not self.target_ready,
-                pump=pump,probes=plan.probes,maximum_seconds=plan.maximum_seconds,log_veto=p.probe_log_veto)
+                pump=pump,probes=plan.probes,maximum_seconds=plan.maximum_seconds,log_veto=p.probe_log_veto,
+                input_release_deadline=self._camp_probe_input_release_deadline(p))
             self._camp_position_current(p)
             self.trace('camp_probe_started',initial_height_sha256=p.result.sha256,
                 floor_checkpoint_sha256=p.floor.sha256,destination_id=plan.destination_id,
