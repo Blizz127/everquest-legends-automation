@@ -14,8 +14,10 @@ from test_source_step import rectangle,setup,face
 from test_source_itinerary import fixture as checked_fixture
 
 
-def test_long_connected_surface_builds_short_cells_and_rebuilds_without_changing_prefix():
+@pytest.mark.parametrize('zone', ('crushbone', 'butcher'))
+def test_long_connected_surface_builds_short_cells_and_rebuilds_without_changing_prefix(zone):
     _,_,terrain,static,bsp,policy=checked_fixture()
+    policy=replace(policy,zone=zone)
     sources=rectangle(0.,200.,0.,0)
     terrain.source_faces_for_footprint=lambda _:sources
     start=(10.,0.);goal=(190.,0.)
@@ -24,10 +26,10 @@ def test_long_connected_surface_builds_short_cells_and_rebuilds_without_changing
     before=_chain_snapshot(chain)
     with pytest.raises(ValueError,match='bounded'):find_source_detour(chain,start,goal,terrain,static,radius=.5)
     proposal=SourceTransitGraph(sources,inventory_sha256='a'*64,radius=.5).propose(chain,start,goal)
-    guide=proposal.guide(static_inventory_sha256='d'*64,radius=.5,body_height=6.)
+    guide=proposal.guide(static_inventory_sha256='d'*64,radius=.5,body_height=6.,zone=zone)
     assert all(math.dist(op.start,op.end)<=2.0000001 for op in guide.operations)
     plan=plan_source_itinerary(chain,start,guide,terrain,static,bsp,policy,check_context=lambda:None).record()
-    assert plan['goal']==list(goal) and plan['goal_floor_height']==0
+    assert plan['goal']==list(goal) and plan['goal_floor_height']==0 and plan['zone']==zone
     assert all(row['native']['possible_flags']==[0] for row in plan['cells'])
     assert _chain_snapshot(chain)==before and not proposal.input_authorized and not plan['real_client_accepted']
 
@@ -40,6 +42,8 @@ def test_generated_step_and_reverse_routes_keep_explicit_landings_and_full_check
     proposal=graph.propose(chain,(-2.,0.),(2.,0.))
     guide=proposal.guide(static_inventory_sha256='d'*64,radius=1.,body_height=6.)
     assert any(type(op) is SourceStepHint for op in guide.operations)
+    with pytest.raises(ValueError,match='ordinary walking only'):
+        proposal.guide(static_inventory_sha256='d'*64,radius=1.,body_height=6.,zone='butcher')
     plan=plan_source_itinerary(chain,(-2.,0.),guide,terrain,static,bsp,policy,check_context=lambda:None).record()
     assert plan['goal_floor_height']==.3125
     assert [row['transfer']['evidence']['direction'] for row in plan['cells'] if row['kind']=='step']==['up']

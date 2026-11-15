@@ -1,5 +1,62 @@
 # FINDINGS
 
+## 2026-11-15 00:09 UTC — Butcherblock long-route proposals and exact refusals
+
+VERIFIED offline tools **0.42.76** produce ordinary-walking Butcher guides from
+exact source adjacency or the retained terrain/static navmesh. The owner helper
+remains **0.39.35 / runtime 0.42.75**; no additional camp destination is enabled.
+The original full 1–20 and fresh-character 1–50 objectives remain unfinished.
+
+The copied map pins Newbie Hills `(-650,2700)` and Goblin Camp `(-2069,-298)`;
+its suggested range is 5–8, not live suitability. The complete source graph has
+27,278 eligible faces, 282 components and 76,010 directed edges. Start and goal
+share its overapproximate component. That establishes a proposal, not clearance.
+The source proposal is 8,508.35 units with 1,324 compact operations. Full checking
+refuses static collision at operation 51. The bounded local repair explores 45
+states/368 edges and expires after 20 seconds; it proves no physical barrier.
+
+The retained navmesh produces a 6,749.62-unit alternative with 199 polygons,
+36 waypoints, ground area `[63]` and 862 compact operations. Only XY hints are
+consumed; source floors, static objects and native region metadata are rechecked.
+It passes the first **154 operations**, then refuses uncovered ground at 154.
+A local repair explores 87 states/716 edges and finds no path in its bounded
+box; refusals include coverage, floor-reference ambiguity and static collision.
+
+A further diagnostic reconstructs all 154 earlier operations and compares each
+source-floor proof before using the reached endpoint for a new source-graph
+proposal. Final reached proof
+`30cc335dfbcdba114055ef5a008e296e46f77fa37e8dbed4948b51980b479ea4`
+matches; endpoint `(-562.9318448535396,1539.1907577950194)`. No fresh floor seed
+is introduced there. The joined proposal has 1,274 operations and refuses a
+placed object at 155. No partial route is published to the owner runtime.
+
+Private evidence under `nav-candidates/`:
+
+| Record suffix (`butcher-newbie-goblin-transit-20261115-…json`) | SHA-256 | Result |
+| --- | --- | --- |
+| initial | `552b2a01db1760aab91486c2e78dd346db33ee2377b159a6e31c84e05e387939` | Static collision at 51 |
+| repairs | `88fdaf1b6511be6bf1ad38c3209f66477fee1d2084fa41bb7cfb79d706f95bc4` | Local repair timed out |
+| mesh | `26ecb3205ce2f7ef826f26cb98b85689259cc69aadff037baf728b7d708c847d` | Uncovered floor at 154 |
+| mesh-repairs | `6a7b759cfa91f54fce7e6374a0db5ff2cfb3586b578bb8f4d21563d13153d3e7` | No local repair in searched box |
+| hybrid | `8bffdd1ae0ade2ae5b7270e4402919988fb63e241bfd6b109676bad18c26349a` | Rebuilt prefix matches; static collision at 155 |
+
+New repair tooling carries one source-floor branch, checks every detour cap and
+sweep through terrain/static/BSP/native validation, and requires a final whole
+itinerary rebuild. Explicit geometric refusals alone trigger repair; binding,
+inventory and query-budget failures propagate. Atomic checkpoint writing now
+retains the previous record if serialization is interrupted and can still write
+its final refusal. VERIFIED **19 focused tests** cover the zone-bound proposal,
+wall bypass/full rebuild, region refusal, unchanged caller floor, integrity
+failures and interrupted checkpoint cleanup. CLI startup passes. Validation SHA
+`6c7781c0cb413ceaea187299bc5d85a4cd43a5b6da3d535c6f2e21388ab11afb`.
+
+A read-only Alienware trace check found no new owner travel result: the trace
+still ends at 2026-11-14 19:31 UTC with engine_exit. Current real level, XP/hour,
+deaths and camp remain unknown; no game input, helper restart or character edit
+was performed. G0 stays passed. Next: collision-aware source graph proposals
+around these exact obstacles, then complete the whole route before adding the
+Goblin camp to the owner selector. Skeletons and Trainer remain separate gaps.
+
 ## 2026-11-14 23:57 UTC — owner 0.39.35 privately installed
 
 VERIFIED additive publication on Alienware: owner **0.39.35**, source/runtime

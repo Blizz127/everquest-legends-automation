@@ -19,6 +19,7 @@ from .route_floor_commit import _chain_snapshot
 from .source_floor_components import SourceFloorComponents
 from .source_itinerary import SourceItineraryGuide, SourceStepHint, SourceWalkHint
 from .source_step_links import StepLink, propose_step_caps
+from .source_zones import source_zone_id
 
 
 @dataclass(frozen=True)
@@ -46,7 +47,8 @@ class SourceTransitProposal:
     input_authorized: bool = False
     real_client_accepted: bool = False
 
-    def guide(self, *, static_inventory_sha256, radius, body_height, maximum_cell_length=2.):
+    def guide(self, *, static_inventory_sha256, radius, body_height, maximum_cell_length=2., zone='crushbone'):
+        source_zone_id(zone)
         if not finite(maximum_cell_length) or not .25<=maximum_cell_length<=4:
             raise ValueError('Bounded source guide cells required')
         operations=[];point=self.start
@@ -64,7 +66,7 @@ class SourceTransitProposal:
             else:
                 for xyz in edge.points[1:]:walk(xyz[:2])
         if point!=self.goal:raise ValueError('Source proposal did not end at the exact goal')
-        result=SourceItineraryGuide('crushbone',self.source_wld_sha256,static_inventory_sha256,
+        result=SourceItineraryGuide(zone,self.source_wld_sha256,static_inventory_sha256,
             sha256(encoded(asdict(self))).hexdigest(),radius,body_height,self.goal,tuple(operations))
         result.validate();return result
 

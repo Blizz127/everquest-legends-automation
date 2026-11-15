@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-14 23:57 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 00:09 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -39,12 +39,18 @@ Updated 2026-11-14 23:57 UTC for coordinator task `829a00229b29`.
   Source revision `7686bfb7ba4dda23f69d9826ca67363c7bf7ae81`.
   The install preflight initially rejected Bazzite's standard /home→/var/home
   mapping before any changes; using the resolved private store fixed it.
-- **Next:** owner-run travel/camp acceptance and an offline Newbie Hills→Goblin
-  or Dwarf Skeletons corridor proposal. Their copied map hints are 5–8, but
-  only destination footprints are checked; no connecting source itinerary is
-  retained. Continue Trainer approach discovery as well. Real travel, camp
-  suitability, zone crossings and unattended leveling remain unverified.
-  No lead login, game input, client/prefix edit or character change.
+- **Offline tools 0.42.76 built; private publication pending.** VERIFIED 19
+  focused checks and CLI startup. Source and retained-mesh long-route proposals
+  exist to Goblin Camp, but none passes complete source/static checks. The mesh
+  proposal's first 154 operations pass. Rebuilding that prefix reproduces every
+  floor proof; the source-graph continuation then hits a placed object at 155.
+  All five real copied-geometry diagnostics retain their explicit refusals.
+  The owner helper and its six destinations remain unchanged.
+- **Next:** make source-graph proposals avoid those exact static collisions,
+  then recheck the whole Goblin route before owner registration. Skeleton camp,
+  Trainer and zone crossings remain gaps. Real level, XP/hour, deaths and camp
+  remain unknown; the owner trace has no update after 2026-11-14 19:31 UTC.
+  G0 passed. No lead game input, login, helper restart or character/prefix change.
 
 
 ## Historical development entries

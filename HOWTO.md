@@ -1,6 +1,6 @@
 # EverQuest Legends automation — current owner guide
 
-Owner test **0.39.35** · runtime/source **0.42.75** · retained assist **0.39.13**.
+Owner test **0.39.35** · runtime **0.42.75** · offline tools **0.42.76** · retained assist **0.39.13**.
 Publication status and evidence are recorded in STATUS.md.
 
 **G0 passed, including the visible stop. Do not repeat it.** The complete 1–20

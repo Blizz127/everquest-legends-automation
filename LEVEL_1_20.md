@@ -16,7 +16,7 @@ controls and exact starting conditions are in [HOWTO.md](HOWTO.md).
 | --- | --- | --- | --- |
 | 1–4 | Butcherblock Newbie Hills | Short local source-checked guide; owner travel/camp and stop-only options | Not traversed; camp suitability unverified |
 | 4–7 | GFay Orc Camps | Copied map label retained; no owner guide | Not traversed |
-| 5–8 | Butcherblock Dwarf Skeletons / Goblin Camp | Source footprints checked; no connecting owner route | Not traversed |
+| 5–8 | Butcherblock Dwarf Skeletons / Goblin Camp | Source footprints checked; Goblin proposals fail static/coverage checks; no owner route | Not traversed |
 | 7–10 | Crushbone Slave Mines | Owner travel/camp guide | Not traversed |
 | 11–12 | Crushbone Trainer Hill | Source discovery has no complete proposal | Not traversed |
 | 13–17 | Crushbone North Wall and Castle | Owner travel/camp guide | Not traversed |
