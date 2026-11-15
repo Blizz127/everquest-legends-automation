@@ -1,5 +1,37 @@
 # FINDINGS
 
+## 2026-11-15 00:28 UTC — source tools 0.42.77 privately installed; continuation remains refused
+
+VERIFIED additive installation at Alienware
+`~/.local/share/eql-automation/owner-tools/0.42.77/source`, revision
+`28aa741b8416413a761e0025b00c3a4e4579986d`. All **578 source Python files** and
+**631 packaged file hashes** verify. Installed CLI startup returns 0;
+synthetic Butcher and default Crushbone guide round trips pass. Owner
+0.39.35/runtime0.42.75 and its manifest remain unchanged. No helper restart,
+game input, login, character mutation or install/prefix modification occurred.
+
+Private archive SHA `5cfb63ddba0f2146cb802dedb2aae2cc46d5ef65cab42868b5e13b14a3aff95f`;
+receipt SHA `f2bdf748a2ec3dc0e8c699b4ee06a5281783fa3e86f9ae901b7f51b8e8a34dfd`;
+validation SHA `748e589c5604b6934092a9ae47d58c4ab75d2f4e3210624e772e1a80797cd00e`.
+The build includes **108 passing focused checks** and the three earlier completed
+diagnostics below; the last continuation diagnostic finished after packaging.
+
+VERIFIED the current-code `butcher-newbie-goblin-transit-20261115-repaired-prefix.json`
+independently reproduces all **472 prior cell proofs**, including three adopted
+detours, then proposes onward travel. All **221 diagnostic code pins** still match.
+It finishes **refused**, with local search time exhausted at its operation 454;
+183.09 wall seconds / 80.63 CPU seconds. Artifact SHA
+`ea6b6e0a612e514f30a5ad0111dff7553cd82b448ba564d98020d41b7923374d`.
+This completes the diagnostic, not the route or leveling goal. A search-time
+limit establishes no physical disconnection. There is no new enabled Goblin
+route or real-client route acceptance. G0 remains passed and should not repeat.
+
+Next: use the bounded fixed-center prepass, and inspect the remaining fixed
+edge only with its actual carried floor if center caps are clear. Preserve the
+checked prefix and exact static/region bounds. Whole-route and owner startup
+checks must pass before adding a Goblin destination. Current level, XP, XP/hour,
+deaths and camp remain unknown; the complete 1–20 and fresh 1–50 goals are unmet.
+
 ## 2026-11-15 00:26 UTC — source 0.42.77, repaired Butcher route prefixes
 
 VERIFIED **108 focused checks pass** (102 geometry/transit cases plus six

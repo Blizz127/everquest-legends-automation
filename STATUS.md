@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-15 00:26 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 00:28 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP,
@@ -39,29 +39,27 @@ Updated 2026-11-15 00:26 UTC for coordinator task `829a00229b29`.
   Source revision `7686bfb7ba4dda23f69d9826ca67363c7bf7ae81`.
   The install preflight initially rejected Bazzite's standard /home→/var/home
   mapping before any changes; using the resolved private store fixed it.
-- **Offline tools 0.42.76 privately installed on Alienware.** VERIFIED 19
-  focused checks and CLI startup. Source and retained-mesh long-route proposals
-  exist to Goblin Camp, but none passes complete source/static checks. The mesh
-  proposal's first 154 operations pass. Rebuilding that prefix reproduces every
-  floor proof; the source-graph continuation then hits a placed object at 155.
-  All five real copied-geometry diagnostics retain their explicit refusals.
-  The owner helper and its six destinations remain unchanged. All 574 source
-  Python files verify and installed CLI/zone-guide startup passes. Source
-  revision `00905a9e33716e4251caff559c9c2ad542fef401`; archive SHA
-  `c500cbeb7b4921d859097ef1f17d7fe2f8d248456f7b34652304ddc41fe5d62f`;
-  install receipt SHA `e7acb4ca6da85a4eefa96c31a307550613ce52fa2b23a0fc2185581b055391f5`.
-- **Source 0.42.77 built locally; publication in progress.** VERIFIED 108
-  focused checks pass. New start attachments bypass the forced center at 155;
-  three full-geometry local repairs pass, and exact-area BSP canonicalization
-  clears the former 324 refusal. Copied-data checking reaches 452 original
-  operations / 472 cells before another local search expires. No body, region,
-  source-layer or input bound was widened. The new diagnostic reproduces all
-  472 retained floor proofs before proposing onward travel; final result pending.
-- **Next:** finish that continuation check and publish the source increment;
-  enable no owner Goblin route until complete geometry/startup checks pass.
-  Skeleton camp, Trainer and zone crossings remain gaps. Real level, XP/hour,
-  deaths and camp remain unknown; owner trace unchanged after 2026-11-14 19:31 UTC.
-  G0 passed. No lead input, login, restart, character or prefix change.
+- **Source tools 0.42.77 privately installed on Alienware.** VERIFIED 108
+  focused checks pass; all 578 source Python pins and packaged file hashes
+  match. Installed CLI and synthetic zone-guide startup pass. Source revision
+  `28aa741b8416413a761e0025b00c3a4e4579986d`. Archive SHA
+  `5cfb63ddba0f2146cb802dedb2aae2cc46d5ef65cab42868b5e13b14a3aff95f`;
+  install receipt SHA `f2bdf748a2ec3dc0e8c699b4ee06a5281783fa3e86f9ae901b7f51b8e8a34dfd`.
+- **VERIFIED copied-data progress:** ordinary shared-edge attachments bypass
+  the forced center at 155; three local repairs pass complete geometry checks.
+  Exact-area BSP canonicalization clears the former 324 refusal. Checking
+  reaches 452 original operations / 472 cells. The next diagnostic independently
+  reproduces all 472 floor proofs before onward search, then refuses at its
+  operation 454 when the local search timer expires. Artifact SHA
+  `ea6b6e0a612e514f30a5ad0111dff7553cd82b448ba564d98020d41b7923374d`.
+  No body, region, source-layer or input bound was widened. No complete Goblin
+  route or new owner destination is enabled; timeout is not disconnection proof.
+- **Next:** apply bounded fixed-center exclusions to the retained continuation;
+  investigate its actual carried edge if centers are clear. Require complete
+  geometry/startup checks before owner registration. Skeleton camp, Trainer
+  and zone crossings remain gaps. Real level, XP, XP/hour, deaths and camp stay
+  unknown; owner trace unchanged after 2026-11-14 19:31 UTC. G0 passed.
+  No lead input, login, helper restart, character or prefix change.
 
 
 
