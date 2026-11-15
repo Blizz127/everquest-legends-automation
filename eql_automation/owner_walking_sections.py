@@ -128,6 +128,9 @@ def make_walking_sections_engine(base,*,section_provider,clock):
                 and not c.closed and c.phase not in ('complete','stopped'))
             return self._section_binding(w,current_content=not active)
 
+        def _section_parent_budget(self,p):
+            return None
+
         def _source_journey_budget(self,p):
             j=self.journey;w=None if j is None else j.walking
             if w is None:return super()._source_journey_budget(p)
@@ -142,7 +145,8 @@ def make_walking_sections_engine(base,*,section_provider,clock):
                 spec.identifier,spec.arrival_mode,n,n*seconds,n*pulses,n*hold,n*distance)
             binding=self._section_binding(w)
             budget=JourneyInputBudget(limits,clock=clock,stop_lock=self.g0_stop_lock,
-                owner_binding=binding,binding_reader=lambda:self._section_budget_binding(w))
+                owner_binding=binding,binding_reader=lambda:self._section_budget_binding(w),
+                parent_budget=self._section_parent_budget(p))
             w.budget=w._budget=budget
             budget.check()
             self.trace('journey_sections_started',destination_id=j.destination_id,

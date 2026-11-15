@@ -305,6 +305,9 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             p['collector']=StoppedLocationPair(p['lease'],released_at=p['last_release'],
                 check_current=lambda:self._trial_current(p),clock=clock,local_wall_clock=local_wall_clock)
 
+        def _source_input_release_deadline(self,p):
+            return None
+
         def _startup_hotkey(self,p,request):
             collector=p['collector']
             def current():
@@ -314,9 +317,11 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
                     raise ValueError('Startup hotbutton request changed')
             def pump():
                 self.pump();self.autopilot_tick(clock())
+            release_deadline=self._source_input_release_deadline(p)
+            deadline={} if release_deadline is None else dict(release_deadline=release_deadline)
             receipt=send_location_hotkey(p['sender'],binding=p['binding'],owner_input=p['observer'],
                 lock=self.g0_stop_lock,clock=clock,expires_at=request.expires_at,ensure_current=current,
-                cancel=lambda reason:self._cancel_trial(reason),pump=pump,record_event=p['events'].append)
+                cancel=lambda reason:self._cancel_trial(reason),pump=pump,record_event=p['events'].append,**deadline)
             p['last_release']=receipt.released_at
             return CommandReceipt(receipt.pulse.down_started_at,receipt.released_at)
 
@@ -439,6 +444,8 @@ def make_owner_route_trial_engine(base_engine, *, planner_loader, destination_lo
             if budget is not None:
                 budget.check()
                 p['expires']=min(p['expires'],budget.expires_at)
+            release_deadline=self._source_input_release_deadline(p)
+            if release_deadline is not None:p['expires']=min(p['expires'],release_deadline)
             runtime=OwnerSourceRuntime(self,p,SourceWalkDriver(ledger),
                 clock=clock,local_wall_clock=local_wall_clock,startup_released_at=pair.released_at,
                 journey_budget=budget)

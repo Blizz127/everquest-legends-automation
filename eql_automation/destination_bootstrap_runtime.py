@@ -1,8 +1,8 @@
 """Fresh destination observations and seven probes under one retained deadline.
 
-This adapter is not connected to owner controls. A caller supplies an exclusive
-destination lease, independent planning bounds, a continuous hazard observer and
-explicit supervision. It never imports a source-zone floor, heading or speed.
+The explicit owner itinerary can adopt this adapter. A caller supplies an
+exclusive destination lease, independent planning bounds, a continuous hazard
+observer and explicit supervision. Source floors, headings and speeds are not reused.
 """
 import threading
 

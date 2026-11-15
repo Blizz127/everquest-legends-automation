@@ -4,6 +4,7 @@ Construction needs a freshly started ledger. This adapter neither calibrates
 nor logs in, creates input devices, changes targets, or starts combat.
 """
 from .g2_safety_provider import GameWindowIdentity
+from .journey_input_budget import itinerary_root
 from .location_hotkey import send_location_hotkey
 from .motion_collection import CommandReceipt, LocationRequest
 from .route_step_sender import _fd_identity
@@ -118,10 +119,12 @@ class OwnerSourceRuntime(SourceExecutionLoop):
 
         expires=(seal.expires_at if seal else min(self.policy.started+self.policy.declaration.maximum_seconds,
             self.ledger.observer.calibration.valid_until_monotonic))
+        root=itinerary_root(self.policy.journey_budget)
+        deadline={} if root is None else dict(release_deadline=min(root.expires_at,p['expires']))
         receipt = send_location_hotkey(self.sender, binding=self.hotkey, owner_input=self.owner_input,
             lock=self.ledger.lock, clock=self.clock, expires_at=min(request.expires_at,expires),
             ensure_current=current, cancel=lambda reason:e._cancel_trial(reason),
-            pump=pump, record_event=self.events.append)
+            pump=pump, record_event=self.events.append, **deadline)
         return CommandReceipt(receipt.pulse.down_started_at, receipt.released_at)
 
     def _work_busy(self):return self.pending['busy']

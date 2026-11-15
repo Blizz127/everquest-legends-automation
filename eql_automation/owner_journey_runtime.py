@@ -67,7 +67,8 @@ class Arrival:
 def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                               camp_options=None, camp_probe_plan_provider=None,
                               section_provider=None, camp_section_provider=None,
-                              source_crossing_provider=None, **route_options):
+                              source_crossing_provider=None, zone_itinerary_provider=None,
+                              **route_options):
     movement = make_owner_route_trial_engine(base_engine, clock=clock, **route_options)
     options = dict(repeat=True, auto_prepare=True)
     options.update(camp_options or {})
@@ -455,4 +456,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
         corridor_provider=(load_owner_source_crossing
             if source_crossing_provider is None else source_crossing_provider),
         clock=clock)
+    if zone_itinerary_provider is not None:
+        from .owner_zone_itinerary import make_zone_itinerary_engine
+        result=make_zone_itinerary_engine(result,itinerary_provider=zone_itinerary_provider,clock=clock)
     return result
