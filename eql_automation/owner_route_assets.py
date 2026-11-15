@@ -173,3 +173,30 @@ def load_owner_butcher_planner(engine):
     binding.check_policy(planner.region_policy)
     planner.installed_region_model = binding
     return planner
+
+
+def load_owner_gfay_source_planner(engine):
+    """Current Greater Faydark native-zero source planner with installed model checks."""
+    from .gfay_assets import DATA_NAME as GF_NAME, DATA_PINS as GF_PINS, load_gfay_assets
+    from .installed_region_model import verify_installed_region_model
+    tracker = engine.live_zone_tracker
+    if tracker is None or tracker.reader.zone_id != 54:
+        raise ValueError('Greater Faydark source trial needs its current observed zone')
+    game = Path(engine.settings.game_dir)
+    extras = (('gfaydark.s3d', GF_PINS['gfaydark.s3d']),
+              ('gfaydark_obj.s3d', GF_PINS['gfaydark_obj.s3d']),
+              ('Resources/ZoneNames.txt', GF_PINS['ZoneNames.txt']))
+    binding = verify_installed_region_model(game, additional_pins=extras)
+    engine.emit('Loading copied Greater Faydark terrain and objects; no movement yet.')
+    planner = load_gfay_assets(Path.home()/'.local/share/eql-automation/owner-route-data'/GF_NAME,
+                               native_planning=True).planner
+    binding.check_policy(planner.region_policy)
+    tracker.check_binding()
+    unique, _ = unique_zone_ids_from_text(checked_bytes(
+        game/'Resources/ZoneNames.txt', GF_PINS['ZoneNames.txt']).decode('latin-1'))
+    if (tracker is not engine.live_zone_tracker or tracker.reader.zone_id != 54
+            or tracker.reader.zone_ids != unique or tracker.reader.zone_display_name != planner.zone_name):
+        raise ValueError('Current Greater Faydark identity differs from the copied client catalog')
+    binding.check_policy(planner.region_policy)
+    planner.installed_region_model = binding
+    return planner

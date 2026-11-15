@@ -11,12 +11,24 @@ SECTION_FILE='butcher-goblin-sections-v1.json'
 SECTION_SHA256='65c97d4cd1a4cefd0213877a602cc1276cd3e64d36a156b2a424859bd651d04c'
 BUTCHER_GFAY_SECTION_FILE='butcher-goblin-gfay-preline-carbon-sections-v1.json'
 BUTCHER_GFAY_SECTION_SHA256='1cf209163cc780eb7ce6ed3d018527272948d9e16bf5875faf7da66e2b41b548'
+GFAY_ORC_SECTION_FILE='gfay-orc-camps-carbon-sections-v1.json'
+GFAY_ORC_SECTION_SHA256='695ba9a7f0bcd75d0ab82a1b51eee72c966d5615f76a9f0d077be8d6a4f6ef51'
+GFAY_CB_SECTION_FILE='gfay-crushbone-preline-carbon-sections-v1.json'
+GFAY_CB_SECTION_SHA256='0274d588564420ccff2fdd420d43a23c9667f8a36c2d1ff56159dcb51af1effc'
+GFAY_FULL_CB_SECTION_FILE='gfay-butcher-crushbone-preline-carbon-sections-v1.json'
+GFAY_FULL_CB_SECTION_SHA256='5a7253238acc541c65de2479f5be751cb7ffd249a8e79d386a226976b37eee57'
 
 _SECTION_SPECS={
     'goblin-camp':('butcher-camps-20261114',SECTION_FILE,SECTION_SHA256),
     'goblin-camp-stop':('butcher-camps-20261114',SECTION_FILE,SECTION_SHA256),
     'butcher-gfay-preline-stop':('butcher-gfay-carbon-20261115',BUTCHER_GFAY_SECTION_FILE,BUTCHER_GFAY_SECTION_SHA256),
     'butcher-gfay-crossing':('butcher-gfay-carbon-20261115',BUTCHER_GFAY_SECTION_FILE,BUTCHER_GFAY_SECTION_SHA256),
+    'gfay-orc-camps':('gfay-camps-carbon-20261115',GFAY_ORC_SECTION_FILE,GFAY_ORC_SECTION_SHA256),
+    'gfay-orc-camps-stop':('gfay-camps-carbon-20261115',GFAY_ORC_SECTION_FILE,GFAY_ORC_SECTION_SHA256),
+    'gfay-crushbone-preline-stop':('gfay-camps-carbon-20261115',GFAY_CB_SECTION_FILE,GFAY_CB_SECTION_SHA256),
+    'gfay-crushbone-crossing':('gfay-camps-carbon-20261115',GFAY_CB_SECTION_FILE,GFAY_CB_SECTION_SHA256),
+    'gfay-butcher-crushbone-preline-stop':('gfay-camps-carbon-20261115',GFAY_FULL_CB_SECTION_FILE,GFAY_FULL_CB_SECTION_SHA256),
+    'gfay-butcher-crushbone-crossing':('gfay-camps-carbon-20261115',GFAY_FULL_CB_SECTION_FILE,GFAY_FULL_CB_SECTION_SHA256),
 }
 
 

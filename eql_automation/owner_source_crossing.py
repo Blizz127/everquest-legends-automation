@@ -35,7 +35,11 @@ from .scene_log_veto import SceneLogVeto
 from .source_arrival import arrival_reference
 from .source_crossing_corridor import SourceCrossingCorridor
 from .source_crossing_sender import run_checked_source_crossing_step
-from .source_destinations import CARBON_BUTCHER_GFAY_DATA_NAME, destination_spec
+from .source_destinations import (
+    CARBON_BUTCHER_GFAY_DATA_NAME,
+    CARBON_GFAY_DATA_NAME,
+    destination_spec,
+)
 from .source_itinerary import SourceItineraryGuide, SourceWalkHint, xy
 from .source_motion import SourceReceiptLedger
 from .stopped_location_pair import StoppedLocationPair
@@ -46,12 +50,26 @@ from .zone_line import ExpectedZoneLine
 
 BUTCHER_GFAY_CORRIDOR_FILE = 'butcher-gfay-crossing-carbon-corridor-v1.json'
 BUTCHER_GFAY_CORRIDOR_SHA256 = '092735a84716e7340731d376e008314e0e55daec675aabc10f08486b625f2fb0'
+GFAY_CRUSHBONE_CORRIDOR_FILE = 'gfay-crushbone-crossing-carbon-corridor-v1.json'
+GFAY_CRUSHBONE_CORRIDOR_SHA256 = '6755d4c63d3f778a317985d69c50935f2cf8f6f95788ab6073c3c0a90a46a323'
+GFAY_BUTCHER_CRUSHBONE_CORRIDOR_FILE = 'gfay-butcher-crushbone-crossing-carbon-corridor-v1.json'
+GFAY_BUTCHER_CRUSHBONE_CORRIDOR_SHA256 = 'e5a561cddadd59d6555b6450386cfb4de0b860f95c59f85b3c53eefa2aff932c'
 
 _CORRIDOR_SPECS = {
     'butcher-gfay-crossing': (
         CARBON_BUTCHER_GFAY_DATA_NAME,
         BUTCHER_GFAY_CORRIDOR_FILE,
         BUTCHER_GFAY_CORRIDOR_SHA256,
+    ),
+    'gfay-crushbone-crossing': (
+        CARBON_GFAY_DATA_NAME,
+        GFAY_CRUSHBONE_CORRIDOR_FILE,
+        GFAY_CRUSHBONE_CORRIDOR_SHA256,
+    ),
+    'gfay-butcher-crushbone-crossing': (
+        CARBON_GFAY_DATA_NAME,
+        GFAY_BUTCHER_CRUSHBONE_CORRIDOR_FILE,
+        GFAY_BUTCHER_CRUSHBONE_CORRIDOR_SHA256,
     ),
 }
 

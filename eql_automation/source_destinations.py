@@ -38,9 +38,46 @@ DESTINATIONS = MappingProxyType({**crushbone.DESTINATIONS,
         'butcher-goblin-gfay-crossing-carbon-source-guide-v1.json',
         'c1c20af83d12fc6397edfc5aecae285b2ed68596ae6eea2d6d7e0fadea5eb5a3',
         (-3084.646484375, -1328.2936706542969),
-        'ef9f03f53d49158d6d9681d5e00860f36aaeecfc0c9c5f05e949b51eddf76ddb', 'zone_crossing', 'butcher')})
+        'ef9f03f53d49158d6d9681d5e00860f36aaeecfc0c9c5f05e949b51eddf76ddb', 'zone_crossing', 'butcher'),
+    'gfay-orc-camps': SourceGuideDestination(
+        'gfay-orc-camps', 'Orc Camps',
+        'gfay-orc-camps-carbon-source-guide-v1.json',
+        '9b5be822710177e29c917ee0a652e4496a286ddce85085105cfdf35f7acef645',
+        (48., 1849.),
+        'b9c43400ce387cc5c1aa9ef23bb48e6bf9a680d9433ea498667fbe404fc291d7', 'camp', 'gfaydark'),
+    'gfay-orc-camps-stop': SourceGuideDestination(
+        'gfay-orc-camps-stop', 'Orc Camps movement test',
+        'gfay-orc-camps-stop-carbon-source-guide-v1.json',
+        '6e3892020e1fbafa5981eaaea054f5a442adb4af97fa7cb3431a29fa6722a248',
+        (48., 1849.),
+        'b9c43400ce387cc5c1aa9ef23bb48e6bf9a680d9433ea498667fbe404fc291d7', 'stop', 'gfaydark'),
+    'gfay-crushbone-preline-stop': SourceGuideDestination(
+        'gfay-crushbone-preline-stop', 'Crushbone zone-line approach test',
+        'gfay-crushbone-preline-stop-carbon-source-guide-v1.json',
+        'b5e8be8788a070559f3bf2dfd01dc47db5b84dd9d7a38ef29a8bdc1d3c388526',
+        (-52., 2597.),
+        '61f31ed94d707102625f42836ed51e0d9954d295f0c6441cf44bbb9706daaa05', 'stop', 'gfaydark'),
+    'gfay-crushbone-crossing': SourceGuideDestination(
+        'gfay-crushbone-crossing', 'Travel into Clan Crushbone',
+        'gfay-crushbone-crossing-carbon-source-guide-v1.json',
+        'e8f8e48d57715e06c0e6ca10c392b05680f603fb034f1961ea9b823a7c588443',
+        (-52., 2597.),
+        '61f31ed94d707102625f42836ed51e0d9954d295f0c6441cf44bbb9706daaa05', 'zone_crossing', 'gfaydark'),
+    'gfay-butcher-crushbone-preline-stop': SourceGuideDestination(
+        'gfay-butcher-crushbone-preline-stop', 'Butcher exit to Crushbone approach test',
+        'gfay-butcher-crushbone-preline-stop-carbon-source-guide-v1.json',
+        '48156e0c05f03ef33bfe34c7690ed0d0d20f50517416c51cf2af10ffa8422413',
+        (-52., 2597.),
+        '1e2dfe7730bb61b37ef0fcc7bca6904dfc11311462af11df8d38a795a8e461e4', 'stop', 'gfaydark'),
+    'gfay-butcher-crushbone-crossing': SourceGuideDestination(
+        'gfay-butcher-crushbone-crossing', 'Butcher exit travel into Clan Crushbone',
+        'gfay-butcher-crushbone-crossing-carbon-source-guide-v1.json',
+        '5d4ffffdf2f253e95ac183995c411df2e8f4f51084976c8595a363e9ffea4b54',
+        (-52., 2597.),
+        '1e2dfe7730bb61b37ef0fcc7bca6904dfc11311462af11df8d38a795a8e461e4', 'zone_crossing', 'gfaydark')})
 
 CARBON_BUTCHER_GFAY_DATA_NAME = 'butcher-gfay-carbon-20261115'
+CARBON_GFAY_DATA_NAME = 'gfay-camps-carbon-20261115'
 
 
 def destination_spec(identifier):
@@ -53,6 +90,8 @@ def source_data_name(identifier):
     spec = destination_spec(identifier)
     if spec.identifier in ('butcher-gfay-preline-stop', 'butcher-gfay-crossing'):
         return CARBON_BUTCHER_GFAY_DATA_NAME
+    if spec.zone == 'gfaydark':
+        return CARBON_GFAY_DATA_NAME
     if spec.zone == 'butcher':
         from .butcher_assets import DATA_NAME
     else:
@@ -64,10 +103,13 @@ def load_source_guide(root, destination_id='slave-mines'):
     spec = destination_spec(destination_id)
     if spec.zone == 'crushbone':
         return crushbone.load_crushbone_source_guide(root, destination_id)
-    from .butcher_assets import DATA_PINS, WLD_PIN, STATIC_PIN
+    if spec.zone == 'gfaydark':
+        from .gfay_assets import DATA_PINS, WLD_PIN, STATIC_PIN
+    else:
+        from .butcher_assets import DATA_PINS, WLD_PIN, STATIC_PIN
     root = Path(root)
     if root.is_symlink() or not root.is_dir():
-        raise ValueError('Missing private Butcherblock guide directory')
+        raise ValueError('Missing private source guide directory')
     data = json.loads(checked_bytes(root/spec.filename, spec.file_sha256))
     guide = SourceItineraryGuide.from_record(data['guide'])
     if (data['format'] != 'eql-copied-source-guide-v1' or data['client_data_pins'] != DATA_PINS
@@ -78,5 +120,5 @@ def load_source_guide(root, destination_id='slave-mines'):
             or guide.radius != 1.2 or guide.body_height != 6.
             or data['arrival_mode'] != spec.arrival_mode
             or data['input_authorized'] is not False or data['real_client_accepted'] is not False):
-        raise ValueError('Private Butcherblock guide identity or provenance changed')
+        raise ValueError('Private source guide identity or provenance changed')
     return guide

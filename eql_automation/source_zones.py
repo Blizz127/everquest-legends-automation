@@ -3,7 +3,7 @@ from types import MappingProxyType
 
 # IDs checked against the retained client Resources/ZoneNames.txt. Production
 # loaders also require the current installed catalog's exact file hash/name.
-SOURCE_ZONE_IDS = MappingProxyType({'crushbone': 58, 'butcher': 68})
+SOURCE_ZONE_IDS = MappingProxyType({'gfaydark': 54, 'crushbone': 58, 'butcher': 68})
 
 
 def source_zone_id(zone):

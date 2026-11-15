@@ -26,6 +26,7 @@ SPATIAL_REFUSALS = frozenset((
     'Source motion static: other_source_surface_intersects_body_band',
 ))
 UNRESOLVED_RESERVES = frozenset((
+    'Source projection candidate budget exceeded',
     'Source motion terrain: floor_patch_budget_exceeded',
     'Source motion static: complete_source_budget_exceeded',
 ))

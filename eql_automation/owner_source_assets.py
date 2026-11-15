@@ -38,12 +38,21 @@ class SourceDestinationAssets:
 
 
 def load_owner_source_destination(engine):
-    from .owner_route_assets import load_owner_crushbone_planner, load_owner_butcher_planner
+    from .owner_route_assets import (
+        load_owner_butcher_planner,
+        load_owner_crushbone_planner,
+        load_owner_gfay_source_planner,
+    )
     from .source_destinations import destination_spec, load_source_guide, source_data_name
     journey=getattr(engine,'journey',None)
     identifier='slave-mines' if journey is None else journey.destination_id
     spec=destination_spec(identifier)
-    planner = (load_owner_butcher_planner(engine) if spec.zone=='butcher' else load_owner_crushbone_planner(engine))
+    if spec.zone=='butcher':
+        planner = load_owner_butcher_planner(engine)
+    elif spec.zone=='gfaydark':
+        planner = load_owner_gfay_source_planner(engine)
+    else:
+        planner = load_owner_crushbone_planner(engine)
     guide = load_source_guide(Path.home()/'.local/share/eql-automation/owner-route-data'/source_data_name(identifier),identifier)
     evidence = encoded(dict(kind='copied_client_source_guide', zone=spec.zone,
         destination_id=identifier,guide_file_sha256=spec.file_sha256, guide_sha256=sha256(encoded(guide.record())).hexdigest(),

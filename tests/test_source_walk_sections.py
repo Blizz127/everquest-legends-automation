@@ -74,6 +74,7 @@ def test_query_or_context_failure_does_not_become_a_candidate_exclusion(monkeypa
 
 
 @pytest.mark.parametrize('reason', (
+    'Source projection candidate budget exceeded',
     'Source motion terrain: floor_patch_budget_exceeded',
     'Source motion static: complete_source_budget_exceeded',
 ))
@@ -96,12 +97,16 @@ def test_local_reserve_patch_limit_stays_unresolved_without_poisoning_route_floo
     assert all(r['measurement_reserve']['source_floor_proof_sha256']!=queries[0] for r in result['sections'][:-1])
 
 
-def test_ordinary_route_patch_limit_remains_fatal(monkeypatch):
+@pytest.mark.parametrize('reason', (
+    'Source projection candidate budget exceeded',
+    'Source motion terrain: floor_patch_budget_exceeded',
+))
+def test_ordinary_route_patch_limit_remains_fatal(monkeypatch,reason):
     import eql_automation.source_walk_sections as module
     prefix,guide,p,bounds=context()
-    def refused(*args,**kwargs):raise ValueError('Source motion terrain: floor_patch_budget_exceeded')
+    def refused(*args,**kwargs):raise ValueError(reason)
     monkeypatch.setattr(module,'check_source_footprint',refused)
-    with pytest.raises(ValueError,match='floor_patch_budget_exceeded'):
+    with pytest.raises(ValueError,match=reason):
         plan(prefix,guide,p,bounds)
 
 
