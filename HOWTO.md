@@ -1,5 +1,14 @@
 # EverQuest Legends automation — current owner guide
 
+> **Development branch note (`carbon/continue`, source `0.42.90`):** Development
+> source `0.42.90` adds staged `-carbon-` Butcherblock Goblin-to-GFay pre-line
+> and zone-crossing destinations (`butcher-gfay-preline-stop` and
+> `butcher-gfay-crossing`) plus `OwnerSourceCrossingRuntime` in `OwnerJourneyEngine`,
+> keeping `F8` (Mode 2 Assist / rotation-only), `F7` (toggle), `F9` (instant stop),
+> `F10` (heal), and `F11` (stationary camp / cancel travel) unchanged. Installed
+> Alienware helper remains **0.39.41 / runtime 0.42.87** below until explicitly
+> promoted.
+
 **This guide describes owner 0.39.41 / runtime 0.42.87.**
 Installation status is recorded in STATUS.md. After installation, the receipt
 on Alienware is `~/.local/share/eql-automation/owner-build-drafts/eql-owner-journey-0.39.41-installed.json`.

@@ -1,5 +1,32 @@
 # STATUS
 
+Updated 2026-11-15 10:24 UTC by `gemini-everquest-legends-carbon` on `carbon/continue`.
+
+- **Working; goal not met. G0 passed, including the owner-visible stop. Never
+  repeat G0.** Actual level, XP, XP/hour, deaths and camp remain unknown.
+- Development source **0.42.90** (`carbon/continue`) stages `-carbon-` Butcherblock
+  Goblin-to-GFay pre-line guides, 2-section `WalkingSections` manifest, and 8-cell
+  crossing corridor (`owner-route-data/butcher-gfay-carbon-20261115/`), registers
+  `'butcher-gfay-preline-stop'` (`arrival_mode='stop'`) and
+  `'butcher-gfay-crossing'` (`arrival_mode='zone_crossing'`), and wires
+  `OwnerSourceCrossingRuntime` (`make_source_crossing_engine`) into
+  `OwnerJourneyEngine`, `WalkingSectionsEngine`, and `CampSectionsEngine`.
+  Installed Alienware owner build remains **0.39.41 / source 0.42.87** untouched.
+- **VERIFIED:** 56 local deterministic route/budget/crossing tests on Devbox plus
+  the isolated `/tmp` OS-pipe `walking_sections` + `source_crossing_corridor`
+  suite on Alienware pass (single-section and two-section pre-line travel ->
+  live `check_source_crossing_cell` rebuild -> provisional crossing pulses ->
+  `LOADING` + `The Greater Faydark` arrival -> source floor discard -> fresh
+  destination `/loc` pair, plus immediate `F9` stop and `F8` assist switching
+  during active crossing pulses). Offline and synthetic-log/pipe verification
+  only; `real_client_accepted=false`, `game_input_sent=false`.
+- **Next:** stage `-carbon-` Greater Faydark native source assets (`gfaydark`),
+  GFay->Orc Camps and GFay->Crushbone pre-line/corridor guides, cross-zone
+  level-9+ camp continuation (`goblin-camp` -> `gfaydark` -> `crushbone`), and
+  productive-camp XP/hour relocation (`0.42.91+`).
+
+## Prior status
+
 Updated 2026-11-15 08:49 UTC by `gemini-everquest-legends-carbon` on `carbon/continue`.
 
 - **Working; goal not met. G0 passed, including the owner-visible stop. Never

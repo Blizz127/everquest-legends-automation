@@ -1,5 +1,52 @@
 # FINDINGS
 
+## 2026-11-15 10:24 UTC — Staged Butcherblock-to-GFay crossing assets and OwnerSourceCrossingRuntime integration (0.42.90, carbon/continue)
+
+VERIFIED on branch `carbon/continue` (`gemini-everquest-legends-carbon`, source
+`0.42.90`):
+
+1. `tools/prepare_butcher_gfay_preline_carbon.py` stages immutable `-carbon-`
+   route/crossing artifacts under
+   `~/.local/share/eql-automation/owner-route-data/butcher-gfay-carbon-20261115/`
+   from the verified `0.42.89` audit (`f4945481f3e26004c2038714be5ce646027bdcbcadfee2be62e4dbcfb00c655e`)
+   and plan (`4786b62f28ffe2f997c8e9c0e281f0a7dc1ffd107bfc9f257133504cdc453343`)
+   without touching existing private store directories:
+   - `butcher-goblin-gfay-preline-stop-carbon-source-guide-v1.json`: SHA
+     `610c572a9913a33fe4a13c96bb6e6ad7fcdb9332fd9c78e687028ff51810b9bf`
+     (`arrival_mode="stop"`, `guide_sha256="6a34d176f78797a80640800572697e69ca02c434c12fcaf542ca37356c9a3618"`,
+     `provenance_sha256="ef9f03f53d49158d6d9681d5e00860f36aaeecfc0c9c5f05e949b51eddf76ddb"`,
+     `goal=[-3084.646484375,-1328.2936706542969]`).
+   - `butcher-goblin-gfay-crossing-carbon-source-guide-v1.json`: SHA
+     `c1c20af83d12fc6397edfc5aecae285b2ed68596ae6eea2d6d7e0fadea5eb5a3`
+     (`arrival_mode="zone_crossing"`).
+   - `butcher-goblin-gfay-preline-carbon-sections-v1.json`: SHA
+     `1cf209163cc780eb7ce6ed3d018527272948d9e16bf5875faf7da66e2b41b548`
+     (`section_count=2`, `section_manifest_sha256="28fd9c018ca12b55d15a887762c82dfc8189101b38f2c2f6485bbd65aace71d2"`).
+   - `butcher-gfay-crossing-carbon-corridor-v1.json`: SHA
+     `092735a84716e7340731d376e008314e0e55daec675aabc10f08486b625f2fb0`
+     (`expected_zone_line_sha256="432259333aee1f297f230b26aa005aeb2ccdc6d1be8547d799ff13cbd0e0f100"`,
+     8 cell segments ending at `[-3093.57493953125,-1322.3650056635743]`).
+2. `eql_automation/owner_source_crossing.py` (`PinnedSourceCrossingSpec`,
+   `OwnerSourceCrossingRuntime`, `make_source_crossing_engine`) + wiring in
+   `source_destinations.py`, `owner_section_assets.py`, `journey_input_budget.py`,
+   `owner_journey_runtime.py`, `owner_walking_sections.py`, and
+   `owner_camp_section_arrival.py` connect pre-line arrival (unsectioned,
+   `WalkingSections`, or `CampWalkingJourney`) to live source-native zone crossing:
+   - Rebuilds all crossing cells on `checkpoint.fork()` via `check_source_crossing_cell`,
+     collects fresh stopped `/location` pairs (`collect_height`, `confirm_start`,
+     `startup_corridor`) under an exclusive `ZoneReaderLease`, runs provisional
+     pulses via `run_checked_source_crossing_step`, invalidates the source
+     `CampFloorCheckpoint` immediately on expected `LOADING`, and confirms two
+     fresh destination-zone `/location` replies before stopping with
+     `source_floor_discarded=true`, `source_navigation_state_reused=false`.
+   - `F9` (`stop_action`) and `F8` (`arm`) immediately cancel active crossing
+     pulses, release all held keys, close the physical input observer, and
+     switch cleanly to owner-targeted assist (`Mode 2`) when `F8` is pressed.
+3. 56 local deterministic tests on Devbox + isolated `/tmp` OS-pipe verification
+   on `alienware-bazzite` pass (`real_client_accepted=false`,
+   `game_input_sent=false`, no Alienware install or helper change).
+
+
 ## 2026-11-15 08:49 UTC — Goblin-to-GFay pre-line approach, carried crossing, and source crossing runtime (0.42.89, carbon/continue)
 
 VERIFIED on branch `carbon/continue` (`gemini-everquest-legends-carbon`, source

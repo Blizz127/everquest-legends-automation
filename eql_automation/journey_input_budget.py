@@ -28,7 +28,7 @@ class JourneyBudgetDeclaration:
         seconds, pulses, distance, hold = scope_limits('destination_travel')
         n = self.section_count
         if (not digest(self.guide_sha256) or type(self.destination_id) is not str
-                or not self.destination_id or self.arrival_mode not in ('camp', 'stop')
+                or not self.destination_id or self.arrival_mode not in ('camp', 'stop', 'zone_crossing')
                 or type(n) is not int or not 1 <= n <= 16
                 or type(self.maximum_pulses) is not int or not 1 <= self.maximum_pulses <= n*pulses
                 or not all(finite(v) for v in (self.maximum_seconds, self.maximum_total_hold,

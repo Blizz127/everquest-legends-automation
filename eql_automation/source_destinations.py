@@ -26,7 +26,21 @@ DESTINATIONS = MappingProxyType({**crushbone.DESTINATIONS,
     'goblin-camp-stop': SourceGuideDestination('goblin-camp-stop', 'Goblin Camp movement test',
         'butcher-goblin-stop-source-guide-v1.json',
         '7d34ae25fca117206172b262fbc6f0f0f559331002611518e36c20381d547d1f',
-        (-2069.,-298.), 'cbf65baf94b8ce069e457dfe47aa220303fd69baa3a0a1be7915e1be61d753f2', 'stop', 'butcher')})
+        (-2069.,-298.), 'cbf65baf94b8ce069e457dfe47aa220303fd69baa3a0a1be7915e1be61d753f2', 'stop', 'butcher'),
+    'butcher-gfay-preline-stop': SourceGuideDestination(
+        'butcher-gfay-preline-stop', 'Greater Faydark zone-line approach test',
+        'butcher-goblin-gfay-preline-stop-carbon-source-guide-v1.json',
+        '610c572a9913a33fe4a13c96bb6e6ad7fcdb9332fd9c78e687028ff51810b9bf',
+        (-3084.646484375, -1328.2936706542969),
+        'ef9f03f53d49158d6d9681d5e00860f36aaeecfc0c9c5f05e949b51eddf76ddb', 'stop', 'butcher'),
+    'butcher-gfay-crossing': SourceGuideDestination(
+        'butcher-gfay-crossing', 'Travel into The Greater Faydark',
+        'butcher-goblin-gfay-crossing-carbon-source-guide-v1.json',
+        'c1c20af83d12fc6397edfc5aecae285b2ed68596ae6eea2d6d7e0fadea5eb5a3',
+        (-3084.646484375, -1328.2936706542969),
+        'ef9f03f53d49158d6d9681d5e00860f36aaeecfc0c9c5f05e949b51eddf76ddb', 'zone_crossing', 'butcher')})
+
+CARBON_BUTCHER_GFAY_DATA_NAME = 'butcher-gfay-carbon-20261115'
 
 
 def destination_spec(identifier):
@@ -36,7 +50,10 @@ def destination_spec(identifier):
 
 
 def source_data_name(identifier):
-    if destination_spec(identifier).zone == 'butcher':
+    spec = destination_spec(identifier)
+    if spec.identifier in ('butcher-gfay-preline-stop', 'butcher-gfay-crossing'):
+        return CARBON_BUTCHER_GFAY_DATA_NAME
+    if spec.zone == 'butcher':
         from .butcher_assets import DATA_NAME
     else:
         from .crushbone_assets import DATA_NAME

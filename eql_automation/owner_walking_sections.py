@@ -231,12 +231,13 @@ def make_walking_sections_engine(base,*,section_provider,clock):
                     try:
                         result=self._continue_source_journey(w.pending,token)
                         w.sections.check()
-                        if old is not None and self.journey is j and j.phase=='camp':
-                            successor=j.camp_motion
+                        if old is not None and self.journey is j and j.phase in ('camp','source_crossing'):
+                            successor=(j.camp_motion if j.phase=='camp' else self.source_crossing_run.monitor)
                             prior=old.monitor.last_observed_at
                             if prior is not None and (successor.last_observed_at is None or prior>successor.last_observed_at):
                                 successor.last_observed_at=prior
-                            successor.check(self._camp_motion_binding())
+                            successor.check(self._camp_motion_binding() if j.phase=='camp'
+                                            else self.source_crossing_run._monitor_binding())
                             old.monitor.transfer_to(successor)
                         w.sections.check()
                         return result

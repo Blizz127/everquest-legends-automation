@@ -70,7 +70,11 @@ def finish_camp_sections(e,w,arrival,clock):
             or arrival.runtime.lease.active or e.camp_session is not None):
         raise ValueError('Only the released final camp section can start a new camp')
     spec=destination_spec(w.destination_id)
-    if spec.arrival_mode!='camp' or spec.zone_id!=w.zone[0]:
+    if spec.zone_id!=w.zone[0]:
+        raise ValueError('Current same-zone camp destination required')
+    if spec.arrival_mode=='zone_crossing':
+        return e._start_source_crossing_from_camp_section(w,arrival)
+    if spec.arrival_mode!='camp':
         raise ValueError('Current same-zone camp destination required')
     candidates=tuple(e._load_camp_candidates(spec.zone))
     if not candidates:raise ValueError('No observed search names at the final camp')

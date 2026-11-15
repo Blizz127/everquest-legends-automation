@@ -66,7 +66,8 @@ class Arrival:
 
 def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                               camp_options=None, camp_probe_plan_provider=None,
-                              section_provider=None, camp_section_provider=None, **route_options):
+                              section_provider=None, camp_section_provider=None,
+                              source_crossing_provider=None, **route_options):
     movement = make_owner_route_trial_engine(base_engine, clock=clock, **route_options)
     options = dict(repeat=True, auto_prepare=True)
     options.update(camp_options or {})
@@ -204,7 +205,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                 if j is None or destination.destination_id!=j.destination_id:
                     raise ValueError('Loaded source destination differs from the queued choice')
                 j.destination_assets=destination
-                movement_only=destination_spec(j.destination_id).arrival_mode=='stop'
+                movement_only=destination_spec(j.destination_id).arrival_mode in ('stop','zone_crossing')
                 candidates = () if movement_only else tuple(super()._load_camp_candidates(destination_spec(j.destination_id).zone))
                 if j is None or self.journey is not j or not navigation_active(self):
                     raise ValueError('Travel cancelled while loading observed camp candidates')
@@ -323,7 +324,8 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
         def _continue_source_journey(self,p,token):
             self._arrival_current(token)
             self.zone = destination_spec(token.destination_id).zone  # Fresh zone-bound arrival.
-            if destination_spec(token.destination_id).arrival_mode=='stop':
+            mode = destination_spec(token.destination_id).arrival_mode
+            if mode=='stop':
                 result=dict(phase='arrived',destination_id=token.destination_id,
                     itinerary_sha256=arrival_itinerary(token.receipt),
                     stopped_log_seq=arrival_reference(token.receipt).raw_fix.log_line_seq,
@@ -333,6 +335,8 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                 self.journey_last_result=result
                 self.trace('journey_movement_arrival',**result)
                 return result
+            if mode=='zone_crossing':
+                return self._start_source_crossing_from_arrival(p,token)
             started = self.start_stationary_camp(arrival_check=lambda:self._arrival_current(token))
             j = token.journey
             if self.journey is not j or self.cancel_generation != j.generation:
@@ -446,4 +450,9 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
     if camp_section_provider is not None:
         from .owner_camp_sections import make_camp_sections_engine
         result=make_camp_sections_engine(result,section_provider=camp_section_provider,clock=clock)
+    from .owner_source_crossing import load_owner_source_crossing, make_source_crossing_engine
+    result=make_source_crossing_engine(result,
+        corridor_provider=(load_owner_source_crossing
+            if source_crossing_provider is None else source_crossing_provider),
+        clock=clock)
     return result
