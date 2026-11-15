@@ -30,6 +30,8 @@ class NpcCandidate:
     pairs: tuple[tuple[int, int], ...]
     origin: str = 'selected_character_log'
     history_sha256: str | None = None
+    evidence_kind: str = 'npc_consider_owner_kill'
+    selection_kill_pairs: tuple[tuple[int, int, int], ...] = ()
 
 
 @dataclass(frozen=True)
@@ -315,5 +317,7 @@ class StationaryCamp:
             preparation=self.preparation.snapshot() if self.preparation else None,
             preparation_history=self.preparation_history,
             candidates=[dict(name=c.name, source_sha256=c.source_sha256, pairs=c.pairs,
-                             origin=c.origin, history_sha256=c.history_sha256) for c in self.candidates],
+                             origin=c.origin, history_sha256=c.history_sha256,
+                             evidence_kind=c.evidence_kind,
+                             selection_kill_pairs=c.selection_kill_pairs) for c in self.candidates],
             evidence=self.evidence)

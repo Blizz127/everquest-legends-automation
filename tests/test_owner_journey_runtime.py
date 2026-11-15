@@ -129,6 +129,7 @@ def test_movement_destination_needs_no_npc_history_and_stops_without_camp(h,monk
     def no_candidates(*args,**kwargs):raise AssertionError('Movement test must not load camp targets')
     monkeypatch.setattr(camp_runtime,'observed_candidates',no_candidates)
     monkeypatch.setattr(camp_runtime,'load_owner_candidates',no_candidates)
+    monkeypatch.setattr(camp_runtime,'load_owner_search_candidates',no_candidates)
     start(h,destination_id);h.due_trial();record=finish(h,timeout=80.)
     assert record is not None and record['outcome']=='arrived',h.notices
     assert record['continuation']['phase']=='arrived' and not record['continuation']['camp_started']
@@ -151,11 +152,12 @@ def test_butcher_camp_without_observed_npc_history_sends_no_input(h,monkeypatch)
     configure(h,monkeypatch,destination_id='newbie-hills')
     monkeypatch.setattr(camp_runtime,'observed_candidates',lambda *a,**k:())
     monkeypatch.setattr(camp_runtime,'load_owner_candidates',lambda *a,**k:())
+    monkeypatch.setattr(camp_runtime,'load_owner_search_candidates',lambda *a,**k:())
     start(h,'newbie-hills');h.tick();h.drain()
     assert not h.events and not h.commands and not h.sender.held
     assert h.engine.supervised_motion is None
     assert h.engine.camp_session is None and h.engine.route_trial is None
-    assert any('No observed NPC' in str(s) for s in h.notices)
+    assert any('No observed search names' in str(s) for s in h.notices)
 
 
 @pytest.mark.parametrize('stop',('movement','location'))

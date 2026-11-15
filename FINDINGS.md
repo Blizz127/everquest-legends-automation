@@ -1,5 +1,36 @@
 # FINDINGS
 
+## 2026-11-15 03:09 UTC — Butcherblock search fallback verified; owner 0.39.39 prepared
+
+VERIFIED 54 focused cases and 19 synthetic subtests pass. The copied owner's
+log supplies eight Butcherblock search names through 16 ordered NPC-selection /
+owner-kill pairs. Source SHA:
+`bd09c3cd11bee073e1550e4f8516644754f4e30630e7115cbdb767212753963c`.
+The new reduced artifact `owner-route-data/owner-npc-search-suggestions-20261115-v1.json`
+has SHA `6aaa75110d27a4b9fd5f9de1589ea8bd95c1f5f5e2934869fa8dfd64ffb7f368`.
+It contains no raw chat; its historical levels and consideration pairs are empty.
+The original qualified history remains unchanged.
+
+Runtime precedence is current-character qualified history, retained qualified
+history, then exact-server/Butcherblock selection/kill search suggestions.
+An invalid qualified source still refuses. Search evidence is explicitly named
+in camp snapshots and cannot authorize combat. Existing fresh consideration,
+level/reaction/name checks, explicit wrong-target vetoes and F9 cancellation
+remain. The draft recommendation for an extra NPC receipt was a separate
+reliability proposal, not an existing requirement for historical search names.
+No such extra gate was adopted. Independent current target identity and full
+autonomous camp acceptance remain unverified for both historical sources.
+
+VERIFIED final owner snapshot startup (`--help`) returns zero and loads eight
+search candidates / 16 provenance pairs and all eight destination choices.
+Manifest SHA `c961a3f649f44df38c1985c4354e6bb296bf6ea626b28e9ccd6ed7fbda4d3be9`.
+Validation SHA `4c84dfb2c1a9d246c2fc692bc35400dd60120afe7e7d5e6fa0aed2d092035cd3`.
+Navigation behavior and GUI code are unchanged from 0.39.38; this increment did
+not rerun the real-time route suite. Tests use synthetic logs and isolated pipes.
+Private 0.39.39 / source 0.42.85 publication is next. No game input or owner
+session restart occurred. G0 remains passed; real 1–20 and hands-off 1–50 are
+not accepted. Current level, XP/hour, deaths and camp remain unknown.
+
 ## 2026-11-15 03:02 UTC — owner 0.39.38 privately installed and verified
 
 VERIFIED additive publication on Alienware completed at 03:01:07 UTC. Owner

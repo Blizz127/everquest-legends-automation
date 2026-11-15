@@ -209,7 +209,7 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
                 if j is None or self.journey is not j or not navigation_active(self):
                     raise ValueError('Travel cancelled while loading observed camp candidates')
                 if not movement_only and not candidates:
-                    raise ValueError('No observed NPC/consider/kill candidates in the selected zone; travel-to-camp unavailable')
+                    raise ValueError('No observed search names in the selected zone; travel-to-camp unavailable')
                 j.candidates = candidates
             return recipe
 

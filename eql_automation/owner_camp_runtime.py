@@ -12,6 +12,7 @@ import time
 
 from .camp_session import StationaryCamp, observed_candidates
 from .camp_candidate_history import load_owner_candidates
+from .camp_search_history import load_owner_search_candidates
 from .camp_recovery import CampRecovery, PostureCommandBinding
 from .camp_preparation import CampPreparation, PreparationCatalog
 from .location_log import NonReplayingLogTail
@@ -112,7 +113,10 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 consider=client.consider_target, safe=client.safe_leveling_target, excluded=excluded)
             if candidates:
                 return candidates
-            return load_owner_candidates(self.settings.server, zone, client=client, excluded=excluded)
+            candidates = load_owner_candidates(self.settings.server, zone, client=client, excluded=excluded)
+            if candidates:
+                return candidates
+            return load_owner_search_candidates(self.settings.server, zone, client=client, excluded=excluded)
 
         def start_stationary_camp(self, *, arrival_check=None, replacing_camp=None):
             entry_generation = self.cancel_generation
@@ -153,7 +157,7 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 return False
             candidates = tuple(c for c in candidates if client.valid_target_name(c.name))[:8]
             if not candidates:
-                self.emit('Camp did not start: no NPC/consider/kill names in this log or matching retained owner history'); return False
+                self.emit('Camp did not start: no observed search names in this log or matching retained owner history'); return False
             try:
                 posture = posture_loader(self.settings.game_dir) if repeat else None
             except (OSError,ValueError) as error:

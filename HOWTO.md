@@ -1,22 +1,28 @@
 # EverQuest Legends automation — current owner guide
 
-**This guide describes owner 0.39.38 / runtime 0.42.84.**
+**This guide describes owner 0.39.39 / runtime 0.42.85.**
 Project status is recorded in STATUS.md. On Alienware, this build's installation
-receipt is `~/.local/share/eql-automation/owner-build-drafts/eql-owner-journey-0.39.38-installed.json`.
-Owner 0.39.37 / runtime 0.42.82 remains available at its prior versioned path.
+receipt is `~/.local/share/eql-automation/owner-build-drafts/eql-owner-journey-0.39.39-installed.json`.
+Owner 0.39.38 / runtime 0.42.84 remains available at its prior versioned path.
 
 Once this version is installed, close the old helper yourself
 and run only one helper on Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.38/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.39/launch.sh
 ```
 
-This build retains F8 assist, F9 stop and the eight destination choices. The prior
-0.39.37 remains available at its own versioned path; it does not automatically
-continue between route sections. G0 passed; do not repeat it.
+This build retains F8 assist, F9 stop, eight destination choices and automatic
+Goblin route sections. G0 passed; do not repeat it.
 
-0.39.38 connects automatic route sections to the **Goblin Camp** travel choices
+0.39.39 adds eight Butcherblock search names from your actual log, including
+goblin whelps. They are used only when current-character and retained qualified
+history provide no candidates. The helper still checks each nearby target and
+its level before fighting. Historical kills supply search names, not current
+level, target identity or proof that a camp suits your character. The trace
+identifies this source separately; it contains no copied chat.
+
+The retained route system connects automatic route sections to the **Goblin Camp** travel choices
 in Butcherblock. Travel starts near Newbie Hills or rejoins near the checked
 route from a fresh position. At intermediate stops, the helper checks the actual
 reached floor and measurement area, collects seven fresh movement probes, then
@@ -29,7 +35,7 @@ and 600-second held-input limits. One fixed whole-trip budget covers the remaini
 sections: at most nine sections and 3 hours 45 minutes from initial route start.
 Handoffs cannot renew that deadline. Actual progress can stop sooner on failed
 position, geometry, motion, focus, input or hazard checks. A stopped or cancelled
-trip never restarts itself. Close the old helper yourself before starting 0.39.38;
+trip never restarts itself. Close the old helper yourself before starting 0.39.39;
 publishing does not restart your running helper.
 
 **G0 passed, including the visible stop. Do not repeat it.** The complete 1–20
@@ -40,9 +46,9 @@ Blizz starts and supervises the live test himself.
 a short local approach followed by stationary camping, or the same approach
 followed by a stop without combat. The copied map suggests levels 1–4. Start
 near that marker inside Butcherblock; this is not a route from another zone.
-The camp choice requires NPC names already observed in your log in Butcherblock.
-Without that history it refuses before movement; the movement-only choice does
-not need NPC names. Goblin Camp is the next packaged Butcherblock destination;
+The camp choice uses matching observed NPC history, including the packaged
+Butcherblock search fallback. Without any matching history it refuses before
+movement; the movement-only choice does not need NPC names. Goblin Camp is the next packaged Butcherblock destination;
 its copied map hint is levels 5–8. Camp suitability still needs live testing.
 
 For the next route test, select **Goblin Camp · movement test** near Newbie Hills
@@ -64,7 +70,7 @@ selection before the contact corridor. It starts near North Wall, disables
 camp continuation and starts no combat. Assist leaves movement and target
 selection to Blizz; F8 selects assist and F9 stops helper input.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.38 offers supervised travel and camp tests in Butcherblock and Crushbone. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.39 offers supervised travel and camp tests in Butcherblock and Crushbone. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -83,9 +89,9 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 
 Run only one helper at a time. G0 is complete. Travel/camp and assist switch in
 the same process without a restart or re-login. The older separate diagnostic
-builds described later in this file are not additional buttons in 0.39.38.
+builds described later in this file are not additional buttons in 0.39.39.
 
-## Optional next-camp continuation — 0.39.38
+## Optional next-camp continuation — 0.39.39
 
 This release keeps the existing rotation and adds an unchecked
 **After level-ups, travel to the next supported camp** option beside the travel
@@ -108,12 +114,12 @@ measurement itself remains limited to 120 seconds. A fresh stopped arrival now s
 learned spells again and requires new target checks before combat. F8/F9 can
 cancel the handoff. This is supervised testing, not the full 1–20 path.
 
-## Choose a travel/camp destination — preview 0.39.38
+## Choose a travel/camp destination — preview 0.39.39
 
-After installing 0.39.38, close your old helper yourself; run only one. On Alienware:
+After installing 0.39.39, close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.38/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.39/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
@@ -123,12 +129,12 @@ camp where you stand. The first F11 after travel/setup remains OFF.
 In **Travel and camp test**, select the destination:
 
 - **Newbie Hills · Butcherblock · map hint 1–4**: a short local approach to
-  Newbie Hills in Butcherblock followed by stationary camping. Requires observed
-  Butcherblock NPC history; map labels are not used as NPC names.
+  Newbie Hills in Butcherblock followed by stationary camping. Uses observed
+  Butcherblock NPC history or the packaged search fallback; map labels are not NPC names.
 - **Newbie Hills · movement test**: the same approach, then stops without
   combat or camp continuation. It does not repeat G0.
 - **Goblin Camp · Butcherblock · map hint 5–8**: the checked approach from
-  Newbie Hills, then stationary camp. Requires observed Butcherblock NPC history.
+  Newbie Hills, then stationary camp. Uses observed Butcherblock history or the packaged search fallback.
 - **Goblin Camp · movement test**: the same approach, then stops without
   combat. No NPC history or camp continuation. Healthy sections advance
   automatically; failed checks stop. A new explicit request can rejoin from a
@@ -206,6 +212,12 @@ fresh matching consideration inside the current level window. A PC selection
 or mismatched target is rejected. The inherited matching-consideration path
 does not require an NPC-selection receipt when none is logged.
 
+0.39.39 also packages Butcherblock names from ordered NPC-selection/own-kill
+pairs in your retained log. This weaker historical source has no prior
+consideration or level claims and is used only after both qualified sources
+are empty. It uses the same supervised live checks. Independent current NPC
+identity and unattended camp acceptance remain unverified for both sources.
+
 The 0.39.27 fix is retained for a camp bookkeeping error that could block casting after
 a normal NPC-selection message. It sends no native melee command. Fresh-character
 login, new NPC discovery outside the retained names, automatic camp relocation
@@ -273,12 +285,13 @@ level (1–19); HP must read at least 70% and mana at least 50%. Focus EverQuest
 and press **F11**, or click **Repeat stationary camp** and return to the game
 during the four-second countdown. Supervise this first test.
 
-The helper searches up to eight NPC names backed by paired NPC-selection and
-consideration messages plus kills in your own log history. The historical zone
-is only a name-selection hint. Each attempt requires a new, exact-name
+The helper searches up to eight observed NPC names. Qualified history uses
+NPC-selection, consideration and kill evidence; the Butcherblock fallback uses
+ordered NPC-selection/own-kill pairs. The historical zone is only a name-selection
+hint. Each attempt requires a new, exact-name
 consideration reply with a level between your configured level minus three
 and your level. History is never used as current-target permission. If the log
-has no such candidates, it stops with that reason; there is no guessed fallback.
+has no candidates in either history source, it stops with that reason.
 
 After a matching kill, it observes loot messages for two seconds, then recovers
 resources before selecting again. It requests standing before sending **one**
