@@ -1,0 +1,15 @@
+--- a/eql_rotation.py
++++ b/eql_rotation.py
+@@ -728,8 +728,10 @@
+             parts = [f"Zone: {guide.zone_long(zone) if guide and zone else zone or 'unknown'}",
+                      f"Position: {loc[0]:.0f}, {loc[1]:.0f}" if loc else "Position: —"]
+             if not measurement_only:
+-                parts.extend([f"Camp: {camp['name']}" if camp else "Camp: owner chosen",
+-                              f"Kills: {autopilot.get('kills', 0)}"])
++                arrived = autopilot.get("arrival_destination")
++                parts.extend([f"Camp start: {arrived['name']}" if arrived else
++                              f"Camp: {camp['name']}" if camp else "Camp: stationary start",
++                              autopilot.get("progress_summary") or f"Kills: {autopilot.get('kills', 0)}"])
+             parts.append(f"Movement: {calibration['speed']} units/s, {calibration['turn_rate']}°/s turn"
+                          if calibration else "Movement: not calibrated" if measurement_only else "Stationary camp")
+             if measurement_only:

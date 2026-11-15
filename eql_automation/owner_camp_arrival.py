@@ -152,6 +152,10 @@ def continue_camp_arrival(engine,token,clock):
     j.height_check_done=False;j.last_considered_level_advance=None
     if not e._camp_current() or e.journey is not j:
         raise ValueError('New camp input continuity changed')
+    spec=destination_spec(token.destination.destination_id)
+    new_camp.progress.bind_arrival(destination_id=spec.identifier,name=spec.label,
+        zone=spec.zone,itinerary_sha256=arrival_itinerary(token.receipt),
+        stopped_log_seq=arrival_reference(token.receipt).raw_fix.log_line_seq)
     result=dict(phase='camp',itinerary_sha256=arrival_itinerary(token.receipt),
         destination_id=token.destination.destination_id,destination=json.loads(token.destination.source_evidence),
         stopped_log_seq=arrival_reference(token.receipt).raw_fix.log_line_seq,camp_started=True,

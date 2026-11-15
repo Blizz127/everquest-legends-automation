@@ -29,6 +29,7 @@ class CampLogTail:
         rows, reset = self.tail.poll()
         camp = self.engine.camp_session
         if reset and camp is not None:
+            camp.progress.invalidate('Client log continuity changed')
             camp.stop('Client log continuity changed')
         for raw in rows:
             self.seq += 1
@@ -45,7 +46,7 @@ class CampLogTail:
 def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                            clock=time.monotonic, wall=datetime.now, repeat=False,
                            posture_loader=PostureCommandBinding,auto_prepare=False,
-                           preparation_catalog_loader=None):
+                           preparation_catalog_loader=None,progress_directory=None):
     """Bind only to the existing owner helper; construction sends no input."""
     class OwnerCampEngine(assist_engine(base_engine)):
         camp_client = client
@@ -58,6 +59,9 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             self._camp_posture = None
             self._camp_checked_at = 0.
             self._camp_reading_during_input = False
+            self._camp_progress_report = None
+            from .camp_progress_status import CampProgressStatus
+            self._camp_progress_status = CampProgressStatus(progress_directory) if progress_directory is not None else None
             super().__init__(*args, **kwargs)
 
         def make_tail(self):
@@ -165,6 +169,7 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             sender = self.ensure_sender()
             self.hp, self.mana = self.gate.read_gauges(self.settings.hp_region, self.settings.mana_region)
             self.last_gauge = clock()
+            self.read_log()  # Candidate/gauge reads may have accumulated pre-activation log rows.
             if generation != self.cancel_generation:
                 return False
             if not self._camp_gauges_ok():
@@ -172,6 +177,7 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             self.reset_target(False, forget=True, clear_seen=True, clear_role=True)
             self.native_attack_off_pending = False
             camp = StationaryCamp(candidates, self.settings.level, generation, clock(), self.zone,repeat=repeat)
+            camp.progress.last_sequence = self.tail.seq
             camp.preparation_due=auto_prepare
             binding = (sender, self.gate, self.tail, self.tail.tail.epoch,
                 self.settings.character, self.settings.server, self.settings.level, self.zone,self.settings.game_dir)
@@ -341,6 +347,10 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
                 return super().autopilot_tick(now)
             if not self._camp_current() or self.sender.unfinished:
                 self.stop_action('Camp interrupted; explicit restart required'); return
+            camp.progress.advance(now)
+            self._report_camp_progress(camp, now)
+            if self.camp_session is not camp or not camp.running or self.cancel_generation != camp.generation:
+                return
             if (camp.repeat and camp.level>=camp.target_level and camp.phase!='loot_observation' and
                     (camp.engaged_name is None or camp.killed_at is not None)):
                 self.stop_action('Target level observed; no further pulls');return
@@ -497,21 +507,42 @@ def make_owner_camp_engine(base_engine, *, client, candidates_loader=None,
             self.reset_target(False,forget=True,clear_seen=True,clear_role=True)
             self.native_attack_off_pending=False
 
+        def _report_camp_progress(self, camp, now):
+            previous = self._camp_progress_report
+            if (previous is not None and previous[0] is camp and
+                    previous[1] == camp.progress.revision and now-previous[2] < 30.):
+                return
+            self._camp_progress_report = (camp, camp.progress.revision, now)
+            self.trace('camp_progress', **camp.progress.snapshot())
+            if self.camp_session is camp and camp.running and self.cancel_generation == camp.generation:
+                self._write_camp_progress(camp.progress.snapshot())
+
+        def _write_camp_progress(self, snapshot):
+            if (self._camp_progress_status is None or self.sender and
+                    (self.sender.held or self.sender.unfinished and snapshot['state'] != 'stopped')):
+                return
+            self._camp_progress_status.write(snapshot)
+
         def stop_action(self, reason, *, keep_autopilot=False):
             camp = self.camp_session
             if camp is not None:
                 if camp.preparation is not None:
                     self.preparing=False;self.prepared=False;self.prepared_level=None
                     self.invalidate_prepared_state()
-                camp.stop(reason)
+                camp.stop(reason, now=clock())
                 self.camp_last_result = camp.snapshot()
                 self.trace('camp_finished', **self.camp_last_result)
                 self.camp_session = None; self._camp_binding = None; self._camp_posture = None
+                self._camp_progress_report = None
             try:
-                return super().stop_action(reason, keep_autopilot=False)
+                result = super().stop_action(reason, keep_autopilot=False)
             finally:
                 if self.autopilot is camp:
                     self.autopilot = None
+            # Diagnostics follow input release; they never delay the stop's key-up.
+            if camp is not None and self.camp_session is None:
+                self._write_camp_progress(camp.progress.snapshot())
+            return result
 
         def stop_autopilot(self, reason):
             if self.camp_session is not None:

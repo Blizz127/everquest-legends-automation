@@ -350,6 +350,10 @@ def make_owner_journey_engine(base_engine, *, client, clock=time.monotonic,
             if self.journey is not j or not self._camp_current():
                 if self.journey is j:self.stop_action('Camp input continuity changed during handoff')
                 return dict(camp_started=False,reason='Camp input continuity changed')
+            spec=destination_spec(token.destination_id)
+            self.camp_session.progress.bind_arrival(destination_id=spec.identifier,name=spec.label,
+                zone=spec.zone,itinerary_sha256=arrival_itinerary(token.receipt),
+                stopped_log_seq=arrival_reference(token.receipt).raw_fix.log_line_seq)
             self.journey_last_result = dict(phase='camp', itinerary_sha256=arrival_itinerary(token.receipt),
                 destination_id=token.destination_id,destination=json.loads(token.source_evidence),
                 stopped_log_seq=arrival_reference(token.receipt).raw_fix.log_line_seq,

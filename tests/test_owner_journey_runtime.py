@@ -97,6 +97,9 @@ def test_real_source_arrival_releases_navigation_then_starts_same_sender_camp(h,
     assert captured[0].destination is assets and captured[0].destination_id==destination_id
     assert e.journey_last_result['destination_id']==e.journey.destination_id==destination_id
     assert e.camp_session is not None and e.journey.phase=='camp'
+    attribution=e.camp_session.snapshot()['arrival_destination']
+    assert attribution['destination_id']==destination_id and not attribution['current_position_verified']
+    assert attribution['stopped_log_seq']==record['continuation']['stopped_log_seq']
     assert e.zone==e.camp_session.zone==zone
     assert loads==[(e.settings.server,zone)]
     assert e.camp_session.candidates==(fallback,)

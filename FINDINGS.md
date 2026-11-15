@@ -1,5 +1,40 @@
 # FINDINGS
 
+## 2026-11-15 03:20 UTC — camp progress reporting verified for owner 0.39.40
+
+VERIFIED 107 final local focused cases pass, including receipt-window rates,
+exact decimal award accumulation, same-second awards, level-boundary windows,
+death before stop, startup backlog drain, log replacement and mid-command F9.
+The new status writer runs after key release on stop. One added regression
+first failed: a missing sequence number had left the rate marked continuous.
+The final implementation requires consecutive sequence numbers and invalidates
+the rate before counting a gap. Earlier failure evidence is retained separately.
+
+VERIFIED two Alienware source-travel pipe tests pass in 83.95 seconds: Goblin
+camp arrival keeps its attribution and movement-only arrival starts no camp.
+These tests ran before the sequence-gap tightening; their runtime differs only
+in that metric predicate/error text. The final local regressions cover it.
+Eight GUI checks pass without constructing an engine or saving settings; the
+progress line wraps correctly in the captured camp panel. Final startup returns
+zero; the final packaged snapshot differs from that startup only in HOWTO.
+Validation SHA `514a8cc1d7762c8f97a31ddc58fc035360614db17381eb7fff474207223f11c8`.
+Final manifest SHA `d6e8d3df57a1d70014155ce8925157402081fd56420b76a0fe7d3c0aa862a07b`.
+
+The report distinguishes configured level from newly observed level; gross
+logged award percentage/hour from unknown raw/net XP; and checked camp-start
+attribution from unverified current position or suitability. A level message
+closes the old award window, deaths are counted before the session stops, and
+stopped reports are frozen. Ordinary F11 starts have no named-camp attribution.
+The owner entry enables private timestamped `owner-status/STATUS.md` and
+`camp-progress.json`, refreshed during stationary camping and on stop. They
+are last-observation reports, not proof that a process is still running.
+
+Owner 0.39.40 / source 0.42.86 is prepared for additive private publication.
+XP-based camp switching is not connected yet; existing next-camp travel still
+uses observed level-ups. No game input or live leveling occurred. G0 remains
+passed; current level, XP/hour, deaths and camp remain unknown. Real 1–20 and
+fresh hands-off 1–50 remain incomplete.
+
 ## 2026-11-15 03:10 UTC — owner 0.39.39 installed; current-target limits retained
 
 VERIFIED additive publication of owner 0.39.39 / source 0.42.85 on Alienware.

@@ -1,21 +1,39 @@
 # EverQuest Legends automation — current owner guide
 
-**This guide describes owner 0.39.39 / runtime 0.42.85.**
+**This guide describes owner 0.39.40 / runtime 0.42.86.**
 Project status is recorded in STATUS.md. On Alienware, this build's installation
-receipt is `~/.local/share/eql-automation/owner-build-drafts/eql-owner-journey-0.39.39-installed.json`.
-Owner 0.39.38 / runtime 0.42.84 remains available at its prior versioned path.
+receipt is `~/.local/share/eql-automation/owner-build-drafts/eql-owner-journey-0.39.40-installed.json`.
+Owner 0.39.39 / runtime 0.42.85 remains available at its prior versioned path.
 
 Once this version is installed, close the old helper yourself
 and run only one helper on Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.39/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.40/launch.sh
 ```
 
 This build retains F8 assist, F9 stop, eight destination choices and automatic
 Goblin route sections. G0 passed; do not repeat it.
 
-0.39.39 adds eight Butcherblock search names from your actual log, including
+0.39.40 adds camp progress in the camp panel and local status files. During a
+camp, it records matching kills, XP award messages, observed deaths and elapsed
+time. After a minute, the panel shows a **logged gross award rate** in percent
+per hour. This is a rate of the percentages printed by the client, not total
+XP, net level progress or verified normal/AA XP allocation. A level message
+starts a new rate window; previous windows remain in the report.
+
+The helper updates `~/.local/share/eql-automation/owner-status/STATUS.md` and
+`camp-progress.json` on progress changes, at least every 30 seconds during
+stationary camping, and after stopping. Movement keeps its separate trace;
+the camp status file is not a travel heartbeat. Each report has a timestamp
+and records the last observation; an old file does not prove the helper is still
+running. Stopped rates are frozen. Log resets make rates unavailable. A route
+handoff identifies where that camp started; direct F11 camping has no verified
+camp location. Configured starting level and newly observed levels stay separate.
+These metrics do not yet change camps based on XP rate. Existing supported
+next-camp travel still uses newly observed level-ups and your continuation option.
+
+The retained Butcherblock fallback supplies eight search names from your actual log, including
 goblin whelps. They are used only when current-character and retained qualified
 history provide no candidates. The helper still checks each nearby target and
 its level before fighting. Historical kills supply search names, not current
@@ -35,7 +53,7 @@ and 600-second held-input limits. One fixed whole-trip budget covers the remaini
 sections: at most nine sections and 3 hours 45 minutes from initial route start.
 Handoffs cannot renew that deadline. Actual progress can stop sooner on failed
 position, geometry, motion, focus, input or hazard checks. A stopped or cancelled
-trip never restarts itself. Close the old helper yourself before starting 0.39.39;
+trip never restarts itself. Close the old helper yourself before starting 0.39.40;
 publishing does not restart your running helper.
 
 **G0 passed, including the visible stop. Do not repeat it.** The complete 1–20
@@ -70,7 +88,7 @@ selection before the contact corridor. It starts near North Wall, disables
 camp continuation and starts no combat. Assist leaves movement and target
 selection to Blizz; F8 selects assist and F9 stops helper input.
 
-**The complete 1–20 autopilot is not ready. Preview 0.39.39 offers supervised travel and camp tests in Butcherblock and Crushbone. F12 is disabled.** No real route,
+**The complete 1–20 autopilot is not ready. Preview 0.39.40 offers supervised travel and camp tests in Butcherblock and Crushbone. F12 is disabled.** No real route,
 automated level gain or fresh-character hands-off 1–50 run has been accepted.
 The client installed on Alienware connects to Daybreak. Blizz runs live tests
 himself; the lead does not log in or control his character. Service-rule findings
@@ -89,9 +107,9 @@ and verification evidence are in [FINDINGS.md](FINDINGS.md).
 
 Run only one helper at a time. G0 is complete. Travel/camp and assist switch in
 the same process without a restart or re-login. The older separate diagnostic
-builds described later in this file are not additional buttons in 0.39.39.
+builds described later in this file are not additional buttons in 0.39.40.
 
-## Optional next-camp continuation — 0.39.39
+## Optional next-camp continuation — 0.39.40
 
 This release keeps the existing rotation and adds an unchecked
 **After level-ups, travel to the next supported camp** option beside the travel
@@ -114,12 +132,12 @@ measurement itself remains limited to 120 seconds. A fresh stopped arrival now s
 learned spells again and requires new target checks before combat. F8/F9 can
 cancel the handoff. This is supervised testing, not the full 1–20 path.
 
-## Choose a travel/camp destination — preview 0.39.39
+## Choose a travel/camp destination — preview 0.39.40
 
-After installing 0.39.39, close your old helper yourself; run only one. On Alienware:
+After installing 0.39.40, close your old helper yourself; run only one. On Alienware:
 
 ```bash
-EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.39/launch.sh
+EQL_ROTATION_TRACE="$HOME/eql-journey-trace.jsonl" ~/.local/share/eql-automation/owner-assist/0.39.40/launch.sh
 ```
 
 This includes the existing rotation: **F8 assist**, **F9 stop**, **F10 heal**.
@@ -212,7 +230,7 @@ fresh matching consideration inside the current level window. A PC selection
 or mismatched target is rejected. The inherited matching-consideration path
 does not require an NPC-selection receipt when none is logged.
 
-0.39.39 also packages Butcherblock names from ordered NPC-selection/own-kill
+0.39.39 added the retained Butcherblock names from ordered NPC-selection/own-kill
 pairs in your retained log. This weaker historical source has no prior
 consideration or level claims and is used only after both qualified sources
 are empty. It uses the same supervised live checks. Independent current NPC

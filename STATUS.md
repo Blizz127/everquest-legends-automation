@@ -1,5 +1,25 @@
 # STATUS
 
+Updated 2026-11-15 03:20 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met. G0 passed; never repeat it.** Current level, XP,
+  XP/hour, deaths and camp remain unknown. No actual accepted 1–20 or 1–50 run.
+- **Installed remains 0.39.39 / 0.42.85. Candidate 0.39.40 / 0.42.86** adds
+  camp metrics, visible logged award rates and private timestamped status files.
+  It records death before stop, retains level-window history and preserves
+  checked arrival attribution without claiming current position or camp safety.
+- **VERIFIED:** 107 final local tests plus two Alienware isolated travel checks
+  pass; eight GUI checks and final startup pass. A sequence-gap metric regression
+  failed before its fix and passes now. Validation SHA:
+  `514a8cc1d7762c8f97a31ddc58fc035360614db17381eb7fff474207223f11c8`.
+  All gameplay inputs in tests use isolated pipes; no real client input occurred.
+- **Next:** additive private publication, then productive-camp decisions and
+  later-camp/cross-zone route continuity. Actual owner-started Goblin movement
+  remains the next live check inside Butcherblock. Raw/net XP, actual camp
+  suitability, automated leveling, loot/vendors and recovery remain unverified.
+
+## Prior status
+
 Updated 2026-11-15 03:10 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed**, including the owner's visible stop;

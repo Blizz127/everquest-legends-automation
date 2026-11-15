@@ -66,6 +66,10 @@ def test_arrival_replaces_camp_then_prepares_without_reusing_target_or_moving(ar
     assert e.camp_session is not old and not old.running and e.cancel_generation==generation+1
     assert e.camp_session.preparation_due and e.camp_session.requested is None
     assert e.journey.destination_id=='north-wall' and e.journey.phase=='camp'
+    attribution=e.camp_session.snapshot()['arrival_destination']
+    assert attribution['destination_id']=='north-wall' and not attribution['current_position_verified']
+    assert attribution['stopped_log_seq']==t.receipt.reference.raw_fix.log_line_seq
+    assert old.progress.finished
     assert not e.journey.height_check_done and e.journey.last_considered_level_advance is None
     assert e.journey.camp_motion.observer is p.monitor.observer
     assert p.monitor.closed and not p.monitor.valid and not p.floor.valid
@@ -75,6 +79,7 @@ def test_arrival_replaces_camp_then_prepares_without_reusing_target_or_moving(ar
     p.monitor.close('late ancestor cleanup');assert not h.observer_closed
     h.tick();assert e.camp_session.phase=='preparing' and not h.commands
     e.stop_action('F9');assert h.observer_closed and not t.checkpoint.valid
+    assert e.camp_last_result['progress']['arrival_destination']==attribution
 
 
 @pytest.mark.parametrize('fault',('expired','destination','input','lease','settings','queued','observer_regression'))

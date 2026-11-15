@@ -16,6 +16,7 @@ import re
 from .location_log import parse_client_log_line, is_logging_boundary
 from .prior_rotation_core import level_from_message
 from .telemetry import LOOT_NO_ROOM, FOOD_DRINK_WARNINGS, LOG_GAIN
+from .camp_progress import CampProgress
 
 _TARGET = re.compile(r"Targeted \(([^)]+)\):\s*(.+)\Z")
 _PROTECTED = re.compile(r"\b(?:slave|prisoner|captive|pet|merchant|banker|guard|trainer|vendor)\b", re.I)
@@ -131,8 +132,12 @@ class StationaryCamp:
     round_number: int=0
     xp_awards: list[float] = field(default_factory=list)
     evidence: list[dict] = field(default_factory=list)
+    progress: CampProgress = field(init=False)
     camp = None
     paused = False
+
+    def __post_init__(self):
+        self.progress = CampProgress(self.started, self.level)
 
     @property
     def mode(self):
@@ -146,7 +151,8 @@ class StationaryCamp:
     def running(self):
         return self.state == 'running'
 
-    def stop(self, reason):
+    def stop(self, reason, now=None):
+        self.progress.finish(self.progress.as_of if now is None else now, reason)
         self.state = 'off'; self.reason = str(reason); self.grant_until = 0.
 
     def record(self, event, **values):
@@ -190,10 +196,13 @@ class StationaryCamp:
             return
         parsed = parse_client_log_line(raw)
         if parsed is None:
+            self.progress.invalidate('Malformed client log record')
             self.stop('Malformed log line during camp'); return
         stamp, body = parsed
         if not -1 <= (wall-stamp).total_seconds() <= 3:
+            self.progress.invalidate('Delayed or future client log record')
             self.stop('Delayed or future log line during camp'); return
+        self.progress.observe(stamp, body, seq, now)
         level=level_from_message(raw)
         if level is not None and self.repeat:
             if self.phase=='preparing':
@@ -284,6 +293,7 @@ class StationaryCamp:
                 if seq<=self.engaged_after or self.engaged_wall is None or stamp<self.engaged_wall:
                     self.stop('Kill predates the current engagement');return
                 self.completed_kills.add(identity)
+                self.progress.matching_kill(seq)
                 self.kills += 1; self.phase = 'loot_observation'; self.killed_at = now
                 self.grant_until = 0.; self.record('matching_kill', name=name, seq=seq,round=self.round_number)
             else:
@@ -316,6 +326,8 @@ class StationaryCamp:
             posture_requested=getattr(self.recovery,'posture_requested',None),posture_observed=None,
             preparation=self.preparation.snapshot() if self.preparation else None,
             preparation_history=self.preparation_history,
+            progress=self.progress.snapshot(), progress_summary=self.progress.summary(),
+            arrival_destination=self.progress.arrival_destination,
             candidates=[dict(name=c.name, source_sha256=c.source_sha256, pairs=c.pairs,
                              origin=c.origin, history_sha256=c.history_sha256,
                              evidence_kind=c.evidence_kind,
