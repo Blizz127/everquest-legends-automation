@@ -10,6 +10,7 @@ from .scene_log_veto import SceneLogVeto
 from .source_motion import SourceReceiptLedger
 from .source_transfer import SourceTransferController
 from .supervised_route import SupervisedRouteDeclaration, scope_limits
+from .journey_input_budget import JourneyInputBudget
 
 
 @dataclass(frozen=True)
@@ -52,13 +53,15 @@ class SupervisedSourceIdleObservation:
 
 class SupervisedSourcePolicy:
     def __init__(self,ledger,*,declaration,gate,owner_input,log_veto,
-                 expected_window,topology_generation,check_current):
+                 expected_window,topology_generation,check_current,journey_budget=None):
         if (type(ledger) is not SourceReceiptLedger
                 or type(declaration) is not SupervisedRouteDeclaration
                 or declaration.scope not in ('local_trial','destination_travel','camp_continuation')
                 or type(expected_window) is not GameWindowIdentity
                 or type(log_veto) is not SceneLogVeto
                 or type(topology_generation) is not int or topology_generation<0
+                or journey_budget is not None and (type(journey_budget) is not JourneyInputBudget
+                    or journey_budget.lock is not ledger.lock or journey_budget.clock is not ledger.clock)
                 or not callable(check_current) or not callable(getattr(owner_input,'sample',None))):
             raise ValueError('Explicit source measurement scope and observation providers required')
         seconds,steps,distance,hold=scope_limits(declaration.scope)
@@ -82,7 +85,9 @@ class SupervisedSourcePolicy:
         self._ordinary_ledger=ledger
         self.owner_input,self.log_veto=owner_input,log_veto
         self.window,self.topology,self.check_current=expected_window,topology_generation,check_current
-        self._context=(ledger,d,gate,owner_input,log_veto,check_current)
+        self.journey_budget=journey_budget
+        self._journey_reservation=None
+        self._context=(ledger,d,gate,owner_input,log_veto,check_current,journey_budget)
         self.started=self.last_at=ledger.clock()
         self.origin=None;self.reserved_hold=0.
         self._scene=self._authorization=None
@@ -95,6 +100,8 @@ class SupervisedSourcePolicy:
         if type(controller) not in (SourceTransferController,SourceStairController,SourceContactController):
             raise ValueError('Exact source transfer controller required')
         with controller.lock:
+            if self.journey_budget is not None:
+                raise RouteHalt('Section journey budgets currently support ordinary walking only')
             self._check();controller._check()
             if self.ledger is not self._ordinary_ledger or controller.ordinary is not self.ledger:
                 raise RouteHalt('Source policy already leased or transfer belongs to another job')
@@ -115,6 +122,7 @@ class SupervisedSourcePolicy:
             self._check()
 
     def _check(self,*,completed_contact=False):
+        if self.journey_budget is not None:self.journey_budget.check()
         self.check_current();began=self.ledger._check()
         window=focused_game_identity(self.gate)
         self.check_current();finished=self.ledger._check();d=self.declaration
@@ -125,7 +133,7 @@ class SupervisedSourcePolicy:
             terminal=type(self.ledger) is SourceContactController and self.ledger.phase=='arrived'
             if not terminal:raise RouteHalt('Completed contact scope required')
         if (any(a is not b for a,b in zip(self._context,(self.ledger,d,self.gate,
-                self.owner_input,self.log_veto,self.check_current)))
+                self.owner_input,self.log_veto,self.check_current,self.journey_budget)))
                 or window!=self.window or not self.last_at<=began<=finished<=self.started+d.maximum_seconds
                 or self.ledger.steps>d.maximum_steps or self.ledger.steps==d.maximum_steps and not terminal
                 or d.route_sha256!=self.ledger.observer.itinerary.sha256
@@ -133,6 +141,7 @@ class SupervisedSourcePolicy:
                 or self.log_veto.cancel_generation!=self.ledger.observer.generation):
             raise RouteHalt('Source scope, focus, log or movement budget changed')
         self.last_at=finished
+        if self.journey_budget is not None:self.journey_budget.check()
         return began
 
     def _physical_observation(self,began,*,completed_contact=False):
@@ -218,6 +227,10 @@ class SupervisedSourcePolicy:
         self.ledger.validate_reference()
 
     def authorize(self,ticket,scene):
+        with self.ledger.lock:
+            return self._authorize_locked(ticket,scene)
+
+    def _authorize_locked(self,ticket,scene):
         # These checks send nothing. Validate the scene after the pending-ticket
         # callback, once, immediately before publishing authorization.
         self.ledger.check_pending(ticket)
@@ -228,6 +241,8 @@ class SupervisedSourcePolicy:
         issued=self.ledger.clock()
         if not ticket.proposed_at<=issued<=ticket.proposed_at+.05:
             raise RouteHalt('Source DOWN authorization expired')
+        if self.journey_budget is not None:
+            self._journey_reservation=self.journey_budget.reserve(ticket,bounds=self.ledger.bounds)
         self.reserved_hold+=ticket.maximum_actual_hold
         self._authorization=SupervisedSourceAuthorization(ticket,scene.reference,self.declaration,
             issued,ticket.proposed_at+.05)
@@ -243,11 +258,17 @@ class SupervisedSourcePolicy:
                 or authorization.declaration is not self.declaration
                 or authorization.scene_reference is not scene.reference):
             raise RouteHalt('Source authorization changed')
+        if self.journey_budget is not None:
+            if (self._journey_reservation is None
+                    or self._journey_reservation.ticket is not authorization.ticket):
+                raise RouteHalt('Missing whole-journey source reservation')
+            self.journey_budget.check(self._journey_reservation)
         return True  # expires_at is the DOWN deadline, not the release deadline.
 
     def snapshot(self):
         return dict(kind='owner_supervised_source_walk',declaration=asdict(self.declaration),
             reserved_maximum_hold=self.reserved_hold,
+            journey_budget=None if self.journey_budget is None else self.journey_budget.snapshot(),
             installed_region_model=self.ledger.model.record(),
             independent_scene_verified=False,motion_bounds_verified=False,
             dynamic_clearance_verified=False,real_client_accepted=False)

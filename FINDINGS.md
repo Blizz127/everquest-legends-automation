@@ -1,5 +1,43 @@
 # FINDINGS
 
+## 2026-11-15 01:11 UTC — shared whole-trip input accounting
+
+VERIFIED source 0.42.81 adds `JourneyInputBudget` and optional bindings in the
+ordinary source and camp-probe policies. A declaration pins the full guide hash,
+destination, arrival mode and finite section count, plus fixed whole-trip time,
+pulse, hold and displacement-reservation limits. The engine must supply its
+immutable owner/session binding and retain the same budget across healthy legs.
+Reservations use the exact typed ticket and explicit bounds, charge before DOWN,
+are never refunded, and are rechecked throughout held input. Both policy types
+require the same clock and stop lock. Replacing a child policy cannot reset the
+parent; replacing the parent on an existing policy is refused. Ordinary child
+limits still apply. Displacement is reserved from supplied motion hypotheses,
+not reported as actual measured travel.
+
+This is accounting only: it cannot issue movement permission, consume an arrival,
+start the next section, restore a saved session or authorize a transfer. Healthy
+section completion and fresh measurement handoff remain the next runtime work.
+`SourceExecutionLoop`'s terminal path does not itself call the policy check, so
+the handoff must explicitly check the parent alongside the stopped receipt and
+captured floor. Child expiry must stay clamped to the fixed parent deadline.
+
+VERIFIED **31 unique focused tests pass**: 27 local budget/source/retained-transfer
+checks and four probe checks on Alienware. These cover shared walk/probe
+accounting, concurrent last-reservation contention, sticky exhaustion/cancel,
+duplicate/changed tickets, immutable bounds/identity, unchanged child limits,
+and cancellation during source/probe DOWN with release and no floor commit.
+The first devbox successful-probe test refused at the existing DOWN deadline
+(final slack -44.425ms). The same 591 Python source pins passed all four selected
+probe cases on Alienware in 12.63 seconds. No timing limit was widened. The job
+ran at nice 19 with one BLAS thread and isolated pipes/synthetic observations;
+it sent no game input. Both original failure and platform check are retained.
+Validation SHA `5b5403e4afdc7d738ed7a4926ab0e1ff54035ec7510fb24c205d4ed11df097ee`.
+
+Private source publication is in progress. Owner 0.39.36/runtime0.42.79 remains
+unchanged; automatic section handoff is not enabled. G0 passed, including the
+visible stop. Real-client 1–20/1–50 acceptance and current level/XP/hour/death/camp
+metrics remain unavailable. No character, helper session or client prefix changed.
+
 ## 2026-11-15 01:03 UTC — checked Goblin sections for a finite automatic journey
 
 VERIFIED copied-data route replay found **nine** sections under 1,000 units,

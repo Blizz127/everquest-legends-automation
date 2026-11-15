@@ -1,6 +1,6 @@
 # STATUS
 
-Updated 2026-11-15 01:03 UTC for coordinator task `829a00229b29`.
+Updated 2026-11-15 01:11 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met.** No accepted real-client 1–20 route, automated
   level gain or fresh-character hands-off 1–50 run. Current level, XP, XP/hour,
@@ -49,7 +49,18 @@ Updated 2026-11-15 01:03 UTC for coordinator task `829a00229b29`.
   installed CLI and both zone-guide startup checks pass. Owner 0.39.36 remains
   unchanged. Receipt SHA
   `85aa438207930d144a7b7eac7a820c9d1e7c774616699445bf4efa835f740ffc`.
-- **Next:** connect finite journey ownership to healthy stopped section receipts,
+- **Source 0.42.81 built; private publication in progress.** VERIFIED **31 unique
+  focused checks pass**. One fixed parent input budget now connects to ordinary
+  source and probe policies: exact shared clock/stop lock, reservations before
+  DOWN, rechecks through release, no refunds or duplicate tickets, and no reset
+  from replacing a child policy. Child limits remain unchanged. The successful
+  probe fixture exceeded the existing DOWN deadline on devbox; the same source
+  passes all four selected probe checks on Alienware in 12.63 seconds using
+  isolated test pipes. Original failure retained; no deadline changed.
+  This accounting module does not grant section handoff or start input. No owner
+  launcher enables automatic sections yet. Validation SHA
+  `5b5403e4afdc7d738ed7a4926ab0e1ff54035ec7510fb24c205d4ed11df097ee`.
+- **Next:** connect the fixed parent budget to healthy stopped section receipts,
   fresh position pairs and the existing source-checked measurement/probe runtime.
   Preserve one sender, observer and parent budget; never renew a timed-out child.
   Owner can test the existing 0.39.36 movement-only route. A read-only trace check

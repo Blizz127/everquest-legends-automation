@@ -16,6 +16,7 @@ from .g2_safety_provider import GameWindowIdentity,focused_game_identity
 from .ground_binding import finite
 from .owner_input_observer import OwnerInputObservation
 from .scene_log_veto import SceneLogVeto
+from .journey_input_budget import JourneyInputBudget
 
 
 @dataclass(frozen=True)
@@ -29,12 +30,14 @@ class SupervisedCampProbeDeclaration:
 class SupervisedCampProbeScope:
     """Shared deadline, physical observer, hazard latch and reservation budget."""
     def __init__(self,runtime,*,declaration,monitor,gate,expected_window,log_veto,
-                 check_current,started_at,expires_at):
+                 check_current,started_at,expires_at,journey_budget=None):
         if (type(runtime) is not CampProbeRuntime
                 or type(declaration) is not SupervisedCampProbeDeclaration
                 or type(monitor) is not CampInputContinuity
                 or type(expected_window) is not GameWindowIdentity
                 or type(log_veto) is not SceneLogVeto or not callable(check_current)
+                or journey_budget is not None and (type(journey_budget) is not JourneyInputBudget
+                    or journey_budget.lock is not runtime.lock or journey_budget.clock is not runtime.clock)
                 or not all(finite(v) for v in (started_at,expires_at))):
             raise ValueError('Exact retained camp scope and explicit supervision required')
         r=runtime;d=declaration;b=r.root.bounds
@@ -59,9 +62,10 @@ class SupervisedCampProbeScope:
         self.clock,self.lock=r.clock,r.lock
         self.root,self.lease,self.reader=r.root,r.lease,r.lease.reader
         self.owner_input,self.topology=monitor.observer,monitor.topology
+        self.journey_budget=journey_budget
         self.generation=log_veto.cancel_generation
         self._context=(r,d,monitor,gate,expected_window,log_veto,check_current,
-            self.clock,self.lock,self.root,self.lease,self.reader,self.owner_input)
+            self.clock,self.lock,self.root,self.lease,self.reader,self.owner_input,journey_budget)
         self._times=(started_at,expires_at,r.started,r.maximum_seconds)
         self._declaration=flat_record_state(d)
         self._bounds=flat_record_state(b);self._basis=r.root.bounds_basis
@@ -82,13 +86,14 @@ class SupervisedCampProbeScope:
     def _check(self):
         try:
             if not self.valid:raise ValueError(self.reason)
+            if self.journey_budget is not None:self.journey_budget.check()
             self.current();r=self.runtime;began=r._check_scope()
             window=focused_game_identity(self.gate)
             self.current();finished=r._check_scope()
             m=self.monitor;d=self.declaration
             if (not self.valid or any(a is not b for a,b in zip(self._context,
                     (r,d,m,self.gate,self.window,self.log_veto,self.current,self.clock,self.lock,
-                     self.root,self.lease,self.reader,self.owner_input)))
+                     self.root,self.lease,self.reader,self.owner_input,self.journey_budget)))
                     or (self.started_at,self.expires_at,r.started,r.maximum_seconds)!=self._times
                     or flat_record_state(d)!=self._declaration
                     or r.root is not self.root or r.lock is not self.lock or r.clock is not self.clock
@@ -107,6 +112,7 @@ class SupervisedCampProbeScope:
                 raise ValueError('Camp supervision owner, deadline or observation binding changed')
             m.check_binding(self._monitor_binding)
             self.last_at=finished
+            if self.journey_budget is not None:self.journey_budget.check()
             return finished
         except Exception as error:
             self.cancel(error);raise ValueError(self.reason) from error
@@ -137,6 +143,7 @@ class SupervisedCampProbeScope:
         return dict(kind='owner_supervised_camp_probes',valid=self.valid,reason=self.reason,
             declaration=asdict(self.declaration),started_at=self.started_at,expires_at=self.expires_at,
             reserved_maximum_hold=self._reserved,bound_probes=len(self._policies),
+            journey_budget=None if self.journey_budget is None else self.journey_budget.snapshot(),
             independent_scene_verified=False,motion_bounds_verified=False,real_client_accepted=False)
 
 
@@ -148,6 +155,7 @@ class SupervisedCampProbePolicy(CampProbeInputPolicy):
             raise ValueError('Shared camp probe scope and exact sequence index required')
         self.scope,self.index=scope,index;self._context=(transaction,scope,index)
         self._scene=self._authorization=self._authorization_state=None
+        self._journey_reservation=None
 
     def _check(self):
         s=self.scope;now=s._check();r=s.runtime;t=self.transaction;i=self.index
@@ -202,6 +210,8 @@ class SupervisedCampProbePolicy(CampProbeInputPolicy):
                     raise ValueError('Camp probe duplicate authorization or hold budget exhausted')
                 expires=min(ticket.start.expires_at,ticket.proposed_at+.05,s.expires_at)
                 if not ticket.proposed_at<=now<=expires:raise ValueError('Camp probe DOWN deadline expired')
+                if s.journey_budget is not None:
+                    self._journey_reservation=s.journey_budget.reserve(ticket,bounds=s.root.bounds)
                 self._authorization=CampProbeAuthorization(ticket,now,expires,s.declaration.record_id)
                 a=self._authorization
                 self._authorization_state=(id(a),id(ticket),a.issued_at,a.expires_at,a.policy_record_id)
@@ -220,6 +230,11 @@ class SupervisedCampProbePolicy(CampProbeInputPolicy):
                 if (a is not self._authorization or
                         (id(a),id(a.ticket),a.issued_at,a.expires_at,a.policy_record_id)!=self._authorization_state):
                     raise ValueError('Camp probe authorization changed')
+                if s.journey_budget is not None:
+                    if (self._journey_reservation is None
+                            or self._journey_reservation.ticket is not a.ticket):
+                        raise ValueError('Missing whole-journey probe reservation')
+                    s.journey_budget.check(self._journey_reservation)
                 # The sender refreshes check() first. DOWN expiry is not an UP
                 # deadline: keep observing throughout .15-second turn probes.
                 return True
