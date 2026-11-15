@@ -13,8 +13,13 @@ Updated 2026-11-15 04:03 UTC for coordinator task `829a00229b29`.
   static-object, BSP and native checks. Audit SHA
   `c3cedc9fc378bdf6e785b0b5a45e9adb52a443256a5b20e2b1ad3b42b7177d0b`.
   These are offline hypotheses, not real-client crossing acceptance.
-- **Next:** check the Goblin-to-exit approach and implement the genuine crossing
-  loading/arrival handoff. The native region center itself intersects terrain;
+- **Next:** add static checks along graph connections in the Goblin-to-exit
+  approach, then implement the genuine crossing loading/arrival handoff. A
+  277-operation proposal blocks at operation 76; prefix retries backtrack between
+  two points, and 53 clear graph-center caps do not clear the connecting segments.
+  Approach audit f SHA
+  `829c802535754f690725c1ce4f0f85554408bd594c238a1d101ca165131f0c49`.
+  The native region center itself intersects terrain;
   the candidate stops earlier inside the clear transition. Owner-started Goblin
   movement/camp acceptance and complete 1–20/1–50 progression remain unverified.
   Read-only Alienware check: no camp-progress file; journey trace still ends

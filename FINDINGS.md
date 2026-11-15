@@ -1,5 +1,40 @@
 # FINDINGS
 
+## 2026-11-15 — Goblin-to-GFay approach remains incomplete
+
+VERIFIED `tools/audit_butcher_goblin_preline.py` loads the pinned Goblin goal
+and retained exit-approach XY, creates an explicitly synthetic source floor
+only at Goblin, and carries its checked ancestry through ordinary native-zero
+walking. Resumption reconstructs every retained prefix cell and its exact proof;
+no new floor is seeded at the obstruction or exit. The diagnostic has fixed
+60 CPU / 240 wall-second limits and writes only private evidence.
+
+The first 277-operation graph proposal reaches operation 76 at
+`(-2370.5625,-610.4479166666666)` before static geometry intersects the body.
+The bounded local detour fails. Replanning from rechecked prefixes alternates
+between that point and `(-2403.828525641026,-648.2816506410256)`; increased
+operation counts include backtracking and **do not establish route progress**.
+Checking all 53 fixed graph-center footprints excludes no centers and still
+fails the connection at operation 76. This is a failed search proposal, not
+proof of physical disconnection. The next search needs static checks along
+graph connections, or another proposal rebuilt against the same source floor.
+
+Private evidence:
+
+- `nav-candidates/butcher-goblin-gfay-preline-0.42.88-a.json`, SHA
+  `7459090decee3764336c07c4091c384137d1844a1f61064a328f755e7db6103f`.
+- Resumed b/c/d/e records retain the alternating paths and refusals.
+- Center-filter check `butcher-goblin-gfay-preline-0.42.88-f.json`, SHA
+  `829c802535754f690725c1ce4f0f85554408bd594c238a1d101ca165131f0c49`.
+  Its exact recipe SHA is
+  `a187bddaccdcc44dcfc27fb95f5d3f3637bd35aad97c91554102162c75999536`.
+
+All attempts retain `source_candidate=false`, `runtime_ready=false` and
+`game_input_sent=false`. The separately checked eight-cell exit candidate does
+not supply this missing connector. Installed owner 0.39.41 remains unchanged;
+no new real-client acceptance or level/XP metric is available.
+
+
 ## 2026-11-15 — native Butcherblock-to-GFay source crossing candidate
 
 VERIFIED development source 0.42.88 adds `NativeCrossingRegionPolicy`, separate
