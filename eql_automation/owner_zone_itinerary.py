@@ -94,9 +94,8 @@ class _ItineraryOwner:
 
     def check(self):
         if self.root is not None:
-            # Root.check brackets its clock with this exact binding reader.
-            # Keep the final owner check after its last callback, without a
-            # redundant fourth traversal of the same immutable owner pins.
+            # Root.check charges this binding reader's time between its clock
+            # reads. Keep a final owner check after the root's last callback.
             self.root.check()
         return self.binding()
 

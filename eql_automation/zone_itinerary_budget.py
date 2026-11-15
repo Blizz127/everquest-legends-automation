@@ -261,13 +261,16 @@ class ZoneItineraryBudget:
                 self._checking = True
                 self._assert_intact()
                 stage = self.stage
-                before = self.binding_reader()
+                # This read-only validation accepts the owner scope after the
+                # first clock; it does not preserve an earlier owner snapshot
+                # across that callback. The final clock still includes binding
+                # latency in the unchanged absolute deadline.
                 began = self.clock()
                 after = self.binding_reader()
                 now = self.clock()
                 self._assert_intact()
-                if (stage is not self.stage or _value(before) != self._binding
-                        or _value(after) != self._binding or not finite(began) or not finite(now)
+                if (stage is not self.stage or _value(after) != self._binding
+                        or not finite(began) or not finite(now)
                         or not self.started <= self.last_at <= began <= now <= self.expires_at):
                     raise ValueError('Root itinerary owner or fixed deadline changed')
                 if reservation is not None:

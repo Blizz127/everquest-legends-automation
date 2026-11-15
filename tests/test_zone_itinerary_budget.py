@@ -312,13 +312,13 @@ def test_last_clock_history_cannot_be_reset_to_hide_a_rollback():
 
 
 @pytest.mark.parametrize('operation', ('check', 'reserve', 'advance'))
-def test_second_owner_callback_cannot_spend_time_after_the_last_clock_sample(operation):
+def test_retained_owner_callback_cannot_spend_time_after_the_last_clock_sample(operation):
     root, state = budget()
+    last_at = root.last_at
     calls = []
     def callback():
         calls.append(True)
-        if len(calls) == 2:
-            state.now = root.expires_at + .01
+        state.now = root.expires_at + .01
     state.callback = callback
     with pytest.raises(ValueError, match='deadline'):
         if operation == 'check':
@@ -329,3 +329,4 @@ def test_second_owner_callback_cannot_spend_time_after_the_last_clock_sample(ope
             root.advance(root.stage, 'crossing', zone_id=68)
     assert not root.valid and root.snapshot()['reserved_pulses'] == 0
     assert root.stage.phase == 'walking'
+    assert calls == [True] and root.last_at == last_at
