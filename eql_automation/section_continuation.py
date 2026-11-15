@@ -33,6 +33,7 @@ from .source_probe_geometry import check_source_footprint
 from .source_walk_sections import measurement_reserve
 from .source_arrival import assert_retained_arrival
 from .source_itinerary import SourceItineraryGuide, SourceWalkHint, _guide_snapshot
+from .source_section_manifest import _same_walking_guide
 from .source_walk_driver import SourceWalkFinished
 from .stopped_location_pair import StoppedLocationPair
 from .supervised_camp_probe import SupervisedCampProbeDeclaration, SupervisedCampProbeScope
@@ -175,11 +176,24 @@ class SectionContinuation:
                 self.generation,self.owner_binding)
 
     def _check(self):
+        self._check_context()
+        sample=self.owner_input.sample();veto=self.veto.poll()
+        window=focused_game_identity(self.gate)
+        # Revalidate all bindings after the providers. Movement policies also
+        # own their fresh input/log/focus observations; their nested provenance
+        # checks use _check_context instead of resampling the physical scene.
+        self._check_context();now=self.last_at
+        if (window!=self.window or not sample.clear_at(now)
+                or sample.topology_generation!=self.monitor.topology
+                or not veto.continuity_available or veto.reason is not None):
+            raise ValueError('Section owner activity, focus or log veto')
+        return self.owner_binding
+
+    def _check_context(self):
         if self.phase == 'stopped' or self.closed:raise ValueError(self.reason or 'Section closed')
         self.budget.check(); binding = self.binding_reader(); self.lease.check(); self.hotkey.check()
         self.monitor.check_binding(self._monitor_binding())
-        sample = self.owner_input.sample(); veto = self.veto.poll()
-        window = focused_game_identity(self.gate); now = self.clock()
+        now = self.clock()
         actual = (self.arrival, self.budget, self.lease, self.guide, self.floor, self.clock, self.wall, self.lock,
             self.sender, self.reader, self.owner_input, self.hotkey, self.gate, self.veto,
             self.owner_binding, self.binding_reader, self.generation_reader, self.pump, self.command_clear,
@@ -195,18 +209,16 @@ class SectionContinuation:
                 or flat_record_state(self.window) != self._window_state or self.generation != self._generation
                 or self.runtime is not self._runtime or self.route_runtime is not self._route_runtime
                 or self.scope is not self._scope
-                or _guide_snapshot(self.guide) != self._guide_state
+                or not _same_walking_guide(self.guide,self._guide_state)
                 or (self.started, self.expires_at) != self._times
                 or binding != self.owner_binding or self.binding_reader() != self.owner_binding
-                or self.generation_reader() != self.generation or window != self.window
+                or self.generation_reader() != self.generation
                 or self.veto.cancel_generation != self.generation
                 or self.veto.tail.path != self.reader.tail.path or self.veto.clock is not self.clock
                 or self.lease.reader is not self.reader or self.monitor.floor is not self.floor
                 or (self.ui,self.fd,self.fd_identity) != self._device
                 or self.sender.ui is not self.ui or self.ui.fileno() != self.fd
                 or _fd_identity(self.fd) != self.fd_identity
-                or not sample.clear_at(now) or sample.topology_generation != self.monitor.topology
-                or not veto.continuity_available or veto.reason is not None
                 or self.sender.unfinished or self.sender.dismissed
                 or self.sender.held - ({key} if key is not None else set())
                 or not self.command_clear() or not finite(now)
@@ -261,7 +273,7 @@ class SectionContinuation:
                 True, len(PROBES)*r.root.bounds.maximum_actual_hold)
             self.scope = self._scope = SupervisedCampProbeScope(r, declaration=declaration, monitor=self.monitor,
                 gate=self.gate, expected_window=self.window, log_veto=self.veto,
-                check_current=self._check, started_at=r.started,
+                check_current=self._check_context, started_at=r.started,
                 expires_at=r.started+r.maximum_seconds, journey_budget=self.budget)
         return self.scope.policy(tx)
 
@@ -297,14 +309,14 @@ class SectionContinuation:
             raise ValueError('Stopped position changed from the checked whole-probe reserve')
         bounds, basis = self.bounds, self.bounds_basis
         preparation = CampProbePreparation(self.floor,self.result,self.lease,probe_kind=PROBES[0].key,
-            bounds=bounds,bounds_basis=basis,owner_binding=self.owner_binding,binding_reader=self._check,
+            bounds=bounds,bounds_basis=basis,owner_binding=self.owner_binding,binding_reader=self._check_context,
             clock=self.clock,local_wall_clock=self.wall)
         remaining = self.expires_at-self.clock()
         self.collector = None
         self.runtime = self._runtime = CampProbeRuntime(preparation,sender=self.sender,hotkey=self.hotkey,
             owner_input=self.owner_input,stop_lock=self.lock,movement_policy_factory=self._probe_policy,
-            check_current=self._check,command_state_clear=self.command_clear,pump=self.pump,
-            maximum_seconds=remaining,log_veto=self.veto)
+            check_current=self._check_context,command_state_clear=self.command_clear,pump=self.pump,
+            maximum_seconds=remaining,log_veto=self.veto,check_scene=self._check)
         self.phase = 'probe'
 
     def _start_route(self):
@@ -326,9 +338,9 @@ class SectionContinuation:
         plan = CampSourcePlan(bounds,legacy,legacy.Motion(run_speed=estimate['run_speed'],
             turn_rate=estimate['turn_rate'],right_sign=estimate['right_sign'],turn_latency=estimate['turn_latency'],
             back_speed=0.),estimate['final_heading'],.25,policy)
-        self.route_runtime = self._route_runtime = CampSourceRuntime(self.runtime,plan,check_current=self._check,
+        self.route_runtime = self._route_runtime = CampSourceRuntime(self.runtime,plan,check_current=self._check_context,
             mode_reader=lambda:'off' if self.phase=='stopped' else 'camp_route',
-            generation_reader=self.generation_reader,generation=self.generation)
+            generation_reader=self.generation_reader,generation=self.generation,check_scene=self._check)
         self.phase = 'route'
 
     def tick(self):
@@ -344,6 +356,7 @@ class SectionContinuation:
                 if self.collector.phase == 'complete':self._position_complete()
             elif self.phase == 'probe':
                 self.runtime.tick()
+                self._check()
                 if self.runtime.phase == 'complete':
                     fit = reduce_camp_probes(self.runtime,legacy=self.fit_library,
                                             record_id='camp-'+self.runtime.results[-1].sha256)
@@ -354,6 +367,7 @@ class SectionContinuation:
                 elif self.runtime.phase == 'route_ready':self._start_route()
             elif self.phase == 'route':
                 self.route_runtime.tick()
+                self._check()
                 if self.route_runtime.phase == 'complete':
                     with self.lock:
                         reached = capture_section_arrival(self.route_runtime,self.budget)

@@ -44,14 +44,16 @@ class CampSourcePlan:
 
 class CampSourceRuntime(SourceExecutionLoop):
     def __init__(self, probe, plan, *, check_current, mode_reader,
-                 generation_reader, generation):
+                 generation_reader, generation,check_scene=None):
         if (type(probe) is not CampProbeRuntime or probe.phase != 'route_ready' or probe.busy
                 or type(plan) is not CampSourcePlan
+                or check_scene is not None and not callable(check_scene)
                 or not all(callable(f) for f in (check_current, mode_reader, generation_reader))):
             raise ValueError('Prepared idle camp scope and explicit execution plan required')
         self.probe, self.plan = probe, plan
         self.plan_state = plan.state()
         self.current = check_current
+        self.scene_current=check_scene
         self.mode_reader, self.generation_reader, self.generation = mode_reader, generation_reader, generation
         self.sender, self.lease, self.hotkey = probe.sender, probe.lease, probe.hotkey
         self.owner_input, self.lock = probe.owner_input, probe.lock
@@ -68,7 +70,7 @@ class CampSourceRuntime(SourceExecutionLoop):
         self.events, self.pairs, self.observations = [], [], []
         self.input_kind = self.input_request = None
         self._context = (probe, plan, check_current, mode_reader, generation_reader,
-            self.sender, self.lease, self.hotkey, self.owner_input, self.lock, self.clock, self.wall, self.reader)
+            self.sender, self.lease, self.hotkey, self.owner_input, self.lock, self.clock, self.wall, self.reader,check_scene)
         try:
             with self.lock:
                 probe._check()
@@ -101,7 +103,7 @@ class CampSourceRuntime(SourceExecutionLoop):
         # explicitly checks the active ledger before requesting a reading.
         self.current()
         actual = (self.probe, self.plan, self.current, self.mode_reader, self.generation_reader,
-            self.sender, self.lease, self.hotkey, self.owner_input, self.lock, self.clock, self.wall, self.reader)
+            self.sender, self.lease, self.hotkey, self.owner_input, self.lock, self.clock, self.wall, self.reader,self.scene_current)
         if (self.phase == 'stopped' or any(a is not b for a,b in zip(self._context, actual))
                 or self.plan.state() != self.plan_state or self.probe.phase != 'route_ready'
                 or self.probe.busy or self.probe.closed or self.probe.sender is not self.sender
@@ -152,6 +154,8 @@ class CampSourceRuntime(SourceExecutionLoop):
             elif self.phase in ('stair_start','contact_start') and pre is not None and self.pending_preflight is pre:pre.check()
             elif self.phase=='startup':active._check()
             else:raise ValueError('Camp position request lacks its startup or receipt context')
+            if self.scene_current is not None:
+                self.scene_current();self.check_current()
             if (not self.busy or self.collector is not collector or self.active is not active
                     or self.seal is not seal or collector.phase != 'requesting'
                     or collector.pending is not request or self.input_request is not request):

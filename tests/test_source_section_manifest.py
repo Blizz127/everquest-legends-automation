@@ -3,7 +3,7 @@ from dataclasses import replace
 
 import pytest
 
-from eql_automation.source_section_manifest import parse_walking_sections
+from eql_automation.source_section_manifest import BoundWalkingSection, parse_walking_sections
 from test_source_walk_sections import context,plan
 
 
@@ -52,3 +52,37 @@ def test_fast_integrity_comparison_rejects_each_nested_guide_mutation(fault,orig
     elif fault=='body':object.__setattr__(selected,'body_height',2.)
     else:object.__setattr__(selected,'operations',selected.operations[:-1])
     with pytest.raises(ValueError):result.check()
+
+
+@pytest.mark.parametrize('original',(False,True))
+def test_active_section_rechecks_current_operations_in_both_copies(original):
+    prefix,guide,planner,bounds=context();sections=parse_walking_sections(guide,plan(prefix,guide,planner,bounds))
+    guard=BoundWalkingSection(sections,1);guard.check(1)
+    op=guide.operations[10] if original else sections.guides[1].operations[0]
+    object.__setattr__(op,'end',(99.,99.))
+    with pytest.raises(ValueError):guard.check(1)
+
+
+@pytest.mark.parametrize('original',(False,True))
+def test_future_content_is_checked_before_another_section_can_be_adopted(original):
+    prefix,guide,planner,bounds=context();sections=parse_walking_sections(guide,plan(prefix,guide,planner,bounds))
+    guard=BoundWalkingSection(sections,0)
+    op=guide.operations[-1] if original else sections.guides[-1].operations[-1]
+    object.__setattr__(op,'end',(99.,99.))
+    guard.check(0)  # Unused future content has no effect on the active guide.
+    with pytest.raises(ValueError):BoundWalkingSection(sections,1)
+    with pytest.raises(ValueError):sections.check()
+
+
+@pytest.mark.parametrize('fault',('original','original_ops','guides','ranges','state','hash','future_ops','future_body','index'))
+def test_active_section_rejects_partition_structure_or_header_replacement(fault):
+    prefix,guide,planner,bounds=context();sections=parse_walking_sections(guide,plan(prefix,guide,planner,bounds))
+    guard=BoundWalkingSection(sections,0)
+    if fault=='original':object.__setattr__(sections,'original',replace(guide))
+    elif fault=='original_ops':object.__setattr__(guide,'operations',tuple(list(guide.operations)))
+    elif fault in ('guides','ranges'):object.__setattr__(sections,fault,tuple(list(getattr(sections,fault))))
+    elif fault=='state':object.__setattr__(sections,'_state',tuple(list(sections._state)))
+    elif fault=='hash':object.__setattr__(sections,'record_sha256','f'*64)
+    elif fault=='future_ops':object.__setattr__(sections.guides[-1],'operations',tuple(list(sections.guides[-1].operations)))
+    elif fault=='future_body':object.__setattr__(sections.guides[-1],'body_height',1.)
+    with pytest.raises(ValueError):guard.check(1 if fault=='index' else 0)

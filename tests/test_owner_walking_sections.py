@@ -19,9 +19,13 @@ from test_owner_source_travel import configure
 from test_route_step_sender import after_down
 
 
-def configure_sections(h,monkeypatch,*,destination='goblin-camp-stop',count=2):
+def configure_sections(h,monkeypatch,*,destination='goblin-camp-stop',count=2,dense=False):
     a=configure(h,monkeypatch,destination_id=destination);p=a.planner
     waypoints=(200.,230.,240.) if count==2 else (200.,230.,260.,270.)
+    if dense:
+        # A full-size current section, rather than a single operation, exercises
+        # the cost of guide checks inside the unchanged DOWN deadline.
+        waypoints=tuple(200.+i*.25 for i in range(241))
     guide=replace(a.guide,goal=(400.,waypoints[-1]),operations=tuple(
         SourceWalkHint((400.,a),(400.,b)) for a,b in zip(waypoints,waypoints[1:])))
     assets=SourceDestinationAssets(p,guide,'Synthetic two-section destination',encoded(dict(synthetic=True,
@@ -88,6 +92,15 @@ def test_owner_travel_automatically_measures_and_walks_next_section_without_camp
 
 
 @pytest.mark.parametrize('h',['walking_sections'],indirect=True)
+def test_full_size_walking_sections_reach_destination_with_unchanged_permit(h,monkeypatch):
+    sections=configure_sections(h,monkeypatch,dense=True)
+    assert all(len(g.operations)==120 for g in sections.guides)
+    start(h,'goblin-camp-stop');h.due_trial();result=finish_sections(h)
+    assert result and result['phase']=='arrived','\n'.join(map(str,h.notices))+'\n'+str(result)
+    assert h.engine.section_run is None and not h.sender.held and h.observer_closed
+
+
+@pytest.mark.parametrize('h',['walking_sections'],indirect=True)
 @pytest.mark.parametrize('phase,action',(('probe','stop'),('route','stop'),('probe','arm')))
 def test_owner_stop_and_assist_during_section_down_release_every_key(h,monkeypatch,phase,action):
     configure_sections(h,monkeypatch);e=h.engine;seen=[]
@@ -140,7 +153,7 @@ def test_only_final_section_starts_camp_and_transfers_original_input_observer(h,
         return original(w,arrival)
     monkeypatch.setattr(e,'_advance_walking_section',capture)
     start(h,'goblin-camp');h.due_trial();result=finish_sections(h)
-    assert result and result['camp_started'],'\n'.join(map(str,h.notices))
+    assert result and result.get('camp_started'),'\n'.join(map(str,h.notices))+'\n'+str(result)
     assert len(seen)==2 and e.journey.phase=='camp' and e.section_run is None
     w,arrival,c=seen[-1]
     assert c.closed and c.monitor.closed and not c.monitor.floor.valid
@@ -148,3 +161,87 @@ def test_only_final_section_starts_camp_and_transfers_original_input_observer(h,
     assert e.journey.camp_motion.observer is w.observer and not h.observer_closed
     assert not w.budget.valid and e.live_zone_tracker.lease is None
     e.stop_action('F9 after final camp');assert h.observer_closed and not arrival.checkpoint.valid
+
+
+@pytest.mark.parametrize('h',['walking_sections'],indirect=True)
+@pytest.mark.parametrize('at',('lease_acquired','successor_constructed','final_camp'))
+def test_partition_callbacks_cannot_publish_mutated_future_sections_or_camp(h,monkeypatch,at):
+    sections=configure_sections(h,monkeypatch,destination='goblin-camp',count=3)
+    e=h.engine;seen=[];constructed=[]
+    def mutate():
+        if not seen:
+            seen.append(True)
+            object.__setattr__(sections.guides[-1].operations[-1],'end',(999.,999.))
+    import eql_automation.owner_walking_sections as module
+    constructor=module.SectionContinuation
+    def create(*a,**kw):
+        c=constructor(*a,**kw);constructed.append(c)
+        if at=='successor_constructed':mutate()
+        return c
+    monkeypatch.setattr(module,'SectionContinuation',create)
+    tracker=e.live_zone_tracker;acquire=tracker.acquire
+    def lease():
+        result=acquire()
+        w=None if e.journey is None else e.journey.walking
+        if at=='lease_acquired' and w is not None and w.index==1:mutate()
+        return result
+    monkeypatch.setattr(tracker,'acquire',lease)
+    continuation=e._continue_source_journey
+    def camp(*a,**kw):
+        result=continuation(*a,**kw)
+        if at=='final_camp':mutate()
+        return result
+    monkeypatch.setattr(e,'_continue_source_journey',camp)
+    start(h,'goblin-camp');h.due_trial();finish_sections(h)
+    assert seen,'\n'.join(map(str,h.notices))
+    assert e.journey is None and e.section_run is None and e.camp_session is None
+    assert not h.sender.held and h.observer_closed and tracker.lease is None
+    assert not h.commands
+    if at=='lease_acquired':assert not constructed
+    elif at=='successor_constructed':
+        assert len(constructed)==1 and constructed[0].runtime is None
+        assert constructed[0].closed and constructed[0].monitor.closed
+
+
+@pytest.mark.parametrize('h',['walking_sections'],indirect=True)
+@pytest.mark.parametrize('phase',('probe','route'))
+def test_section_policy_still_observes_manual_activity_during_down(h,monkeypatch,phase):
+    configure_sections(h,monkeypatch);e=h.engine;seen=[]
+    def disturb():
+        c=e.section_run
+        if not seen and c is not None and c.phase==phase and c.current_input_key() in (103,105,106):
+            seen.append(c);sample=c.owner_input.sample
+            monkeypatch.setattr(c.owner_input,'sample',lambda:replace(sample(),activity=True))
+    after_down(monkeypatch,disturb)
+    start(h,'goblin-camp-stop');h.due_trial();finish_sections(h)
+    assert seen,'\n'.join(map(str,h.notices))
+    c=seen[0]
+    assert c.closed and c.monitor.closed and not c.budget.valid
+    assert e.journey is None and e.section_run is None and e.camp_session is None
+    assert not h.sender.held and h.observer_closed and e.live_zone_tracker.lease is None
+
+
+@pytest.mark.parametrize('h',['walking_sections'],indirect=True)
+@pytest.mark.parametrize('phase',('probe','route'))
+@pytest.mark.parametrize('fault',('focus','attack'))
+def test_child_location_key_refreshes_full_scene_after_outer_tick(h,monkeypatch,phase,fault):
+    configure_sections(h,monkeypatch);e=h.engine;seen=[]
+    import eql_automation.camp_probe_runtime as probe
+    import eql_automation.camp_source_runtime as route
+    module=probe if phase=='probe' else route
+    send=module.send_location_hotkey
+    def guarded(*a,**kw):
+        c=e.section_run
+        if not seen and c is not None and c.phase==phase:
+            h.drain();seen.append(len(h.events))
+            if fault=='focus':
+                session=e.gate.game_session
+                monkeypatch.setattr(e.gate,'game_session',lambda:dict(session(),pid=999))
+            else:h.append('a decaying skeleton hits YOU for 1 point of damage.')
+        return send(*a,**kw)
+    monkeypatch.setattr(module,'send_location_hotkey',guarded)
+    start(h,'goblin-camp-stop');h.due_trial();finish_sections(h)
+    assert seen,'\n'.join(map(str,h.notices))
+    h.drain();assert all(not (kind==1 and value==1) for kind,_,value in h.events[seen[0]:])
+    assert e.journey is None and e.section_run is None and not h.sender.held
+    assert h.observer_closed and e.live_zone_tracker.lease is None

@@ -1,5 +1,89 @@
 # FINDINGS
 
+## 2026-11-15 02:21 UTC — full-route cost and bounded Trainer analysis
+
+VERIFIED the first 0.42.84 narrow sender change passed ten source/watchdog/transfer
+checks, but all three owner terminal cases still expired before their intended
+handoffs (final slack -2.694ms, -1.884ms and -2.078ms). A source-guard profile then
+recorded 108 section checks and 772 parent section-binding checks in one final
+pre-GO call. Its instrumented 117.68ms is not a runtime acceptance measurement.
+The actual 1,057-operation Goblin manifest, checked 85 times on Alienware, cost
+45.24–51.16ms wall (41.80–42.82ms CPU), before other movement work.
+
+The current candidate therefore separates partition structure/current-section
+checks from full manifest validation. Full validation remains at initial adoption,
+budget creation, completed arrival, successor adoption after callbacks and final
+camp publication. Modified future operations cannot be adopted; hot checks retain
+all headers/tuple identities plus both copies of current operations. VERIFIED
+45 local planning/integrity cases pass, including current/future mutation and
+structure replacement. An intermediate runtime snapshot failed with a stopped
+source release; the sender now preserves its ledger reason in that diagnostic.
+
+Section provenance checks now use a context-only callback. Movement policies
+retain their own fresh physical input, focus and hazard-log checks. Separate pinned
+full-scene callbacks remain inside both child /location senders, including source
+startup before its movement policy exists. Outer section ticks check the full
+scene around child geometry/height work. Focused integration tests are in progress;
+this candidate is not published. No deadline or geometric bound is widened.
+
+VERIFIED bounded copied-client analysis used GNU objdump because REA native
+providers were unavailable. Full collision routine 0x140275420–0x1402762e8 has no
+observed fixed positive-rise cap; its small constants classify tiny movement.
+The vertical update resolves through both retained vtables to 0x1402762f0. The
+state-dependent extent-plus-0.5 test is lower/upper-query clearance, not a climb
+limit. Actor state, dimensions, sweep outcome and real traversal remain unknown.
+Report `client-data/native-step-0.42.84/probe.json`, SHA
+`b9e846b6cc0944eb1df45a404f53fef22fa3afe420bb3b4a6ca080b872c85ad0`.
+
+VERIFIED new Trainer search: 71 component boundaries against 6,474 eligible
+external terrain triangles (459,654 pairs, 285 exact clips). Eight triangle-interior
+overlaps have minimum gap 2.1875; 25 collinear intervals remain above two units,
+minimum 2.09375. Eight point contacts within two units have zero width. Exact
+affine-gap partitioning and an independent endpoint-height check passed. This
+closes that search class negatively, without proving physical disconnection,
+Mines-to-Trainer provenance or a usable route. Artifact
+`nav-candidates/crushbone-trainer-interior-incidence-0.42.84.json`, SHA
+`2a13b04cdeb0e97f6f3f872188e5ac1493be687009e69da5661a646acbbfea4d`;
+recipe SHA `2a59b8d569d74496d69babd61fb64a0dc043325b9576f18a29eb30718d731976`.
+
+Read-only owner trace check: `~/eql-journey-trace.jsonl` last modified Nov 14 at
+19:31 UTC and last records Greater Faydark. The G0 trace's level 7 is from Nov 13.
+Neither establishes current level or XP/hour. No client input or owner character
+change; G0 stays passed and owner 0.39.37 remains installed.
+
+## 2026-11-15 02:10 UTC — recovered failures and source guard correction
+
+VERIFIED SSH recovered and the saved final 0.42.83 runtime receipt is terminal:
+three failed, four deselected in 233.91 seconds. Both release-gap cases stopped
+before injection on an expired DOWN permit. Their final slack was -6.498ms and
+-2.055ms. The final-camp assertion raised KeyError on a stopped result; it now
+uses a diagnostic assertion that retains the actual notices. No failed case is
+counted as acceptance. The separate probe profile ran once, using isolated
+pipes and synthetic state: its selected final pre-GO check took 12.558ms wall /
+11.766ms CPU, including ten SectionContinuation scope traversals. Instrumentation
+changes timing, so this is cost evidence only.
+
+Source 0.42.84 removes the first of two consecutive scene validations in the
+authorized source sender check. Fresh scene observation and sender/ticket binding
+remain. The existing still_authorized method validates the scene after its own
+pending-ticket callback, then checks authorization and whole-journey reservation;
+the final sender check remains. Preselection validation and the 50ms DOWN permit
+and 100ms scene freshness limits are unchanged. Focused source/watchdog/transfer
+and the three failed owner integration cases are being checked on Alienware with
+isolated pipes. No client or character input occurs.
+
+VERIFIED the Trainer fire inventory's 66 vertices all project inside terrain
+face (465,1), at vertical gaps 0.02825–3.00261; the 22 faces cannot bridge out of
+that component. There were 477 unique static hits total, comprising 22 eligible
+and 455 ineligible faces. The nearest retained outside edge has constant rise
+67/32 = 2.09375. The two-unit maximum step was introduced as an explicitly
+unmeasured kinematic hypothesis in ac78e8bc878e36f7ee0b4dcf4045097331084daa;
+neither it nor traversal of the higher edge is established by client evidence.
+The approved copied executable remains available, SHA
+fe41a8db0b2cc2dc8848d82dce41d3f94cb6aa86d2aac21aa774efab7146bf36.
+Its collision-dispatch callee 0x140275420 is the next static-analysis target.
+No rule is widened to force a route. G0 remains passed; 1–20 and 1–50 remain unaccepted.
+
 ## 2026-11-15 02:02 UTC — owner section integration candidate and current gate
 
 Source 0.42.83 / owner candidate 0.39.38 connects the retained ordinary walking

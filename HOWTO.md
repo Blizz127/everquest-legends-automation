@@ -1,8 +1,8 @@
 # EverQuest Legends automation — current owner guide
 
 **Installed on Alienware: owner 0.39.37 / runtime 0.42.82.**
-Candidate **0.39.38 / runtime 0.42.83** below is not installed: final runtime
-checks are incomplete and the Alienware SSH connection is unavailable.
+Candidate **0.39.38 / runtime 0.42.84** below is not installed: final runtime
+checks are in progress after correcting repeated movement validation.
 Publication status and evidence are recorded in STATUS.md.
 
 To launch the currently installed helper on Alienware, close the old helper yourself

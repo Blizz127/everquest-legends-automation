@@ -1,5 +1,41 @@
 # STATUS
 
+Updated 2026-11-15 02:21 UTC for coordinator task `829a00229b29`.
+
+- **Working; goal not met. G0 passed**, including the owner's visible stop;
+  never repeat it. Current level, XP, XP/hour, deaths and camp remain unknown.
+  No accepted real-client 1–20 route or fresh hands-off 1–50 run.
+- **Installed:** owner **0.39.37 / source 0.42.82** remains current. Candidate
+  **0.39.38 / source 0.42.84** is not published. It extends the existing rotation
+  tool with automatic Goblin travel sections. Assist leaves movement and targets manual.
+- **VERIFIED recovery:** Alienware SSH is reachable again. The saved final
+  0.42.83 job terminated with three failures, four deselections in 233.91 seconds.
+  Two expired before their late-cancellation injection; the camp assertion hid
+  its stopped result behind a missing-key error. None is counted as a pass.
+- **VERIFIED diagnostic:** one instrumented intermediate probe's final check
+  took 12.56ms wall / 11.77ms CPU and traversed the section scope ten times.
+  Profiling changes timing and is not acceptance evidence. Source 0.42.84 removes
+  one duplicate scene validation from the authorized source-movement guard;
+  the later validation after the ticket callback, final sender check and all
+  timing limits remain. Ten source/watchdog/transfer cases pass, but the three
+  owner terminal cases still expired. Further measured work separates current
+  section checks from future proposals and context checks from physical scene
+  observations. Full-scene checks remain in movement and child location senders.
+  **45 local integrity/planning checks pass; final integration is in progress.**
+- **Trainer approach:** all 22 eligible fire triangles lie inside an existing
+  terrain face; they do not bridge the component gap. The nearest retained
+  candidate step rises 2.09375 units. The planner's two-unit bound is an explicitly
+  unmeasured hypothesis, not a client-derived limit. Static analysis of the copied
+  client's collision routine found no fixed climb limit, so capability remains
+  unknown. A new exact boundary/interior terrain search found no positive-width
+  seam within two units. No bound has been widened; no Trainer route is accepted.
+- **Next:** resolve and verify the runtime handoff failures, rebuild the owner
+  snapshot with current HOWTO, then publish a small additive private build.
+  Trainer, cross-zone travel, later camps, loot/vendors and recovery remain unfinished.
+  No game input, session restart, login, character or prefix change occurred.
+
+## Prior status
+
 Updated 2026-11-15 02:03 UTC for coordinator task `829a00229b29`.
 
 - **Working; goal not met. G0 passed**, including the owner's visible stop;

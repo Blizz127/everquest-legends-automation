@@ -26,7 +26,7 @@ from .scene_log_veto import SceneLogVeto
 class CampProbeRuntime:
     def __init__(self,preparation,*,sender,hotkey,owner_input,stop_lock,
                  movement_policy_factory,check_current,command_state_clear,pump,
-                 probes=PROBES,maximum_seconds=120.,log_veto=None):
+                 probes=PROBES,maximum_seconds=120.,log_veto=None,check_scene=None):
         if (type(preparation) is not CampProbePreparation or preparation.phase!='new'
                 or type(hotkey) is not OwnerLocationHotkey
                 or not isinstance(stop_lock,type(threading.RLock()))
@@ -34,6 +34,7 @@ class CampProbeRuntime:
                     command_state_clear,pump,getattr(owner_input,'sample',None)))
                 or type(probes) is not tuple or not 1<=len(probes)<=7
                 or log_veto is not None and type(log_veto) is not SceneLogVeto
+                or check_scene is not None and not callable(check_scene)
                 or not finite(maximum_seconds) or not 0<maximum_seconds<=1500):
             raise ValueError('Fresh preparation, explicit policy and finite retained runtime required')
         b=preparation.bounds
@@ -45,6 +46,7 @@ class CampProbeRuntime:
         self.root=self.preparation=preparation;self.sender=sender;self.hotkey=hotkey
         self.owner_input=owner_input;self.lock=stop_lock
         self.policy_factory=movement_policy_factory;self.current=check_current
+        self.scene_current=check_scene
         self.command_clear=command_state_clear;self.pump=pump
         self.probes=probes;self._probes_bytes=tuple(flat_record_state(p) for p in probes)
         self.maximum_seconds=maximum_seconds
@@ -56,7 +58,7 @@ class CampProbeRuntime:
         self._log_veto_state=(None if log_veto is None else
             (log_veto.tail,log_veto.tail.path,log_veto.clock,log_veto.cancel_generation))
         self._context=(preparation,sender,hotkey,owner_input,stop_lock,movement_policy_factory,
-            check_current,command_state_clear,pump,probes,self.clock,self.wall,self.lease,maximum_seconds,log_veto)
+            check_current,command_state_clear,pump,probes,self.clock,self.wall,self.lease,maximum_seconds,log_veto,check_scene)
         self.phase='prepare';self.reason='';self.busy=False;self.closed=False
         self.started=self.last_at=self.clock()
         self.collector=None;self.collection_kind=None;self.baseline=None;self.released_at=None
@@ -82,7 +84,7 @@ class CampProbeRuntime:
         now=self.clock()
         actual=(self.root,self.sender,self.hotkey,self.owner_input,self.lock,self.policy_factory,
             self.current,self.command_clear,self.pump,self.probes,self.clock,self.wall,self.lease,self.maximum_seconds,
-            self.log_veto)
+            self.log_veto,self.scene_current)
         if (self.phase=='stopped' or self.closed
                 or any(a is not b for a,b in zip(self._context,actual))
                 or tuple(flat_record_state(p) for p in self.probes)!=self._probes_bytes
@@ -151,6 +153,8 @@ class CampProbeRuntime:
     def _send_location(self,collector,request):
         def current():
             self._check();collector.check()
+            if self.scene_current is not None:
+                self.scene_current();self._check_scope()
             if self.collector is not collector or collector.phase!='requesting' or collector.pending is not request:
                 raise ValueError('Camp probe position request changed')
         self.input_kind='location';self.input_request=request

@@ -14,7 +14,7 @@ from .owner_route_trial import SOURCE_JOB, zone_binding
 from .section_continuation import SectionContinuation, capture_section_arrival
 from .source_arrival import assert_retained_arrival
 from .source_destinations import destination_spec
-from .source_section_manifest import WalkingSections
+from .source_section_manifest import BoundWalkingSection, WalkingSections
 from .supervised_route import scope_limits
 
 
@@ -28,6 +28,7 @@ class WalkingHandoff:
 class WalkingJourney:
     def __init__(self,journey,pending,sections,index):
         self.journey,self.pending,self.sections=journey,pending,sections
+        self.section_guard=self._section_guard=BoundWalkingSection(sections,index)
         self.index=self._index=index
         self.initial_index=index
         self.budget=self._budget=None
@@ -49,7 +50,9 @@ class WalkingJourney:
             self.generation,self.settings,self.epochs)
 
     def check(self):
-        self.sections.check()
+        if self.section_guard is not self._section_guard:
+            raise ValueError('Active section guard changed')
+        self.section_guard.check(self.index)
         p=self.pending
         if (self._context()!=self._state or self.index!=self._index
                 or not self.initial_index<=self.index<len(self.sections.guides)
@@ -61,6 +64,11 @@ class WalkingJourney:
             raise ValueError('Walking journey lost its original guide, index or owner context')
 
     def set_runtime(self,runtime):self.runtime=self._runtime=runtime
+
+    def advance(self):
+        guard=BoundWalkingSection(self.sections,self.index+1)
+        self.index=self._index=guard.index
+        self.section_guard=self._section_guard=guard
 
 
 def make_walking_sections_engine(base,*,section_provider,clock):
@@ -113,6 +121,7 @@ def make_walking_sections_engine(base,*,section_provider,clock):
             j=self.journey;w=None if j is None else j.walking
             if w is None:return super()._source_journey_budget(p)
             self._section_binding(w)
+            w.sections.check()
             if w.pending is not p or w.budget is not None:
                 raise ValueError('Whole-journey budget cannot be reset')
             n=len(w.sections.guides)-w.initial_index
@@ -161,6 +170,7 @@ def make_walking_sections_engine(base,*,section_provider,clock):
 
         def _check_section_arrival(self,w,token):
             self._section_binding(w);w.budget.check()
+            w.sections.check()
             expected=sha256(encoded(w.sections.guides[w.index].record())).hexdigest()
             if (token.budget is not w.budget or token.guide_sha256!=expected
                     or token._claim!=[False]
@@ -209,6 +219,7 @@ def make_walking_sections_engine(base,*,section_provider,clock):
                     w.budget.cancel('Walking destination reached; navigation budget retired')
                     try:
                         result=self._continue_source_journey(w.pending,token)
+                        w.sections.check()
                         if old is not None and self.journey is j and j.phase=='camp':
                             successor=j.camp_motion
                             prior=old.monitor.last_observed_at
@@ -216,17 +227,19 @@ def make_walking_sections_engine(base,*,section_provider,clock):
                                 successor.last_observed_at=prior
                             successor.check(self._camp_motion_binding())
                             old.monitor.transfer_to(successor)
+                        w.sections.check()
                         return result
                     finally:
                         if old is not None and not old.monitor.closed:
                             old.monitor.close('Final walking handoff ended')
                 j.phase='section_handoff'
                 self._section_binding(w)
-                w.index+=1;w._index=w.index
+                w.advance()
                 self.cancelled=False  # Same owner generation; no new job or budget.
                 lease=w.tracker.acquire()
                 try:
                     binding=self._section_binding(w)
+                    w.sections.check()
                     def pump():self.pump();self.autopilot_tick(clock())
                     import navigation
                     from eqnav import steer
@@ -240,6 +253,7 @@ def make_walking_sections_engine(base,*,section_provider,clock):
                     if old is not None:
                         successor.monitor.check(successor._monitor_binding())
                         old.monitor.transfer_to(successor.monitor)
+                    w.sections.check()
                     j.phase='walking_sections'
                     self._section_binding(w)
                     return dict(phase='walking_sections',section=w.index+1,

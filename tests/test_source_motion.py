@@ -237,7 +237,7 @@ def test_revocation_before_down_sends_no_input(f,change,tmp_path):
     assert f.ledger.steps==0
 
 
-@pytest.mark.parametrize('change',('input','generation','unfinished','selected_key_held'))
+@pytest.mark.parametrize('change',('input','generation','unfinished','selected_key_held','sender_generation','sender_focus'))
 def test_authorization_callback_is_rechecked_before_watchdog_go(f,change):
     authorize=f.policy.authorize
     def revoke(ticket,scene):
@@ -245,6 +245,13 @@ def test_authorization_callback_is_rechecked_before_watchdog_go(f,change):
         if change=='input':f.active=True
         elif change=='generation':f.generation+=1
         elif change=='unfinished':f.sender.unfinished=True
+        elif change.startswith('sender_'):
+            check=f.sender.check
+            def changed():
+                check()
+                if change=='sender_generation':f.generation+=1
+                else:f.focus=False
+            f.sender.check=changed
         else:f.sender.held.add(ticket.movement_key)
         return result
     f.policy.authorize=revoke

@@ -20,26 +20,30 @@ def run_checked_source_step(sender,ledger,*,policy,kind,requested_seconds,
     ticket=authorization=None
     ui=identity=original_fd=reference=None
 
-    def binding():
+    def binding(*,validate_ledger=True):
         # Pending validation below already checks the complete ledger after
         # descriptor callbacks. Do not repeat that ancestry scan here.
-        if ticket is None:ledger._check()
+        if validate_ledger and ticket is None:ledger._check()
         if (sender._eql_route_operation is not operation or sender.ui is not ui
                 or ui.fileno()!=original_fd or _fd_identity(original_fd)!=identity
                 or ledger.reference is not reference):
             raise RouteHalt('Source sender, descriptor or reference changed')
-        if ticket is not None:ledger.check_pending(ticket)
+        if validate_ledger and ticket is not None:ledger.check_pending(ticket)
 
-    def check_sender():
-        binding();sender.check()
+    def check_sender(*,validate_ledger=True):
+        binding(validate_ledger=validate_ledger);sender.check()
         if (sender.unfinished is not False or sender.dismissed is not False
                 or command_state_clear() is not True
                 or sender.held-({key} if key is not None and not released else set())):
             raise RouteHalt('Source movement needs exclusive keys and clear command state')
-        binding()
+        binding(validate_ledger=validate_ledger)
 
-    def scene():
-        check_sender();value=policy.observe();binding();policy.validate_scene(value)
+    def scene(*,validate=True):
+        # The scene policy checks the ledger after these sender callbacks.
+        # Scene/authorization validation below checks it again after the final
+        # descriptor callback. Final post-authorization sender checks stay full.
+        check_sender(validate_ledger=False);value=policy.observe();binding(validate_ledger=False)
+        if validate:policy.validate_scene(value)
         return value
 
     def select():
@@ -61,7 +65,10 @@ def run_checked_source_step(sender,ledger,*,policy,kind,requested_seconds,
     def should_stop():
         try:
             with ledger.lock:
-                observed=scene()
+                # still_authorized validates this fresh scene after checking
+                # the pending ticket. Keep that later validation, instead of
+                # traversing the same ancestry twice inside the DOWN permit.
+                observed=scene(validate=authorization is None)
                 if authorization is not None:
                     if policy.still_authorized(authorization,observed) is not True:
                         raise RouteHalt('Source movement permission revoked')
@@ -98,7 +105,8 @@ def run_checked_source_step(sender,ledger,*,policy,kind,requested_seconds,
         os.close(pinned_fd);pinned_fd=None
         with ledger.lock:
             if receipt is None or ticket is None or authorization is None or should_stop() or sender.held:
-                raise RouteHalt('No uncancelled source release receipt')
+                reason=': '+ledger.reason if ledger.reason else ''
+                raise RouteHalt('No uncancelled source release receipt'+reason)
             return ledger.seal_release(ticket,receipt)
     except BaseException as error:
         ledger.cancel(str(error));raise
